@@ -8,6 +8,7 @@ import title from './title';
 import app from './app';
 import data from './data';
 import engine from './engine';
+import analyst from './analyst';
 
-const ptBR = { ...common, ...uiGame, ...uiHelp, ...uiMarket, ...menu, ...title, ...app, ...data, ...engine } as const;
+const ptBR = { ...common, ...uiGame, ...uiHelp, ...uiMarket, ...menu, ...title, ...app, ...data, ...engine, ...analyst } as const;
 export default ptBR;

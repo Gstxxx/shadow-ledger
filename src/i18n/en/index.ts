@@ -8,6 +8,7 @@ import title from './title';
 import app from './app';
 import data from './data';
 import engine from './engine';
+import analyst from './analyst';
 import type ptBR from '../pt-BR';
 
 const en: Record<keyof typeof ptBR, string> = {
@@ -20,5 +21,6 @@ const en: Record<keyof typeof ptBR, string> = {
   ...app,
   ...data,
   ...engine,
+  ...analyst,
 };
 export default en;
