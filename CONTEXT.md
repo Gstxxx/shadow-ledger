@@ -68,6 +68,24 @@ _Avoid_: capturada, presa, morta
 Outra agência controlada pela IA, com Diretor, **Estações** e **Equipes** próprios, que compete por mercados e **Contratos** e age contra a agência do jogador. Quantas existem e quão agressivas são depende da **Dificuldade**.
 _Avoid_: inimigo, concorrente, IA (quando se fala da agência)
 
+### Partida
+
+**Sandbox**:
+Forma de jogar em mundo aberto configurável (região inicial, capital, **Agências Rivais**, objetivo, prazo). É a única forma de jogo no lançamento.
+_Avoid_: modo livre, partida personalizada
+
+**Preset**:
+Configuração pronta de **Sandbox** com nome e briefing (ex.: "Caçada no Sahel"). As missões do jogo original viram Presets.
+_Avoid_: missão, cenário, fase
+
+**Objetivo**:
+Condição de vitória de uma partida: lucro em N dias, lucro rápido, eliminar um grupo, resgatar um refém, entre outras.
+_Avoid_: missão, meta
+
+**Campanha**:
+Sequência futura de partidas com história, que carrega parte do progresso de uma para a próxima. Não existe no lançamento.
+_Avoid_: história, modo história
+
 **Dificuldade**:
 Nível escolhido no início da partida (Recruta, Operador, Diretor) que, entre outras coisas, define o número e a agressividade das **Agências Rivais**.
 _Avoid_: modo (reservado para **Modo Hardcore**)
