@@ -219,4 +219,12 @@ export default {
   'preset.red-line.brief': 'A criminal network crosses Europe under heavy escort. 100 days, no excuses.',
   'preset.pacific-cold.title': 'Pacific Chill',
   'preset.pacific-cold.brief': 'Asia and Oceania under permanent tension. 180 days, deep pockets, watchful state rivals.',
+  'menu.install.cta': 'Install the app',
+  'menu.install.meta': 'Full screen, opens from an icon',
+  'menu.install.title': 'App',
+  'menu.install.help': 'Install to play full screen and launch from an icon, even offline.',
+  'menu.install.installed': 'Installed on this device.',
+  'menu.install.iosTitle': 'Install on iPhone or iPad',
+  'menu.install.iosStep1': 'Tap Share in the Safari toolbar.',
+  'menu.install.iosStep2': 'Choose Add to Home Screen.',
 } as const;

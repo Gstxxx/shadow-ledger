@@ -219,4 +219,12 @@ export default {
   'preset.red-line.brief': 'Uma rede criminosa cruza a Europa com escolta pesada. 100 dias, nenhuma desculpa.',
   'preset.pacific-cold.title': 'Frio no Pacífico',
   'preset.pacific-cold.brief': 'Ásia e Oceania sob tensão permanente. 180 dias, capital grande, rivais estatais atentos.',
+  'menu.install.cta': 'Instalar o app',
+  'menu.install.meta': 'Tela cheia, abre pelo ícone',
+  'menu.install.title': 'App',
+  'menu.install.help': 'Instale para jogar em tela cheia e abrir pelo ícone, mesmo sem internet.',
+  'menu.install.installed': 'Instalado neste aparelho.',
+  'menu.install.iosTitle': 'Instalar no iPhone ou iPad',
+  'menu.install.iosStep1': 'Toque em Compartilhar na barra do Safari.',
+  'menu.install.iosStep2': 'Escolha Adicionar à Tela de Início.',
 } as const;
