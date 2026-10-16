@@ -21,6 +21,18 @@ Opção de partida em que a derrota do **Diretor** em **Combate** é morte e fim
 Qualquer recurso de combate da agência (pessoa, veículo ou aeronave), com forças por tipo de combate e experiência. Toda Unidade tem **Manutenção**.
 _Avoid_: tropa, soldado (exceto como tipo específico)
 
+**Traço**:
+Característica permanente de uma pessoa do **Pessoal** que altera seu desempenho ou custo. Nasce com 1–2 e ganha mais ao subir de patente. Máquinas não têm Traços.
+_Avoid_: perk, habilidade, talento
+
+**Ferida**:
+Estado temporário de uma pessoa do **Pessoal** que perdeu um duelo: fica fora de ação até se recuperar, mais rápido numa **Estação**. Não é morte nem **Detida**.
+_Avoid_: machucada, incapacitada
+
+**Danificada**:
+Estado de uma máquina avariada em **Combate**; precisa de conserto pago numa **Estação** de nível Escritório ou maior. Equivalente mecânico de **Ferida**.
+_Avoid_: quebrada, avariada
+
 **Manutenção**:
 Custo mensal de manter uma **Unidade**: salário para o **Pessoal**, manutenção técnica para máquinas. Se não for paga, o **Pessoal** deserta e as máquinas ficam paradas.
 _Avoid_: upkeep, salário (quando se fala de máquinas)
