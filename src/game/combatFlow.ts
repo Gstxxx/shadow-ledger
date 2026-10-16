@@ -166,7 +166,7 @@ export function captureDirector(s: GameState, a: Agency, byState: boolean, count
   }
 }
 
-function stationLosesLevel(s: GameState, a: Agency, countryId: string) {
+export function stationLosesLevel(s: GameState, a: Agency, countryId: string) {
   const st = stationIn(a, countryId);
   if (!st) return;
   const name = s.countries[countryId].name;
@@ -361,6 +361,31 @@ export function resolveCombat(s: GameState, c: CombatState) {
       } else if (st?.interdicted) {
         st.interdicted.fine = Math.round(st.interdicted.fine * 1.25);
         notify(s, a, 'station', 'Recurso negado', `A multa em ${cty.name} subiu para ${money(st.interdicted.fine)}.`, 'bad', r.countryId);
+      }
+      break;
+    }
+    case 'hostile': {
+      const target = agencyById(s, r.targetId);
+      addReputation(a, r.countryId, -10);
+      addExposure(a, r.countryId, 30 * quiet);
+      if (!target) break;
+      const label = r.act === 'sabotage' ? 'Sabotagem' : 'Assalto ao Cofre';
+      if (ok) {
+        if (r.act === 'sabotage') stationLosesLevel(s, target, r.countryId);
+        else {
+          const st = stationIn(target, r.countryId);
+          const team = a.teams.find((t) => t.id === r.teamId);
+          if (st && team) {
+            for (const l of st.vault) addLot(team.spoils, lotId, l.itemId, l.qty, l.paidEach);
+            for (const l of team.spoils) l.fresh = true;
+            st.vault = [];
+          }
+        }
+        notify(s, a, 'combat', `${label} concluído`, `A ação contra ${target.name} em ${cty.name} deu certo.${casualty}`, 'good', r.countryId);
+        notify(s, target, 'station', `${label} sofrido`, `${a.name} atacou a Estação em ${cty.name}.`, 'bad', r.countryId);
+      } else {
+        notify(s, a, 'combat', `${label} fracassou`, `A Estação de ${target.name} em ${cty.name} resistiu.${casualty}`, 'bad', r.countryId);
+        notify(s, target, 'station', 'Ataque repelido', `A Estação em ${cty.name} repeliu ${a.name}.`, 'good', r.countryId);
       }
       break;
     }

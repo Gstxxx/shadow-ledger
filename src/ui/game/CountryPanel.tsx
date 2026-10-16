@@ -158,6 +158,8 @@ export function CountryPanel() {
 
       {here && <ContractsHere countryId={id} />}
 
+      <RivalsHere countryId={id} />
+
       {here && (
         <Section title="Operações Especiais">
           <div className="ops">
@@ -189,6 +191,39 @@ export function CountryPanel() {
         </Section>
       )}
     </div>
+  );
+}
+
+function RivalsHere({ countryId }: { countryId: string }) {
+  const s = useGame();
+  const a = player(s);
+  const act = useGameStore((st) => st.act);
+  const rivals = s.agencies.filter((r) => !r.isPlayer && r.stations.some((x) => x.countryId === countryId));
+  if (!rivals.length) return null;
+  const canDenounce = !!stationIn(a, countryId) || directorAt(a, countryId);
+  return (
+    <Section title="Agências Rivais aqui">
+      {rivals.map((r) => {
+        const st = r.stations.find((x) => x.countryId === countryId)!;
+        return (
+          <div key={r.id} className="row-line">
+            <span>
+              {r.name}
+              <small className="mono"> · {STATIONS[st.level].name}{st.interdicted ? ' · Interditada' : ''}</small>
+            </span>
+            <button
+              className="btn sm"
+              disabled={!canDenounce || a.cash < A.denounceCost(s, countryId)}
+              title={canDenounce ? undefined : 'Exige uma Estação ou o Diretor no país'}
+              onClick={() => act((g, ag) => A.denounce(g, ag, r.id, countryId), 'click')}
+            >
+              Denunciar {money(A.denounceCost(s, countryId))}
+            </button>
+          </div>
+        );
+      })}
+      <p className="hint-sm">Sabotagem e assalto ao Cofre são feitos por uma Equipe no país (aba Equipes).</p>
+    </Section>
   );
 }
 

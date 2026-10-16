@@ -73,9 +73,18 @@ function readSave(): GameState | null {
 
 function writeSave(s: GameState) {
   try {
+    s.savedAt = Date.now();
     localStorage.setItem(SAVE_KEY, JSON.stringify(s));
   } catch {
     /* storage full or blocked: the game keeps running */
+  }
+}
+
+export function deleteSave() {
+  try {
+    localStorage.removeItem(SAVE_KEY);
+  } catch {
+    /* nothing to delete */
   }
 }
 

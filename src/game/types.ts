@@ -184,6 +184,8 @@ export interface GameOptions {
   hardcore: boolean;
   directorName?: string;
   agencyName?: string;
+  /** Número de Agências Rivais; sem valor, a Dificuldade decide. */
+  rivals?: number;
   seed?: number;
 }
 
@@ -343,7 +345,9 @@ export type CombatReason =
   | { kind: 'group'; countryId: string; by: 'director' | string }
   | { kind: 'appeal'; countryId: string }
   | { kind: 'rescue'; countryId: string; teamId: string }
-  | { kind: 'intercept'; countryId: string; teamId: string };
+  | { kind: 'intercept'; countryId: string; teamId: string }
+  /** Ação hostil de uma Equipe contra a Estação de outra agência. */
+  | { kind: 'hostile'; act: 'sabotage' | 'raid'; countryId: string; teamId: string; targetId: string };
 
 export interface CombatState {
   id: string;
@@ -459,4 +463,6 @@ export interface GameState {
   uidCounter: number;
   /** Memória das Agências Rivais (src/game/ai). */
   ai?: AiState;
+  /** Quando foi gravado pela última vez (ms desde a época Unix). */
+  savedAt?: number;
 }

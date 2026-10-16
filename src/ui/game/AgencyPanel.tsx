@@ -373,6 +373,18 @@ function TeamsTab() {
                       {OPERATION_LABEL[op]}
                     </button>
                   ))}
+                  {s.agencies
+                    .filter((r) => !r.isPlayer && r.stations.some((x) => x.countryId === t.location && !x.interdicted))
+                    .map((r) => (
+                      <span key={r.id} className="row-actions">
+                        <button className="btn sm danger" disabled={!t.units.length} onClick={() => act((gs, ag) => A.sabotageStation(gs, ag, t.id, r.id), 'open')}>
+                          Sabotar {r.name}
+                        </button>
+                        <button className="btn sm danger" disabled={!t.units.length} onClick={() => act((gs, ag) => A.raidVault(gs, ag, t.id, r.id), 'open')}>
+                          Assaltar Cofre
+                        </button>
+                      </span>
+                    ))}
                   {g && !g.defeated && g.countryId === t.location && (
                     <button className="btn sm danger" onClick={() => act((gs, ag) => A.teamAttackGroup(gs, ag, t.id), 'open')}>
                       Atacar {g.name}

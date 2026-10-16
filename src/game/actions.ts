@@ -14,6 +14,7 @@ import {
   STATIONS,
   VAULT_CAPACITY,
 } from './data/rules';
+import { recordAggression } from './ai/memory';
 import { buildForce } from './forces';
 import { fleetSpeed, freeCargo, maxCargo, quoteBuy, quoteSell, rollRecruits, unitsWeight, usedCargo } from './market';
 import { chance } from './rng';
@@ -21,6 +22,7 @@ import {
   addExposure,
   addReputation,
   addTension,
+  agencyById,
   directorAt,
   note,
   notify,
@@ -722,4 +724,63 @@ export function mergeTeam(s: GameState, a: Agency, teamId: string, into: 'escort
   }
   a.teams = a.teams.filter((x) => x !== t);
   return ok(`${t.name} reintegrada.`);
+}
+
+// ── Ações hostis entre agências (simétricas: jogador e Agências Rivais) ──
+
+function hostileTarget(s: GameState, a: Agency, teamId: string, targetId: string): { team: Team; target: Agency; st: Station } | string {
+  if (s.over) return 'A partida acabou.';
+  const team = a.teams.find((x) => x.id === teamId);
+  if (!team || team.travel || !team.units.length) return 'Equipe indisponível.';
+  const target = agencyById(s, targetId);
+  if (!target || target.id === a.id) return 'Alvo inválido.';
+  const st = stationIn(target, team.location);
+  if (!st || st.interdicted) return `${target.name} não tem Estação operante aqui.`;
+  return { team, target, st };
+}
+
+function hostileStrike(s: GameState, a: Agency, teamId: string, targetId: string, act: 'sabotage' | 'raid'): Result {
+  const h = hostileTarget(s, a, teamId, targetId);
+  if (typeof h === 'string') return no(h);
+  const c = s.countries[h.team.location];
+  const fort = STATIONS[h.st.level].fort.urban;
+  const defenders = h.st.units.map((u) => ({ ...u, hp: { ...u.hp } }));
+  const enemy = defenders.length ? defenders : buildForce(s, 'security', fort * 3, 'urban');
+  recordAggression(s, a.id, h.target.id, act === 'sabotage' ? 3 : 2);
+  beginCombat(s, a, {
+    type: 'urban',
+    reason: { kind: 'hostile', act, countryId: c.id, teamId: h.team.id, targetId: h.target.id },
+    title: `${act === 'sabotage' ? 'Sabotagem' : 'Assalto ao Cofre'}: ${h.target.name} em ${c.name}`,
+    enemy,
+    sources: [{ kind: 'team', teamId: h.team.id }],
+    playerDefends: false,
+    directorPresent: false,
+  });
+  return ok();
+}
+
+/** Equipe sabota a Estação de outra agência no país: sucesso derruba um Nível. */
+export const sabotageStation = (s: GameState, a: Agency, teamId: string, targetId: string): Result =>
+  hostileStrike(s, a, teamId, targetId, 'sabotage');
+
+/** Equipe assalta o Cofre de outra agência no país: sucesso leva o conteúdo como itens capturados. */
+export const raidVault = (s: GameState, a: Agency, teamId: string, targetId: string): Result =>
+  hostileStrike(s, a, teamId, targetId, 'raid');
+
+export const denounceCost = (s: GameState, countryId: string) => 50_000 * s.countries[countryId].level;
+
+/** Denúncia: entrega a outra agência às autoridades de um país onde quem age tem Estação ou o Diretor. */
+export function denounce(s: GameState, a: Agency, targetId: string, countryId: string): Result {
+  if (s.over) return no('A partida acabou.');
+  const target = agencyById(s, targetId);
+  if (!target || target.id === a.id) return no('Alvo inválido.');
+  if (!stationIn(a, countryId) && !directorAt(a, countryId)) return no('É preciso uma Estação ou o Diretor no país.');
+  const cost = denounceCost(s, countryId);
+  if (a.cash < cost) return no('Caixa insuficiente.');
+  a.cash -= cost;
+  addExposure(target, countryId, 25);
+  addExposure(a, countryId, 3);
+  recordAggression(s, a.id, target.id, 1);
+  notify(s, target, 'intel', 'Denúncia', `Alguém entregou a agência às autoridades de ${s.countries[countryId].name}. A Exposição subiu.`, 'warn', countryId);
+  return ok(`${target.name} foi denunciada em ${s.countries[countryId].name}.`);
 }
