@@ -134,6 +134,14 @@ _Avoid_: avião (quando se fala do conjunto)
 Mercadorias compradas para revenda, transportadas pela **Frota**.
 _Avoid_: estoque, inventário
 
+**Cofre**:
+Depósito de itens de uma **Estação**, com capacidade crescente por **Nível de Estação**. Recebe o que uma **Equipe** captura e a **Carga** que o **Diretor** deixa; só o **Diretor** retira.
+_Avoid_: armazém, depósito, inventário
+
+**Receptador**:
+Intermediário que compra na hora, com forte desconto, um item que uma **Equipe** acabou de capturar. É a alternativa, escolhida pelo jogador, a levar o item a um **Cofre**; não é **Comércio**.
+_Avoid_: mercado negro, fence
+
 **Pessoal**:
 **Unidades** humanas (guarda-costas, comandos, agentes, advogados, agentes de influência), em oposição a veículos e aeronaves.
 _Avoid_: humanos, infantaria
