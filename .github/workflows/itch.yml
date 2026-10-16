@@ -1,0 +1,45 @@
+name: Publicar no itch.io
+
+on:
+  workflow_dispatch:
+    inputs:
+      itch_target:
+        description: "Alvo no itch.io (usuario/jogo), ex.: gstxxx/shadow-ledger"
+        required: true
+        default: "gstxxx/shadow-ledger"
+      user_version:
+        description: "Versão a exibir no itch (opcional)"
+        required: false
+        default: ""
+
+jobs:
+  itch:
+    runs-on: ubuntu-latest
+    env:
+      BUTLER_API_KEY: ${{ secrets.BUTLER_API_KEY }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - name: Build (base ./)
+        run: npx vite build --base=./
+      - name: Instalar butler
+        run: |
+          curl -fsSL -o butler.zip https://broth.itch.zone/butler/linux-amd64/LATEST/archive/default
+          unzip -q butler.zip -d butler-bin
+          chmod +x butler-bin/butler
+          echo "$PWD/butler-bin" >> "$GITHUB_PATH"
+      - name: Push para o itch.io
+        env:
+          ITCH_TARGET: ${{ inputs.itch_target }}
+          USER_VERSION: ${{ inputs.user_version }}
+        run: |
+          if [ -z "$BUTLER_API_KEY" ]; then
+            echo "::error::Secret BUTLER_API_KEY não configurado (veja docs/DEPLOY.md)"; exit 1
+          fi
+          ARGS=()
+          if [ -n "$USER_VERSION" ]; then ARGS+=(--userversion "$USER_VERSION"); fi
+          butler push dist "$ITCH_TARGET:html5" "${ARGS[@]}"
