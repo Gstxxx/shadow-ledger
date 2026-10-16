@@ -131,6 +131,8 @@ export interface CargoLot {
   itemId: string;
   qty: number;
   paidEach: number;
+  /** Recém-capturado por uma Equipe: o Receptador ainda aceita (só logo após a captura). */
+  fresh?: boolean;
 }
 
 /** Nível de Estação: Célula, Casa Segura, Escritório, Complexo, Base. */
@@ -340,7 +342,8 @@ export type CombatReason =
   | { kind: 'coup'; countryId: string }
   | { kind: 'group'; countryId: string; by: 'director' | string }
   | { kind: 'appeal'; countryId: string }
-  | { kind: 'rescue'; countryId: string; teamId: string };
+  | { kind: 'rescue'; countryId: string; teamId: string }
+  | { kind: 'intercept'; countryId: string; teamId: string };
 
 export interface CombatState {
   id: string;

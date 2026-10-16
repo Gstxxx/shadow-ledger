@@ -7,6 +7,7 @@ import { TEAM_NAMES } from './data/names';
 import {
   COMMERCIAL_FARE_PER_1000KM,
   COMMERCIAL_SPEED,
+  COMMERCIAL_BAGGAGE_T,
   FENCE_RATE,
   OPERATION_COMBAT,
   OPERATION_LABEL,
@@ -325,11 +326,27 @@ export function fenceSpoils(s: GameState, a: Agency, teamId: string, lid: string
   const t = a.teams.find((x) => x.id === teamId);
   const lot = t?.spoils.find((l) => l.lid === lid);
   if (!t || !lot) return no('Item não encontrado.');
+  if (!lot.fresh) return no('O Receptador só compra logo após a captura.');
   const value = fenceValue(lot);
   a.cash += value;
   t.spoils = t.spoils.filter((l) => l !== lot);
   addExposure(a, t.location, 3);
   return ok(`O Receptador pagou ${money(value)} por ${ITEMS[lot.itemId].name}.`);
+}
+
+export const spoilsWeight = (t: Team) => t.spoils.reduce((x, l) => x + def(l.itemId).weight * l.qty, 0);
+
+/** A Equipe entrega os itens capturados ao Diretor no mesmo país; viram Carga. */
+export function handSpoils(s: GameState, a: Agency, teamId: string): Result {
+  const r = directorReady(s, a);
+  if (r) return r;
+  const t = a.teams.find((x) => x.id === teamId);
+  if (!t || t.travel || !t.spoils.length) return no('Nada a entregar.');
+  if (t.location !== a.location) return no('O Diretor não está neste país.');
+  if (spoilsWeight(t) > freeCargo(a) + 1e-6) return no('Sem espaço na Frota.');
+  for (const l of t.spoils) addCargo(a, l.itemId, l.qty, l.paidEach);
+  t.spoils = [];
+  return ok('Itens entregues ao Diretor.');
 }
 
 /** Leva os itens capturados ao Cofre da Estação do país onde a Equipe está. */
@@ -583,9 +600,9 @@ export function commercialFare(team: Team, to: string): number {
   return Math.round((travelKm(team.location, to) / 1000) * COMMERCIAL_FARE_PER_1000KM * team.units.length);
 }
 
-/** Smallest active freighter of the Frota that can carry the team. */
+/** Smallest active freighter of the Frota that can carry the team and what it captured. */
 function pickFreighter(a: Agency, team: Team): Unit | undefined {
-  const need = unitsWeight(team.units);
+  const need = unitsWeight(team.units) + spoilsWeight(team);
   return a.fleet
     .filter((u) => !u.idle && def(u.itemId).weight >= need)
     .sort((x, y) => def(x.itemId).weight - def(y.itemId).weight)[0];
@@ -607,6 +624,8 @@ export function sendTeam(s: GameState, a: Agency, teamId: string, to: string, mo
   if (!t.units.length) return no('A Equipe está vazia.');
   if (mode === 'commercial') {
     if (!t.units.every(isPersonnel)) return no('Voo Comercial só leva Pessoal. Use um Cargueiro Destacado.');
+    if (spoilsWeight(t) > COMMERCIAL_BAGGAGE_T + 1e-6)
+      return no(`Voo Comercial aceita até ${COMMERCIAL_BAGGAGE_T} t de itens capturados. Use um Cargueiro Destacado.`);
     const fare = commercialFare(t, to);
     if (a.cash < fare) return no('Caixa insuficiente para as passagens.');
     a.cash -= fare;
@@ -619,8 +638,12 @@ export function sendTeam(s: GameState, a: Agency, teamId: string, to: string, mo
     t.freighter = f;
     note(s, a, `${f.name} destacado da Frota para levar a ${t.name}.`, 'info');
   }
+  if (t.freighter && unitsWeight(t.units) + spoilsWeight(t) > def(t.freighter.itemId).weight + 1e-6)
+    return no('O Cargueiro Destacado não comporta a Equipe e os itens.');
   const hours = teamFlightHours(a, t, to, mode);
   t.travel = { from: t.location, to, depart: s.time, arrive: s.time + hours, mode };
+  // Depois de sair do lugar, o Receptador já não aceita.
+  for (const l of t.spoils) l.fresh = false;
   return ok(`${t.name} a caminho de ${s.countries[to].name}.`);
 }
 

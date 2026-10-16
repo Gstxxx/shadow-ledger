@@ -333,9 +333,11 @@ function TeamsTab() {
                     Capturado: {l.qty}× {ITEMS[l.itemId].name}
                   </span>
                   <span className="row-actions">
-                    <button className="btn sm" onClick={() => act((gs, ag) => A.fenceSpoils(gs, ag, t.id, l.lid), 'sell')}>
-                      Receptador {money(A.fenceValue(l))}
-                    </button>
+                    {l.fresh && !t.travel && (
+                      <button className="btn sm" onClick={() => act((gs, ag) => A.fenceSpoils(gs, ag, t.id, l.lid), 'sell')}>
+                        Receptador {money(A.fenceValue(l))}
+                      </button>
+                    )}
                   </span>
                 </div>
               ))}
@@ -344,6 +346,11 @@ function TeamsTab() {
                   {t.spoils.length > 0 && stationIn(a, t.location) && (
                     <button className="btn sm" onClick={() => act((gs, ag) => A.stashSpoils(gs, ag, t.id))}>
                       Guardar no Cofre
+                    </button>
+                  )}
+                  {t.spoils.length > 0 && directorAt(a, t.location) && (
+                    <button className="btn sm" onClick={() => act((gs, ag) => A.handSpoils(gs, ag, t.id))}>
+                      Entregar ao Diretor
                     </button>
                   )}
                   {dest && (

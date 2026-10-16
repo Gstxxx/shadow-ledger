@@ -30,7 +30,7 @@ import {
   stationIn,
 } from './state';
 import type { Agency, CombatSetupData, ForceSource, GameState, Threat, ThreatKind } from './types';
-import { healUnit, isPersonnel, recoverDay, upkeepOf } from './units';
+import { isPersonnel, recoverDay, upkeepOf } from './units';
 
 /** Hours for Exposição to fall to ~37%. */
 export const EXPOSURE_DECAY_H = 24 * 6;
@@ -91,6 +91,7 @@ function tickAgency(s: GameState, a: Agency, dt: number) {
       t.location = t.travel.to;
       t.travel = undefined;
       notify(s, a, 'team', `${t.name} chegou`, `A Equipe está em ${s.countries[t.location].name}, pronta para agir.`, 'info', t.location);
+      if (t.spoils.length) carryingArrival(s, a, t);
     }
   }
   const d = a.director;
@@ -104,6 +105,25 @@ function tickAgency(s: GameState, a: Agency, dt: number) {
   for (const t of [...a.threats]) {
     if (s.time >= t.strikesAt && !isBlocked(s)) strike(s, a, t);
   }
+}
+
+/** Equipe que chega carregando itens capturados chama atenção e pode ser interceptada. */
+function carryingArrival(s: GameState, a: Agency, t: Agency['teams'][number]) {
+  const c = s.countries[t.location];
+  const tons = t.spoils.reduce((x, l) => x + ITEMS[l.itemId].weight * l.qty, 0);
+  const st = standing(a, t.location);
+  st.exposure = Math.min(100, st.exposure + 5 + tons * 4);
+  const p = Math.min(0.5, 0.12 + st.exposure / 250);
+  if (!chance(s, p) || !t.units.length || isBlocked(s)) return;
+  beginCombat(s, a, {
+    type: 'urban',
+    reason: { kind: 'intercept', countryId: t.location, teamId: t.id },
+    title: `Interceptação da ${t.name} em ${c.name}`,
+    enemy: buildForce(s, 'police', 6 + c.level * 3, 'urban'),
+    sources: [{ kind: 'team', teamId: t.id }],
+    playerDefends: true,
+    directorPresent: false,
+  });
 }
 
 // ── Chegada da Frota ────────────────────────────────────────
@@ -188,16 +208,8 @@ function dailyAgency(s: GameState, a: Agency) {
   for (const st of Object.values(a.standing)) st.reputation += -st.reputation * 0.008; // slow drift back to neutral
   intelCountries(a).forEach((id) => seePrices(s, a, id));
 
-  for (const u of [...a.fleet, ...a.escort, ...a.teams.flatMap((t) => t.units)]) {
-    healUnit(u);
-    recoverDay(u, false);
-  }
-  for (const st of a.stations) {
-    for (const u of st.units) {
-      healUnit(u);
-      recoverDay(u, true);
-    }
-  }
+  for (const u of [...a.fleet, ...a.escort, ...a.teams.flatMap((t) => t.units)]) recoverDay(u, false);
+  for (const st of a.stations) for (const u of st.units) recoverDay(u, true);
   rollThreats(s, a);
 }
 

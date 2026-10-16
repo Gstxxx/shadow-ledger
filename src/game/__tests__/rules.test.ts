@@ -59,6 +59,7 @@ describe('Cofre e Receptador', () => {
     const t = a.teams[0];
     addLot(t.spoils, lotId, 'docs', 1, 450_000);
     addLot(t.spoils, lotId, 'intel', 1, 150_000);
+    t.spoils[0].fresh = true;
     const cash = a.cash;
     expect(fenceSpoils(s, a, t.id, t.spoils[0].lid).ok).toBe(true);
     expect(a.cash).toBeGreaterThan(cash);

@@ -290,7 +290,10 @@ export function resolveCombat(s: GameState, c: CombatState) {
         } else if (r.op === 'tech') {
           const itemId = stealByLevel(cty.level);
           const paid = Math.round(ITEMS[itemId].price * 0.5);
-          if (team) addLot(team.spoils, lotId, itemId, 1, paid);
+          if (team) {
+            addLot(team.spoils, lotId, itemId, 1, paid);
+            for (const l of team.spoils) if (l.itemId === itemId) l.fresh = true;
+          }
           else addCargo(a, itemId, 1, paid);
           notify(
             s,
@@ -298,7 +301,7 @@ export function resolveCombat(s: GameState, c: CombatState) {
             'combat',
             'Roubo de tecnologia concluído',
             team
-              ? `${team.name} capturou ${ITEMS[itemId].name} em ${cty.name}. Venda ao Receptador ou leve a um Cofre.${casualty}`
+              ? `${team.name} capturou ${ITEMS[itemId].name} em ${cty.name}. Venda agora ao Receptador ou leve a um Cofre ou ao Diretor.${casualty}`
               : `${ITEMS[itemId].name} capturado em ${cty.name} e embarcado na Frota.${casualty}`,
             'good',
             r.countryId,
@@ -358,6 +361,16 @@ export function resolveCombat(s: GameState, c: CombatState) {
       } else if (st?.interdicted) {
         st.interdicted.fine = Math.round(st.interdicted.fine * 1.25);
         notify(s, a, 'station', 'Recurso negado', `A multa em ${cty.name} subiu para ${money(st.interdicted.fine)}.`, 'bad', r.countryId);
+      }
+      break;
+    }
+    case 'intercept': {
+      const team = a.teams.find((t) => t.id === r.teamId);
+      if (ok) {
+        notify(s, a, 'team', 'Interceptação evitada', `${team?.name ?? 'A Equipe'} passou pela polícia de ${cty.name} com a carga.${casualty}`, 'good', r.countryId);
+      } else if (team) {
+        team.spoils = [];
+        notify(s, a, 'team', 'Itens apreendidos', `A polícia de ${cty.name} apreendeu o que a ${team.name} carregava.${casualty}`, 'bad', r.countryId);
       }
       break;
     }

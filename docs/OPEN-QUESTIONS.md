@@ -4,7 +4,7 @@ Decisões que o código precisou tomar sem uma resposta no `CONTEXT.md` ou nos A
 
 ## Combate e Unidades
 
-- **Unidades ainda morrem?** O glossário define **Ferida** e **Danificada** para quem perde um duelo. Implementei: cair em Combate sempre vira Ferida (Pessoal, 10 dias; 2× mais rápido numa Estação) ou Danificada (máquina, conserto de 15% do preço numa Estação Escritório+). Unidades só se perdem quando um **Agente de Influência** inimigo as converte, quando uma Célula é destruída ou rebaixada sem espaço, ou por deserção. (`units.ts: knockOut`, `combat.ts: applyCasualties`)
+- **Unidades ainda morrem?** Cair em Combate vira Ferida (Pessoal, 10 dias; 2× mais rápido numa Estação) ou Danificada (máquina, conserto de 15% do preço numa Estação Escritório+). Quem termina o Combate de pé volta com força total (não há cura automática). Unidades só se perdem quando um **Agente de Influência** inimigo as converte, quando uma Célula é destruída ou rebaixada sem espaço, ou por deserção. (`units.ts: knockOut`, `combat.ts: applyCasualties`)
 - **Combate Automático escolhe a Tática** com maior Prévia (exceto Negociar, que custa dinheiro). (`combatFlow.ts: beginCombat`)
 - **Empate favorece quem defende**: segurar a linha até o turno 10 conta como vitória na defesa e derrota no ataque. (`combat.ts: succeeded`)
 - **Recurso** de Estação Interditada é um Combate Jurídico com o Diretor presente, mas perder nunca leva à prisão do Diretor; só aumenta a multa em 25%. (`actions.ts: appeal`)
@@ -14,12 +14,10 @@ Decisões que o código precisou tomar sem uma resposta no `CONTEXT.md` ou nos A
 - **Detido**: soltura automática em 6–14 dias ou fiança imediata. **Sequestrado**: só sai com resgate pago ou resgate armado por uma Equipe; não há soltura automática. (`combatFlow.ts: captureDirector`)
 - **Quem prende**: batida, processo e ataque militar são do Estado (Detido); ataque criminoso e o grupo hostil são crime (Sequestrado).
 
-## Equipes, Cofre e Receptador
+## Equipes
 
-- **Receptador "na hora"**: a Equipe pode vender ao Receptador a qualquer momento enquanto carrega o item, não só no instante da captura. (`actions.ts: fenceSpoils`)
-- **Reencontro com o Diretor**: ao reintegrar a Equipe à Escolta, o que ela carrega vira Carga do Diretor. (`actions.ts: mergeTeam`)
 - **Equipe dizimada com Cargueiro Destacado**: o cargueiro volta à Frota na hora. (`combatFlow.ts`, fim de `resolveCombat`)
-- **Capacidade do Cofre** por Nível de Estação: 1, 3, 8, 20, 50 t. Receptador paga 45% do preço-base. (`data/rules.ts: VAULT_CAPACITY, FENCE_RATE`)
+- **Interceptação de Equipe carregando itens**: ao chegar num país, Exposição +5 (+4 por tonelada) e chance de 12% + Exposição/250 (máx. 50%) de Combate Urbano contra a polícia; perder = itens apreendidos. (`sim.ts: carryingArrival`)
 
 ## Economia e tempo
 

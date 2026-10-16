@@ -354,7 +354,8 @@ export function applyCasualties(c: CombatState, units: Unit[]): { lost: Unit[]; 
     }
     const after = alive.get(u.uid);
     if (after) {
-      u.hp = after.hp;
+      // Quem termina de pé volta inteiro: o dano só dura o Combate (Ferida/Danificada é para quem cai).
+      u.hp = { ...def(u.itemId).str };
       u.xp = after.xp;
       kept.push(u);
     } else if (c.downed.includes(u.uid)) {

@@ -185,4 +185,7 @@ export const OBJECTIVE_LABEL: Record<ObjectiveKind, string> = {
 export const VAULT_CAPACITY: Record<StationLevel, number> = { 1: 1, 2: 3, 3: 8, 4: 20, 5: 50 };
 
 /** Receptador: fração do preço-base paga na hora por um item capturado. */
-export const FENCE_RATE = 0.45;
+export const FENCE_RATE = 0.6;
+
+/** Bagagem de itens capturados que uma Equipe leva num Voo Comercial (t). */
+export const COMMERCIAL_BAGGAGE_T = 0.5;
