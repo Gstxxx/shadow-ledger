@@ -11,6 +11,7 @@ import { audio } from '../../audio/engine';
 import { useT } from '../../i18n';
 import { combatLabel, itemName, tacticBlurb, tacticName } from '../../i18n/lookup';
 import { Portrait } from './Portrait';
+import { RedactedTitle, RollingNumber, useCombatFx } from '../combat-fx';
 
 export function CombatOverlay() {
   const s = useGame();
@@ -132,11 +133,6 @@ function PendingView() {
 
 // ── Grade ───────────────────────────────────────────────────
 
-interface Ghost {
-  ref: CombatUnitRef;
-  kind: 'down' | 'convert';
-}
-
 function LiveView() {
   const s = useGame();
   const c = s.combat!;
@@ -145,8 +141,8 @@ function LiveView() {
   const [running, setRunning] = useState(c.reserve.length === 0 && c.units.some((u) => u.side === 'p'));
   const [fast, setFast] = useState(false);
   const [sel, setSel] = useState<string | null>(null);
-  const [ghosts, setGhosts] = useState<Ghost[]>([]);
-  const prevUnits = useRef<CombatUnitRef[]>(c.units.map((u) => ({ ...u })));
+  const grid = useRef<HTMLDivElement>(null);
+  const fx = useCombatFx({ grid, combat: c, speed: fast ? 2 : 1 });
   const manual = c.turn === 0 && c.reserve.length > 0;
 
   const step = () => {
@@ -158,9 +154,6 @@ function LiveView() {
     });
     const now = useGameStore.getState().game?.combat;
     if (!now) return;
-    const gone = prevUnits.current.filter((p) => !now.units.some((u) => u.key === p.key));
-    setGhosts(gone.map((ref) => ({ ref, kind: fx.some((f) => f.kind === 'convert' && f.key === ref.key) ? 'convert' : 'down' })));
-    prevUnits.current = now.units.map((u) => ({ ...u }));
     if (fx.some((f) => f.kind === 'down')) audio.sfx('kill');
     else if (fx.some((f) => f.kind === 'hit')) audio.sfx('hit');
     if (now.result) {
@@ -171,7 +164,7 @@ function LiveView() {
 
   useEffect(() => {
     if (!running || c.result) return;
-    const id = setInterval(step, fast ? 260 : 680);
+    const id = setInterval(step, fast ? 450 : 900);
     return () => clearInterval(id);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [running, fast, c.result]);
@@ -183,14 +176,12 @@ function LiveView() {
       mutate((g) => {
         unplace(g.combat!, occupant.key);
       });
-      prevUnits.current = useGameStore.getState().game!.combat!.units.map((u) => ({ ...u }));
       return;
     }
     if (!sel) return;
     mutate((g) => {
       place(g.combat!, sel, row, col);
     });
-    prevUnits.current = useGameStore.getState().game!.combat!.units.map((u) => ({ ...u }));
     audio.sfx('click');
     setSel(null);
   };
@@ -206,13 +197,13 @@ function LiveView() {
   };
 
   const skip = () => {
+    fx.skip();
     mutate((g) => {
       const cc = g.combat!;
       if (cc.turn === 0 && cc.reserve.length && !cc.units.some((u) => u.side === 'p')) autoDeploy(cc);
       let guard = 0;
       while (!cc.result && guard++ < 50) stepCombat(g, cc);
     });
-    setGhosts([]);
     const now = useGameStore.getState().game?.combat;
     if (now?.result) audio.sfx(succeeded(now) ? 'win' : 'lose');
     setRunning(false);
@@ -231,14 +222,16 @@ function LiveView() {
       <div className="combat-card wide">
         <header className="cb-head">
           <span className="chip type">{combatLabel(c.type)}</span>
-          <h2>{c.title}</h2>
+          <h2>
+            <RedactedTitle>{c.title}</RedactedTitle>
+          </h2>
           <span className="mono hint-sm">
-            {tacticName(c.tactic)} · {t('game.combat.turn', { turn: c.turn, max: c.maxTurns })}
+            {tacticName(c.tactic)} · <TurnLabel turn={c.turn} max={c.maxTurns} />
           </span>
         </header>
 
         <div className="grid-wrap">
-          <div className="grid" style={{ gridTemplateColumns: `repeat(${c.cols}, 1fr)`, gridTemplateRows: `repeat(${c.rows}, 1fr)` }}>
+          <div ref={grid} className="grid" style={{ gridTemplateColumns: `repeat(${c.cols}, 1fr)`, gridTemplateRows: `repeat(${c.rows}, 1fr)` }}>
             {cells.map(({ row, col }) => {
               const deployable = c.turn === 0 && !c.result && col < c.deployCols;
               const target = !!sel && canPlace(c, row, col);
@@ -252,11 +245,8 @@ function LiveView() {
                 />
               );
             })}
-            {ghosts.map((g) => (
-              <Token key={`ghost-${g.ref.key}-${c.turn}`} r={g.ref} c={c} ghost={g.kind} />
-            ))}
             {c.units.map((u) => (
-              <Token key={u.key} r={u} c={c} hit={c.fx.some((f) => f.kind === 'hit' && f.key === u.key)} />
+              <Token key={u.key} r={u} c={c} />
             ))}
           </div>
         </div>
@@ -329,7 +319,20 @@ function LiveView() {
   );
 }
 
-function Token({ r, c, hit, ghost }: { r: CombatUnitRef; c: CombatState; hit?: boolean; ghost?: 'down' | 'convert' }) {
+/** "turno {turn}/{max}" traduzido, com o número de turno rolando (combat-fx). */
+function TurnLabel({ turn, max }: { turn: number; max: number }) {
+  const { t } = useT();
+  const [pre, post] = t('game.combat.turn', { turn: '', max }).split('');
+  return (
+    <>
+      {pre}
+      <RollingNumber value={turn} />
+      {post}
+    </>
+  );
+}
+
+function Token({ r, c }: { r: CombatUnitRef; c: CombatState }) {
   const { t } = useT();
   const u: Unit = r.unit;
   const fort = u.itemId === FORT_ID;
@@ -337,7 +340,9 @@ function Token({ r, c, hit, ghost }: { r: CombatUnitRef; c: CombatState; hit?: b
   const cur = strOf(u, c.type);
   return (
     <div
-      className={`token side-${r.side}${hit ? ' hit' : ''}${ghost ? ` ghost ${ghost}` : ''}`}
+      className={`token side-${r.side}`}
+      data-fx-key={r.key}
+      data-fx-side={r.side}
       style={{
         left: `${(r.col / c.cols) * 100}%`,
         top: `${(r.row / c.rows) * 100}%`,
