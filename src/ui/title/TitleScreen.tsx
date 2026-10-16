@@ -90,7 +90,7 @@ export function TitleScreen({ intro }: { intro: boolean }) {
         <p className="tagline">
           {'Armas, informação e mercenários. Ninguém assina nada.'.split(' ').map((w, i) => (
             <span key={i} className="w">
-              {w}{' '}
+              {w}
             </span>
           ))}
         </p>

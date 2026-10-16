@@ -175,7 +175,7 @@ export const PRESETS: PresetDef[] = [
 export const DIFFICULTY_LABEL = ['', 'Recruta', 'Operador', 'Diretor'];
 
 export const OBJECTIVE_LABEL: Record<ObjectiveKind, string> = {
-  profit: 'Lucro em N dias',
+  profit: 'Lucro no prazo',
   quick: 'Lucro rápido',
   destroy: 'Eliminar um grupo',
   rescue: 'Resgatar um refém',

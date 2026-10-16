@@ -10,7 +10,7 @@ import { directorAt, formatDuration, intelCountries, player, postureIn, standing
 import type { OperationKind, StationLevel } from '../../game/types';
 import { def } from '../../game/units';
 import { useGame, useGameStore } from '../../store/game';
-import { money, tons } from '../fmt';
+import { amount, money, tons } from '../fmt';
 import { Empty, ExpBar, PostureChip, RepBar, Section, Stepper } from './bits';
 import { UnitRow } from './UnitRow';
 
@@ -77,8 +77,8 @@ export function CountryPanel() {
           <div className="market">
             <div className="mk-row mk-head mono">
               <span>Item</span>
-              <span>Compra</span>
-              <span>Venda</span>
+              <span>Compra US$</span>
+              <span>Venda US$</span>
               <span>Carga</span>
             </div>
             {marketItems.map((itemId) => {
@@ -104,9 +104,9 @@ export function CountryPanel() {
                       {it.name}
                       <small>{it.wmd ? 'Arma de Destruição em Massa' : CLASS_LABEL[it.cls]}</small>
                     </span>
-                    <span className="num">{b ? money(b) : '—'}</span>
+                    <span className="num">{b ? amount(b) : '—'}</span>
                     <span className="num">
-                      {sp ? money(sp) : '—'}
+                      {sp ? amount(sp) : '—'}
                       {live && Math.abs(sat) >= 0.02 && (
                         <small className={sat < 0 ? 'neg' : 'pos'}>
                           {sat > 0 ? '+' : '−'}

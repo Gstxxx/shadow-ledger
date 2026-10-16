@@ -293,7 +293,7 @@ function rollThreats(s: GameState, a: Agency) {
     const exp = standing(a, id).exposure;
     const posture = postureIn(a, id);
     const pf = posture === 'enemy' ? 1.8 : posture === 'ally' ? 0.45 : 1;
-    const p = Math.min(0.45, (0.008 + (exp / 100) * 0.22) * pf * DIFF_THREAT[s.options.difficulty]);
+    const p = Math.min(0.45, (0.03 + (exp / 100) * 0.22) * pf * DIFF_THREAT[s.options.difficulty]);
     if (!chance(s, p)) continue;
 
     const gov = posture === 'enemy' ? 2 : posture === 'neutral' ? 1 : 0.3;
@@ -328,7 +328,7 @@ function rollThreats(s: GameState, a: Agency) {
       s,
       a,
       'threat',
-      `${THREAT_LABEL[kind]} anunciado`,
+      `Ameaça anunciada: ${THREAT_LABEL[kind]}`,
       `${c.name}: ${target === 'station' ? 'a Estação' : 'o Diretor'} será alvo em cerca de ${Math.round(lead)} h (força estimada ${strength}).`,
       'warn',
       id,

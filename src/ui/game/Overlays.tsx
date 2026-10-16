@@ -21,13 +21,13 @@ export function EventModal() {
   const ack = useGameStore((st) => st.ackEvent);
   const select = useGameStore((st) => st.select);
   const btn = useRef<HTMLButtonElement>(null);
-  const ev = s.events.find((e) => e.kind !== 'combat');
+  const ev = s.events.find((e) => e.kind !== 'engage');
   useEffect(() => {
     btn.current?.focus();
   }, [ev?.id]);
   if (!ev || s.pendingCombat || s.combat) return null;
   const Icon = TONE_ICON[ev.tone];
-  const more = s.events.filter((e) => e.kind !== 'combat').length - 1;
+  const more = s.events.filter((e) => e.kind !== 'engage').length - 1;
   return (
     <div className="scrim">
       <div className={`event-card tone-${ev.tone}`} role="dialog" aria-modal aria-labelledby="ev-title" key={ev.id}>

@@ -13,3 +13,6 @@ export const moneyFull = (n: number) => `US$ ${Math.round(n).toLocaleString('pt-
 export const pct = (v: number) => `${Math.round(v * 100)}%`;
 
 export const tons = (t: number) => `${t.toFixed(t < 10 ? 1 : 0).replace('.', ',')} t`;
+
+/** Compact amount without the currency prefix, for tables headed in US$. */
+export const amount = (n: number) => money(n).replace('US$ ', '');

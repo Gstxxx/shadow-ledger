@@ -150,6 +150,7 @@ export const useGameStore = create<GameStore>()((set, get) => ({
     const g = get().game;
     if (!g) return;
     fn(g);
+    if (!g.combat && !g.pendingCombat) writeSave(g);
     set({ rev: get().rev + 1 });
   },
 
@@ -179,6 +180,7 @@ export const useGameStore = create<GameStore>()((set, get) => ({
     const g = get().game;
     if (!g) return;
     g.events = id ? g.events.filter((e) => e.id !== id) : g.events.slice(1);
+    writeSave(g);
     set({ rev: get().rev + 1 });
   },
 
@@ -201,3 +203,14 @@ export function useGame(): GameState {
 }
 
 export const usePlayer = (): Agency => player(useGame());
+
+// Dev-only handle for debugging in the browser console.
+if (import.meta.env.DEV) {
+  const w = globalThis as unknown as { __sl: typeof useGameStore; __slAdvance: (h: number) => number };
+  w.__sl = useGameStore;
+  w.__slAdvance = (h) => {
+    let done = 0;
+    useGameStore.getState().mutate((g) => (done = advance(g, h)));
+    return done;
+  };
+}

@@ -9,7 +9,10 @@ import { ConnectedMainMenu } from './ui/menu';
 import './ui/title/title.css';
 
 export default function App() {
-  const screen = useGameStore((s) => s.screen);
+  const rawScreen = useGameStore((s) => s.screen);
+  const hasGame = useGameStore((s) => !!s.game);
+  // Never render the game without a game loaded (e.g. after a hot reload).
+  const screen = rawScreen === 'game' && !hasGame ? 'title' : rawScreen;
   const inCombat = useGameStore((s) => !!s.game?.combat || !!s.game?.pendingCombat);
   const music = useSettings((s) => s.music);
   const [muted, setMuted] = useState(false);

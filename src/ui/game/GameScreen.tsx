@@ -46,6 +46,12 @@ export function GameScreen() {
   const [menu, setMenu] = useState(false);
   const [logOpen, setLogOpen] = useState(false);
   const a = player(s);
+  const selected = useGameStore((st) => st.selected);
+
+  // On phones the country drawer opens when a country is picked on the map.
+  useEffect(() => {
+    if (selected && window.matchMedia('(max-width: 900px), (max-height: 520px)').matches) setDrawer('left');
+  }, [selected]);
 
   // Map tension follows the worst announced Ameaça and the local Exposição.
   const soon = a.threats.reduce((m, t) => Math.max(m, 1 - Math.min(1, (t.strikesAt - s.time) / 72)), 0);

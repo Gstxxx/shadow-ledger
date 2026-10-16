@@ -210,7 +210,7 @@ export interface LogEntry {
 export interface GameEvent {
   id: string;
   at: number;
-  kind: 'arrival' | 'threat' | 'combat' | 'contract' | 'maintenance' | 'director' | 'objective' | 'team' | 'intel' | 'station';
+  kind: 'arrival' | 'threat' | 'engage' | 'combat' | 'contract' | 'maintenance' | 'director' | 'objective' | 'team' | 'intel' | 'station';
   title: string;
   body: string;
   tone: Tone;

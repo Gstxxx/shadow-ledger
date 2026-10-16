@@ -134,9 +134,6 @@
 .logo-bar.two span {
   color: var(--paper);
 }
-.logo-bar.two span::first-letter {
-  color: var(--amber);
-}
 .tagline {
   margin: clamp(14px, 3vh, 28px) 0 clamp(18px, 4vh, 40px);
   font-size: clamp(13px, 1.6vw, 17px);
@@ -146,6 +143,7 @@
 }
 .tagline .w {
   display: inline-block;
+  margin-right: 0.3em;
 }
 .menu {
   display: flex;

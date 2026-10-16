@@ -17,9 +17,9 @@ const DIFF_BLURB: Record<Difficulty, string> = {
 };
 
 function presetMeta(p: PresetDef) {
-  const goal =
-    p.objective === 'quick' ? `meta ${money(p.target ?? 0)}` : p.days ? `${p.days} dias` : 'sem prazo';
-  return `${OBJECTIVE_LABEL[p.objective]} · ${goal} · ${money(p.cash)}`;
+  const label = p.objective === 'profit' ? 'Lucro' : OBJECTIVE_LABEL[p.objective];
+  const goal = p.objective === 'quick' ? `meta ${money(p.target ?? 0)}` : p.days ? `${p.days} dias` : 'sem prazo';
+  return `${label} · ${goal} · ${money(p.cash)}`;
 }
 
 /** Nova partida: Sandbox a partir de um Preset ou personalizada. */

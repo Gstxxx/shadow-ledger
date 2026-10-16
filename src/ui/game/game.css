@@ -37,7 +37,8 @@
   min-width: 0;
   overflow: hidden;
 }
-.only-narrow {
+.only-narrow,
+.only-mid {
   display: none !important;
 }
 .tb-spacer {
@@ -470,7 +471,7 @@
 }
 .mk-row {
   display: grid;
-  grid-template-columns: 1fr 74px 82px 34px;
+  grid-template-columns: 1fr 62px 72px 30px;
   gap: 6px;
   align-items: center;
   width: 100%;
@@ -1279,15 +1280,45 @@ button.unit-row:hover {
 }
 
 /* ── Responsive (ADR 0003: 640×360 em paisagem) ─────── */
-@media (max-width: 1180px) {
-  :root {
-    --side: 330px;
-  }
+@media (max-width: 1360px) {
   .hide-sm {
     display: none;
   }
 }
-@media (max-width: 980px), (max-height: 520px) {
+/* Medium: the agency panel becomes a drawer, the country panel stays. */
+@media (max-width: 1280px) {
+  .only-mid {
+    display: inline-flex !important;
+  }
+  .game-body {
+    grid-template-columns: var(--side) 1fr;
+  }
+  .side.right {
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    right: 0;
+    z-index: 20;
+    width: min(380px, 88vw);
+    box-shadow: 0 0 60px rgba(0, 0, 0, 0.7);
+    transform: translateX(104%);
+    transition: transform 0.3s var(--ease-land);
+  }
+  .side.right.open {
+    transform: none;
+  }
+  .side.right .tabs {
+    padding-right: 44px;
+  }
+  .side.right .drawer-close {
+    display: inline-flex !important;
+    position: absolute;
+    top: 6px;
+    right: 6px;
+    z-index: 2;
+  }
+}
+@media (max-width: 900px), (max-height: 520px) {
   :root {
     --top: 44px;
   }
@@ -1310,10 +1341,6 @@ button.unit-row:hover {
   .side.left {
     left: 0;
   }
-  .side.right {
-    right: 0;
-    transform: translateX(104%);
-  }
   .side.open {
     transform: none;
   }
@@ -1322,6 +1349,10 @@ button.unit-row:hover {
     top: 6px;
     right: 6px;
     z-index: 2;
+  }
+  .side .tabs,
+  .side .cty-head {
+    padding-right: 48px;
   }
   .topbar {
     gap: 10px;

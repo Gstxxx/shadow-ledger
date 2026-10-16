@@ -82,7 +82,7 @@ export function TopBar({ onMenu, onLeft, onRight }: { onMenu: () => void; onLeft
           </button>
         ))}
       </div>
-      <button className="btn icon ghost only-narrow" aria-label="Agência" onClick={onRight}>
+      <button className="btn icon ghost only-mid" aria-label="Agência" onClick={onRight}>
         <PanelRight size={18} />
       </button>
       <button className="btn icon ghost" aria-label="Menu" onClick={onMenu}>

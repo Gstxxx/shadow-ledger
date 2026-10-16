@@ -89,7 +89,7 @@ export function negotiateCost(s: GameState, data: CombatSetupData): number {
 export function beginCombat(s: GameState, a: Agency, data: CombatSetupData) {
   if (data.directorPresent && a.isPlayer) {
     s.pendingCombat = { agencyId: a.id, setup: data, preview: previewAll(s, a, data) };
-    notify(s, a, 'combat', data.title, 'Escolha a Tática. A Prévia mostra a chance estimada de cada uma.', 'warn', data.reason.countryId);
+    notify(s, a, 'engage', data.title, 'Escolha a Tática. A Prévia mostra a chance estimada de cada uma.', 'warn', data.reason.countryId);
     return;
   }
   const preview = previewAll(s, a, data, 24);
@@ -117,7 +117,7 @@ export function chooseTactic(s: GameState, tactic: Tactic, manual: boolean): boo
   if (!manual) autoDeploy(c);
   s.pendingCombat = undefined;
   s.combat = c;
-  s.events = s.events.filter((e) => e.kind !== 'combat');
+  s.events = s.events.filter((e) => e.kind !== 'engage');
   return true;
 }
 
@@ -126,7 +126,7 @@ export function abortPending(s: GameState): boolean {
   const pend = s.pendingCombat;
   if (!pend || pend.setup.reason.kind === 'threat' || pend.setup.reason.kind === 'group') return false;
   s.pendingCombat = undefined;
-  s.events = s.events.filter((e) => e.kind !== 'combat');
+  s.events = s.events.filter((e) => e.kind !== 'engage');
   note(s, player(s), `${pend.setup.title}: abortado antes do contato.`, 'info', pend.setup.reason.countryId);
   return true;
 }
@@ -157,7 +157,7 @@ export function captureDirector(s: GameState, a: Agency, byState: boolean, count
     a.director.status = 'detained';
     a.director.releaseAt = s.time + randInt(s, 6, 14) * 24;
     a.director.price = Math.round(150_000 * c.level * (1 + s.options.difficulty * 0.3));
-    notify(s, a, 'director', 'Diretor Detido', `O Estado de ${c.name} prendeu o Diretor. Pague a fiança ou espere a soltura.`, 'bad', countryId);
+    notify(s, a, 'director', 'Diretor Detido', `As autoridades de ${c.name} prenderam o Diretor. Pague a fiança ou espere a soltura.`, 'bad', countryId);
   } else {
     a.director.status = 'kidnapped';
     a.director.releaseAt = undefined;
@@ -261,7 +261,7 @@ export function resolveCombat(s: GameState, c: CombatState) {
       a.threats = a.threats.filter((t) => t.id !== r.threatId);
       const byState = THREAT_BY_STATE[r.threatKind];
       if (ok) {
-        notify(s, a, 'combat', `${THREAT_LABEL[r.threatKind]} repelido`, `A agência segurou a posição em ${cty.name}.${casualty}`, 'good', r.countryId);
+        notify(s, a, 'combat', `${THREAT_LABEL[r.threatKind]}: defesa bem-sucedida`, `A agência segurou a posição em ${cty.name}.${casualty}`, 'good', r.countryId);
         addReputation(a, r.countryId, byState ? -4 : 3);
         addExposure(a, r.countryId, 6);
       } else {

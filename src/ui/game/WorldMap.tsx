@@ -36,7 +36,7 @@ function shapes(): Shape[] {
   const fc = feature(topo, topo.objects.countries) as unknown as { features: { id: string; geometry: GeoPermissibleObjects }[] };
   shapesCache = fc.features
     .filter((f) => f.id !== '010') // Antarctica
-    .map((f) => ({ id: String(f.id), d: pathGen(f as unknown as GeoPermissibleObjects) ?? '' }));
+    .map((f, i) => ({ id: f.id === undefined ? `x${i}` : String(f.id), d: pathGen(f as unknown as GeoPermissibleObjects) ?? '' }));
   return shapesCache;
 }
 const SPHERE = pathGen({ type: 'Sphere' }) ?? '';
@@ -216,7 +216,7 @@ export function WorldMap({ mode }: { mode: MapMode }) {
         ref={svg}
         className="map"
         viewBox={`0 0 ${W} ${H}`}
-        preserveAspectRatio="xMidYMid slice"
+        preserveAspectRatio="xMidYMid meet"
         onWheel={onWheel}
         onPointerDown={onPointerDown}
         onPointerMove={onPointerMove}
