@@ -1,5 +1,6 @@
 import { create } from 'zustand';
 import type { Result } from '../game/actions';
+import type { Msg } from '../i18n/lookup';
 import { advance, isBlocked } from '../game/sim';
 import { loadSave } from '../game/save';
 import { newGame, player } from '../game/state';
@@ -19,6 +20,8 @@ export interface Toast {
   id: number;
   text: string;
   tone: 'good' | 'bad' | 'info';
+  /** Mensagem traduzível; a UI prefere ela ao texto. */
+  msg?: Msg;
 }
 
 interface GameStore {
@@ -45,7 +48,7 @@ interface GameStore {
   togglePause(): void;
   select(id: string | null): void;
   ackEvent(id?: string): void;
-  toast(text: string, tone?: Toast['tone']): void;
+  toast(text: string, tone?: Toast['tone'], msg?: Msg): void;
   save(): void;
 }
 
@@ -147,11 +150,11 @@ export const useGameStore = create<GameStore>()((set, get) => ({
     const r = fn(g, player(g));
     if (r.ok) {
       if (sfx) audio.sfx(sfx);
-      if (r.msg) get().toast(r.msg, 'good');
+      if (r.msg) get().toast(r.msg, 'good', r.m);
       if (!g.over) writeSave(g);
     } else {
       audio.sfx('close');
-      get().toast(r.msg, 'bad');
+      get().toast(r.msg, 'bad', r.m);
     }
     set({ rev: get().rev + 1 });
     return r;
@@ -205,9 +208,9 @@ export const useGameStore = create<GameStore>()((set, get) => ({
     set({ rev: get().rev + 1 });
   },
 
-  toast: (text, tone = 'info') => {
+  toast: (text, tone = 'info', msg) => {
     const id = ++toastId;
-    set({ toasts: [...get().toasts.slice(-3), { id, text, tone }] });
+    set({ toasts: [...get().toasts.slice(-3), { id, text, tone, msg }] });
     setTimeout(() => set({ toasts: get().toasts.filter((t) => t.id !== id) }), 3800);
   },
 
