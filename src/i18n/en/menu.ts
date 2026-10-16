@@ -47,7 +47,7 @@ export default {
   'menu.new.startHere': 'Start here',
   'menu.new.tutorialNote': 'Tutorial with the Analyst: Trade, Stations and Teams, one system at a time.',
   'menu.new.sandbox.title': 'Custom Sandbox',
-  'menu.new.sandbox.brief': 'Build the world your way: starting region, capital, Objective and deadline. Rival Agencies follow the Difficulty.',
+  'menu.new.sandbox.brief': 'Build the world your way: starting region, capital, Objective, deadline and how many Rival Agencies.',
   'menu.new.sandbox.outcome': 'You set the Objective',
   'menu.new.outcome.profit': 'Finish {days, plural, one {# day} other {# days}} in profit',
   'menu.new.outcome.profitOpen': 'End in profit',

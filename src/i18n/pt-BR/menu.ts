@@ -47,7 +47,7 @@ export default {
   'menu.new.startHere': 'Comece aqui',
   'menu.new.tutorialNote': 'Tutorial com a Analista: Comércio, Estações e Equipes, um sistema por vez.',
   'menu.new.sandbox.title': 'Sandbox personalizado',
-  'menu.new.sandbox.brief': 'Monte o mundo do seu jeito: região inicial, capital, Objetivo e prazo. As Agências Rivais seguem a Dificuldade.',
+  'menu.new.sandbox.brief': 'Monte o mundo do seu jeito: região inicial, capital, Objetivo, prazo e quantas Agências Rivais.',
   'menu.new.sandbox.outcome': 'Você define o Objetivo',
   'menu.new.outcome.profit': 'Termine {days, plural, one {# dia} other {# dias}} no lucro',
   'menu.new.outcome.profitOpen': 'Feche no lucro',
