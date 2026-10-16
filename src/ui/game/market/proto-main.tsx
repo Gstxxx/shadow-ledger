@@ -19,7 +19,9 @@ import { GameScreen } from '../GameScreen';
 // `?full` monta a tela de jogo inteira, com os painéis novos ligados.
 const FULL = new URLSearchParams(location.search).has('full');
 
-useGameStore.getState().start({ preset: PRESETS.find((p) => p.id === 'first-contract') ?? PRESETS[0], difficulty: 2, hardcore: false, seed: 7 });
+useGameStore
+  .getState()
+  .start({ preset: PRESETS.find((p) => p.id === 'first-contract') ?? PRESETS[0], difficulty: 2, hardcore: false, seed: 7 });
 useGameStore.setState({ paused: true });
 
 function Proto() {

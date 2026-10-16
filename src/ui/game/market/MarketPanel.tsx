@@ -27,7 +27,7 @@ type Fmt = I18n['fmt'];
 const signed = (fmt: Fmt, n: number) => (n > 0 ? `+${fmt.money(n)}` : fmt.money(n));
 const pctTxt = (fmt: Fmt, v: number) => `${v > 0 ? '+' : v < 0 ? '−' : ''}${fmt.pct(Math.abs(v))}`;
 /** Motivo de bloqueio do model: chave traduzida, ou texto que ainda não tem chave. */
-const blockText = (t: I18n['t'], b: BlockMsg | string) => (typeof b === 'string' ? b : t(b.key, b.params));
+const blockText = (t: I18n['t'], b: BlockMsg) => t(b.key, b.params);
 
 /**
  * Mercado de um país, redesenhado para quem joga pela primeira vez: frase-guia, segmentos por categoria,
@@ -203,20 +203,23 @@ function OppList({
             <div className="opp-body">
               <span className="opp-item">
                 {item}
-                {o.kind !== 'buy-here' && <span className="opp-tag">na sua Carga</span>}
+                {o.kind !== 'buy-here' && <span className="opp-tag">{t('game.market.opp.inCargoTag')}</span>}
               </span>
               <span className="opp-route">
-                {o.kind === 'buy-here' ? 'Compre aqui' : 'Você pagou'} <span className="num">{fmt.money(o.buyEach)}</span>
+                {o.kind === 'buy-here' ? t('game.market.opp.buyHereLabel') : t('game.market.opp.youPaid')}{' '}
+                <span className="num">{fmt.money(o.buyEach)}</span>
                 <span aria-hidden> → </span>
-                <span className="sr-only"> e </span>
-                {o.kind === 'sell-here' ? 'aqui pagam' : `${name(o.to)} paga`} <span className="num">{fmt.money(o.sellEach)}</span>
+                <span className="sr-only"> {t('game.market.opp.and')} </span>
+                {o.kind === 'sell-here' ? t('game.market.opp.herePays') : t('game.market.opp.countryPays', { country: name(o.to) })}{' '}
+                <span className="num">{fmt.money(o.sellEach)}</span>
               </span>
               <span className="opp-meta mono">
                 <span className="pos num">{t('game.market.plPerUnit', { pl: pctTxt(fmt, o.pct) })}</span>
                 {o.qty > 0 && (
                   <>
                     {' · '}
-                    {o.kind === 'buy-here' ? `${o.qty} cabem` : `${o.qty} un`} = <span className="pos num">{signed(fmt, o.profit)}</span>
+                    {o.kind === 'buy-here' ? t('game.market.opp.fitsN', { n: o.qty }) : t('game.market.opp.units', { n: o.qty })} ={' '}
+                    <span className="pos num">{signed(fmt, o.profit)}</span>
                   </>
                 )}
                 {o.hours > 0 && ` · ${t('game.market.opp.flight', { time: formatDuration(o.hours) })}`}
@@ -230,7 +233,12 @@ function OppList({
                   {o.kind === 'buy-here' ? t('game.market.opp.buy') : t('game.market.opp.sell')}
                 </button>
               ) : (
-                <button className="btn sm primary" data-tour="fly" disabled={travelBlocked} onClick={() => act((g, ag) => A.travel(g, ag, o.to), 'depart')}>
+                <button
+                  className="btn sm primary"
+                  data-tour="fly"
+                  disabled={travelBlocked}
+                  onClick={() => act((g, ag) => A.travel(g, ag, o.to), 'depart')}
+                >
                   {t('game.market.opp.fly')}
                 </button>
               )}
@@ -258,7 +266,12 @@ function MarketItem({ row, countryId, open, onToggle }: { row: MarketRow; countr
   const sellSide = !r.buy && r.sell > 0;
   const pctAbs = Math.round(Math.abs(r.dealPct) * 100);
   const good = r.deal === 'fair' ? null : sellSide ? r.deal === 'pricey' : r.deal === 'cheap';
-  const dealText = r.deal === 'fair' ? '≈ na média' : r.deal === 'cheap' ? `▼ ${pctAbs}% abaixo da média` : `▲ ${pctAbs}% acima da média`;
+  const dealText =
+    r.deal === 'fair'
+      ? t('game.market.deal.fair')
+      : r.deal === 'cheap'
+        ? t('game.market.deal.below', { pct: pctAbs })
+        : t('game.market.deal.above', { pct: pctAbs });
   return (
     <li className={`mkt-item${open ? ' open' : ''}${r.it.wmd ? ' wmd' : ''}${r.owned ? ' owned' : ''}`}>
       <button className="mkt-row" aria-expanded={open} onClick={onToggle}>
@@ -271,14 +284,10 @@ function MarketItem({ row, countryId, open, onToggle }: { row: MarketRow; countr
           {(r.buy > 0 || r.sell > 0) && (
             <span
               className={`mkt-deal ${good === null ? 'fair' : good ? 'good' : 'bad'}`}
-              title={
-                r.dealKnown
-                  ? 'Comparado com os preços que você conhece no mundo.'
-                  : 'Você conhece poucos mercados: a média usa também o preço de catálogo.'
-              }
+              title={r.dealKnown ? t('game.market.deal.srcKnown') : t('game.market.deal.srcCatalog')}
             >
               {dealText}
-              {!r.dealKnown && <span className="mkt-deal-src"> · poucos dados</span>}
+              {!r.dealKnown && <span className="mkt-deal-src"> · {t('game.market.deal.fewData')}</span>}
             </span>
           )}
         </span>
@@ -295,7 +304,9 @@ function MarketItem({ row, countryId, open, onToggle }: { row: MarketRow; countr
         {r.owned > 0 && (
           <span className="mkt-own">
             <span className="num">{t('game.market.owned', { n: r.owned })}</span>
-            {r.sell > 0 && <span className={`${r.plEach >= 0 ? 'pos' : 'neg'}`}>{signed(fmt, r.plEach)}/un vendendo aqui</span>}
+            {r.sell > 0 && (
+              <span className={`${r.plEach >= 0 ? 'pos' : 'neg'}`}>{t('game.market.plSellingHere', { pl: signed(fmt, r.plEach) })}</span>
+            )}
           </span>
         )}
       </button>
@@ -431,9 +442,7 @@ function TradeBox({ row, countryId }: { row: MarketRow; countryId: string }) {
           </div>
         ) : (
           <p className="mkt-why">
-            {r.sell
-              ? `Aqui pagam ${fmt.money(r.sell)} por unidade. Compre onde for mais barato e volte com Carga.`
-              : 'Ninguém aqui compra este item: venda em outro país.'}
+            {r.sell ? t('game.market.trade.noCargoHint', { price: fmt.money(r.sell) }) : t('game.market.trade.sellElsewhere')}
           </p>
         )}
       </div>
@@ -445,18 +454,18 @@ function TradeBox({ row, countryId }: { row: MarketRow; countryId: string }) {
 
 /** Onde o item está mais barato e onde pagam mais, entre os preços que o jogador conhece. */
 function PriceRange({ itemId, countryId }: { itemId: string; countryId: string }) {
-  const { fmt } = useT();
+  const { t, fmt } = useT();
   const s = useGame();
   const a = player(s);
   const select = useGameStore((st) => st.select);
   const { cheapest, best, samples } = priceRange(s, a, itemId);
-  const name = (id: string) => (id === countryId ? `${countryName(id)} (aqui)` : countryName(id));
-  if (samples < 2) return <p className="mkt-range">Você só conhece este preço aqui. Abra Estações em outros países para comparar.</p>;
+  const name = (id: string) => (id === countryId ? t('game.market.range.here', { country: countryName(id) }) : countryName(id));
+  if (samples < 2) return <p className="mkt-range">{t('game.market.range.onlyHere')}</p>;
   return (
     <div className="mkt-range">
       {cheapest && (
         <span>
-          Mais barato:{' '}
+          {t('game.market.range.cheapest')}{' '}
           <button className="linkish" onClick={() => select(cheapest.countryId)}>
             {name(cheapest.countryId)}
           </button>{' '}
@@ -465,14 +474,14 @@ function PriceRange({ itemId, countryId }: { itemId: string; countryId: string }
       )}
       {best && (
         <span>
-          Paga mais:{' '}
+          {t('game.market.range.best')}{' '}
           <button className="linkish" onClick={() => select(best.countryId)}>
             {name(best.countryId)}
           </button>{' '}
           <span className="num">{fmt.money(best.sell)}</span>
         </span>
       )}
-      <span className="mkt-why">Entre {samples} mercados que você conhece.</span>
+      <span className="mkt-why">{t('game.market.range.samples', { n: samples })}</span>
     </div>
   );
 }

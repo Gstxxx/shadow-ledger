@@ -51,7 +51,7 @@ export function UnitRow({ unit, action, selected, onClick }: { unit: Unit; actio
         </span>
         <span className="ur-sub">
           {itemName(unit.itemId, lang)}
-          {d.cls === 'cargo' ? ` · ${d.weight} t · ${d.speed} km/h` : ` · ${classLabel(d.cls, lang)}`}
+          {d.cls === 'cargo' ? ` · ${t('game.unit.cargoSpecs', { weight: d.weight, speed: d.speed ?? 0 })}` : ` · ${classLabel(d.cls, lang)}`}
         </span>
         <span className="ur-tags">
           {d.cls !== 'cargo' && <StrengthPips unit={unit} />}

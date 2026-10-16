@@ -218,7 +218,8 @@ export function UnitDossier({ uid, onClose }: { uid: string; onClose: () => void
               {u.name}
             </h2>
             <p className="ud-role">
-              {itemName(u.itemId, lang)} · {d.cls === 'cargo' ? `${d.weight} t · ${d.speed} km/h` : classLabel(d.cls, lang)}
+              {itemName(u.itemId, lang)} ·{' '}
+              {d.cls === 'cargo' ? t('game.unit.cargoSpecs', { weight: d.weight, speed: d.speed ?? 0 }) : classLabel(d.cls, lang)}
             </p>
             <p className="ud-where">
               <GameIcon

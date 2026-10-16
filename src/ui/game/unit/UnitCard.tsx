@@ -78,7 +78,9 @@ export function UnitCard({
           </span>
           <span className="uc-role">
             {name}
-            {d.cls === 'cargo' ? ` · ${d.weight} t · ${d.speed} km/h` : ` · ${classLabel(d.cls, lang)}`}
+            {d.cls === 'cargo'
+              ? ` · ${t('game.unit.cargoSpecs', { weight: d.weight, speed: d.speed ?? 0 })}`
+              : ` · ${classLabel(d.cls, lang)}`}
           </span>
           {d.cls !== 'cargo' && <StrengthBars unit={unit} />}
           {unit.traits.length > 0 && (

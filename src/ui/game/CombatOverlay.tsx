@@ -106,9 +106,12 @@ function PendingView() {
         {hopeless && (
           <div className="alert bad cb-risk" role="alert">
             <span>
-              <b>Chance quase nula ({fmt.pct(bestP)}).</b> Sua força {ourStr} contra {theirStr}. Perder custa Unidades
-              {setup.sources.some((src) => src.kind === 'escort') ? ' e pode deixar o Diretor Detido ou Sequestrado' : ''}.
-              {abortable ? ' Abortar agora não tem custo.' : ''}
+              {t(setup.sources.some((src) => src.kind === 'escort') ? 'game.combat.hopelessDirector' : 'game.combat.hopeless', {
+                pct: fmt.pct(bestP),
+                a: ourStr,
+                b: theirStr,
+                abort: abortable ? t('game.combat.abortFree') : '',
+              })}
             </span>
           </div>
         )}
@@ -120,10 +123,10 @@ function PendingView() {
           )}
           <span className="tb-spacer" />
           <button className={`btn${hopeless && armed ? ' danger' : ''}`} onClick={() => go(true)} disabled={!ours.length}>
-            {hopeless && armed ? 'Comandar mesmo assim' : 'Comandar na grade'}
+            {hopeless && armed ? t('game.combat.commandAnyway') : t('game.combat.command')}
           </button>
           <button className={`btn ${hopeless ? (armed ? 'danger' : '') : 'primary'}`} onClick={() => go(false)}>
-            {hopeless && armed ? 'Lutar mesmo assim' : t('game.combat.auto')}
+            {hopeless && armed ? t('game.combat.fightAnyway') : t('game.combat.auto')}
           </button>
         </footer>
       </div>

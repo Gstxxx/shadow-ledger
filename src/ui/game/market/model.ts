@@ -239,8 +239,8 @@ export interface Opportunity {
   qty: number;
   profit: number;
   live: boolean;
-  /** Por que não dá para fazer agora (null = dá). `string` = texto ainda sem chave de i18n. */
-  block: BlockReason | string;
+  /** Por que não dá para fazer agora (null = dá). */
+  block: BlockReason;
 }
 
 /**
@@ -276,8 +276,12 @@ export function opportunities(s: GameState, a: Agency, countryId: string, limit 
     if (margin <= 0) continue;
     const fit = maxAffordable(s, a, c, itemId);
     const w = ITEMS[itemId].weight;
-    // Sem chave de i18n ainda: textos em minúsculas, diferentes de block.notAllFits/noCash.
-    const block = fit > 0 ? null : w > freeCargo(a) + 1e-6 ? `não cabe no avião (${w} t)` : 'caixa insuficiente';
+    const block: BlockReason =
+      fit > 0
+        ? null
+        : w > freeCargo(a) + 1e-6
+          ? { key: 'game.market.opp.block.noFit', params: { w } }
+          : { key: 'game.market.opp.block.noCashShort' };
     out.push({
       kind: 'buy-here',
       itemId,

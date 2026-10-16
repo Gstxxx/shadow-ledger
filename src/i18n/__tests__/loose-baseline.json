@@ -2,8 +2,7 @@
   "App.tsx": 1,
   "art/Gallery.tsx": 61,
   "art/Logo.tsx": 6,
-  "ui/game/AgencyPanel.tsx": 1,
-  "ui/game/market/MarketPanel.tsx": 4,
+  "ui/game/market/MarketPanel.tsx": 1,
   "ui/title/NewGame.tsx": 22,
   "ui/title/Settings.tsx": 17,
   "ui/title/TitleScreen.tsx": 4

@@ -28,17 +28,17 @@ export function AgencyPanel() {
   const offers = s.contracts.filter((k) => k.status === 'offered').length;
   const cargoUnits = a.cargo.reduce((x, l) => x + l.qty, 0);
   const tabs: { id: Tab; label: string; Icon: typeof Plane; badge?: number; badgeLabel?: string; hot?: boolean }[] = [
-    { id: 'force', label: t('game.agency.tab.force'), Icon: Plane, badge: a.escort.length || undefined, badgeLabel: `${a.escort.length} na Escolta` },
-    { id: 'cargo', label: t('game.agency.tab.cargo'), Icon: Boxes, badge: cargoUnits || undefined, badgeLabel: `${cargoUnits} unidades na Carga` },
-    { id: 'stations', label: t('game.agency.tab.stations'), Icon: Building2, badge: a.stations.length || undefined, badgeLabel: `${a.stations.length} Estações` },
-    { id: 'teams', label: t('game.agency.tab.teams'), Icon: Users, badge: a.teams.length || undefined, badgeLabel: `${a.teams.length} Equipes` },
-    { id: 'contracts', label: t('game.agency.tab.contracts'), Icon: FileSignature, badge: offers || undefined, badgeLabel: `${offers} ofertas novas` },
+    { id: 'force', label: t('game.agency.tab.force'), Icon: Plane, badge: a.escort.length || undefined, badgeLabel: t('game.agency.tab.badge.force', { n: a.escort.length }) },
+    { id: 'cargo', label: t('game.agency.tab.cargo'), Icon: Boxes, badge: cargoUnits || undefined, badgeLabel: t('game.agency.tab.badge.cargo', { n: cargoUnits }) },
+    { id: 'stations', label: t('game.agency.tab.stations'), Icon: Building2, badge: a.stations.length || undefined, badgeLabel: t('game.agency.tab.badge.stations', { n: a.stations.length }) },
+    { id: 'teams', label: t('game.agency.tab.teams'), Icon: Users, badge: a.teams.length || undefined, badgeLabel: t('game.agency.tab.badge.teams', { n: a.teams.length }) },
+    { id: 'contracts', label: t('game.agency.tab.contracts'), Icon: FileSignature, badge: offers || undefined, badgeLabel: t('game.agency.tab.badge.contracts', { n: offers }) },
     {
       id: 'threats',
       label: t('game.agency.tab.threats'),
       Icon: AlertTriangle,
       badge: a.threats.length || undefined,
-      badgeLabel: `${a.threats.length} Ameaças anunciadas`,
+      badgeLabel: t('game.agency.tab.badge.threats', { n: a.threats.length }),
       hot: a.threats.length > 0,
     },
   ];
@@ -107,7 +107,7 @@ function ForceTab() {
           </span>
         </div>
       </Section>
-      <Section title={t('game.agency.fleet.title')} right={<span className="mono hint-sm">{fleetSpeed(a)} km/h</span>}>
+      <Section title={t('game.agency.fleet.title')} right={<span className="mono hint-sm">{t('game.agency.fleet.speed', { speed: fleetSpeed(a) })}</span>}>
         <FleetSpace a={a} />
         <div className="unit-list">
           {a.fleet.map((u) => (
@@ -145,8 +145,8 @@ function ForceTab() {
       >
         <p className="hint-sm sec-hint">
           {picking
-            ? 'Toque nas Unidades que vão formar a Equipe. Ela age em outro país sem o Diretor.'
-            : 'Quem viaja e luta com o Diretor. Toque numa Unidade para ver a ficha. Destacar Equipe manda parte dela agir em outro país sem você.'}
+            ? t('game.agency.escort.pickHint')
+            : t('game.agency.escort.hint')}
         </p>
         <div className="unit-list">
           {a.escort.map((u) =>
@@ -164,7 +164,7 @@ function ForceTab() {
           {!a.escort.length && <Empty>{t('game.agency.escort.empty')}</Empty>}
         </div>
       </Section>
-      <Section title="Mês">
+      <Section title={t('game.agency.month.title')}>
         <UpkeepBalance a={a} />
         {a.arrears > 0 && (
           <div className="alert bad">
