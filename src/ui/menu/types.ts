@@ -1,6 +1,6 @@
 import type { Difficulty, PresetDef } from '../../game/types';
 
-export type Lang = 'pt-BR' | 'en';
+export type { Lang } from '../../i18n';
 
 /** O que o menu entrega ao App ao iniciar uma partida. */
 export interface StartConfig {
@@ -28,8 +28,8 @@ export interface SaveSlot {
   hardcore?: boolean;
 }
 
+/** O idioma não mora aqui: é useLang()/setLang() de src/i18n (persistido em 'sl.lang'). */
 export interface MenuSettings {
-  lang: Lang;
   /** 0..1 */
   musicVolume: number;
   /** 0..1 */

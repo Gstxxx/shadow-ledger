@@ -1,12 +1,11 @@
 import { useRef, useState } from 'react';
 import { Download, FileUp, Play, Skull, Trash2 } from 'lucide-react';
-import { formatDate, type Strings } from '../strings';
-import type { Lang, SaveSlot } from '../types';
+import type { Strings } from '../strings';
+import type { SaveSlot } from '../types';
 import { sfx } from '../settings';
 
 interface Props {
   s: Strings;
-  lang: Lang;
   saves: SaveSlot[];
   onContinue?(id: string): void;
   onDelete?(id: string): void;
@@ -14,7 +13,7 @@ interface Props {
   onImport?(file: File): Promise<void>;
 }
 
-export function Continue({ s, lang, saves, onContinue, onDelete, onExport, onImport }: Props) {
+export function Continue({ s, saves, onContinue, onDelete, onExport, onImport }: Props) {
   const file = useRef<HTMLInputElement>(null);
   const [armed, setArmed] = useState<string | null>(null);
   const [status, setStatus] = useState<{ tone: 'busy' | 'ok' | 'bad'; text: string } | null>(null);
@@ -66,14 +65,14 @@ export function Continue({ s, lang, saves, onContinue, onDelete, onExport, onImp
                   )}
                 </span>
                 <span className="slm-save-date">
-                  {s.savedAt} {formatDate(lang, sv.savedAt)}
+                  {s.savedAt} {s.date(sv.savedAt)}
                 </span>
                 <Play className="slm-save-play" size={18} aria-hidden="true" />
                 <span className="slm-sr">{s.load}</span>
               </button>
               <div className="slm-save-actions">
                 {onExport && (
-                  <button type="button" className="slm-icon-btn" onClick={() => onExport(sv.id)} aria-label={`${s.export}: ${sv.label}`}>
+                  <button type="button" className="slm-icon-btn" onClick={() => onExport(sv.id)} aria-label={s.exportAria(sv.label)}>
                     <Download size={18} aria-hidden="true" />
                     <span className="slm-icon-btn-text">{s.export}</span>
                   </button>
@@ -93,7 +92,7 @@ export function Continue({ s, lang, saves, onContinue, onDelete, onExport, onImp
                       }
                     }}
                     onBlur={() => setArmed((a) => (a === sv.id ? null : a))}
-                    aria-label={armed === sv.id ? s.confirmDelete : `${s.delete}: ${sv.label}`}
+                    aria-label={armed === sv.id ? s.confirmDelete : s.deleteAria(sv.label)}
                   >
                     <Trash2 size={18} aria-hidden="true" />
                     <span className="slm-icon-btn-text">{armed === sv.id ? s.confirmDelete : s.delete}</span>

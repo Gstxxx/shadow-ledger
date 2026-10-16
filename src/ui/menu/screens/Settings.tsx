@@ -1,6 +1,7 @@
 import { Segmented, Slider, Toggle } from '../controls';
 import type { Strings } from '../strings';
-import type { Lang, MenuSettings } from '../types';
+import { LANGS, LANG_LABEL, useT, type Lang } from '../../../i18n';
+import type { MenuSettings } from '../types';
 import { sfx } from '../settings';
 
 interface Props {
@@ -10,17 +11,15 @@ interface Props {
 }
 
 export function Settings({ s, value, onChange }: Props) {
+  const { lang, setLang } = useT();
   return (
     <div className="slm-settings">
       <div data-enter>
         <Segmented<Lang>
           label={s.language}
-          value={value.lang}
-          onChange={(lang) => onChange({ lang })}
-          options={[
-            { value: 'pt-BR', label: 'Português (Brasil)' },
-            { value: 'en', label: 'English' },
-          ]}
+          value={lang}
+          onChange={setLang}
+          options={LANGS.map((l) => ({ value: l, label: LANG_LABEL[l] }))}
         />
       </div>
       <div className="slm-settings-pair" data-enter>

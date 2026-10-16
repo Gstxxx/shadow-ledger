@@ -13,9 +13,7 @@ function systemReducedMotion(): boolean {
 }
 
 export function defaultSettings(): MenuSettings {
-  const lang = typeof navigator !== 'undefined' && !navigator.language?.toLowerCase().startsWith('pt') ? 'en' : 'pt-BR';
   return {
-    lang,
     musicVolume: 0.7,
     sfxVolume: 0.8,
     defaultSpeed: 1,
@@ -28,7 +26,12 @@ function load(): MenuSettings {
   const base = defaultSettings();
   try {
     const raw = localStorage.getItem(KEY);
-    if (raw) return { ...base, ...(JSON.parse(raw) as Partial<MenuSettings>) };
+    if (raw) {
+      // 'lang' de versões antigas é ignorado: o idioma agora vem de src/i18n.
+      const { lang: _old, ...rest } = JSON.parse(raw) as Partial<MenuSettings> & { lang?: unknown };
+      void _old;
+      return { ...base, ...rest };
+    }
   } catch {
     /* sem storage: usa o padrão */
   }
@@ -63,10 +66,6 @@ export function useMenuSettings(
     audio.setMusicVolume(value.musicVolume);
     audio.setSfxVolume(value.sfxVolume);
   }, [value.musicVolume, value.sfxVolume]);
-
-  useEffect(() => {
-    document.documentElement.lang = value.lang;
-  }, [value.lang]);
 
   return [value, update];
 }

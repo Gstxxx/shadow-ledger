@@ -8,26 +8,24 @@ import type { GameOptions, GameState } from '../../game/types';
 import { deleteSave, exportSave, hasSave, importSave, useGameStore } from '../../store/game';
 import { useSettings } from '../../store/settings';
 import { MainMenu } from './MainMenu';
-import { defaultSettings } from './settings';
-import { stringsFor } from './strings';
+import { translate, useLang } from '../../i18n';
+import { presetText } from './strings';
 import type { Lang, MenuSettings, SaveSlot, StartConfig } from './types';
 
-/** Preferências que o store de configurações ainda não guarda. */
+/** Preferência que o store de configurações ainda não guarda (o idioma é de src/i18n). */
 const EXTRA_KEY = 'sl.menu.extra';
 interface Extra {
-  lang: Lang;
   analystMuted: boolean;
 }
 
 function readExtra(): Extra {
-  const d = defaultSettings();
   try {
     const raw = localStorage.getItem(EXTRA_KEY);
-    if (raw) return { lang: d.lang, analystMuted: false, ...(JSON.parse(raw) as Partial<Extra>) };
+    if (raw) return { analystMuted: !!(JSON.parse(raw) as Partial<Extra>).analystMuted };
   } catch {
     /* ignore */
   }
-  return { lang: d.lang, analystMuted: false };
+  return { analystMuted: false };
 }
 
 function summarize(lang: Lang): SaveSlot[] {
@@ -35,13 +33,13 @@ function summarize(lang: Lang): SaveSlot[] {
   const raw = exportSave();
   if (!raw) return [];
   try {
-    const g = JSON.parse(raw) as GameState & { savedAt?: number };
-    const s = stringsFor(lang);
+    const g = JSON.parse(raw) as GameState;
+    const p = g.options.preset;
     return [
       {
         id: 'auto',
-        label: lang === 'en' ? 'Autosave' : 'Salvamento automático',
-        presetTitle: g.options.preset.id === 'sandbox' ? s.tabSandbox : g.options.preset.title,
+        label: translate(lang, 'menu.continue.autosave'),
+        presetTitle: p.id === 'sandbox' ? translate(lang, 'menu.new.tab.sandbox') : presetText(lang, p).title,
         savedAt: g.savedAt ?? Date.now(),
         gameDay: Math.floor(g.time / 24) + 1,
         profit: profit(g.agencies[0]),
@@ -57,12 +55,12 @@ export function ConnectedMainMenu({ skipIntro }: { skipIntro?: boolean }) {
   const st = useSettings();
   const start = useGameStore((s) => s.start);
   const continueSaved = useGameStore((s) => s.continueSaved);
+  const lang = useLang();
   const [extra, setExtra] = useState(readExtra);
   const [rev, setRev] = useState(0);
 
   const settings = useMemo<MenuSettings>(
     () => ({
-      lang: extra.lang,
       musicVolume: st.music,
       sfxVolume: st.sfx,
       defaultSpeed: st.defaultSpeed,
@@ -78,8 +76,8 @@ export function ConnectedMainMenu({ skipIntro }: { skipIntro?: boolean }) {
       if (n.sfxVolume !== st.sfx) st.setSfx(n.sfxVolume);
       if (n.defaultSpeed !== st.defaultSpeed) st.setDefaultSpeed(n.defaultSpeed);
       if (n.reducedMotion !== st.reducedMotion) st.setReducedMotion(n.reducedMotion);
-      if (n.lang !== extra.lang || n.analystMuted !== extra.analystMuted) {
-        const next = { lang: n.lang, analystMuted: n.analystMuted };
+      if (n.analystMuted !== extra.analystMuted) {
+        const next = { analystMuted: n.analystMuted };
         setExtra(next);
         try {
           localStorage.setItem(EXTRA_KEY, JSON.stringify(next));
@@ -92,7 +90,7 @@ export function ConnectedMainMenu({ skipIntro }: { skipIntro?: boolean }) {
   );
 
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  const saves = useMemo(() => summarize(extra.lang), [extra.lang, rev]);
+  const saves = useMemo(() => summarize(lang), [lang, rev]);
 
   const onStart = useCallback(
     (cfg: StartConfig) => {
@@ -125,10 +123,10 @@ export function ConnectedMainMenu({ skipIntro }: { skipIntro?: boolean }) {
   const onImportSave = useCallback(
     async (file: File) => {
       const text = await file.text();
-      if (!importSave(text)) throw new Error(stringsFor(extra.lang).importFail);
+      if (!importSave(text)) throw new Error(translate(lang, 'menu.continue.importFail'));
       setRev((r) => r + 1);
     },
-    [extra.lang],
+    [lang],
   );
 
   return (

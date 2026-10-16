@@ -2,8 +2,8 @@ import { Fragment, useEffect, useRef, useState, type ReactNode } from 'react';
 import { Lightbulb } from 'lucide-react';
 import { GameIcon } from '../../../art/icons/GameIcon';
 import { sfx } from '../settings';
-import type { Lang } from '../types';
-import { TERM_ICON, guideFor, type Block } from './guideContent';
+import { useLang } from '../../../i18n';
+import { TERM_ICON, useGuide, type Block } from './guideContent';
 import './howto.css';
 
 /** **termo** → <strong>, com o ícone de src/art quando o termo é um conceito do jogo. */
@@ -58,8 +58,9 @@ function renderBlock(b: Block, i: number): ReactNode {
   );
 }
 
-export function HowToPlay({ lang, reduced }: { lang: Lang; reduced: boolean }) {
-  const g = guideFor(lang);
+export function HowToPlay({ reduced }: { reduced: boolean }) {
+  const g = useGuide();
+  const lang = useLang();
   const [active, setActive] = useState(g.sections[0].id);
   const root = useRef<HTMLDivElement>(null);
   const chips = useRef<HTMLElement>(null);

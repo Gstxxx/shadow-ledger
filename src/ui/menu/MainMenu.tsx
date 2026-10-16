@@ -10,7 +10,8 @@ import { ease, f } from './ease';
 import { buildIntro, finalState, HANDOFF_AT, type IntroEls } from './intro';
 import { COLS, LEDGER_CH, ledgerRows } from './ledger';
 import { sfx, useMenuSettings } from './settings';
-import { stringsFor } from './strings';
+import { useLang } from '../../i18n';
+import { useStrings } from './strings';
 import { Continue } from './screens/Continue';
 import { Credits } from './screens/Credits';
 import { HowToPlay } from './screens/HowToPlay';
@@ -24,7 +25,8 @@ const CENTER = 26;
 
 export function MainMenu(props: MainMenuProps) {
   const [settings, update] = useMenuSettings(props.settings, props.onSettingsChange);
-  const s = stringsFor(settings.lang);
+  const s = useStrings();
+  const lang = useLang();
   const reduced = settings.reducedMotion;
   const presets = props.presets ?? PRESETS;
   const tutorial = presets.find((p) => p.id === props.tutorialPresetId);
@@ -317,11 +319,10 @@ export function MainMenu(props: MainMenuProps) {
           onRequestClose={requestClose}
           onClosed={onClosed}
         >
-          {screen === 'new' && <NewGame s={s} lang={settings.lang} presets={presets} tutorial={tutorial} reduced={reduced} onStart={(cfg) => props.onStart?.(cfg)} />}
+          {screen === 'new' && <NewGame s={s} lang={lang} presets={presets} tutorial={tutorial} reduced={reduced} onStart={(cfg) => props.onStart?.(cfg)} />}
           {screen === 'continue' && (
             <Continue
               s={s}
-              lang={settings.lang}
               saves={saves}
               onContinue={props.onContinue}
               onDelete={props.onDeleteSave}
@@ -329,7 +330,7 @@ export function MainMenu(props: MainMenuProps) {
               onImport={props.onImportSave}
             />
           )}
-          {screen === 'howto' && <HowToPlay lang={settings.lang} reduced={reduced} />}
+          {screen === 'howto' && <HowToPlay reduced={reduced} />}
           {screen === 'settings' && <Settings s={s} value={settings} onChange={update} />}
           {screen === 'credits' && <Credits s={s} reduced={reduced} />}
         </Dossier>

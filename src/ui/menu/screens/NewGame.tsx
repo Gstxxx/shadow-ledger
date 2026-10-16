@@ -14,7 +14,8 @@ import { presetText, type Strings } from '../strings';
 import type { Lang, StartConfig } from '../types';
 import { MiniMap } from './MiniMap';
 import './newgame.css';
-import { COUNTRY_EN, UNIT_EN, newGameStrings, type NewGameStrings } from './newGameStrings';
+import { countryName, itemName } from '../../../i18n/lookup';
+import { useNewGameStrings, type NewGameStrings } from './newGameStrings';
 
 interface Props {
   s: Strings;
@@ -87,7 +88,7 @@ function Dots({ n, label }: { n: number; label?: string }) {
 }
 
 export function NewGame({ s, lang, presets, tutorial, reduced, onStart }: Props) {
-  const t = newGameStrings(lang);
+  const t = useNewGameStrings();
   const compact = useCompact();
 
   const [region, setRegion] = useState<Continent>('NA');
@@ -337,7 +338,7 @@ export function NewGame({ s, lang, presets, tutorial, reduced, onStart }: Props)
                   value={director}
                   onChange={setDirector}
                   onRoll={() => setDirector(randomDirector())}
-                  rollLabel={t.shuffle}
+                  rollAria={t.rollAria(t.directorName)}
                   error={nameError && !director.trim()}
                 />
                 <NameField
@@ -345,7 +346,7 @@ export function NewGame({ s, lang, presets, tutorial, reduced, onStart }: Props)
                   value={agency}
                   onChange={setAgency}
                   onRoll={() => setAgency(randomAgency())}
-                  rollLabel={t.shuffle}
+                  rollAria={t.rollAria(t.agencyName)}
                   error={nameError && !agency.trim()}
                 />
               </div>
@@ -510,14 +511,14 @@ function NameField({
   value,
   onChange,
   onRoll,
-  rollLabel,
+  rollAria,
   error,
 }: {
   label: string;
   value: string;
   onChange(v: string): void;
   onRoll(): void;
-  rollLabel: string;
+  rollAria: string;
   error: boolean;
 }) {
   const id = useRef(`slm-name-${Math.random().toString(36).slice(2, 8)}`).current;
@@ -540,7 +541,7 @@ function NameField({
         <button
           type="button"
           className="slm-icon-btn slm-roll"
-          aria-label={`${rollLabel}: ${label}`}
+          aria-label={rollAria}
           onClick={() => {
             sfx('type');
             onRoll();
@@ -578,8 +579,8 @@ function Details({
 }) {
   const p = entry.preset;
   const brief = entry.kind === 'sandbox' ? t.sandboxBrief : presetText(lang, p).brief;
-  const unitName = (id: string) => (lang === 'en' ? UNIT_EN[id] : undefined) ?? ITEMS[id]?.name ?? id;
-  const countryName = (id: string) => (lang === 'en' ? COUNTRY_EN[id] : undefined) ?? SEED.get(id)?.name ?? id;
+  const unitName = (id: string) => itemName(id, lang);
+  const placeName = (id: string) => countryName(id, lang);
 
   const fleet = p.startUnits.filter((u) => ITEMS[u]?.cls === 'cargo');
   const escortCount = new Map<string, number>();
@@ -590,10 +591,10 @@ function Details({
   const rows: { icon: string; label: string; value: string }[] = [
     { icon: 'fleet', label: t.fleet, value: fleet.map(unitName).join(', ') || '—' },
     { icon: 'team', label: t.escort, value: escort.join(', ') || '—' },
-    { icon: 'station-safehouse', label: t.stations, value: p.startStations.map((x) => `${t.tiers[x.level]} · ${countryName(x.countryId)}`).join(', ') },
+    { icon: 'station-safehouse', label: t.stations, value: p.startStations.map((x) => `${t.tiers[x.level]} · ${placeName(x.countryId)}`).join(', ') },
     { icon: 'money', label: t.cash, value: t.money(Math.round(p.cash * CASH_MULT[difficulty])) },
     { icon: 'rival', label: t.rivals, value: entry.kind === 'sandbox' ? rivals : t.rivalsBy(rivals, t.difficultyCards[difficulty - 1].name) },
-    { icon: 'director', label: t.homeBase, value: countryName(p.startCountry) },
+    { icon: 'director', label: t.homeBase, value: placeName(p.startCountry) },
   ];
 
   return (
@@ -617,7 +618,7 @@ function Details({
           region={region}
           home={p.startCountry}
           stations={p.startStations.map((x) => x.countryId)}
-          label={`${t.region}: ${region.map((c) => s.continents[c]).join(', ')}`}
+          label={t.regionAria(region.map((c) => s.continents[c]).join(', '))}
         />
       </div>
       <h4 className="slm-details-sub">{t.youStartWith}</h4>
