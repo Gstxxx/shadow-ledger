@@ -5,7 +5,7 @@ import { feature } from 'topojson-client';
 import type { Topology } from 'topojson-specification';
 import countriesTopo from 'world-atlas/countries-110m.json';
 import { POLITICS_COLOR } from '../../game/data/rules';
-import { player, postureIn, standing } from '../../game/state';
+import { intelCountries, player, postureIn, standing } from '../../game/state';
 import type { Flight, GameState } from '../../game/types';
 import { useGame, useGameStore } from '../../store/game';
 import { audio } from '../../audio/engine';
@@ -204,6 +204,7 @@ export function WorldMap({ mode }: { mode: MapMode }) {
     if (pointers.current.size === 0) setTimeout(() => (drag.current = null), 0);
   };
 
+  const intel = intelCountries(a);
   const k = view.k;
   const inv = 1 / k;
   const here = s.countries[a.location];
@@ -245,6 +246,37 @@ export function WorldMap({ mode }: { mode: MapMode }) {
               const [x, y] = project(cc.lon, cc.lat);
               return <circle key={c.id} cx={x + 6 * inv} cy={y - 6 * inv} r={3 * inv} fill="var(--blue)" stroke="#0b0d10" strokeWidth={inv} />;
             })}
+
+          {/* Agências Rivais: Estações e Diretor (este só onde a agência tem informação) */}
+          {s.agencies
+            .filter((r) => !r.isPlayer)
+            .map((r) => (
+              <g key={r.id} className="rival">
+                {r.stations.map((st) => {
+                  const cc = s.countries[st.countryId];
+                  const [x, y] = project(cc.lon, cc.lat);
+                  const sz = (4 + st.level) * inv;
+                  return (
+                    <rect
+                      key={st.countryId}
+                      x={x - sz / 2 + 9 * inv}
+                      y={y - sz / 2 - 7 * inv}
+                      width={sz}
+                      height={sz}
+                      fill="none"
+                      stroke="var(--violet)"
+                      strokeWidth={1.2 * inv}
+                      transform={`rotate(45 ${x + 9 * inv} ${y - 7 * inv})`}
+                    />
+                  );
+                })}
+                {!r.flight && intel.has(r.location) && (() => {
+                  const cc = s.countries[r.location];
+                  const [x, y] = project(cc.lon, cc.lat);
+                  return <circle cx={x - 8 * inv} cy={y + 6 * inv} r={2.6 * inv} fill="var(--violet)" stroke="#0b0d10" strokeWidth={inv} />;
+                })()}
+              </g>
+            ))}
 
           {/* Estações */}
           {a.stations.map((st) => {

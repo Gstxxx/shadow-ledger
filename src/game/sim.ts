@@ -1,4 +1,5 @@
 // Continuous clock (ADR 0001): advance in small steps, stop at the first Evento.
+import { tickRivals } from './ai/brain';
 import { beginCombat } from './combatFlow';
 import { COUNTRY_SEEDS, neighbors } from './data/countries';
 import { ITEM_LIST, ITEMS } from './data/items';
@@ -53,6 +54,7 @@ function tick(s: GameState, dt: number) {
   s.time += dt;
   for (const c of Object.values(s.countries)) recoverSaturation(c, dt);
   for (const a of s.agencies) tickAgency(s, a, dt);
+  if (!isBlocked(s)) tickRivals(s);
 
   for (const k of s.contracts) {
     if (k.status === 'offered' && s.time >= k.offerExpires) k.status = 'expired';

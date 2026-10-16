@@ -242,7 +242,9 @@ function StationsTab() {
   const s = useGame();
   const a = player(s);
   const select = useGameStore((st) => st.select);
+  const rivals = s.agencies.filter((r) => !r.isPlayer);
   return (
+    <>
     <Section title="Estações">
       {!a.stations.length && <Empty>Nenhuma Estação. Abra uma Célula onde o Diretor estiver.</Empty>}
       {a.stations.map((st) => {
@@ -265,6 +267,27 @@ function StationsTab() {
         );
       })}
     </Section>
+    {rivals.length > 0 && (
+      <Section title="Agências Rivais">
+        {rivals.map((r) => (
+          <div key={r.id} className="station-row">
+            <span className="st-level rival-mark">◇</span>
+            <span className="cg-main">
+              <span>{r.name}</span>
+              <small className="mono">
+                {r.stations.length} Estação(ões):{' '}
+                {r.stations.map((st) => (
+                  <button key={st.countryId} className="link" onClick={() => select(st.countryId)}>
+                    {s.countries[st.countryId].name}{' '}
+                  </button>
+                ))}
+              </small>
+            </span>
+          </div>
+        ))}
+      </Section>
+    )}
+    </>
   );
 }
 

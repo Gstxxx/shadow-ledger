@@ -35,7 +35,14 @@ Decisões que o código precisou tomar sem uma resposta no `CONTEXT.md` ou nos A
 
 ## Agências Rivais
 
-- O estado já é por **Agência** (`GameState.agencies`, índice 0 = jogador) e toda ação recebe a agência que age (ADR 0002). Reputação e Exposição são por agência; Saturação e Contratos são compartilhados. **A IA das rivais ainda não existe**: falta definir quantas por Dificuldade, como agem contra o jogador e como aparecem no mapa.
+- O estado é por **Agência** (`GameState.agencies`, índice 0 = jogador) e toda ação recebe a agência que age (ADR 0002). Reputação e Exposição são por agência; Saturação e Contratos são compartilhados.
+- A IA das rivais (`src/game/ai/`, outra sessão) está ligada ao motor: `setupRivals` no fim de `newGame` e `tickRivals` a cada passo do relógio. As rivais aparecem no mapa (losangos violeta nas Estações; o Diretor rival só onde a agência tem informação) e na aba Estações.
+- **Ações hostis entre agências ainda não existem no motor** (`sabotageStation`, `raidVault`, `denounce`, pedidas em `docs/AI.md`). Falta decidir no design: o que cada uma faz, quanto custa, se vira Ameaça anunciada para o alvo e como o jogador revida.
+
+## Ritmo e frequência
+
+- **Ameaças**: chance diária por país com presença = (3% + Exposição × 0,22%) × Postura (Inimigo 1,8; Aliado 0,45) × Dificuldade (0,65 / 1 / 1,4), máximo 45%. Dá cerca de 3–6 Ameaças em 90 dias para quem fica parado. (`sim.ts: rollThreats`)
+- **Operações Especiais** exigem força bem acima da Escolta inicial (roubo a banco num país nível 3 ≈ força 20; dois guarda-costas somam 4). É intencional: Operações são meio de jogo. Rever com a sessão de equilíbrio.
 
 ## Sandbox
 

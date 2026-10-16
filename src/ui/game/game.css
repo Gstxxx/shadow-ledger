@@ -1397,3 +1397,9 @@ button.unit-row:hover {
     display: none;
   }
 }
+
+.st-level.rival-mark {
+  background: transparent;
+  color: var(--violet);
+  border: 1px solid var(--violet);
+}

@@ -1,4 +1,5 @@
 // Domain model. Names map 1:1 to the glossary in CONTEXT.md (see comments).
+import type { AiState } from './ai/types';
 
 export type Continent = 'NA' | 'SA' | 'EU' | 'AF' | 'ME' | 'AS' | 'OC';
 
@@ -453,4 +454,6 @@ export interface GameState {
   combat?: CombatState;
   over?: { won: boolean; reason: string; score: number };
   uidCounter: number;
+  /** Memória das Agências Rivais (src/game/ai). */
+  ai?: AiState;
 }

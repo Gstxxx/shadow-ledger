@@ -1,6 +1,7 @@
 import { COUNTRY_SEEDS, distanceKm, neighbors } from './data/countries';
 import { GROUP_NAMES, HOSTAGE_NAMES } from './data/names';
 import { postureOf, PRESETS, STATIONS } from './data/rules';
+import { setupRivals } from './ai/setup';
 import { buildForce } from './forces';
 import { driftPrices, midPrice, rollStock } from './market';
 import { pick, randInt, randRange, weighted } from './rng';
@@ -281,6 +282,7 @@ export function newGame(opts: GameOptions): GameState {
   }
 
   log(s, `${preset.title}: operação iniciada em ${s.countries[preset.startCountry].name}.`, 'intel', preset.startCountry);
+  setupRivals(s);
   return s;
 }
 

@@ -4,6 +4,7 @@ import { audio } from './audio/engine';
 import { useGameStore } from './store/game';
 import { useSettings } from './store/settings';
 import { GameScreen } from './ui/game/GameScreen';
+import { ErrorBoundary } from './ui/game/ErrorBoundary';
 import { Toasts } from './ui/game/Toasts';
 import { ConnectedMainMenu } from './ui/menu';
 import './ui/title/title.css';
@@ -48,7 +49,11 @@ export default function App() {
   return (
     <>
       {screen !== 'game' && <ConnectedMainMenu skipIntro={!intro} />}
-      {screen === 'game' && <GameScreen />}
+      {screen === 'game' && (
+        <ErrorBoundary>
+          <GameScreen />
+        </ErrorBoundary>
+      )}
       {screen !== 'game' && (
         <button className="btn icon ghost sound-toggle" aria-label={muted ? 'Ligar música' : 'Silenciar música'} onClick={() => setMuted(!muted)}>
           {muted ? <VolumeX size={18} /> : <Volume2 size={18} />}
