@@ -9,6 +9,7 @@ import type { Agency, CombatType, GameState, OperationKind, Station, Team, Unit 
 import { canFight, def, isPersonnel, strOf } from '../units';
 import { E } from './engine';
 import { money, news } from './memory';
+import { calm } from './profiles';
 import type { DifficultyProfile, Personality } from './profiles';
 import type { RivalMemory, TeamOrder } from './types';
 
@@ -292,7 +293,8 @@ function available(ctx: Ctx, type: CombatType): number {
 export function planOperation(ctx: Ctx) {
   const { s, a, mem, P } = ctx;
   if (mem.orders.length >= (ctx.D.aggression >= 1 ? 2 : 1)) return;
-  if (!chance(s, actChance(ctx, P.operations))) return;
+  // Operações sobem a Tensão Global: perto do Topo as prudentes param.
+  if (!chance(s, actChance(ctx, P.operations) * (1 - calm(P, s.tension)))) return;
   const slack = margin(ctx);
   const can = { urban: available(ctx, 'urban'), army: available(ctx, 'army') } as Record<CombatType, number>;
   let best: { id: string; op: OperationKind; v: number; need: number } | undefined;
@@ -311,52 +313,74 @@ export function planOperation(ctx: Ctx) {
   mem.orders.push({ teamId: team.id, countryId: best.id, kind: best.op, expires: s.time + 24 * 12 });
 }
 
+/** Rancor acima disto não deixa a rival mais furiosa: evita guerras de retaliação sem fim entre rivais. */
+const FURY_CAP = 3;
+/** Espera base entre ações hostis, sem rancor (horas). */
+const STRIKE_COOLDOWN_H = 24 * 20;
+
+type StrikeKind = 'sabotage' | 'vault' | 'denounce';
+
+/** País onde a rival pode denunciar o alvo: ele tem Estação lá e ela tem olhos (Estação ou Diretor). */
+function denounceSpot(a: Agency, target: Agency): string | undefined {
+  const st = target.stations.find((x) => !x.interdicted && (stationIn(a, x.countryId) || directorAt(a, x.countryId)));
+  if (st) return st.countryId;
+  return !target.flight && directorAt(a, target.location) ? target.location : undefined;
+}
+
+/** Ações hostis que a rival consegue tentar contra o alvo agora, com o peso da personalidade. */
+function strikeOptions(a: Agency, P: Personality, target: Agency): [StrikeKind, number][] {
+  const open = target.stations.filter((st) => !st.interdicted);
+  const out: [StrikeKind, number][] = [];
+  if (E.sabotageStation && open.length) out.push(['sabotage', P.strikes.sabotage]);
+  if (E.raidVault && open.some((st) => st.vault.length)) out.push(['vault', P.strikes.vault]);
+  if (E.denounce && denounceSpot(a, target)) out.push(['denounce', P.strikes.denounce]);
+  return out.filter(([, w]) => w > 0);
+}
+
 /** Ação contra outra agência (o jogador incluído): sabotagem, roubo de Cofre ou denúncia. O(agências × Estações). */
 export function planStrike(ctx: Ctx) {
   const { s, a, mem, P } = ctx;
-  const others = s.agencies.filter((x) => x.id !== a.id && x.director.status !== 'dead');
-  if (!others.length) return;
-  const rage = (id: string) => mem.grudge[id] ?? 0;
-  const maxRage = Math.max(0, ...others.map((x) => rage(x.id)));
-  // Retaliação: rancor encurta a espera e aumenta a vontade.
-  const cooldown = (24 * 10) / (1 + maxRage);
-  if (s.time - mem.lastStrikeAt < cooldown) return;
-  if (!chance(s, actChance(ctx, P.hostility * (1 + maxRage)))) return;
+  const rage = (id: string) => Math.min(FURY_CAP, mem.grudge[id] ?? 0);
+  const candidates = s.agencies
+    .filter((x) => x.id !== a.id && x.director.status !== 'dead')
+    .map((x) => ({ x, options: strikeOptions(a, P, x) }))
+    .filter((c) => c.options.length);
+  if (!candidates.length) return;
+  const fury = Math.max(0, ...candidates.map((c) => rage(c.x.id)));
+  // Retaliação: rancor encurta a espera e aumenta a vontade, até um teto.
+  if (s.time - mem.lastStrikeAt < STRIKE_COOLDOWN_H / (1 + 0.5 * fury)) return;
+  if (!chance(s, actChance(ctx, P.hostility * (1 + 0.3 * fury)))) return;
 
-  const target = weighted(
+  // O jogador é o adversário principal; quem agrediu a rival vem logo atrás.
+  const { x: target, options } = weighted(
     s,
-    others.map((x) => [x, (x.isPlayer ? 1.5 : 1) + rage(x.id) * 2] as [Agency, number]),
+    candidates.map((c) => [c, (c.x.isPlayer ? 2 : 0.6) + rage(c.x.id) * 1.5] as [(typeof candidates)[number], number]),
   );
-  const kind = weighted(s, [
-    ['sabotage', E.sabotageStation ? P.strikes.sabotage : 0],
-    ['vault', E.raidVault && target.stations.some((st) => st.vault.length) ? P.strikes.vault : 0],
-    ['denounce', E.denounce ? P.strikes.denounce : 0],
-    ['none', 0.001],
-  ] as ['sabotage' | 'vault' | 'denounce' | 'none', number][]);
-  if (kind === 'none') return;
-  const spots = target.stations.filter((st) => !st.interdicted && (kind !== 'vault' || st.vault.length));
+  const kind = weighted(s, options);
+  const settle = () => {
+    mem.lastStrikeAt = s.time;
+    mem.grudge[target.id] = Math.max(0, (mem.grudge[target.id] ?? 0) - 2);
+    if (!mem.grudge[target.id]) delete mem.grudge[target.id];
+  };
 
   if (kind === 'denounce') {
-    // Denuncia onde o alvo tem Estação e a rival tem olhos (Estação própria ou o Diretor).
-    const countryId =
-      spots.find((st) => stationIn(a, st.countryId) || directorAt(a, st.countryId))?.countryId ??
-      (directorAt(a, target.location) ? target.location : undefined);
-    if (!countryId) return;
-    const r = E.denounce!(s, a, target.id, countryId);
-    if (r.ok) {
-      mem.lastStrikeAt = s.time;
-      mem.grudge[target.id] = Math.max(0, rage(target.id) - 1);
+    const countryId = denounceSpot(a, target)!;
+    if (E.denounce!(s, a, target.id, countryId).ok) {
+      settle();
       news(s, a, `denunciou ${target.name} às autoridades de ${s.countries[countryId].name}.`, 'warn', countryId);
     }
     return;
   }
-  const st = spots.sort((x, y) => x.level - y.level)[0];
+  const st = target.stations
+    .filter((x) => !x.interdicted && (kind !== 'vault' || x.vault.length))
+    .sort((x, y) => x.level - y.level)[0];
   if (!st) return;
-  const need = (power(st.units, 'urban') + STATIONS[st.level].fort.urban) * margin(ctx);
+  // Como o motor resolve: as Unidades da Estação alvo, ou segurança equivalente ao fort ×3 se ela está vazia.
+  const guard = st.units.length ? power(st.units, 'urban') : STATIONS[st.level].fort.urban * 3;
+  const need = Math.max(guard, 1) * margin(ctx);
   const team = assemble(ctx, 'urban', need);
   if (!team) return;
-  mem.lastStrikeAt = s.time;
-  mem.grudge[target.id] = Math.max(0, rage(target.id) - 1);
+  settle();
   mem.orders.push({ teamId: team.id, countryId: st.countryId, kind, targetId: target.id, expires: s.time + 24 * 10 });
 }
 

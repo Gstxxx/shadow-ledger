@@ -7,6 +7,7 @@ import { buyPrice, fleetSpeed, freeCargo, quoteBuy, quoteSell, sellPrice } from 
 import { rand } from '../rng';
 import { intelCountries, standing, travelKm } from '../state';
 import type { Agency, Contract, GameState, ItemDef } from '../types';
+import { calm } from './profiles';
 import type { DifficultyProfile, Personality } from './profiles';
 import type { RivalMemory, TradePlan } from './types';
 
@@ -16,6 +17,8 @@ const MAX_LOT = 24;
 const MAX_WMD_LOT = 1;
 /** Intervalo entre negócios de ADM para apetite 1 (dividido pelo apetite da personalidade). */
 export const WMD_COOLDOWN_H = 24 * 30;
+/** Classes cuja venda a países em guerra sobe a Tensão Global (regra do motor). */
+const HEAVY = ['vehicle', 'jet', 'heli', 'antiair', 'arms'];
 /** Itens avaliados a fundo (com cotação unidade a unidade) por decisão. */
 const SHORTLIST = 8;
 
@@ -136,7 +139,10 @@ export function planTrade(ctx: TradeCtx): TradePlan | undefined {
     const hours = legHours(a, a.location, b.c) + legHours(a, b.c, sl!.c);
     if (!Number.isFinite(hours)) continue;
     const exposure = (standing(a, b.c).exposure + standing(a, sl!.c).exposure) / 200;
-    const value = q.profit * itemWeight(s, P, mem, it) * (1 - P.caution * exposure);
+    // Armamento pesado vendido a quem está em guerra sobe a Tensão Global: as prudentes evitam perto do Topo.
+    const sellTo = s.countries[sl!.c];
+    const heats = HEAVY.includes(it.cls) && (sellTo.politics === 'war' || sellTo.politics === 'civilwar');
+    const value = q.profit * itemWeight(s, P, mem, it) * (1 - P.caution * exposure) * (heats ? 1 - calm(P, s.tension) : 1);
     const score = value / (hours + 8);
     options.push({ plan: { itemId, buyIn: b.c, sellIn: sl!.c, qty: q.qty, expires: s.time + hours + 72 }, score });
   }

@@ -14,6 +14,7 @@ export const memoryOf = (s: GameState, agencyId: string): RivalMemory | undefine
 
 /** Rancor dura cerca de um mês de jogo. */
 export const GRUDGE_DECAY_H = 24 * 30;
+export const GRUDGE_CAP = 10;
 
 /**
  * Uma agência agrediu outra (sabotagem, roubo de Cofre, denúncia). Chamada pelas ações hostis do motor;
@@ -22,7 +23,8 @@ export const GRUDGE_DECAY_H = 24 * 30;
 export function recordAggression(s: GameState, attackerId: string, targetId: string, weight = 1) {
   const m = memoryOf(s, targetId);
   if (!m || attackerId === targetId || !(weight > 0)) return;
-  m.grudge[attackerId] = (m.grudge[attackerId] ?? 0) + weight;
+  // Teto: rancor velho não se acumula sem fim.
+  m.grudge[attackerId] = Math.min(GRUDGE_CAP, (m.grudge[attackerId] ?? 0) + weight);
 }
 
 export const money = (n: number) => `US$ ${Math.round(n).toLocaleString('pt-BR')}`;

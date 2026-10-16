@@ -20,7 +20,12 @@ export function setupRivals(s: GameState) {
   if (s.agencies.some((a) => !a.isPlayer)) return;
   const D = DIFFICULTY_AI[s.options.difficulty];
   const preset = s.options.preset;
-  const n = randInt(s, D.count[0], D.count[1]);
+  // O menu pode fixar o número de rivais; sem isso, a Dificuldade sorteia.
+  const chosen = s.options.rivals;
+  const n =
+    chosen !== undefined && Number.isFinite(chosen)
+      ? Math.max(0, Math.min(RIVAL_NAMES.length, Math.round(chosen)))
+      : randInt(s, D.count[0], D.count[1]);
   const taken = new Set([preset.startCountry, ...preset.startStations.map((x) => x.countryId)]);
   const usedContinents = new Set<Continent>([s.countries[preset.startCountry].continent]);
   const names = shuffle(s, RIVAL_NAMES.filter((x) => x !== s.group?.name));

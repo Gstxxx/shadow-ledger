@@ -128,6 +128,13 @@ describe('Agências Rivais', () => {
     }
   });
 
+  it('o número escolhido no menu vence o sorteio da Dificuldade', () => {
+    for (const [difficulty, rivalsWanted] of [[1, 3], [3, 0], [2, 4]] as const) {
+      const s = newGame({ preset: SANDBOX, difficulty, hardcore: false, seed: 70 + rivalsWanted, rivals: rivalsWanted });
+      expect(rivals(s)).toHaveLength(rivalsWanted);
+    }
+  });
+
   it('setupRivals é idempotente e cada rival começa num país próprio', () => {
     const s = game(11, 3);
     const n = s.agencies.length;
@@ -142,9 +149,21 @@ describe('Agências Rivais', () => {
     let s = game(21, 3);
     for (let seed = 22; rivals(s).length < 4; seed++) s = game(seed, 3);
     const t0 = performance.now();
-    run(s, 365, 6, () => assertSane(s));
+    // A Crise Final é balanço do motor e tem teste próprio; aqui o ano inteiro precisa rodar.
+    let topDays = 0;
+    run(s, 365, 6, () => {
+      assertSane(s);
+      const c = (s as GameState & { crisis?: { hours: number } }).crisis;
+      if (c?.hours) {
+        topDays += 0.25;
+        c.hours = 0;
+      }
+    });
     const ms = performance.now() - t0;
     assertSane(s);
+    expect(s.over).toBeUndefined();
+    expect(Math.round(s.time)).toBe(365 * 24);
+    console.log(`Tensão final ${s.tension.toFixed(0)}; dias no Topo: ${topDays}`);
 
     const me = player(s);
     const rs = rivals(s);
@@ -275,6 +294,27 @@ describe('Agências Rivais', () => {
       }
       expect(hits[0]).toMatchObject({ by: r.id, target: me.id });
       expect(mem.grudge[me.id]).toBeLessThan(6);
+    });
+
+    it('com as ações reais do motor, a rival denuncia o jogador onde tem olhos', () => {
+      const s = game(63, 3);
+      const me = player(s);
+      const r = rivals(s)[0];
+      const mem = memoryOf(s, r.id)!;
+      mem.personality = 'mercador';
+      const where = me.stations[0].countryId;
+      const before = me.standing[where].exposure;
+      recordAggression(s, me.id, r.id, 6);
+      for (let i = 0; i < 30 && me.standing[where].exposure === before; i++) {
+        r.flight = undefined;
+        r.location = where;
+        mem.lastStrikeAt = -1e9;
+        s.tension = 20;
+        decide(s, r, mem);
+      }
+      expect(me.standing[where].exposure).toBeGreaterThanOrEqual(before + 25);
+      expect(s.events.some((e) => e.title === 'Denúncia')).toBe(true);
+      expect(s.log.some((l) => l.text.startsWith(`${r.name} denunciou ${me.name}`))).toBe(true);
     });
 
     it('sem a ação no motor, a IA não inventa a agressão', () => {

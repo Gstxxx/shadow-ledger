@@ -99,14 +99,21 @@ function tradeMove(ctx: Ctx) {
   if (!E.travel(s, a, dest).ok) mem.plan = undefined;
 }
 
-/** Tensão Global alta: as gananciosas entram no mercado de ADM; as medrosas recuam antes da Crise Final. */
+/** Horas seguidas da Tensão Global no Topo (contador da Crise Final do motor; 0 se não existir). */
+const crisisHours = (s: GameState) => (s as GameState & { crisis?: { hours: number } }).crisis?.hours ?? 0;
+
+/**
+ * Tensão Global alta: as gananciosas entram no mercado de ADM; as medrosas recuam — de ADM e de Operações que
+ * esquentam o mundo — quando a Tensão passa do limite delas ou o Topo dura mais que a paciência.
+ */
 function tensionStance(ctx: Ctx) {
   const { s, a, mem, P } = ctx;
   const fear = Math.min(P.crisisFear, CRISIS_TENSION + 10);
-  if (!mem.wmdRetreat && s.tension >= fear) {
+  const scared = s.tension >= fear || crisisHours(s) > P.crisisPatience * 24;
+  if (!mem.wmdRetreat && scared) {
     mem.wmdRetreat = true;
     if (P.wmd > 0) news(s, a, 'saiu do mercado de Armas de Destruição em Massa: teme a Crise Final.', 'intel');
-  } else if (mem.wmdRetreat && s.tension < fear - 15) mem.wmdRetreat = false;
+  } else if (mem.wmdRetreat && s.tension < Math.min(fear, WMD_TENSION) - 10 && crisisHours(s) === 0) mem.wmdRetreat = false;
 }
 
 /** Uma decisão completa da RivalBrain. */
@@ -139,7 +146,7 @@ export function decide(s: GameState, a: Agency, mem: RivalMemory) {
   }
   planStrike(ctx);
   // Perto da Crise Final as medrosas param de desestabilizar países.
-  if (!(mem.wmdRetreat && s.tension >= WMD_TENSION)) planOperation(ctx);
+  if (!mem.wmdRetreat) planOperation(ctx);
   if (landed && a.director.status === 'free' && !a.flight) tradeMove(ctx);
 }
 

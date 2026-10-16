@@ -10,13 +10,13 @@ monta rota com várias escalas nem otimiza peso — escolhe um par compra/venda 
 
 | Gancho | Onde | O que faz |
 | --- | --- | --- |
-| `setupRivals(s)` | fim de `newGame` | Cria as rivais com `createAgency` (Célula num país nível 3+ de outro continente, plantel inicial do Preset, capital × Dificuldade). Idempotente. |
-| `tickRivals(s)` | `tick`, depois de `tickAgency` | Roda a decisão de cada rival cujo horário chegou. Fora disso, O(rivais). |
+| `setupRivals(s)` | fim de `newGame` | Cria as rivais com `createAgency` (Célula num país nível 3+ de outro continente, plantel inicial do Preset, capital × Dificuldade). Quantas: `GameOptions.rivals` se o menu mandar, senão o sorteio da Dificuldade. Idempotente. |
+| `tickRivals(s)` | `tick`, depois de `tickAgency`, com o relógio desbloqueado | Roda a decisão de cada rival cujo horário chegou. Fora disso, O(rivais). |
 | `recordAggression(s, atacante, alvo, peso)` | ações hostis entre agências | Soma rancor na rival agredida; alimenta a retaliação. |
 | `GameState.ai?: AiState` | `types.ts` | Memória das RivalBrains (JSON puro, entra no save). |
 
-Enquanto o motor não expõe `sabotageStation`, `raidVault` e `denounce`, a IA simplesmente não faz ações contra
-outras agências (`E` as resolve por nome na hora da chamada).
+`sabotageStation`, `raidVault` e `denounce` são resolvidas por nome na hora da chamada (`E`); se o motor deixar de
+expor alguma, a IA simplesmente não a usa.
 
 ## Ciclo de decisão
 
@@ -26,8 +26,11 @@ Cada rival decide a cada `interval` horas de jogo (sorteado com jitter) e logo d
    menos que 1,5 mês de Manutenção).
 2. **Diretor preso:** paga fiança/resgate se couber; senão manda uma Equipe resgatar.
 3. **Ameaças:** se a defesa não segura, escolhe suborno, advogados, reforço ou evacuação (`react`).
-4. **ADM e Tensão Global:** acima de `crisisFear` a rival sai do mercado de Armas de Destruição em Massa e para de
-   fazer Operações Especiais; volta quando a Tensão cai 15 pontos.
+4. **ADM e Tensão Global:** a rival recua (sai do mercado de Armas de Destruição em Massa e para de fazer Operações
+   Especiais) quando a Tensão passa de `crisisFear` ou o contador da Crise Final do motor passa de `crisisPatience`
+   dias no Topo; volta quando a Tensão cai abaixo do Topo e o contador zera. Antes disso, entre Tensão 35 e 60, a
+   função `calm` corta aos poucos as Operações e a venda de armamento pesado a países em guerra (ambos sobem a
+   Tensão no motor). O Estado-Sombra se contém só 80% e nunca sai do mercado de ADM.
 5. **Equipes:** cada Equipe com ordem voa (Voo Comercial) e executa; sem ordem, guarda/vende o que capturou e
    volta para uma Estação ou para a Escolta.
 6. **Com o Diretor pousado:** vende a Carga do plano (ou entrega o Contrato) e a que sobrou; conserta máquinas;
@@ -48,8 +51,10 @@ ADM: no máximo 1 unidade por viagem e um negócio a cada `30 dias ÷ apetite`.
 
 `planOperation` só escolhe alvos que a força de Pessoal disponível vence com folga (`margin`: a IA afiada exige
 ~1,5× a força do alvo; a Recruta erra para mais e para menos). Evita países onde tem Estação. `planStrike` escolhe a
-agência alvo por hostilidade + rancor (o jogador pesa 1,5×) e a ação pela personalidade; rancor encurta a espera
-entre ataques (retaliação) e decai em ~30 dias.
+agência alvo entre as que ela consegue atacar agora (Estação operante para sabotar, Cofre com algo, olhos no país
+para denunciar), pesando o jogador 2× e o rancor; a ação vem da personalidade. Espera base de 20 dias entre ataques;
+o rancor encurta a espera e aumenta a vontade até um teto (`FURY_CAP` = 3), cada ataque desconta 2 de rancor do alvo,
+e o rancor decai em ~30 dias. Sem o teto, rivais entravam em guerras de retaliação de ~200 ataques por ano.
 
 ## Personalidades (`ai/profiles.ts`)
 
@@ -58,6 +63,7 @@ entre ataques (retaliação) e decai em ~30 dias.
 | Foco | Comércio e Estações | Força, Armamento, roubo a banco | Estações, Informação, Neutralização | Roubo de tecnologia, discrição |
 | Contra agências | Denúncia | Sabotagem, Cofre | Denúncia | Roubo de Cofre |
 | ADM | nunca | sim, recua com Tensão 92 | sim, **nunca recua** | pouco, recua com 85 |
+| Paciência no Topo | 0 dias | 20 dias | infinita | 6 dias |
 | Escolta | 3 | 6 | 4 | 3 |
 
 Recruta só sorteia Mercador ou Fantasma.
@@ -81,6 +87,7 @@ Nada disso muda regra do motor.
 
 - **Rival rica/pobre demais:** `stake` e `quality` em `DIFFICULTY_AI`; `MAX_LOT` em `trade.ts`. Lembre que o
   lucro vem do mercado do motor: se o Comércio estiver generoso, o jogador ativo também ganha assim.
+- **Rivais esquentando demais o mundo:** `CALM_FROM`/`CALM_FULL` e `calm()` em `profiles.ts`, `crisisPatience`.
 - **Mais/menos agressiva:** `aggression` (Dificuldade) e `operations`/`hostility` (personalidade). A chance por
   decisão é `peso × aggression × 0,35`.
 - **Nova personalidade:** adicione em `PersonalityId`, `PERSONALITIES` e `PERSONALITY_ORDER`.
@@ -90,5 +97,7 @@ Nada disso muda regra do motor.
 ## Números de referência
 
 Simulação de 365 dias, Preset "Primeiro Contrato" sem prazo, jogador parado (≈ US$ 6 mi): rivais Diretor terminam
-com US$ 120–260 mi (15–35× o capital), Recruta ≈ US$ 80 mi. Uma decisão custa bem menos de 1 ms; o ano inteiro com
+com US$ 130–260 mi (15–35× o capital), Recruta ≈ US$ 80 mi. Com 4 rivais na Diretor, a Tensão Global ainda
+pode chegar ao Topo e à Crise Final em 90–200 dias em alguns mundos (muitas guerras desde o início seguram a
+Tensão perto de 70); o teste de 365 dias zera o contador da Crise Final para isolar a IA. Uma decisão custa bem menos de 1 ms; o ano inteiro com
 4 rivais roda em ~3 s no desktop. Testes em `src/game/ai/__tests__/rivals.test.ts`.

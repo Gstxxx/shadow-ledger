@@ -22,6 +22,8 @@ export interface Personality {
   wmd: number;
   /** Tensão Global a partir da qual recua do mercado de ADM com medo da Crise Final (101 = nunca). */
   crisisFear: number;
+  /** Dias com a Tensão Global no Topo que aguenta antes de parar de esquentar o mundo (Infinity = nunca para). */
+  crisisPatience: number;
   /** Fração do caixa que nunca arrisca. */
   reserve: number;
   /** Quanto evita Exposição alta (0..1). */
@@ -44,6 +46,7 @@ export const PERSONALITIES: Record<PersonalityId, Personality> = {
     strikes: { sabotage: 0.2, vault: 0.3, denounce: 1 },
     wmd: 0,
     crisisFear: 80,
+    crisisPatience: 0,
     reserve: 0.2,
     caution: 0.8,
     escort: 3,
@@ -61,6 +64,7 @@ export const PERSONALITIES: Record<PersonalityId, Personality> = {
     strikes: { sabotage: 1, vault: 0.8, denounce: 0.2 },
     wmd: 0.6,
     crisisFear: 92,
+    crisisPatience: 20,
     reserve: 0.12,
     caution: 0.3,
     escort: 6,
@@ -78,6 +82,7 @@ export const PERSONALITIES: Record<PersonalityId, Personality> = {
     strikes: { sabotage: 0.5, vault: 0.3, denounce: 1 },
     wmd: 1,
     crisisFear: 101,
+    crisisPatience: Infinity,
     reserve: 0.18,
     caution: 0.5,
     escort: 4,
@@ -95,6 +100,7 @@ export const PERSONALITIES: Record<PersonalityId, Personality> = {
     strikes: { sabotage: 0.3, vault: 1, denounce: 0.5 },
     wmd: 0.3,
     crisisFear: 85,
+    crisisPatience: 6,
     reserve: 0.15,
     caution: 0.9,
     escort: 3,
@@ -127,6 +133,20 @@ export const DIFFICULTY_AI: Record<Difficulty, DifficultyProfile> = {
 
 /** Tensão Global em que a IA considera a Crise Final iminente. */
 export const CRISIS_TENSION = 95;
+
+/** Faixa de Tensão Global em que as rivais vão parando de esquentar o mundo. */
+export const CALM_FROM = 35;
+export const CALM_FULL = 60;
+
+/**
+ * 0..1: quanto esta personalidade evita, agora, ações que sobem a Tensão Global (Operações, armas pesadas
+ * vendidas a países em guerra). Quem nunca perde a paciência com a Crise Final (Estado-Sombra) se contém menos
+ * — e nunca sai do mercado de ADM.
+ */
+export function calm(P: Personality, tension: number): number {
+  const k = Math.max(0, Math.min(1, (tension - CALM_FROM) / (CALM_FULL - CALM_FROM)));
+  return Number.isFinite(P.crisisPatience) ? k : k * 0.8;
+}
 
 export const RIVAL_NAMES = [
   'Rede Basalto',
