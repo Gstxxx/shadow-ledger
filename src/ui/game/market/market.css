@@ -1,0 +1,536 @@
+/* ── Mercado (redesenho) ──────────────────────────────────
+   Números nunca quebram linha; um rótulo claro por preço; cor só com significado:
+   âmbar = ação do jogador, verde/vermelho = lucro/prejuízo, ciano = informação. */
+.mkt {
+  --mkt-pad: 14px;
+  display: flex;
+  flex-direction: column;
+  border-top: 1px solid var(--line);
+}
+.mkt .num,
+.mkt-why .num {
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+.mkt-head {
+  padding: 12px var(--mkt-pad) 10px;
+  display: grid;
+  gap: 6px;
+}
+.mkt-title {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 8px;
+}
+.mkt-title h3 {
+  margin: 0;
+  font: 600 15px/1.2 var(--display);
+  font-stretch: 110%;
+  color: var(--paper);
+}
+.mkt-live {
+  font-size: 11px;
+  color: var(--paper-3);
+  white-space: nowrap;
+}
+.mkt-live.on {
+  color: #7fd6d3;
+}
+.mkt-live.on::before {
+  content: '';
+  display: inline-block;
+  width: 6px;
+  height: 6px;
+  margin-right: 6px;
+  border-radius: 50%;
+  background: currentColor;
+  vertical-align: 1px;
+}
+.mkt-guide {
+  margin: 0;
+  font-size: 13px;
+  line-height: 1.4;
+  color: var(--paper-2);
+}
+.mkt-cap {
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  align-items: center;
+  gap: 10px;
+  font-size: 12px;
+  color: var(--paper-2);
+}
+.mkt-cap-bar {
+  position: relative;
+  height: 6px;
+  border-radius: 3px;
+  background: var(--ink-4);
+  overflow: hidden;
+}
+.mkt-cap-bar > span {
+  position: absolute;
+  inset: 0 auto 0 0;
+  background: var(--paper-3);
+  border-radius: 3px;
+}
+.mkt-cap-bar > span.full {
+  background: var(--amber);
+}
+.mkt-cap-v {
+  font-family: var(--mono);
+  font-size: 12px;
+  white-space: nowrap;
+}
+
+/* Segmentos: rolagem horizontal no celular, sem quebrar o rótulo. */
+.mkt-segs {
+  display: flex;
+  gap: 6px;
+  padding: 2px var(--mkt-pad) 8px;
+  overflow-x: auto;
+  scrollbar-width: none;
+  scroll-snap-type: x proximity;
+}
+.mkt-segs::-webkit-scrollbar {
+  display: none;
+}
+.mkt-seg {
+  flex: none;
+  scroll-snap-align: start;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  min-height: 44px;
+  padding: 0 12px;
+  border: 1px solid var(--line-2);
+  border-radius: var(--r);
+  background: var(--ink-2);
+  color: var(--paper-2);
+  font-size: 13px;
+  font-weight: 560;
+  white-space: nowrap;
+  cursor: pointer;
+}
+.mkt-seg:hover {
+  border-color: var(--paper-3);
+}
+.mkt-seg[aria-selected='true'] {
+  border-color: var(--amber);
+  background: var(--amber-glow);
+  color: var(--paper);
+}
+.mkt-seg.hire {
+  margin-left: 8px;
+  border-style: dashed;
+}
+.mkt-seg:focus-visible,
+.mkt-row:focus-visible {
+  outline: 2px solid var(--amber);
+  outline-offset: -2px;
+}
+.mkt-count {
+  min-width: 18px;
+  padding: 1px 5px;
+  border-radius: 9px;
+  background: var(--ink-4);
+  color: var(--paper-2);
+  font: 500 11px/1.3 var(--mono);
+  text-align: center;
+}
+.mkt-seg-hint {
+  margin: 0;
+  padding: 0 var(--mkt-pad) 8px;
+  font-size: 12px;
+  line-height: 1.4;
+  color: var(--paper-3);
+}
+
+.mkt-empty {
+  display: flex;
+  gap: 12px;
+  align-items: flex-start;
+  margin: 4px var(--mkt-pad) 12px;
+  padding: 12px;
+  border: 1px dashed var(--line-2);
+  border-radius: var(--r);
+  color: var(--paper-2);
+  font-size: 13px;
+  line-height: 1.45;
+}
+.mkt-empty p {
+  margin: 0;
+}
+.mkt-empty b {
+  color: var(--paper);
+}
+
+/* Linhas */
+.mkt-rows,
+.opps-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+.mkt-item {
+  border-top: 1px solid var(--line);
+}
+.mkt-item.open {
+  background: var(--ink-2);
+  box-shadow: inset 2px 0 0 var(--amber);
+}
+.mkt-item.wmd {
+  box-shadow: inset 2px 0 0 var(--red);
+}
+.mkt-row {
+  width: 100%;
+  display: grid;
+  grid-template-columns: 28px minmax(0, 1fr) auto;
+  grid-template-areas:
+    'ico name prices'
+    'ico own own';
+  align-items: center;
+  column-gap: 10px;
+  row-gap: 4px;
+  padding: 10px var(--mkt-pad);
+  min-height: 56px;
+  border: 0;
+  background: none;
+  color: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+.mkt-row.static {
+  cursor: default;
+}
+.mkt-row:hover {
+  background: rgba(255, 255, 255, 0.02);
+}
+.mkt-row > svg {
+  grid-area: ico;
+  align-self: start;
+  margin-top: 2px;
+}
+.mkt-name {
+  grid-area: name;
+  min-width: 0;
+  display: grid;
+  gap: 2px;
+}
+.mkt-name-t {
+  font-size: 14px;
+  font-weight: 560;
+  color: var(--paper);
+  line-height: 1.25;
+}
+.mkt-name-s {
+  font-size: 12px;
+  color: var(--paper-3);
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 4px 6px;
+}
+.mkt-deal {
+  padding: 0 6px;
+  border-radius: 2px;
+  font: 500 11px/18px var(--mono);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  white-space: nowrap;
+}
+.mkt-deal.cheap {
+  color: #6fd3a9;
+  background: rgba(70, 185, 141, 0.12);
+}
+.mkt-deal.pricey {
+  color: #ff9a9d;
+  background: rgba(229, 72, 77, 0.12);
+}
+.mkt-prices {
+  grid-area: prices;
+  display: grid;
+  gap: 2px;
+  justify-items: end;
+}
+.mkt-p {
+  display: flex;
+  align-items: baseline;
+  gap: 6px;
+  white-space: nowrap;
+}
+.mkt-p .k {
+  font-size: 11px;
+  color: var(--paper-3);
+}
+.mkt-p .v {
+  font: 500 13px/1.2 var(--mono);
+  color: var(--paper);
+}
+.mkt-own {
+  grid-area: own;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px 10px;
+  font: 500 12px/1.3 var(--mono);
+  color: var(--amber);
+}
+.mkt-away {
+  margin: 0;
+  padding: 0 var(--mkt-pad) 12px calc(var(--mkt-pad) + 38px);
+  font-size: 12px;
+  color: var(--paper-3);
+}
+
+/* Detalhe de compra/venda */
+.mkt-trade {
+  display: grid;
+  gap: 12px;
+  padding: 0 var(--mkt-pad) 14px;
+}
+.mkt-qty {
+  display: grid;
+  gap: 6px;
+}
+.mkt-qty label {
+  font-size: 11px;
+  color: var(--paper-3);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+.mkt-stepper {
+  display: grid;
+  grid-template-columns: 44px minmax(0, 1fr) 44px 44px;
+  align-items: center;
+  gap: 8px;
+}
+.mkt-stepper .btn.icon {
+  width: 44px;
+  min-height: 44px;
+  font-size: 18px;
+}
+.mkt-stepper input[type='range'] {
+  width: 100%;
+  height: 44px;
+  margin: 0;
+  accent-color: var(--amber);
+  background: transparent;
+}
+.mkt-q {
+  font: 600 18px/1 var(--mono);
+  text-align: center;
+  color: var(--paper);
+}
+.mkt-quick {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+}
+.mkt-quick .btn {
+  min-height: 36px;
+  color: var(--paper-2);
+  border-color: var(--line);
+}
+.mkt-sides {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(0, 1fr));
+  gap: 10px;
+}
+.mkt-side {
+  display: grid;
+  gap: 6px;
+  align-content: start;
+}
+.mkt-side .btn {
+  min-height: 44px;
+  width: 100%;
+  white-space: nowrap;
+}
+.mkt-side .btn.loss {
+  border-color: rgba(229, 72, 77, 0.55);
+  color: #ffb1b3;
+}
+.mkt-why {
+  font-size: 12px;
+  line-height: 1.4;
+  color: var(--paper-3);
+}
+.mkt-why.bad {
+  color: #ffb1b3;
+}
+.mkt-blurb {
+  margin: 0;
+  font-size: 12px;
+  line-height: 1.45;
+  color: var(--paper-3);
+}
+.mkt-hire {
+  grid-area: prices;
+  display: grid;
+  gap: 4px;
+  justify-items: end;
+  max-width: 190px;
+}
+.mkt-hire .mkt-why {
+  text-align: right;
+}
+
+/* Oportunidades */
+.opp {
+  display: grid;
+  grid-template-columns: 28px minmax(0, 1fr);
+  gap: 8px 10px;
+  padding: 12px var(--mkt-pad);
+  border-top: 1px solid var(--line);
+}
+.opp.kind-sell-here,
+.opp.kind-sell-there {
+  background: linear-gradient(90deg, var(--amber-glow), transparent 70%);
+}
+.opp-body {
+  display: grid;
+  gap: 4px;
+  min-width: 0;
+}
+.opp-title {
+  font-size: 13px;
+  line-height: 1.45;
+  color: var(--paper-2);
+}
+.opp-title b {
+  color: var(--paper);
+  font-weight: 600;
+}
+.opp-title .num {
+  color: var(--paper);
+  font-family: var(--mono);
+  font-size: 12.5px;
+}
+.opp-meta {
+  font-size: 12px;
+  color: var(--paper-3);
+}
+.opp-actions {
+  grid-column: 2;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+.opp-actions .btn {
+  min-height: 40px;
+}
+
+/* Painel estreito (gaveta do celular ou coluna de 372 px): preços abaixo do nome. */
+@container mkt (max-width: 300px) {
+  .mkt-row {
+    grid-template-columns: 28px minmax(0, 1fr);
+    grid-template-areas:
+      'ico name'
+      'ico prices'
+      'ico own';
+  }
+  .mkt-prices {
+    justify-items: start;
+    grid-auto-flow: column;
+    justify-content: start;
+    gap: 12px;
+  }
+}
+@container mkt (max-width: 460px) {
+  .mkt-sides {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+.mkt {
+  container: mkt / inline-size;
+}
+@media (pointer: coarse) {
+  .mkt-quick .btn {
+    min-height: 44px;
+  }
+}
+.opp.blocked .opp-title,
+.opp.blocked > svg {
+  opacity: 0.6;
+}
+.opp {
+  grid-template-columns: 28px minmax(0, 1fr) auto;
+}
+.opp-actions {
+  grid-column: auto;
+  flex-direction: column;
+  align-items: stretch;
+  gap: 4px;
+}
+@container mkt (max-width: 340px) {
+  .opp {
+    grid-template-columns: 28px minmax(0, 1fr);
+  }
+  .opp-actions {
+    grid-column: 2;
+    flex-direction: row;
+  }
+}
+.opp-item {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--paper);
+}
+.opp-tag {
+  padding: 0 6px;
+  font: 500 11px/18px var(--mono);
+  color: var(--amber);
+  background: var(--amber-glow);
+}
+.opp-route {
+  font-size: 13px;
+  color: var(--paper-2);
+}
+.opp-route .num {
+  font-family: var(--mono);
+  font-size: 12.5px;
+  color: var(--paper);
+}
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+}
+
+/* Segmentos ficam à mão enquanto a lista rola. */
+.mkt-segs {
+  position: sticky;
+  top: 0;
+  z-index: 2;
+  background: var(--ink-1);
+  padding-top: 6px;
+}
+
+/* Celular deitado: a altura é o recurso escasso. */
+@media (max-height: 520px) {
+  .mkt-head {
+    padding: 8px var(--mkt-pad) 6px;
+    gap: 4px;
+  }
+  .mkt-guide {
+    font-size: 12px;
+  }
+  .mkt-seg-hint {
+    display: none;
+  }
+  .mkt-row {
+    padding-top: 8px;
+    padding-bottom: 8px;
+  }
+  .opp {
+    padding-top: 10px;
+    padding-bottom: 10px;
+  }
+}

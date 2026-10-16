@@ -1,0 +1,68 @@
+.help {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+}
+/* 18 px visíveis dentro de uma área de toque de 44 px. */
+.help-btn {
+  position: relative;
+  width: 22px;
+  height: 22px;
+  margin: -11px -4px;
+  padding: 0;
+  border: 0;
+  background: none;
+  color: var(--paper-3);
+  cursor: pointer;
+  display: inline-grid;
+  place-items: center;
+}
+.help-btn::before {
+  content: '';
+  position: absolute;
+  inset: -11px;
+}
+.help-btn > span {
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  border: 1px solid currentColor;
+  display: grid;
+  place-items: center;
+  font: 600 10px/1 var(--mono);
+}
+.help-btn:hover,
+.help-btn[aria-expanded='true'] {
+  color: var(--amber);
+}
+.help-btn:focus-visible {
+  outline: 2px solid var(--amber);
+  outline-offset: 2px;
+  border-radius: 50%;
+}
+.help-pop {
+  position: absolute;
+  z-index: 40;
+  top: calc(100% + 8px);
+  left: 50%;
+  transform: translateX(-50%);
+  width: min(260px, 80vw);
+  padding: 10px 12px;
+  background: var(--ink-3);
+  border: 1px solid var(--line-2);
+  border-radius: var(--r);
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+  color: var(--paper-2);
+  font: 400 13px/1.45 var(--display);
+  text-transform: none;
+  letter-spacing: 0;
+  white-space: normal;
+  text-align: left;
+}
+.help-pop b {
+  display: block;
+  color: var(--paper);
+  font-weight: 600;
+  margin-bottom: 2px;
+}
