@@ -14,6 +14,10 @@ import { Toasts } from '../Toasts';
 import { FleetSpace, UnitCard, UpkeepBalance } from '../unit/UnitCard';
 import { UnitDossier } from '../unit/UnitDossier';
 import { MarketPanel } from './MarketPanel';
+import { GameScreen } from '../GameScreen';
+
+// `?full` monta a tela de jogo inteira, com os painéis novos ligados.
+const FULL = new URLSearchParams(location.search).has('full');
 
 useGameStore.getState().start({ preset: PRESETS[0], difficulty: 2, hardcore: false, seed: 7 });
 useGameStore.setState({ paused: true });
@@ -86,6 +90,13 @@ document.head.appendChild(css);
 
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
-    <Proto />
+    {FULL ? (
+      <>
+        <GameScreen />
+        <Toasts />
+      </>
+    ) : (
+      <Proto />
+    )}
   </StrictMode>,
 );

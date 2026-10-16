@@ -1,18 +1,20 @@
-import { useState } from 'react';
-import { Briefcase, Building2, Crown, Gavel, Landmark, PlaneTakeoff, ShieldAlert, Cpu, UserX } from 'lucide-react';
+import { Building2, Crown, Gavel, Landmark, PlaneTakeoff, ShieldAlert, Cpu, UserX } from 'lucide-react';
 import * as A from '../../game/actions';
 import { cargoQty } from '../../game/cargo';
 import { CONTINENT_LABEL } from '../../game/data/countries';
-import { CLASS_LABEL, ITEMS } from '../../game/data/items';
+import { ITEMS } from '../../game/data/items';
 import { OPERATION_BLURB, OPERATION_LABEL, POLITICS_COLOR, POLITICS_LABEL, STATIONS } from '../../game/data/rules';
-import { buyPrice, fleetSpeed, freeCargo, interested, quoteBuy, quoteSell, rollRecruits, sellPrice } from '../../game/market';
-import { directorAt, formatDuration, intelCountries, player, postureIn, standing, stationIn } from '../../game/state';
+import { fleetSpeed } from '../../game/market';
+import { directorAt, formatDuration, player, postureIn, standing, stationIn } from '../../game/state';
 import type { OperationKind, StationLevel } from '../../game/types';
 import { def } from '../../game/units';
 import { useGame, useGameStore } from '../../store/game';
-import { amount, money, tons } from '../fmt';
-import { Empty, ExpBar, PostureChip, RepBar, Section, Stepper } from './bits';
-import { UnitRow } from './UnitRow';
+import { money, tons } from '../fmt';
+import { Empty, ExpBar, PostureChip, RepBar, Section } from './bits';
+import { UnitCard } from './unit/UnitCard';
+import { useOpenUnit } from './unit/DossierHost';
+import { MarketPanel } from './market/MarketPanel';
+import { Help } from './help/Glossary';
 
 const OP_ICON: Record<OperationKind, typeof Landmark> = { bank: Landmark, tech: Cpu, neutralize: UserX };
 
@@ -24,19 +26,6 @@ export function CountryPanel() {
   const c = s.countries[id];
   const here = directorAt(a, id);
   const sd = standing(a, id);
-  const live = intelCountries(a).has(id);
-  const [open, setOpen] = useState<string | null>(null);
-  const [qty, setQty] = useState(1);
-
-  const marketItems = [...new Set([...c.stock, ...(here ? a.cargo.map((l) => l.itemId) : [])])];
-
-  const maxBuy = (itemId: string) => {
-    const w = ITEMS[itemId].weight;
-    const byCargo = w > 0 ? Math.floor((freeCargo(a) + 1e-6) / w) : 99;
-    let n = 0;
-    while (n < Math.min(99, byCargo) && quoteBuy(c, itemId, n + 1).total <= a.cash) n++;
-    return n;
-  };
 
   return (
     <div className="panel-scroll">
@@ -52,10 +41,14 @@ export function CountryPanel() {
         <PostureChip posture={postureIn(a, id)} />
       </header>
       <div className="kv">
-        <span className="k">Reputação</span>
+        <span className="k">
+          <Help term="reputation">Reputação</Help>
+        </span>
         <RepBar value={sd.reputation} />
         <span className="v num">{Math.round(sd.reputation)}</span>
-        <span className="k">Exposição</span>
+        <span className="k">
+          <Help term="exposure">Exposição</Help>
+        </span>
         <ExpBar value={sd.exposure} />
         <span className="v num">{Math.round(sd.exposure)}</span>
       </div>
@@ -64,95 +57,7 @@ export function CountryPanel() {
         <TravelBox countryId={id} />
       )}
 
-      <Section
-        title="Mercado"
-        right={
-          <span className="mono hint-sm">
-            {live ? 'ao vivo' : sd.seen ? `visto há ${formatDuration(s.time - sd.seen.at)}` : 'sem informação'}
-          </span>
-        }
-      >
-        {!live && !sd.seen && <Empty>Sem Estação aqui, os preços só aparecem quando o Diretor visita.</Empty>}
-        {(live || sd.seen) && (
-          <div className="market">
-            <div className="mk-row mk-head mono">
-              <span>Item</span>
-              <span>Compra US$</span>
-              <span>Venda US$</span>
-              <span>Carga</span>
-            </div>
-            {marketItems.map((itemId) => {
-              const it = ITEMS[itemId];
-              const inStock = c.stock.includes(itemId);
-              const sat = c.saturation[itemId] ?? 0;
-              const seenMid = sd.seen?.prices[itemId];
-              const b = live ? (inStock ? buyPrice(c, itemId) : 0) : seenMid ? Math.round(seenMid * 1.04) : 0;
-              const sp = live ? sellPrice(c, itemId) : seenMid && interested(c, it) ? Math.round(seenMid * 0.94) : 0;
-              const owned = cargoQty(a, itemId);
-              const isOpen = open === itemId && here;
-              return (
-                <div key={itemId} className={`mk-item${isOpen ? ' open' : ''}${it.wmd ? ' wmd' : ''}`}>
-                  <button
-                    className="mk-row"
-                    disabled={!here}
-                    onClick={() => {
-                      setOpen(isOpen ? null : itemId);
-                      setQty(1);
-                    }}
-                  >
-                    <span className="mk-name">
-                      {it.name}
-                      <small>{it.wmd ? 'Arma de Destruição em Massa' : CLASS_LABEL[it.cls]}</small>
-                    </span>
-                    <span className="num">{b ? amount(b) : '—'}</span>
-                    <span className="num">
-                      {sp ? amount(sp) : '—'}
-                      {live && Math.abs(sat) >= 0.02 && (
-                        <small className={sat < 0 ? 'neg' : 'pos'}>
-                          {sat > 0 ? '+' : '−'}
-                          {Math.round(Math.abs(sat) * 100)}%
-                        </small>
-                      )}
-                    </span>
-                    <span className="num">{owned || '·'}</span>
-                  </button>
-                  {isOpen && (() => {
-                    const canBuy = inStock ? maxBuy(itemId) : 0;
-                    const nBuy = Math.min(qty, canBuy);
-                    const nSell = sp ? Math.min(qty, owned) : 0;
-                    return (
-                    <div className="mk-trade">
-                      <Stepper value={qty} max={Math.max(canBuy, owned, 1)} onChange={setQty} />
-                      <div className="mk-btns">
-                        <button
-                          className="btn sm"
-                          disabled={nBuy < 1}
-                          onClick={() => act((g, ag) => A.buy(g, ag, itemId, nBuy), 'buy')}
-                        >
-                          {nBuy ? `Comprar ${nBuy} · ${money(quoteBuy(c, itemId, nBuy).total)}` : inStock ? 'Sem caixa ou espaço' : 'Não vende aqui'}
-                        </button>
-                        <button
-                          className="btn sm primary"
-                          disabled={nSell < 1}
-                          onClick={() => act((g, ag) => A.sell(g, ag, itemId, nSell), 'sell')}
-                        >
-                          {nSell ? `Vender ${nSell} · ${money(quoteSell(c, itemId, nSell).total)}` : sp ? 'Nada na Carga' : 'Não compra aqui'}
-                        </button>
-                      </div>
-                      <p className="hint-sm">
-                        {tons(it.weight)} por unidade. {it.blurb} Cada venda derruba o preço local (Saturação), que se recupera em alguns dias.
-                      </p>
-                    </div>
-                    );
-                  })()}
-                </div>
-              );
-            })}
-          </div>
-        )}
-      </Section>
-
-      {here && <RecruitSection countryId={id} />}
+      <MarketPanel countryId={id} />
 
       <StationSection countryId={id} />
 
@@ -250,33 +155,6 @@ function TravelBox({ countryId }: { countryId: string }) {
   );
 }
 
-function RecruitSection({ countryId }: { countryId: string }) {
-  const s = useGame();
-  const a = player(s);
-  const act = useGameStore((st) => st.act);
-  const c = s.countries[countryId];
-  return (
-    <Section title="Contratar">
-      <div className="recruits">
-        {rollRecruits(c).map((itemId) => {
-          const it = ITEMS[itemId];
-          const price = A.recruitPrice(countryId, itemId);
-          return (
-            <button key={itemId} className="recruit" disabled={price > a.cash} onClick={() => act((g, ag) => A.recruit(g, ag, itemId), 'buy')}>
-              <Briefcase size={14} />
-              <span>
-                {it.name}
-                <small>{it.cls === 'cargo' ? `${it.weight} t · ${it.speed} km/h` : CLASS_LABEL[it.cls]}</small>
-              </span>
-              <span className="num">{money(price)}</span>
-            </button>
-          );
-        })}
-      </div>
-    </Section>
-  );
-}
-
 function ContractsHere({ countryId }: { countryId: string }) {
   const s = useGame();
   const a = player(s);
@@ -303,6 +181,7 @@ function ContractsHere({ countryId }: { countryId: string }) {
 function StationSection({ countryId }: { countryId: string }) {
   const s = useGame();
   const a = player(s);
+  const openUnit = useOpenUnit();
   const act = useGameStore((st) => st.act);
   const here = directorAt(a, countryId);
   const st = stationIn(a, countryId);
@@ -354,9 +233,10 @@ function StationSection({ countryId }: { countryId: string }) {
       )}
       <div className="unit-list">
         {st.units.map((u) => (
-          <UnitRow
+          <UnitCard
             key={u.uid}
             unit={u}
+            onOpen={openUnit}
             action={
               here && !st.interdicted ? (
                 <button className="btn sm" onClick={() => act((g, ag) => A.transferUnit(g, ag, u.uid, 'escort'))}>
@@ -373,9 +253,10 @@ function StationSection({ countryId }: { countryId: string }) {
           <summary>Deixar Unidades da Escolta aqui</summary>
           <div className="unit-list">
             {a.escort.map((u) => (
-              <UnitRow
+              <UnitCard
                 key={u.uid}
                 unit={u}
+                onOpen={openUnit}
                 action={
                   <button
                     className="btn sm"

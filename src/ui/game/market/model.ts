@@ -126,7 +126,7 @@ export function knownPrice(s: GameState, a: Agency, countryId: string, itemId: s
   };
 }
 
-/** Preço de referência: média dos preços do meio conhecidos; sem nenhum, o preço de tabela. */
+/** Preço de referência: média dos preços do meio conhecidos, completada pelo preço de catálogo. */
 export function referenceMid(s: GameState, a: Agency, itemId: string, live = intelCountries(a)): { mid: number; samples: number } {
   let sum = 0;
   let n = 0;
@@ -137,15 +137,31 @@ export function referenceMid(s: GameState, a: Agency, itemId: string, live = int
       n++;
     }
   }
-  return n >= 2 ? { mid: sum / n, samples: n } : { mid: ITEMS[itemId].price, samples: n };
+  // Com poucos mercados conhecidos, o preço de catálogo completa a média (até valer como 3 amostras).
+  const pad = Math.max(0, 3 - n);
+  return { mid: (sum + ITEMS[itemId].price * pad) / (n + pad), samples: n };
 }
 
 export type Deal = 'cheap' | 'pricey' | 'fair';
 
-export function dealOf(buy: number, refMid: number): Deal {
-  if (!buy || !refMid) return 'fair';
-  const r = buy / (refMid * BUY_K);
-  return r <= 0.93 ? 'cheap' : r >= 1.07 ? 'pricey' : 'fair';
+/** Onde o item está mais barato para comprar e onde pagam mais, entre os preços conhecidos. */
+export function priceRange(
+  s: GameState,
+  a: Agency,
+  itemId: string,
+): { cheapest: KnownPrice | null; best: KnownPrice | null; samples: number } {
+  const live = intelCountries(a);
+  let cheapest: KnownPrice | null = null;
+  let best: KnownPrice | null = null;
+  let samples = 0;
+  for (const id of Object.keys(s.countries)) {
+    const k = knownPrice(s, a, id, itemId, live);
+    if (!k) continue;
+    samples++;
+    if (k.buy && (!cheapest || k.buy < cheapest.buy)) cheapest = k;
+    if (k.sell && (!best || k.sell > best.sell)) best = k;
+  }
+  return { cheapest, best, samples };
 }
 
 export interface MarketRow {
@@ -157,6 +173,10 @@ export interface MarketRow {
   /** Você recebe (0 = não compra aqui). */
   sell: number;
   deal: Deal;
+  /** Preço do meio aqui vs. a média conhecida (−0,18 = 18% abaixo). */
+  dealPct: number;
+  /** A média veio de preços vistos no mundo (true) ou do catálogo, sem amostras suficientes (false). */
+  dealKnown: boolean;
   owned: number;
   /** Preço médio pago pelo que está na Carga. */
   paidEach: number;
@@ -179,13 +199,17 @@ export function marketRows(s: GameState, a: Agency, countryId: string): MarketRo
     const owned = lot?.qty ?? 0;
     const buy = k?.buy ?? 0;
     const sell = k?.sell ?? 0;
+    const ref = referenceMid(s, a, itemId, live);
+    const dealPct = k?.mid && ref.mid ? k.mid / ref.mid - 1 : 0;
     rows.push({
       itemId,
       it,
       segment: segmentOf(it),
       buy,
       sell,
-      deal: dealOf(buy, referenceMid(s, a, itemId, live).mid),
+      deal: dealPct <= -0.07 ? 'cheap' : dealPct >= 0.07 ? 'pricey' : 'fair',
+      dealPct,
+      dealKnown: ref.samples >= 3,
       owned,
       paidEach: lot?.paidEach ?? 0,
       plEach: owned && sell ? sell - (lot?.paidEach ?? 0) : 0,

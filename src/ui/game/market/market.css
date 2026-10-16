@@ -239,13 +239,37 @@
   letter-spacing: 0.04em;
   white-space: nowrap;
 }
-.mkt-deal.cheap {
+.mkt-deal {
+  justify-self: start;
+  text-transform: none;
+  letter-spacing: 0;
+}
+.mkt-deal.good {
   color: #6fd3a9;
   background: rgba(70, 185, 141, 0.12);
 }
-.mkt-deal.pricey {
+.mkt-deal.bad {
   color: #ff9a9d;
   background: rgba(229, 72, 77, 0.12);
+}
+.mkt-deal.fair {
+  color: var(--paper-3);
+  background: var(--ink-3);
+}
+.mkt-deal-src {
+  opacity: 0.75;
+}
+.mkt-range {
+  display: grid;
+  gap: 4px;
+  padding: 8px 10px;
+  border: 1px solid var(--line);
+  font-size: 12px;
+  color: var(--paper-2);
+}
+.mkt-range .num {
+  font-family: var(--mono);
+  color: var(--paper);
 }
 .mkt-prices {
   grid-area: prices;
@@ -533,4 +557,18 @@
     padding-top: 10px;
     padding-bottom: 10px;
   }
+}
+.linkish {
+  padding: 0;
+  border: 0;
+  background: none;
+  color: #8fd6d3;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+  cursor: pointer;
+  font: inherit;
+  min-height: 24px;
+}
+.linkish:focus-visible {
+  outline: 2px solid var(--amber);
 }

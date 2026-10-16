@@ -1,0 +1,33 @@
+/* Abas da Agência: rótulo sempre visível (nada só em ícone), contador com significado no aria/title. */
+.ag-tabs .tab {
+  min-height: 48px;
+  gap: 2px;
+  font-size: 11px;
+  touch-action: manipulation;
+}
+.ag-tabs .tab-label {
+  display: block !important;
+  white-space: nowrap;
+}
+.ag-tabs .tab:focus-visible {
+  outline: 2px solid var(--amber);
+  outline-offset: -2px;
+}
+.ag-tabs .badge {
+  right: 4px;
+}
+.sec-hint {
+  margin: -4px 14px 8px;
+  line-height: 1.4;
+}
+@media (max-height: 520px) {
+  .ag-tabs .tab {
+    min-height: 44px;
+    padding: 5px 2px 4px;
+  }
+}
+.sec .fs,
+.sec .ub {
+  padding-left: 0;
+  padding-right: 0;
+}

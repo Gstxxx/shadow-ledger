@@ -12,6 +12,7 @@ import {
   marketRows,
   maxAffordable,
   opportunities,
+  priceRange,
   recruitRows,
   saturationAfter,
   sellUntilBreakEven,
@@ -246,7 +247,11 @@ function MarketItem({ row, countryId, open, onToggle }: { row: MarketRow; countr
   const s = useGame();
   const a = player(s);
   const here = directorAt(a, countryId);
-  const deal = r.deal === 'cheap' ? 'barato aqui' : r.deal === 'pricey' ? 'caro aqui' : null;
+  // Quem compra aqui quer preço abaixo da média; se o país só compra o item, acima da média é bom para vender.
+  const sellSide = !r.buy && r.sell > 0;
+  const pctAbs = Math.round(Math.abs(r.dealPct) * 100);
+  const good = r.deal === 'fair' ? null : sellSide ? r.deal === 'pricey' : r.deal === 'cheap';
+  const dealText = r.deal === 'fair' ? '≈ na média' : r.deal === 'cheap' ? `▼ ${pctAbs}% abaixo da média` : `▲ ${pctAbs}% acima da média`;
   return (
     <li className={`mkt-item${open ? ' open' : ''}${r.it.wmd ? ' wmd' : ''}${r.owned ? ' owned' : ''}`}>
       <button className="mkt-row" aria-expanded={open} onClick={onToggle}>
@@ -255,8 +260,20 @@ function MarketItem({ row, countryId, open, onToggle }: { row: MarketRow; countr
           <span className="mkt-name-t">{r.it.name}</span>
           <span className="mkt-name-s">
             {r.it.wmd ? 'Arma de Destruição em Massa' : CLASS_LABEL[r.it.cls]} · {tons(r.it.weight)}/un
-            {deal && <span className={`mkt-deal ${r.deal}`}>{deal}</span>}
           </span>
+          {(r.buy > 0 || r.sell > 0) && (
+            <span
+              className={`mkt-deal ${good === null ? 'fair' : good ? 'good' : 'bad'}`}
+              title={
+                r.dealKnown
+                  ? 'Comparado com os preços que você conhece no mundo.'
+                  : 'Você conhece poucos mercados: a média usa também o preço de catálogo.'
+              }
+            >
+              {dealText}
+              {!r.dealKnown && <span className="mkt-deal-src"> · poucos dados</span>}
+            </span>
+          )}
         </span>
         <span className="mkt-prices">
           <span className="mkt-p">
@@ -398,7 +415,41 @@ function TradeBox({ row, countryId }: { row: MarketRow; countryId: string }) {
           </p>
         )}
       </div>
+      <PriceRange itemId={r.itemId} countryId={countryId} />
       <p className="mkt-blurb">{r.it.blurb}</p>
+    </div>
+  );
+}
+
+/** Onde o item está mais barato e onde pagam mais, entre os preços que o jogador conhece. */
+function PriceRange({ itemId, countryId }: { itemId: string; countryId: string }) {
+  const s = useGame();
+  const a = player(s);
+  const select = useGameStore((st) => st.select);
+  const { cheapest, best, samples } = priceRange(s, a, itemId);
+  const name = (id: string) => (id === countryId ? `${s.countries[id].name} (aqui)` : s.countries[id].name);
+  if (samples < 2) return <p className="mkt-range">Você só conhece este preço aqui. Abra Estações em outros países para comparar.</p>;
+  return (
+    <div className="mkt-range">
+      {cheapest && (
+        <span>
+          Mais barato:{' '}
+          <button className="linkish" onClick={() => select(cheapest.countryId)}>
+            {name(cheapest.countryId)}
+          </button>{' '}
+          <span className="num">{money(cheapest.buy)}</span>
+        </span>
+      )}
+      {best && (
+        <span>
+          Paga mais:{' '}
+          <button className="linkish" onClick={() => select(best.countryId)}>
+            {name(best.countryId)}
+          </button>{' '}
+          <span className="num">{money(best.sell)}</span>
+        </span>
+      )}
+      <span className="mkt-why">Entre {samples} mercados que você conhece.</span>
     </div>
   );
 }

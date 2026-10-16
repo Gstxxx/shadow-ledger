@@ -36,7 +36,15 @@ function PendingView() {
   const ourStr = ours.reduce((x, u) => x + strOf(u, setup.type), 0);
   const theirStr = setup.enemy.reduce((x, u) => x + strOf(u, setup.type), 0);
 
+  const bestP = Math.max(...TACTICS.filter((x) => x !== 'negotiate').map((x) => pend.preview[x]));
+  const hopeless = bestP < 0.15 && !setup.playerDefends;
+  const [armed, setArmed] = useState(false);
+
   const go = (manual: boolean) => {
+    if (hopeless && !armed) {
+      setArmed(true);
+      return;
+    }
     audio.sfx('open');
     mutate((g) => {
       chooseTactic(g, tactic, manual);
@@ -93,6 +101,15 @@ function PendingView() {
           })}
         </div>
         <p className="hint-sm">Prévia: chance estimada de sucesso em simulações deste confronto.</p>
+        {hopeless && (
+          <div className="alert bad cb-risk" role="alert">
+            <span>
+              <b>Chance quase nula ({pct(bestP)}).</b> Sua força {ourStr} contra {theirStr}. Perder custa Unidades
+              {setup.sources.some((src) => src.kind === 'escort') ? ' e pode deixar o Diretor Detido ou Sequestrado' : ''}.
+              {abortable ? ' Abortar agora não tem custo.' : ''}
+            </span>
+          </div>
+        )}
         <footer className="cb-actions">
           {abortable && (
             <button className="btn ghost" onClick={() => act((g) => cancelPending(g))}>
@@ -100,11 +117,11 @@ function PendingView() {
             </button>
           )}
           <span className="tb-spacer" />
-          <button className="btn" onClick={() => go(true)} disabled={!ours.length}>
-            Assumir a grade
+          <button className={`btn${hopeless && armed ? ' danger' : ''}`} onClick={() => go(true)} disabled={!ours.length}>
+            {hopeless && armed ? 'Comandar mesmo assim' : 'Comandar na grade'}
           </button>
-          <button className="btn primary" onClick={() => go(false)}>
-            Combate Automático
+          <button className={`btn ${hopeless ? (armed ? 'danger' : '') : 'primary'}`} onClick={() => go(false)}>
+            {hopeless && armed ? 'Lutar mesmo assim' : 'Combate Automático'}
           </button>
         </footer>
       </div>

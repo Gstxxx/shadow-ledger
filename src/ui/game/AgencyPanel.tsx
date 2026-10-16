@@ -4,15 +4,17 @@ import * as A from '../../game/actions';
 import { ITEMS } from '../../game/data/items';
 import { OPERATION_LABEL, POSTURE_LABEL, STATIONS, THREAT_LABEL } from '../../game/data/rules';
 import { fleetSpeed, maxCargo, sellPrice, usedCargo } from '../../game/market';
-import { upkeepTotal } from '../../game/sim';
 import { directorAt, formatDuration, player, postureIn, stationIn } from '../../game/state';
 import type { OperationKind, ThreatReaction } from '../../game/types';
-import { isPersonnel, REPAIR_MIN_LEVEL, repairCost } from '../../game/units';
+import { isPersonnel } from '../../game/units';
 import { useGame, useGameStore } from '../../store/game';
 import { audio } from '../../audio/engine';
 import { money, pct, tons } from '../fmt';
 import { Empty, Section } from './bits';
 import { UnitRow } from './UnitRow';
+import { FleetSpace, UnitCard, UpkeepBalance } from './unit/UnitCard';
+import { useOpenUnit } from './unit/DossierHost';
+import './agency.css';
 
 type Tab = 'force' | 'cargo' | 'stations' | 'teams' | 'contracts' | 'threats';
 
@@ -21,31 +23,50 @@ export function AgencyPanel() {
   const a = player(s);
   const [tab, setTab] = useState<Tab>('force');
   const offers = s.contracts.filter((k) => k.status === 'offered').length;
-  const tabs: { id: Tab; label: string; Icon: typeof Plane; badge?: number; hot?: boolean }[] = [
-    { id: 'force', label: 'Frota', Icon: Plane },
-    { id: 'cargo', label: 'Carga', Icon: Boxes, badge: a.cargo.length || undefined },
-    { id: 'stations', label: 'Estações', Icon: Building2, badge: a.stations.length || undefined },
-    { id: 'teams', label: 'Equipes', Icon: Users, badge: a.teams.length || undefined },
-    { id: 'contracts', label: 'Contratos', Icon: FileSignature, badge: offers || undefined },
-    { id: 'threats', label: 'Ameaças', Icon: AlertTriangle, badge: a.threats.length || undefined, hot: a.threats.length > 0 },
+  const cargoUnits = a.cargo.reduce((x, l) => x + l.qty, 0);
+  const tabs: { id: Tab; label: string; Icon: typeof Plane; badge?: number; badgeLabel?: string; hot?: boolean }[] = [
+    { id: 'force', label: 'Frota', Icon: Plane, badge: a.escort.length || undefined, badgeLabel: `${a.escort.length} na Escolta` },
+    { id: 'cargo', label: 'Carga', Icon: Boxes, badge: cargoUnits || undefined, badgeLabel: `${cargoUnits} unidades na Carga` },
+    { id: 'stations', label: 'Estações', Icon: Building2, badge: a.stations.length || undefined, badgeLabel: `${a.stations.length} Estações` },
+    { id: 'teams', label: 'Equipes', Icon: Users, badge: a.teams.length || undefined, badgeLabel: `${a.teams.length} Equipes` },
+    { id: 'contracts', label: 'Contratos', Icon: FileSignature, badge: offers || undefined, badgeLabel: `${offers} ofertas novas` },
+    {
+      id: 'threats',
+      label: 'Ameaças',
+      Icon: AlertTriangle,
+      badge: a.threats.length || undefined,
+      badgeLabel: `${a.threats.length} Ameaças anunciadas`,
+      hot: a.threats.length > 0,
+    },
   ];
+  const pick = (id: Tab) => {
+    if (id === tab) return;
+    audio.sfx('click');
+    setTab(id);
+  };
   return (
     <div className="agency">
-      <nav className="tabs" role="tablist">
+      <nav className="tabs ag-tabs" role="tablist" aria-label="Agência">
         {tabs.map((t) => (
           <button
             key={t.id}
             role="tab"
             aria-selected={tab === t.id}
             className={`tab${t.hot ? ' hot' : ''}`}
-            onClick={() => {
-              audio.sfx('click');
-              setTab(t.id);
+            title={t.badge ? `${t.label}: ${t.badgeLabel}` : t.label}
+            // Troca já no toque/pressão; o clique cobre teclado e leitores de tela.
+            onPointerDown={(e) => {
+              if (e.button === 0) pick(t.id);
             }}
+            onClick={() => pick(t.id)}
           >
             <t.Icon size={16} />
             <span className="tab-label">{t.label}</span>
-            {t.badge !== undefined && <span className="badge">{t.badge}</span>}
+            {t.badge !== undefined && (
+              <span className="badge" aria-label={t.badgeLabel}>
+                {t.badge}
+              </span>
+            )}
           </button>
         ))}
       </nav>
@@ -66,10 +87,7 @@ function ForceTab() {
   const a = player(s);
   const act = useGameStore((st) => st.act);
   const [picking, setPicking] = useState<string[] | null>(null);
-  const st = stationIn(a, a.location);
-  const canRepair = !!st && !st.interdicted && st.level >= REPAIR_MIN_LEVEL && directorAt(a, a.location);
-  const used = usedCargo(a);
-  const max = maxCargo(a);
+  const openUnit = useOpenUnit();
   const d = a.director;
   return (
     <>
@@ -85,34 +103,10 @@ function ForceTab() {
         </div>
       </Section>
       <Section title="Frota" right={<span className="mono hint-sm">{fleetSpeed(a)} km/h</span>}>
-        <div className="cap">
-          <span className="cap-bar">
-            <span style={{ width: `${max ? Math.min(100, (used / max) * 100) : 100}%`, background: used > max ? 'var(--red)' : 'var(--amber)' }} />
-          </span>
-          <span className="mono hint-sm">
-            {tons(used)} de {tons(max)} · Carga + Escolta (aeronaves de combate voam ao lado)
-          </span>
-        </div>
+        <FleetSpace a={a} />
         <div className="unit-list">
           {a.fleet.map((u) => (
-            <UnitRow
-              key={u.uid}
-              unit={u}
-              action={
-                <span className="row-actions">
-                  {canRepair && u.injury?.kind === 'damaged' && (
-                    <button className="btn sm" onClick={() => act((g, ag) => A.repair(g, ag, u.uid), 'buy')}>
-                      Consertar {money(repairCost(u))}
-                    </button>
-                  )}
-                  {a.fleet.length > 1 && (
-                    <button className="btn sm ghost" onClick={() => act((g, ag) => A.dismiss(g, ag, u.uid), 'sell')}>
-                      Vender
-                    </button>
-                  )}
-                </span>
-              }
-            />
+            <UnitCard key={u.uid} unit={u} onOpen={openUnit} />
           ))}
         </div>
       </Section>
@@ -144,37 +138,29 @@ function ForceTab() {
           ) : undefined
         }
       >
+        <p className="hint-sm sec-hint">
+          {picking
+            ? 'Toque nas Unidades que vão formar a Equipe. Ela age em outro país sem o Diretor.'
+            : 'Quem viaja e luta com o Diretor. Toque numa Unidade para ver a ficha. Destacar Equipe manda parte dela agir em outro país sem você.'}
+        </p>
         <div className="unit-list">
-          {a.escort.map((u) => (
-            <UnitRow
-              key={u.uid}
-              unit={u}
-              selected={picking?.includes(u.uid)}
-              onClick={picking ? () => setPicking(picking.includes(u.uid) ? picking.filter((x) => x !== u.uid) : [...picking, u.uid]) : undefined}
-              action={
-                picking ? undefined : (
-                  <span className="row-actions">
-                    {canRepair && u.injury?.kind === 'damaged' && (
-                      <button className="btn sm" onClick={() => act((g, ag) => A.repair(g, ag, u.uid), 'buy')}>
-                        Consertar {money(repairCost(u))}
-                      </button>
-                    )}
-                    <button className="btn sm ghost" onClick={() => act((g, ag) => A.dismiss(g, ag, u.uid), 'sell')}>
-                      Dispensar
-                    </button>
-                  </span>
-                )
-              }
-            />
-          ))}
+          {a.escort.map((u) =>
+            picking ? (
+              <UnitRow
+                key={u.uid}
+                unit={u}
+                selected={picking.includes(u.uid)}
+                onClick={() => setPicking(picking.includes(u.uid) ? picking.filter((x) => x !== u.uid) : [...picking, u.uid])}
+              />
+            ) : (
+              <UnitCard key={u.uid} unit={u} onOpen={openUnit} />
+            ),
+          )}
           {!a.escort.length && <Empty>Escolta vazia. Contrate Pessoal ou aliste Unidades compradas.</Empty>}
         </div>
       </Section>
-      <Section title="Manutenção">
-        <div className="row-line">
-          <span className="hint-sm">Mensal, de todas as Unidades (Escolta, Frota, Estações e Equipes).</span>
-          <span className="num">{money(upkeepTotal(a))}/mês</span>
-        </div>
+      <Section title="Mês">
+        <UpkeepBalance a={a} />
         {a.arrears > 0 && (
           <div className="alert bad">
             <span>Máquinas paradas por Manutenção atrasada.</span>
@@ -294,6 +280,7 @@ function StationsTab() {
 function TeamsTab() {
   const s = useGame();
   const a = player(s);
+  const openUnit = useOpenUnit();
   const act = useGameStore((st) => st.act);
   const selected = useGameStore((st) => st.selected);
   const select = useGameStore((st) => st.select);
@@ -323,9 +310,9 @@ function TeamsTab() {
               </header>
               <div className="unit-list compact">
                 {t.units.map((u) => (
-                  <UnitRow key={u.uid} unit={u} />
+                  <UnitCard key={u.uid} unit={u} onOpen={openUnit} />
                 ))}
-                {t.freighter && <UnitRow unit={t.freighter} />}
+                {t.freighter && <UnitCard unit={t.freighter} onOpen={openUnit} />}
               </div>
               {t.spoils.map((l) => (
                 <div key={l.lid} className="row-line spoils">

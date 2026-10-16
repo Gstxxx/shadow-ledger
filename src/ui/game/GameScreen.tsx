@@ -10,6 +10,7 @@ import { CountryPanel } from './CountryPanel';
 import { DirectorBanner, EventModal, GameOver, LogPanel } from './Overlays';
 import { TopBar } from './TopBar';
 import { WorldMap } from './WorldMap';
+import { DossierHost } from './unit/DossierHost';
 import type { MapMode } from './WorldMap';
 import './game.css';
 
@@ -82,6 +83,7 @@ export function GameScreen() {
   };
 
   return (
+    <DossierHost>
     <div className="game">
       <TopBar onMenu={openMenu} onLeft={() => setDrawer(drawer === 'left' ? null : 'left')} onRight={() => setDrawer(drawer === 'right' ? null : 'right')} />
       <DirectorBanner />
@@ -130,5 +132,6 @@ export function GameScreen() {
         </div>
       )}
     </div>
+    </DossierHost>
   );
 }

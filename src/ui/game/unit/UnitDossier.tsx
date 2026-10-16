@@ -71,7 +71,7 @@ export function findUnit(a: Agency, uid: string): { unit: Unit; place: UnitPlace
       };
   }
   for (const t of a.teams) {
-    const u = t.units.find((x) => x.uid === uid);
+    const u = t.units.find((x) => x.uid === uid) ?? (t.freighter?.uid === uid ? t.freighter : undefined);
     if (u) return { unit: u, place: { kind: 'team', teamId: t.id } };
   }
   return null;
