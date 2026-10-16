@@ -8,6 +8,7 @@ O jogo sai primeiro na web (site próprio e itch.io) e depois como PWA instaláv
 
 ## Consequences
 
-- Nada de informação essencial só no hover; alvos de toque com pelo menos 44 px; painéis viram gavetas e folhas inferiores em tela estreita.
+- No celular o jogo é jogado **deitado (paisagem)**. O manifest fixa a orientação em paisagem e, em retrato, aparece um aviso para girar o aparelho. A tela de referência mais apertada é de ~640×360: a altura é o recurso escasso, então os painéis viram gavetas laterais e a barra superior fica fina.
+- Nada de informação essencial só no hover; alvos de toque com pelo menos 44 px.
 - O save não depende de servidor e pode ser exportado e importado.
 - Uma versão desktop/Steam continua possível empacotando o mesmo código.
