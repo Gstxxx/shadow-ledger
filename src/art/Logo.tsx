@@ -138,7 +138,7 @@ export function Logo({ variant = 'full', height = 64, tagline = 'Private Intelli
  */
 export function appIconSvg(size: 512 | 192 | number = 512, opts: { maskable?: boolean } = {}): string {
   const p = palette;
-  const scale = opts.maskable ? 0.56 : 0.66;
+  const scale = opts.maskable ? 0.5 : 0.66;
   const s = (100 * scale) / 74; // monograma em unidades 0..100 do ícone
   const tx = 50 - 51 * s; // centro óptico do S (sem o ponto de radar)
   const ty = 50 - 50 * s;

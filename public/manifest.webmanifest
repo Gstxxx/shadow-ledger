@@ -1,11 +1,44 @@
 {
+  "id": "./",
   "name": "Shadow Ledger",
   "short_name": "Shadow Ledger",
+  "description": "Dirija uma agência privada de inteligência: compre a guerra barato, venda caro e não deixe o mundo acabar.",
   "lang": "pt-BR",
-  "start_url": ".",
+  "dir": "ltr",
+  "start_url": "./",
+  "scope": "./",
   "display": "fullscreen",
+  "display_override": ["fullscreen", "standalone"],
   "orientation": "landscape",
-  "background_color": "#0b0d10",
-  "theme_color": "#0b0d10",
-  "icons": [{ "src": "icon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any" }]
+  "background_color": "#0b0e12",
+  "theme_color": "#0b0e12",
+  "categories": ["games", "strategy"],
+  "icons": [
+    { "src": "icons/icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
+    { "src": "icons/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" },
+    { "src": "icons/icon-maskable-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+  ],
+  "screenshots": [
+    {
+      "src": "screenshots/mapa-mercado.webp",
+      "sizes": "1280x720",
+      "type": "image/webp",
+      "form_factor": "wide",
+      "label": "Mapa-múndi com o Mercado: compre barato num país e venda onde pagam mais"
+    },
+    {
+      "src": "screenshots/mapa-politica.webp",
+      "sizes": "1280x720",
+      "type": "image/webp",
+      "form_factor": "wide",
+      "label": "Camada de Política: blocos, sanções e guerras que movem os preços"
+    },
+    {
+      "src": "screenshots/nova-partida.webp",
+      "sizes": "1280x720",
+      "type": "image/webp",
+      "form_factor": "wide",
+      "label": "Nova partida: escolha o cenário e o primeiro Contrato da agência"
+    }
+  ]
 }
