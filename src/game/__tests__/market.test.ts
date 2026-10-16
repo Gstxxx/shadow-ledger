@@ -1,15 +1,16 @@
 import { describe, expect, it } from 'vitest';
 import { buy, sell } from '../actions';
 import { midPrice, quoteBuy, quoteSell, recoverSaturation, SATURATION_LIMIT } from '../market';
-import { newGame } from '../state';
+import { newGame, player } from '../state';
+import { PRESETS } from '../data/rules';
 import { cargoQty } from '../cargo';
 
-const game = () => newGame({ missionId: 'first-contract', difficulty: 2, hardcore: false, seed: 42 });
+const game = () => newGame({ preset: PRESETS[0], difficulty: 2, hardcore: false, seed: 42 });
 
 describe('Saturação', () => {
   it('vender empurra o preço local para baixo e cada unidade sai mais barata', () => {
     const s = game();
-    const c = s.countries[s.location];
+    const c = s.countries[player(s).location];
     const item = c.stock.find((id) => quoteSell(c, id, 1).total > 0)!;
     const one = quoteSell(c, item, 1);
     const ten = quoteSell(c, item, 10);
@@ -19,7 +20,7 @@ describe('Saturação', () => {
 
   it('comprar empurra o preço para cima', () => {
     const s = game();
-    const c = s.countries[s.location];
+    const c = s.countries[player(s).location];
     const item = c.stock[0];
     const before = midPrice(c, item);
     const q = quoteBuy(c, item, 5);
@@ -29,7 +30,7 @@ describe('Saturação', () => {
 
   it('a Saturação se dissipa com o tempo', () => {
     const s = game();
-    const c = s.countries[s.location];
+    const c = s.countries[player(s).location];
     c.saturation.rifles = -0.4;
     recoverSaturation(c, 24);
     const after1 = c.saturation.rifles;
@@ -40,21 +41,22 @@ describe('Saturação', () => {
 
   it('a Saturação é limitada', () => {
     const s = game();
-    const c = s.countries[s.location];
+    const c = s.countries[player(s).location];
     const q = quoteSell(c, 'rifles', 500);
     expect(q.after).toBeGreaterThanOrEqual(-SATURATION_LIMIT);
   });
 
   it('comprar e revender na hora no mesmo país dá prejuízo (spread + Saturação)', () => {
     const s = game();
-    const c = s.countries[s.location];
+    const c = s.countries[player(s).location];
     const item = c.stock.find((id) => id === 'rifles' || id === 'mg' || id === 'thug') ?? c.stock[0];
-    const cash0 = s.cash;
-    const r = buy(s, item, 3);
+    const a = player(s);
+    const cash0 = a.cash;
+    const r = buy(s, a, item, 3);
     expect(r.ok).toBe(true);
-    expect(cargoQty(s, item)).toBe(3);
-    const r2 = sell(s, item, 3);
+    expect(cargoQty(a, item)).toBe(3);
+    const r2 = sell(s, a, item, 3);
     expect(r2.ok).toBe(true);
-    expect(s.cash).toBeLessThan(cash0);
+    expect(a.cash).toBeLessThan(cash0);
   });
 });

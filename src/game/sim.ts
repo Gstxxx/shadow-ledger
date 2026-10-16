@@ -4,26 +4,32 @@ import { COUNTRY_SEEDS, neighbors } from './data/countries';
 import { ITEM_LIST, ITEMS } from './data/items';
 import { BUYERS } from './data/names';
 import { STATIONS, THREAT_BY_STATE, THREAT_COMBAT, THREAT_LABEL } from './data/rules';
+import { TRAITS } from './data/traits';
 import { buildForce } from './forces';
 import type { Faction } from './forces';
 import { driftPrices, interested, midPrice, recoverSaturation, rollStock } from './market';
-import { checkMission } from './mission';
-import { chance, pick, rand, randInt, randRange, weighted } from './rng';
+import { checkObjective } from './objective';
+import { chance, pick, randInt, randRange, weighted } from './rng';
 import {
+  addReputation,
+  addTension,
   allUnits,
   dayOf,
   DAYS_PER_MONTH,
   directorAt,
   intelCountries,
   log,
+  note,
+  notify,
+  player,
   postureIn,
-  pushEvent,
   rollPolitics,
   seePrices,
+  standing,
   stationIn,
 } from './state';
-import type { CombatSetupData, ForceSource, GameState, Threat, ThreatKind } from './types';
-import { healUnit, isPersonnel, upkeepOf } from './units';
+import type { Agency, CombatSetupData, ForceSource, GameState, Threat, ThreatKind } from './types';
+import { healUnit, isPersonnel, recoverDay, upkeepOf } from './units';
 
 /** Hours for Exposição to fall to ~37%. */
 export const EXPOSURE_DECAY_H = 24 * 6;
@@ -45,36 +51,18 @@ export function advance(s: GameState, hours: number): number {
 
 function tick(s: GameState, dt: number) {
   s.time += dt;
-  const decay = Math.exp(-dt / EXPOSURE_DECAY_H);
-  for (const c of Object.values(s.countries)) {
-    c.exposure *= decay;
-    recoverSaturation(c, dt);
-  }
+  for (const c of Object.values(s.countries)) recoverSaturation(c, dt);
+  for (const a of s.agencies) tickAgency(s, a, dt);
 
-  if (s.flight && s.time >= s.flight.arrive) arriveFleet(s);
-  for (const t of s.teams) {
-    if (t.travel && s.time >= t.travel.arrive) {
-      t.location = t.travel.to;
-      t.travel = undefined;
-      pushEvent(s, 'team', `${t.name} chegou`, `A Equipe está em ${s.countries[t.location].name}, pronta para agir.`, 'info', t.location);
-    }
-  }
-  if (s.director.status === 'detained' && s.director.releaseAt !== undefined && s.time >= s.director.releaseAt) {
-    s.director.status = 'free';
-    s.director.heldIn = undefined;
-    s.director.price = undefined;
-    s.director.releaseAt = undefined;
-    pushEvent(s, 'director', 'Diretor solto', 'Sem provas suficientes, o Diretor foi liberado.', 'good', s.location);
-  }
-  for (const t of [...s.threats]) {
-    if (s.time >= t.strikesAt && !isBlocked(s)) strike(s, t);
-  }
   for (const k of s.contracts) {
     if (k.status === 'offered' && s.time >= k.offerExpires) k.status = 'expired';
     if (k.status === 'accepted' && s.time >= k.deadline) {
       k.status = 'failed';
-      s.countries[k.countryId].reputation -= 8;
-      log(s, `Contrato com ${k.buyer} (${s.countries[k.countryId].name}) venceu sem entrega. Reputação caiu.`, 'bad', k.countryId);
+      const a = s.agencies.find((x) => x.id === k.agencyId);
+      if (a) {
+        addReputation(a, k.countryId, -8);
+        note(s, a, `Contrato com ${k.buyer} (${s.countries[k.countryId].name}) venceu sem entrega. Reputação caiu.`, 'bad', k.countryId);
+      }
     }
   }
   s.contracts = s.contracts.filter((k) => k.status === 'offered' || k.status === 'accepted' || s.time - k.offeredAt < 24 * 20);
@@ -84,29 +72,55 @@ function tick(s: GameState, dt: number) {
   const day = dayOf(s.time);
   while (s.lastDay < day) {
     s.lastDay += 1;
-    daily(s);
-    if (s.lastDay % DAYS_PER_MONTH === 0) monthly(s);
+    dailyWorld(s);
+    for (const a of s.agencies) dailyAgency(s, a);
+    if (s.lastDay % DAYS_PER_MONTH === 0) for (const a of s.agencies) monthly(s, a);
   }
-  checkMission(s);
+  checkObjective(s);
+}
+
+function tickAgency(s: GameState, a: Agency, dt: number) {
+  const decay = Math.exp(-dt / EXPOSURE_DECAY_H);
+  for (const st of Object.values(a.standing)) st.exposure *= decay;
+
+  if (a.flight && s.time >= a.flight.arrive) arriveFleet(s, a);
+  for (const t of a.teams) {
+    if (t.travel && s.time >= t.travel.arrive) {
+      t.location = t.travel.to;
+      t.travel = undefined;
+      notify(s, a, 'team', `${t.name} chegou`, `A Equipe está em ${s.countries[t.location].name}, pronta para agir.`, 'info', t.location);
+    }
+  }
+  const d = a.director;
+  if (d.status === 'detained' && d.releaseAt !== undefined && s.time >= d.releaseAt) {
+    d.status = 'free';
+    d.heldIn = undefined;
+    d.price = undefined;
+    d.releaseAt = undefined;
+    notify(s, a, 'director', 'Diretor solto', 'Sem provas suficientes, o Diretor foi liberado.', 'good', a.location);
+  }
+  for (const t of [...a.threats]) {
+    if (s.time >= t.strikesAt && !isBlocked(s)) strike(s, a, t);
+  }
 }
 
 // ── Chegada da Frota ────────────────────────────────────────
 
-function arriveFleet(s: GameState) {
-  const f = s.flight!;
-  s.location = f.to;
-  s.flight = undefined;
-  seePrices(s, f.to);
+function arriveFleet(s: GameState, a: Agency) {
+  const f = a.flight!;
+  a.location = f.to;
+  a.flight = undefined;
+  seePrices(s, a, f.to);
   const c = s.countries[f.to];
-  const deliverable = s.contracts.filter((k) => k.status === 'accepted' && k.countryId === f.to);
+  const deliverable = s.contracts.filter((k) => k.status === 'accepted' && k.agencyId === a.id && k.countryId === f.to);
   const extra = deliverable.length ? ` ${deliverable.length} Contrato(s) podem ser entregues aqui.` : '';
-  pushEvent(s, 'arrival', `Chegada: ${c.name}`, `A Frota pousou. Mercado aberto ao Diretor.${extra}`, 'info', f.to);
-  if (s.group && !s.group.defeated && s.group.countryId === f.to) groupEncounter(s);
+  notify(s, a, 'arrival', `Chegada: ${c.name}`, `A Frota pousou. Mercado aberto ao Diretor.${extra}`, 'info', f.to);
+  if (a.isPlayer && s.group && !s.group.defeated && s.group.countryId === f.to) groupEncounter(s, a);
 }
 
-// ── Grupo hostil (missões de caça e resgate) ────────────────
+// ── Grupo hostil (Objetivos de caça e resgate) ──────────────
 
-function groupEncounter(s: GameState) {
+function groupEncounter(s: GameState, a: Agency) {
   const g = s.group!;
   const data: CombatSetupData = {
     type: 'army',
@@ -117,7 +131,7 @@ function groupEncounter(s: GameState) {
     playerDefends: false,
     directorPresent: true,
   };
-  beginCombat(s, data);
+  beginCombat(s, a, data);
 }
 
 function moveGroup(s: GameState) {
@@ -126,90 +140,105 @@ function moveGroup(s: GameState) {
   const near = neighbors(g.countryId, 6).filter((id) => pool.includes(id));
   g.countryId = near.length ? pick(s, near) : pick(s, pool);
   g.nextMoveAt = s.time + randRange(s, 72, 150);
-  if (intelCountries(s).has(g.countryId)) {
+  const me = player(s);
+  if (intelCountries(me).has(g.countryId)) {
     g.seenAt = { countryId: g.countryId, at: s.time };
-    pushEvent(s, 'intel', `${g.name} avistado`, `Uma Estação identificou o grupo em ${s.countries[g.countryId].name}.`, 'intel', g.countryId);
+    notify(s, me, 'intel', `${g.name} avistado`, `Uma Estação identificou o grupo em ${s.countries[g.countryId].name}.`, 'intel', g.countryId);
   }
-  if (directorAt(s, g.countryId) && !isBlocked(s)) groupEncounter(s);
+  if (directorAt(me, g.countryId) && !isBlocked(s)) groupEncounter(s, me);
 }
 
 // ── Diário ──────────────────────────────────────────────────
 
-function daily(s: GameState) {
+function dailyWorld(s: GameState) {
   const day = s.lastDay;
-  let income = 0;
-  for (const st of s.stations) {
-    const c = s.countries[st.countryId];
-    if (st.interdicted) continue;
-    const posture = postureIn(s, st.countryId);
-    income += STATIONS[st.level].income * (0.6 + c.level * 0.15) * (posture === 'ally' ? 1.25 : posture === 'enemy' ? 0.7 : 1);
-    c.exposure = Math.min(100, c.exposure + 0.4 * st.level);
-  }
-  s.cash += Math.round(income);
-
   for (const c of Object.values(s.countries)) {
     driftPrices(s, c);
-    c.reputation += -c.reputation * 0.008; // slow drift back to neutral
     if (chance(s, 0.003)) {
       const before = c.politics;
       c.politics = c.couped && chance(s, 0.5) ? 'peace' : rollPolitics(s, c.level);
       if (c.politics !== before) {
         c.couped = false;
+        if (c.politics === 'war' || c.politics === 'civilwar') addTension(s, 4);
         log(s, `${c.name}: o cenário político mudou.`, 'intel', c.id);
       }
     }
-    if (day % 7 === (Number(c.id) % 7)) c.stock = rollStock(s, c);
+    if (day % 7 === Number(c.id) % 7) c.stock = rollStock(s, c, s.tension);
   }
-  intelCountries(s).forEach((id) => seePrices(s, id));
-  for (const u of allUnits(s)) healUnit(u);
-
-  if (s.group && !s.group.defeated && intelCountries(s).has(s.group.countryId)) {
+  addTension(s, -0.12);
+  const me = player(s);
+  if (s.group && !s.group.defeated && intelCountries(me).has(s.group.countryId)) {
     s.group.seenAt = { countryId: s.group.countryId, at: s.time };
   }
-
   rollContracts(s);
-  rollThreats(s);
+}
+
+function dailyAgency(s: GameState, a: Agency) {
+  let income = 0;
+  for (const st of a.stations) {
+    const c = s.countries[st.countryId];
+    if (st.interdicted) continue;
+    const posture = postureIn(a, st.countryId);
+    income += STATIONS[st.level].income * (0.6 + c.level * 0.15) * (posture === 'ally' ? 1.25 : posture === 'enemy' ? 0.7 : 1);
+    standing(a, st.countryId).exposure = Math.min(100, standing(a, st.countryId).exposure + 0.4 * st.level);
+  }
+  a.cash += Math.round(income);
+  for (const st of Object.values(a.standing)) st.reputation += -st.reputation * 0.008; // slow drift back to neutral
+  intelCountries(a).forEach((id) => seePrices(s, a, id));
+
+  for (const u of [...a.fleet, ...a.escort, ...a.teams.flatMap((t) => t.units)]) {
+    healUnit(u);
+    recoverDay(u, false);
+  }
+  for (const st of a.stations) {
+    for (const u of st.units) {
+      healUnit(u);
+      recoverDay(u, true);
+    }
+  }
+  rollThreats(s, a);
 }
 
 // ── Manutenção mensal ───────────────────────────────────────
 
-export function upkeepTotal(s: GameState): number {
-  return allUnits(s).reduce((a, u) => a + upkeepOf(u), 0);
+export function upkeepTotal(a: Agency): number {
+  return allUnits(a).reduce((x, u) => x + upkeepOf(u), 0);
 }
 
-function monthly(s: GameState) {
-  const total = upkeepTotal(s) + s.arrears;
+function monthly(s: GameState, a: Agency) {
+  const total = upkeepTotal(a) + a.arrears;
   if (total <= 0) return;
-  if (s.cash >= total) {
-    s.cash -= total;
-    s.arrears = 0;
-    for (const u of allUnits(s)) u.idle = false;
-    log(s, `Manutenção mensal paga: US$ ${total.toLocaleString('pt-BR')}.`, 'info');
+  if (a.cash >= total) {
+    a.cash -= total;
+    a.arrears = 0;
+    for (const u of allUnits(a)) u.idle = false;
+    note(s, a, `Manutenção mensal paga: US$ ${total.toLocaleString('pt-BR')}.`, 'info');
     return;
   }
-  // Não pagou: o Pessoal deserta (metade, ao acaso) e as máquinas ficam paradas.
+  // Não pagou: o Pessoal deserta (metade, ao acaso; os Leais ficam) e as máquinas ficam paradas.
   let deserted = 0;
-  const leave = (list: typeof s.escort) =>
+  const leave = (list: typeof a.escort) =>
     list.filter((u) => {
-      if (isPersonnel(u) && chance(s, 0.5)) {
+      if (isPersonnel(u) && !u.traits.some((t) => TRAITS[t].loyal) && chance(s, 0.5)) {
         deserted++;
         return false;
       }
       return true;
     });
-  s.escort = leave(s.escort);
-  for (const st of s.stations) st.units = leave(st.units);
-  for (const t of s.teams) t.units = leave(t.units);
+  a.escort = leave(a.escort);
+  for (const st of a.stations) st.units = leave(st.units);
+  for (const t of a.teams) t.units = leave(t.units);
   let machines = 0;
-  for (const u of allUnits(s)) {
+  for (const u of allUnits(a)) {
     if (!isPersonnel(u)) {
       u.idle = true;
       machines += upkeepOf(u);
     }
   }
-  s.arrears = machines;
-  pushEvent(
+  a.arrears = machines;
+  notify(
     s,
+    a,
     'maintenance',
     'Manutenção não paga',
     `Faltou caixa para US$ ${total.toLocaleString('pt-BR')}. ${deserted} do Pessoal desertaram; as máquinas estão paradas até quitar US$ ${machines.toLocaleString('pt-BR')}.`,
@@ -217,15 +246,16 @@ function monthly(s: GameState) {
   );
 }
 
-// ── Contratos ───────────────────────────────────────────────
+// ── Contratos (disputados por todas as agências) ────────────
 
 function rollContracts(s: GameState) {
   const open = s.contracts.filter((k) => k.status === 'offered').length;
   if (open >= 4 || !chance(s, 0.45)) return;
-  const pool = Object.values(s.countries).filter((c) => c.level >= 2 && postureIn(s, c.id) !== 'enemy');
-  if (!pool.length) return;
+  const pool = Object.values(s.countries).filter((c) => c.level >= 2);
   const c = pick(s, pool);
-  const items = ITEM_LIST.filter((it) => it.tradable && it.cls !== 'special' && it.cls !== 'cargo' && interested(c, it) && it.rank <= c.level - 1);
+  const items = ITEM_LIST.filter(
+    (it) => it.tradable && !it.wmd && it.cls !== 'special' && it.cls !== 'cargo' && interested(c, it) && it.rank <= c.level - 1,
+  );
   if (!items.length) return;
   const it = pick(s, items);
   const budget = randRange(s, 0.5, 3.5) * 1_000_000 * (0.6 + c.level * 0.2);
@@ -254,15 +284,16 @@ const DIFF_THREAT = [1, 0.65, 1, 1.4];
 
 const FACTION_OF: Record<ThreatKind, Faction> = { raid: 'police', lawsuit: 'court', criminal: 'criminal', military: 'military' };
 
-function rollThreats(s: GameState) {
-  const present = new Set<string>(s.stations.map((st) => st.countryId));
-  if (s.director.status === 'free' && !s.flight) present.add(s.location);
+function rollThreats(s: GameState, a: Agency) {
+  const present = new Set<string>(a.stations.map((st) => st.countryId));
+  if (a.director.status === 'free' && !a.flight) present.add(a.location);
   for (const id of present) {
-    if (s.threats.some((t) => t.countryId === id)) continue;
+    if (a.threats.some((t) => t.countryId === id)) continue;
     const c = s.countries[id];
-    const posture = postureIn(s, id);
+    const exp = standing(a, id).exposure;
+    const posture = postureIn(a, id);
     const pf = posture === 'enemy' ? 1.8 : posture === 'ally' ? 0.45 : 1;
-    const p = Math.min(0.45, (0.008 + (c.exposure / 100) * 0.22) * pf * DIFF_THREAT[s.options.difficulty]);
+    const p = Math.min(0.45, (0.008 + (exp / 100) * 0.22) * pf * DIFF_THREAT[s.options.difficulty]);
     if (!chance(s, p)) continue;
 
     const gov = posture === 'enemy' ? 2 : posture === 'neutral' ? 1 : 0.3;
@@ -272,14 +303,13 @@ function rollThreats(s: GameState) {
     const kind = weighted<ThreatKind>(s, [
       ['raid', gov * orderly],
       ['lawsuit', gov * (c.level / 3)],
-      ['criminal', chaos * (1 + c.exposure / 50)],
+      ['criminal', chaos * (1 + exp / 50)],
       ['military', warlike],
     ]);
-    const hasStation = !!stationIn(s, id);
-    const target = hasStation ? 'station' : 'director';
+    const target = stationIn(a, id) ? 'station' : 'director';
     const kindMult = kind === 'military' ? 1.6 : kind === 'raid' ? 1.1 : kind === 'criminal' ? 0.9 : 1;
     const strength = Math.round(
-      (4 + c.level * 2.5 + c.exposure / 8) * kindMult * (0.75 + s.options.difficulty * 0.25) * randRange(s, 0.8, 1.2),
+      (4 + c.level * 2.5 + exp / 8) * kindMult * (0.75 + s.options.difficulty * 0.25) * randRange(s, 0.8, 1.2),
     );
     const lead = s.options.difficulty === 3 ? randInt(s, 18, 48) : randInt(s, 24, 72);
     s.uidCounter += 1;
@@ -293,9 +323,10 @@ function rollThreats(s: GameState) {
       strength,
       reactions: [],
     };
-    s.threats.push(threat);
-    pushEvent(
+    a.threats.push(threat);
+    notify(
       s,
+      a,
       'threat',
       `${THREAT_LABEL[kind]} anunciado`,
       `${c.name}: ${target === 'station' ? 'a Estação' : 'o Diretor'} será alvo em cerca de ${Math.round(lead)} h (força estimada ${strength}).`,
@@ -305,27 +336,21 @@ function rollThreats(s: GameState) {
   }
 }
 
-/** Reforço contratado vira Unidades temporárias de segurança local. */
-function hiredUnits(s: GameState, t: Threat) {
-  if (!t.hired) return [];
-  return buildForce(s, 'security', t.hired, THREAT_COMBAT[t.kind]);
-}
-
-function strike(s: GameState, t: Threat) {
-  s.threats = s.threats.filter((x) => x !== t);
+function strike(s: GameState, a: Agency, t: Threat) {
+  a.threats = a.threats.filter((x) => x !== t);
   const c = s.countries[t.countryId];
   if (t.cancelled) {
-    log(s, `${THREAT_LABEL[t.kind]} em ${c.name} não aconteceu: o acordo foi cumprido.`, 'good', t.countryId);
+    note(s, a, `${THREAT_LABEL[t.kind]} em ${c.name} não aconteceu: o acordo foi cumprido.`, 'good', t.countryId);
     return;
   }
-  const st = stationIn(s, t.countryId);
+  const st = stationIn(a, t.countryId);
   if (t.target === 'station' && !st) {
-    log(s, `${THREAT_LABEL[t.kind]} em ${c.name} chegou a um endereço vazio.`, 'info', t.countryId);
+    note(s, a, `${THREAT_LABEL[t.kind]} em ${c.name} chegou a um endereço vazio.`, 'info', t.countryId);
     return;
   }
-  const directorHere = directorAt(s, t.countryId);
+  const directorHere = directorAt(a, t.countryId);
   if (t.target === 'director' && !directorHere) {
-    log(s, `${THREAT_LABEL[t.kind]} em ${c.name} não encontrou o Diretor.`, 'good', t.countryId);
+    note(s, a, `${THREAT_LABEL[t.kind]} em ${c.name} não encontrou o Diretor.`, 'good', t.countryId);
     return;
   }
   const type = THREAT_COMBAT[t.kind];
@@ -333,10 +358,11 @@ function strike(s: GameState, t: Threat) {
   if (st) sources.push({ kind: 'station', countryId: t.countryId });
   if (directorHere) sources.push({ kind: 'escort' });
   const enemy = buildForce(s, FACTION_OF[t.kind], t.strength, type);
-  const temp = hiredUnits(s, t);
+  // Reforço contratado: segurança local temporária que luta pela Estação e vai embora depois.
+  const temp = t.hired && st ? buildForce(s, 'security', t.hired, type).map((u) => ({ ...u, paid: 0, temp: true })) : [];
   if (temp.length && st) {
-    st.units.push(...temp.map((u) => ({ ...u, paid: 0 })));
-    log(s, `Segurança local contratada reforça a Estação em ${c.name}.`, 'info', t.countryId);
+    st.units.push(...temp);
+    note(s, a, `Segurança local contratada reforça a Estação em ${c.name}.`, 'info', t.countryId);
   }
   const data: CombatSetupData = {
     type,
@@ -348,15 +374,6 @@ function strike(s: GameState, t: Threat) {
     fort: st ? STATIONS[st.level].fort[type] : undefined,
     directorPresent: directorHere,
   };
-  beginCombat(s, data);
-  // Hired security leaves after the fight.
-  if (temp.length) {
-    const ids = new Set(temp.map((u) => u.uid));
-    const st2 = stationIn(s, t.countryId);
-    if (st2) st2.units = st2.units.filter((u) => !ids.has(u.uid));
-  }
-  if (THREAT_BY_STATE[t.kind]) c.exposure = Math.max(0, c.exposure - 10);
+  beginCombat(s, a, data);
+  if (THREAT_BY_STATE[t.kind]) standing(a, t.countryId).exposure = Math.max(0, standing(a, t.countryId).exposure - 10);
 }
-
-/** For tests and debugging: random jitter source that never touches game logic. */
-export const _debugRand = (s: GameState) => rand(s);

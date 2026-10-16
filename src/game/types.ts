@@ -10,10 +10,11 @@ export type Posture = 'enemy' | 'neutral' | 'ally';
 /** Tipo de Combate: Jurídico, Urbano, Militar, Aéreo. */
 export type CombatType = 'legal' | 'urban' | 'army' | 'air';
 
+/** `influence` = Agente de Influência. */
 export type UnitClass =
   | 'human'
   | 'lawyer'
-  | 'secretary'
+  | 'influence'
   | 'vehicle'
   | 'antiair'
   | 'heli'
@@ -45,11 +46,14 @@ export interface ItemDef {
   speed?: number;
   tradable: boolean;
   fieldable: boolean;
+  /** Arma de Destruição em Massa: só comércio, só com Tensão Global alta. */
+  wmd?: boolean;
   /** Where it is manufactured (cheaper there). */
   origin?: string[];
   blurb: string;
 }
 
+/** World-level country: shared by every agency. */
 export interface Country {
   id: string;
   name: string;
@@ -57,11 +61,7 @@ export interface Country {
   /** Economic / military level 1..5 */
   level: number;
   politics: Politics;
-  /** Reputação: -100..100, muda devagar, define a Postura. */
-  reputation: number;
-  /** Exposição: 0..100, sobe rápido e decai sozinha. */
-  exposure: number;
-  /** Saturação por item: deslocamento relativo do preço (-0.6..+0.6) que se dissipa. */
+  /** Saturação por item: deslocamento relativo do preço (-0.6..+0.6) que se dissipa. Compartilhada por todas as agências. */
   saturation: Record<string, number>;
   lon: number;
   lat: number;
@@ -71,10 +71,36 @@ export interface Country {
   stock: string[];
   /** Last time the bank was robbed (hours). */
   bankRobbedAt?: number;
+  /** Current government was installed by a Golpe. */
+  couped?: boolean;
+}
+
+/** How one agency stands in one country. */
+export interface Standing {
+  /** Reputação: -100..100, muda devagar, define a Postura. */
+  reputation: number;
+  /** Exposição: 0..100, sobe rápido e decai sozinha. */
+  exposure: number;
   /** Prices last seen by the Diretor or an Estação. */
   seen?: { at: number; prices: Record<string, number> };
-  /** Days left of post-coup instability. */
-  couped?: boolean;
+}
+
+export type TraitId =
+  | 'coldblood'
+  | 'loyal'
+  | 'frugal'
+  | 'demanding'
+  | 'resilient'
+  | 'quick'
+  | 'discreet'
+  | 'persuasive'
+  | 'nervous';
+
+/** Ferida (Pessoal) ou Danificada (máquina). */
+export interface Injury {
+  kind: 'wounded' | 'damaged';
+  /** Ferida: days of recovery left (faster in an Estação). Danificada: needs a paid repair. */
+  days?: number;
 }
 
 /** Unidade. */
@@ -87,11 +113,18 @@ export interface Unit {
   xp: number; // 0..100
   paid: number;
   seed: number; // avatar seed
+  /** Traços (Pessoal only). */
+  traits: TraitId[];
+  /** Patentes already rewarded with a Traço. */
+  ranked: number;
+  injury?: Injury;
   /** Máquina parada por falta de Manutenção. */
   idle?: boolean;
+  /** Segurança local contratada para uma única defesa. */
+  temp?: boolean;
 }
 
-/** Lote de Carga. */
+/** Lote de Carga (ou de Cofre). */
 export interface CargoLot {
   lid: string;
   itemId: string;
@@ -109,36 +142,45 @@ export interface Station {
   /** Unidades de Estação. */
   units: Unit[];
   founded: number;
+  /** Cofre: itens guardados; só o Diretor retira. */
+  vault: CargoLot[];
   /** Interditada: apreendida pelo Estado até pagar a multa ou vencer recurso. */
   interdicted?: { fine: number; since: number };
   /** Unidades Detidas na apreensão; voltam quando a interdição cai. */
   detained: Unit[];
 }
 
-export type MissionKind = 'profit' | 'quick' | 'destroy' | 'rescue';
+/** Objetivo: condição de vitória. */
+export type ObjectiveKind = 'profit' | 'quick' | 'destroy' | 'rescue';
 
-export interface MissionDef {
+/** Preset: configuração pronta de Sandbox. A custom Sandbox is a Preset built by the player. */
+export interface PresetDef {
   id: string;
-  kind: MissionKind;
+  objective: ObjectiveKind;
   title: string;
   brief: string;
-  days: number; // 0 = unlimited
-  target?: number; // profit target for quick
+  /** Prazo em dias; 0 = sem prazo. */
+  days: number;
+  /** Lucro alvo (lucro rápido). */
+  target?: number;
   cash: number;
   startCountry: string;
   startStations: { countryId: string; level: StationLevel }[];
   startUnits: string[];
-  difficulty: 1 | 2 | 3;
+  /** Suggested challenge, for display. */
+  challenge: 1 | 2 | 3;
   region?: Continent[];
 }
 
+/** Dificuldade: Recruta, Operador, Diretor. */
 export type Difficulty = 1 | 2 | 3;
 
 export interface GameOptions {
-  missionId: string;
+  preset: PresetDef;
   difficulty: Difficulty;
   hardcore: boolean;
   directorName?: string;
+  agencyName?: string;
   seed?: number;
 }
 
@@ -164,11 +206,11 @@ export interface LogEntry {
   countryId?: string;
 }
 
-/** Evento: acontecimento que exige atenção e pausa o relógio. */
+/** Evento: acontecimento que exige atenção e pausa o relógio. Only the player's agency raises Eventos. */
 export interface GameEvent {
   id: string;
   at: number;
-  kind: 'arrival' | 'threat' | 'combat' | 'contract' | 'maintenance' | 'director' | 'mission' | 'team' | 'intel' | 'station';
+  kind: 'arrival' | 'threat' | 'combat' | 'contract' | 'maintenance' | 'director' | 'objective' | 'team' | 'intel' | 'station';
   title: string;
   body: string;
   tone: Tone;
@@ -190,7 +232,7 @@ export interface Director {
   price?: number;
 }
 
-/** Voo da Frota em andamento. */
+/** Voo em andamento. */
 export interface Flight {
   from: string;
   to: string;
@@ -211,7 +253,7 @@ export interface Team {
   travel?: Flight & { mode: TeamTravelMode };
   /** Cargueiro Destacado que leva a Equipe (fora da Frota enquanto destacado). */
   freighter?: Unit;
-  /** Itens capturados em Operações Especiais. Destino em aberto (docs/OPEN-QUESTIONS.md). */
+  /** Itens capturados aguardando a escolha: Receptador ou Cofre. */
   spoils: CargoLot[];
 }
 
@@ -253,9 +295,11 @@ export interface Contract {
   offeredAt: number;
   /** Oferta expira se não for aceita até aqui. */
   offerExpires: number;
-  /** Prazo de entrega após aceito. */
+  /** Prazo de entrega. */
   deadline: number;
   status: 'offered' | 'accepted' | 'done' | 'failed' | 'expired';
+  /** Agency that accepted it (contracts are disputed by every agency). */
+  agencyId?: string;
   reputation: number;
 }
 
@@ -264,7 +308,8 @@ export interface Contract {
 /** Tática: Assalto, Defensiva, Infiltração, Negociar. */
 export type Tactic = 'assault' | 'defensive' | 'infiltration' | 'negotiate';
 
-export type OperationKind = 'bank' | 'tech' | 'eliminate';
+/** Operações Especiais: roubo a banco, roubo de tecnologia, Neutralização. */
+export type OperationKind = 'bank' | 'tech' | 'neutralize';
 
 export interface CombatUnitRef {
   key: string;
@@ -275,14 +320,14 @@ export interface CombatUnitRef {
 }
 
 export interface CombatFx {
-  kind: 'hit' | 'kill' | 'convert' | 'move' | 'breach';
+  kind: 'hit' | 'down' | 'convert' | 'move' | 'breach';
   key: string;
   row: number;
   col: number;
   dmg?: number;
 }
 
-/** Where the player's units in a combat come from, so casualties can be written back. */
+/** Where the agency's units in a combat come from, so results can be written back. */
 export type ForceSource =
   | { kind: 'escort' }
   | { kind: 'station'; countryId: string }
@@ -298,6 +343,7 @@ export type CombatReason =
 
 export interface CombatState {
   id: string;
+  agencyId: string;
   type: CombatType;
   reason: CombatReason;
   title: string;
@@ -310,25 +356,22 @@ export interface CombatState {
   rows: number;
   deployCols: number;
   units: CombatUnitRef[];
-  /** Player units in reserve, not yet deployed. */
+  /** Agency units in reserve, not yet deployed. */
   reserve: Unit[];
-  /** Furthest column the player has held per row. */
+  /** Furthest column held per row. */
   reach: number[];
   log: string[];
   fx: CombatFx[];
   result?: 'win' | 'lose' | 'draw';
-  /** Converted enemy units awaiting transfer to the player. */
+  /** Agency units knocked out (become Feridas / Danificadas). */
+  downed: string[];
+  /** Agency units turned by enemy Agentes de Influência (lost). */
+  turned: string[];
+  /** Converted enemy units awaiting transfer to the agency. */
   converted: Unit[];
   sources: ForceSource[];
   /** Diretor está presente (perde → Detido/Sequestrado/morte). */
   directorPresent: boolean;
-}
-
-/** Combate aguardando a escolha de Tática (Diretor presente). */
-export interface PendingCombat {
-  setup: CombatSetupData;
-  /** Prévia: chance de vitória por Tática. */
-  preview: Record<Tactic, number>;
 }
 
 export interface CombatSetupData {
@@ -342,7 +385,15 @@ export interface CombatSetupData {
   directorPresent: boolean;
 }
 
-export interface GameStats {
+/** Combate aguardando a escolha de Tática (Diretor do jogador presente). */
+export interface PendingCombat {
+  agencyId: string;
+  setup: CombatSetupData;
+  /** Prévia: chance de vitória por Tática. */
+  preview: Record<Tactic, number>;
+}
+
+export interface AgencyStats {
   operations: number;
   coups: number;
   combatsWon: number;
@@ -352,16 +403,11 @@ export interface GameStats {
   peakProfit: number;
 }
 
-export interface GameState {
-  version: 2;
-  seed: number;
-  rng: number;
-  /** Relógio contínuo em horas de jogo desde o início. */
-  time: number;
-  /** Last processed day boundary. */
-  lastDay: number;
-  options: GameOptions;
-  mission: MissionDef;
+/** A agência: a do jogador ou uma Agência Rival. Every action takes the acting Agency. */
+export interface Agency {
+  id: string;
+  name: string;
+  isPlayer: boolean;
   director: Director;
   /** Country where the Diretor and the Frota are (origin while flying). */
   location: string;
@@ -376,8 +422,28 @@ export interface GameState {
   cargo: CargoLot[];
   stations: Station[];
   teams: Team[];
-  countries: Record<string, Country>;
   threats: Threat[];
+  /** Reputação e Exposição por país. */
+  standing: Record<string, Standing>;
+  /** Manutenção em atraso (US$). */
+  arrears: number;
+  stats: AgencyStats;
+}
+
+export interface GameState {
+  version: 3;
+  seed: number;
+  rng: number;
+  /** Relógio contínuo em horas de jogo desde o início. */
+  time: number;
+  /** Last processed day boundary. */
+  lastDay: number;
+  options: GameOptions;
+  /** Agencies; index 0 is the player's. */
+  agencies: Agency[];
+  countries: Record<string, Country>;
+  /** Tensão Global 0..100. */
+  tension: number;
   contracts: Contract[];
   group?: EnemyGroup;
   log: LogEntry[];
@@ -385,9 +451,6 @@ export interface GameState {
   events: GameEvent[];
   pendingCombat?: PendingCombat;
   combat?: CombatState;
-  /** Manutenção em atraso (US$). */
-  arrears: number;
   over?: { won: boolean; reason: string; score: number };
-  stats: GameStats;
   uidCounter: number;
 }

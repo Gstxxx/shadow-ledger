@@ -9,7 +9,7 @@ import type {
   Tactic,
   Unit,
 } from './types';
-import { canFight, def, FORT_ID, makeFort, nextUid, strOf, usesConvert } from './units';
+import { canFight, def, FORT_ID, knockOut, makeFort, nextUid, strOf, traitMult, usesConvert } from './units';
 import type { MintCtx } from './units';
 
 export const ROWS = 3;
@@ -72,6 +72,7 @@ export function tacticMod(t: Tactic, type: CombatType): TacticMod {
 }
 
 export interface CombatSetup {
+  agencyId: string;
   type: CombatType;
   reason: CombatReason;
   title: string;
@@ -89,6 +90,7 @@ export function createCombat(s: MintCtx, setup: CombatSetup): CombatState {
   const mod = tacticMod(setup.tactic, setup.type);
   const c: CombatState = {
     id: nextUid(s, 'c'),
+    agencyId: setup.agencyId,
     type: setup.type,
     reason: setup.reason,
     title: setup.title,
@@ -104,6 +106,8 @@ export function createCombat(s: MintCtx, setup: CombatSetup): CombatState {
     reach: Array(ROWS).fill(DEPLOY_COLS - 1),
     log: [],
     fx: [],
+    downed: [],
+    turned: [],
     converted: [],
     sources: setup.sources,
     directorPresent: setup.directorPresent,
@@ -190,12 +194,12 @@ export function autoDeploy(c: CombatState) {
 
 function eff(c: CombatState, ref: CombatUnitRef) {
   const mod = tacticMod(c.tactic, c.type);
-  const base = strOf(ref.unit, c.type) * (1 + ref.unit.xp * 0.006);
+  const base = strOf(ref.unit, c.type) * (1 + ref.unit.xp * 0.006) * traitMult(ref.unit, 'strength');
   return base * (ref.side === 'p' ? mod.player : mod.enemy);
 }
 
 function gainXp(u: Unit, n: number) {
-  if (u.itemId !== FORT_ID) u.xp = Math.min(100, u.xp + n);
+  if (u.itemId !== FORT_ID) u.xp = Math.min(100, u.xp + n * traitMult(u, 'xp'));
 }
 
 function damage(u: Unit, type: CombatType) {
@@ -215,13 +219,14 @@ function duel(s: RngHolder, c: CombatState, a: CombatUnitRef, b: CombatUnitRef) 
     // Agentes de Influência try to turn the opponent instead of hurting it.
     if (usesConvert(w.unit, c.type) && l.unit.itemId !== FORT_ID) {
       const conv = strOf(w.unit, c.type);
-      const boost = w.side === 'p' ? mod.convert : 1;
+      const boost = (w.side === 'p' ? mod.convert : 1) * traitMult(w.unit, 'convert');
       if (chance(s, Math.min(0.9, (0.45 * boost * conv) / (conv + strOf(l.unit, c.type) || 1)))) {
         c.units = c.units.filter((u) => u !== l);
         c.fx.push({ kind: 'convert', key: l.key, row: l.row, col: l.col });
         c.log.push(`${w.unit.name} convenceu ${l.unit.name} a trocar de lado.`);
         gainXp(w.unit, 6);
         if (l.side === 'e') c.converted.push(l.unit);
+        else if (l.unit.itemId !== FORT_ID) c.turned.push(l.unit.uid);
         return;
       }
     }
@@ -230,8 +235,9 @@ function duel(s: RngHolder, c: CombatState, a: CombatUnitRef, b: CombatUnitRef) 
     c.fx.push({ kind: 'hit', key: l.key, row: l.row, col: l.col, dmg: 1 });
     if (strOf(l.unit, c.type) <= 0) {
       c.units = c.units.filter((u) => u !== l);
-      c.fx.push({ kind: 'kill', key: l.key, row: l.row, col: l.col });
-      c.log.push(`${w.unit.name} derrubou ${l.unit.name}.`);
+      c.fx.push({ kind: 'down', key: l.key, row: l.row, col: l.col });
+      c.log.push(`${w.unit.name} tirou ${l.unit.name} de combate.`);
+      if (l.side === 'p' && l.unit.itemId !== FORT_ID) c.downed.push(l.unit.uid);
       gainXp(w.unit, 6);
       return;
     }
@@ -332,21 +338,33 @@ export function survivors(c: CombatState): Unit[] {
   return [...c.units.filter((u) => u.side === 'p' && u.unit.itemId !== FORT_ID).map((u) => u.unit), ...c.reserve];
 }
 
-/** Write combat results back onto a real unit list: update hp/xp, drop the dead. */
-export function applyCasualties(c: CombatState, units: Unit[]): { lost: Unit[]; kept: Unit[] } {
+/**
+ * Write combat results back onto a real unit list: survivors keep hp/xp, units knocked out become
+ * Feridas/Danificadas, units turned by enemy Agentes de Influência are lost.
+ */
+export function applyCasualties(c: CombatState, units: Unit[]): { lost: Unit[]; kept: Unit[]; downed: Unit[] } {
   const alive = new Map(survivors(c).map((u) => [u.uid, u]));
   const lost: Unit[] = [];
   const kept: Unit[] = [];
+  const downed: Unit[] = [];
   for (const u of units) {
-    if (!canFight(u, c.type) && !alive.has(u.uid)) {
-      kept.push(u); // did not take part
+    if (c.turned.includes(u.uid)) {
+      lost.push(u);
       continue;
     }
     const after = alive.get(u.uid);
-    if (after) kept.push({ ...u, hp: after.hp, xp: after.xp });
-    else lost.push(u);
+    if (after) {
+      u.hp = after.hp;
+      u.xp = after.xp;
+      kept.push(u);
+    } else if (c.downed.includes(u.uid)) {
+      u.hp = { ...u.hp, [c.type]: 0 };
+      knockOut(u);
+      downed.push(u);
+      kept.push(u);
+    } else kept.push(u); // did not take part
   }
-  return { lost, kept };
+  return { lost, kept, downed };
 }
 
 /** Prévia: chance of success for a Tática, by Monte Carlo over automatic combats on a scratch rng. */

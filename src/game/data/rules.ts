@@ -1,4 +1,4 @@
-import type { CombatType, MissionDef, OperationKind, Politics, Posture, StationLevel, ThreatKind, UnitClass } from '../types';
+import type { CombatType, ObjectiveKind, PresetDef, OperationKind, Politics, Posture, StationLevel, ThreatKind, UnitClass } from '../types';
 
 export interface StationSpec {
   level: StationLevel;
@@ -13,7 +13,7 @@ export interface StationSpec {
   wideIntel: boolean;
 }
 
-const HUMANS: UnitClass[] = ['human', 'lawyer', 'secretary'];
+const HUMANS: UnitClass[] = ['human', 'lawyer', 'influence'];
 const GROUND: UnitClass[] = [...HUMANS, 'vehicle', 'antiair'];
 
 export const STATIONS: Record<StationLevel, StationSpec> = {
@@ -65,25 +65,26 @@ export const THREAT_COMBAT: Record<ThreatKind, CombatType> = { raid: 'urban', la
 export const OPERATION_LABEL: Record<OperationKind, string> = {
   bank: 'Roubo a banco',
   tech: 'Roubo de tecnologia',
-  eliminate: 'Eliminação política',
+  neutralize: 'Neutralização',
 };
 
-export const OPERATION_COMBAT: Record<OperationKind, CombatType> = { bank: 'urban', tech: 'urban', eliminate: 'army' };
+export const OPERATION_COMBAT: Record<OperationKind, CombatType> = { bank: 'urban', tech: 'urban', neutralize: 'army' };
 
 export const OPERATION_BLURB: Record<OperationKind, string> = {
   bank: 'Esvazia o cofre central. Rende caixa, derruba a Reputação e dispara a Exposição.',
   tech: 'Invade um laboratório estatal e leva informação classificada como Carga.',
-  eliminate: 'Remove uma figura política: o país entra em instabilidade e os preços de armas sobem.',
+  neutralize: 'Paga pela oposição, tira de cena um alvo político fictício: o país entra em instabilidade e as armas encarecem.',
 };
 
 /** Hours of travel for a Voo Comercial (fixed speed) and price per person. */
 export const COMMERCIAL_SPEED = 750;
 export const COMMERCIAL_FARE_PER_1000KM = 1_800;
 
-export const MISSIONS: MissionDef[] = [
+/** Presets de Sandbox (antigas missões). */
+export const PRESETS: PresetDef[] = [
   {
     id: 'first-contract',
-    kind: 'profit',
+    objective: 'profit',
     title: 'Primeiro Contrato',
     brief: 'Uma agência recém-aberta nas Américas. Compre barato, venda caro e termine 90 dias no azul.',
     days: 90,
@@ -91,11 +92,11 @@ export const MISSIONS: MissionDef[] = [
     startCountry: '840',
     startStations: [{ countryId: '484', level: 1 }],
     startUnits: ['cargo0', 'bodyguard', 'bodyguard', 'lawyer1'],
-    difficulty: 1,
+    challenge: 1,
   },
   {
     id: 'med-corridor',
-    kind: 'profit',
+    objective: 'profit',
     title: 'Corredor do Mediterrâneo',
     brief: 'Europa e Oriente Médio em ebulição. 120 dias para transformar instabilidade em margem.',
     days: 120,
@@ -103,11 +104,11 @@ export const MISSIONS: MissionDef[] = [
     startCountry: '380',
     startStations: [{ countryId: '300', level: 1 }, { countryId: '818', level: 2 }],
     startUnits: ['cargo1', 'police', 'soldier', 'soldier', 'lawyer1', 'liaison1'],
-    difficulty: 2,
+    challenge: 2,
   },
   {
     id: 'quick-swiss',
-    kind: 'quick',
+    objective: 'quick',
     title: 'Conta Numerada',
     brief: 'Um cliente em Genebra quer ver US$ 25 milhões de lucro. Sem prazo — mas o placar mede cada dia.',
     days: 0,
@@ -116,11 +117,11 @@ export const MISSIONS: MissionDef[] = [
     startCountry: '756',
     startStations: [{ countryId: '756', level: 2 }],
     startUnits: ['cargo1', 'swat', 'bodyguard', 'lawyer2'],
-    difficulty: 2,
+    challenge: 2,
   },
   {
     id: 'sahel-hunt',
-    kind: 'destroy',
+    objective: 'destroy',
     title: 'Caçada no Sahel',
     brief: 'Um grupo armado circula pela África e Oriente Médio. Use estações como olhos e elimine-o em 120 dias.',
     days: 120,
@@ -128,12 +129,12 @@ export const MISSIONS: MissionDef[] = [
     startCountry: '818',
     startStations: [{ countryId: '818', level: 3 }, { countryId: '566', level: 1 }],
     startUnits: ['cargo1', 'commando', 'soldier', 'soldier', 'swat', 'technical', 'liaison1'],
-    difficulty: 2,
+    challenge: 2,
     region: ['AF', 'ME'],
   },
   {
     id: 'andes-rescue',
-    kind: 'rescue',
+    objective: 'rescue',
     title: 'Resgate nos Andes',
     brief: 'Uma engenheira foi sequestrada e é levada de país em país pelas Américas. Encontre e liberte-a em 90 dias.',
     days: 90,
@@ -141,12 +142,12 @@ export const MISSIONS: MissionDef[] = [
     startCountry: '591',
     startStations: [{ countryId: '170', level: 1 }, { countryId: '604', level: 1 }],
     startUnits: ['cargo1', 'commando', 'swat', 'swat', 'soldier', 'liaison1'],
-    difficulty: 2,
+    challenge: 2,
     region: ['SA', 'NA'],
   },
   {
     id: 'red-line',
-    kind: 'destroy',
+    objective: 'destroy',
     title: 'Linha Vermelha',
     brief: 'Uma rede criminosa cruza a Europa com escolta pesada. 100 dias, nenhuma desculpa.',
     days: 100,
@@ -154,12 +155,12 @@ export const MISSIONS: MissionDef[] = [
     startCountry: '276',
     startStations: [{ countryId: '276', level: 2 }, { countryId: '616', level: 1 }],
     startUnits: ['cargo1', 'commando', 'commando', 'swat', 'apc', 'liaison2', 'lawyer2'],
-    difficulty: 3,
+    challenge: 3,
     region: ['EU'],
   },
   {
     id: 'pacific-cold',
-    kind: 'profit',
+    objective: 'profit',
     title: 'Frio no Pacífico',
     brief: 'Ásia e Oceania sob tensão permanente. 180 dias, capital grande, rivais estatais atentos.',
     days: 180,
@@ -167,8 +168,21 @@ export const MISSIONS: MissionDef[] = [
     startCountry: '392',
     startStations: [{ countryId: '392', level: 2 }, { countryId: '764', level: 1 }],
     startUnits: ['cargo2', 'swat', 'swat', 'soldier', 'lawyer2', 'liaison2', 'jet1'],
-    difficulty: 3,
+    challenge: 3,
   },
 ];
 
 export const DIFFICULTY_LABEL = ['', 'Recruta', 'Operador', 'Diretor'];
+
+export const OBJECTIVE_LABEL: Record<ObjectiveKind, string> = {
+  profit: 'Lucro em N dias',
+  quick: 'Lucro rápido',
+  destroy: 'Eliminar um grupo',
+  rescue: 'Resgatar um refém',
+};
+
+/** Cofre: capacidade em toneladas por Nível de Estação. */
+export const VAULT_CAPACITY: Record<StationLevel, number> = { 1: 1, 2: 3, 3: 8, 4: 20, 5: 50 };
+
+/** Receptador: fração do preço-base paga na hora por um item capturado. */
+export const FENCE_RATE = 0.45;

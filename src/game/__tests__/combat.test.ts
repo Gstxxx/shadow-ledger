@@ -7,6 +7,7 @@ const ctx = () => ({ rng: 1234, uidCounter: 0 });
 
 function setup(c: ReturnType<typeof ctx>, player: string[], enemy: string[], over: Partial<CombatSetup> = {}): CombatSetup {
   return {
+    agencyId: 'player',
     type: 'urban',
     reason: { kind: 'operation', op: 'bank', countryId: '840', by: 'director' },
     title: 'teste',
@@ -58,6 +59,7 @@ describe('Combate', () => {
   it('Agentes de Influência convertem inimigos, e Negociar converte mais', () => {
     const c = ctx();
     const s = setup(c, ['liaison3', 'liaison3', 'liaison3'], ['thug', 'thug', 'thug']);
+    for (const u of s.player) u.traits = [];
     let normal = 0;
     let nego = 0;
     for (let seed = 1; seed <= 60; seed++) {

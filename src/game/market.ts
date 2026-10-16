@@ -1,13 +1,13 @@
 import { ITEM_LIST, ITEMS, usesCargo } from './data/items';
 import { pick, randRange, shuffle } from './rng';
 import type { RngHolder } from './rng';
-import type { Country, GameState, ItemDef, Politics, Unit, UnitClass } from './types';
+import type { Agency, Country, ItemDef, Politics, Unit, UnitClass } from './types';
 import { def } from './units';
 
 const POLITICS_MULT: Record<Politics, Partial<Record<UnitClass, number>> & { all?: number }> = {
   peace: { special: 1.1, lawyer: 1.1 },
   disorder: { arms: 1.25, human: 1.15, vehicle: 1.05 },
-  civilwar: { arms: 1.45, human: 1.3, vehicle: 1.15, secretary: 1.1 },
+  civilwar: { arms: 1.45, human: 1.3, vehicle: 1.15, influence: 1.1 },
   sanctions: { all: 1.2, special: 1.3 },
   coldwar: { jet: 1.25, antiair: 1.25, special: 1.35 },
   war: { vehicle: 1.35, heli: 1.35, jet: 1.4, antiair: 1.35, arms: 1.15, cargo: 1.1 },
@@ -29,6 +29,7 @@ function levelAffinity(level: number, rank: number) {
 
 /** Can this country buy (or even be interested in) an item of this rank? */
 export function interested(c: Country, it: ItemDef) {
+  if (it.wmd) return ['war', 'coldwar', 'sanctions', 'civilwar'].includes(c.politics);
   if (it.cls === 'special') return true;
   return c.level >= it.rank + 1 || (it.rank === 3 && c.level >= 3 && c.politics === 'war');
 }
@@ -106,9 +107,12 @@ export function recoverSaturation(c: Country, hours: number) {
 }
 
 /** Pick what a country offers: manufactured goods first, then a level-appropriate mix. */
-export function rollStock(s: RngHolder, c: Country): string[] {
+/** Tensão Global from which Armas de Destruição em Massa reach the market. */
+export const WMD_TENSION = 75;
+
+export function rollStock(s: RngHolder, c: Country, tension = 0): string[] {
   const pool = ITEM_LIST.filter(
-    (it) => it.tradable && it.id !== 'nuclear' && it.id !== 'space' && it.rank <= Math.max(1, c.level - 1) + (c.level >= 4 ? 1 : 0),
+    (it) => it.tradable && !it.wmd && it.id !== 'space' && it.rank <= Math.max(1, c.level - 1) + (c.level >= 4 ? 1 : 0),
   );
   const own = pool.filter((it) => it.origin?.includes(c.id)).map((it) => it.id);
   const humans = pool.filter((it) => it.cls === 'human').map((it) => it.id);
@@ -117,6 +121,7 @@ export function rollStock(s: RngHolder, c: Country): string[] {
   shuffle(s, humans).slice(0, 3 + Math.floor(c.level / 2)).forEach((id) => stock.add(id));
   shuffle(s, others).slice(0, 5 + c.level).forEach((id) => stock.add(id));
   if (c.level >= 3) stock.add(pick(s, ['intel', 'docs']));
+  if (tension >= WMD_TENSION && c.level >= 3 && interested(c, ITEMS.chem)) stock.add(pick(s, ['chem', 'bio', 'nuclear']));
   return [...stock].sort((a, b) => ITEMS[a].price - ITEMS[b].price);
 }
 
@@ -140,28 +145,28 @@ export function driftPrices(s: RngHolder, c: Country) {
 
 // ── Frota: capacidade e velocidade ──────────────────────────
 
-const activeFreighters = (s: GameState) => s.fleet.filter((u) => !u.idle);
+const activeFreighters = (a: Agency) => a.fleet.filter((u) => !u.idle);
 
-export function maxCargo(s: GameState): number {
-  return activeFreighters(s).reduce((a, u) => a + def(u.itemId).weight, 0);
+export function maxCargo(a: Agency): number {
+  return activeFreighters(a).reduce((a, u) => a + def(u.itemId).weight, 0);
 }
 
 export const unitsWeight = (units: Unit[]) =>
   units.filter((u) => usesCargo(def(u.itemId))).reduce((a, u) => a + def(u.itemId).weight, 0);
 
-export function cargoWeight(s: GameState): number {
-  return s.cargo.reduce((a, l) => a + def(l.itemId).weight * l.qty, 0);
+export function cargoWeight(a: Agency): number {
+  return a.cargo.reduce((a, l) => a + def(l.itemId).weight * l.qty, 0);
 }
 
 /** Carga + Escolta (aeronaves de combate não ocupam espaço) + o Diretor. */
-export function usedCargo(s: GameState): number {
-  return cargoWeight(s) + unitsWeight(s.escort) + 0.1;
+export function usedCargo(a: Agency): number {
+  return cargoWeight(a) + unitsWeight(a.escort) + 0.1;
 }
 
-export const freeCargo = (s: GameState) => Math.max(0, maxCargo(s) - usedCargo(s));
+export const freeCargo = (a: Agency) => Math.max(0, maxCargo(a) - usedCargo(a));
 
 /** Velocidade da Frota: a do cargueiro mais lento. */
-export function fleetSpeed(s: GameState): number {
-  const planes = activeFreighters(s);
+export function fleetSpeed(a: Agency): number {
+  const planes = activeFreighters(a);
   return planes.length ? Math.min(...planes.map((u) => def(u.itemId).speed ?? 500)) : 0;
 }

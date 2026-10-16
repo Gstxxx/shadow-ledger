@@ -8,7 +8,7 @@ type Def = Omit<ItemDef, 'str' | 'tradable' | 'fieldable'> & {
   fieldable?: boolean;
 };
 
-const fieldOnly: UnitClass[] = ['lawyer', 'secretary', 'cargo'];
+const fieldOnly: UnitClass[] = ['lawyer', 'influence', 'cargo'];
 const tradeOnly: UnitClass[] = ['arms', 'special'];
 
 const defs: Def[] = [
@@ -23,9 +23,9 @@ const defs: Def[] = [
   { id: 'lawyer1', name: 'Advogado Associado', cls: 'lawyer', rank: 1, price: 80_000, weight: 0.08, str: { legal: 3 }, blurb: 'Segura multas e processos simples.' },
   { id: 'lawyer2', name: 'Advogada Sênior', cls: 'lawyer', rank: 2, price: 220_000, weight: 0.08, str: { legal: 5 }, blurb: 'Transforma auditorias em atrasos intermináveis.' },
   { id: 'lawyer3', name: 'Sócio de Escritório Internacional', cls: 'lawyer', rank: 3, price: 550_000, weight: 0.08, str: { legal: 8 }, blurb: 'Tem o telefone de três ministros da justiça.' },
-  { id: 'liaison1', name: 'Agente de Influência', cls: 'secretary', rank: 1, price: 70_000, weight: 0.07, str: { convert: 3 }, blurb: 'Charme e conversa: vira inimigos para o seu lado.' },
-  { id: 'liaison2', name: 'Recrutadora Veterana', cls: 'secretary', rank: 2, price: 190_000, weight: 0.07, str: { convert: 5 }, blurb: 'Converte unidades inimigas em combate urbano, militar e jurídico.' },
-  { id: 'liaison3', name: 'Mestre da Persuasão', cls: 'secretary', rank: 3, price: 450_000, weight: 0.07, str: { convert: 7 }, blurb: 'Lealdades mudam quando ela entra na sala.' },
+  { id: 'liaison1', name: 'Agente de Influência', cls: 'influence', rank: 1, price: 70_000, weight: 0.07, str: { convert: 3 }, blurb: 'Conversa certa na hora certa: vira Unidades inimigas para o seu lado.' },
+  { id: 'liaison2', name: 'Agente de Influência Veterano', cls: 'influence', rank: 2, price: 190_000, weight: 0.07, str: { convert: 5 }, blurb: 'Converte unidades inimigas em combate urbano, militar e jurídico.' },
+  { id: 'liaison3', name: 'Mestre de Influência', cls: 'influence', rank: 3, price: 450_000, weight: 0.07, str: { convert: 7 }, blurb: 'Lealdades mudam quando entra na sala.' },
 
   // ── Veículos ──────────────────────────────────────────
   { id: 'patrolcar', name: 'Viatura Interceptadora', cls: 'vehicle', rank: 0, price: 120_000, weight: 2.5, str: { urban: 4, army: 2 }, blurb: 'Rápida no asfalto, frágil no resto.' },
@@ -63,7 +63,11 @@ const defs: Def[] = [
   { id: 'secret', name: 'Segredo de Estado', cls: 'special', rank: 2, price: 2_800_000, weight: 0.01, blurb: 'Vale ouro para o vizinho certo.' },
   { id: 'tech', name: 'Pacote de Tecnologia', cls: 'special', rank: 2, price: 5_500_000, weight: 0.3, blurb: 'Código-fonte e protótipos de defesa.' },
   { id: 'space', name: 'Programa Espacial', cls: 'special', rank: 3, price: 24_000_000, weight: 1, blurb: 'Dados de lançadores e satélites.' },
-  { id: 'nuclear', name: 'Programa Nuclear', cls: 'special', rank: 3, price: 65_000_000, weight: 2, blurb: 'O item mais perigoso do mercado negro.' },
+
+  // ── Armas de Destruição em Massa (só comércio, só com Tensão Global alta) ──
+  { id: 'chem', name: 'Agente Químico (lote)', cls: 'special', rank: 3, price: 18_000_000, weight: 1.5, wmd: true, blurb: 'Precursores militares. Ninguém admite ter comprado.' },
+  { id: 'bio', name: 'Agente Biológico (amostras)', cls: 'special', rank: 3, price: 30_000_000, weight: 0.2, wmd: true, blurb: 'Frascos lacrados e um protocolo de contenção que ninguém segue.' },
+  { id: 'nuclear', name: 'Material Nuclear', cls: 'special', rank: 3, price: 65_000_000, weight: 2, wmd: true, blurb: 'O item mais perigoso do mercado negro.' },
 ];
 
 export const ITEMS: Record<string, ItemDef> = Object.fromEntries(
@@ -83,12 +87,12 @@ export const ITEM_LIST = Object.values(ITEMS);
 /** Air units fly alongside the cargo planes and use no cargo space. */
 export const usesCargo = (it: ItemDef) => it.cls !== 'jet' && it.cls !== 'cargo';
 
-export const isHumanLike = (it: ItemDef) => it.cls === 'human' || it.cls === 'lawyer' || it.cls === 'secretary';
+export const isHumanLike = (it: ItemDef) => it.cls === 'human' || it.cls === 'lawyer' || it.cls === 'influence';
 
 export const CLASS_LABEL: Record<UnitClass, string> = {
   human: 'Pessoal',
   lawyer: 'Jurídico',
-  secretary: 'Influência',
+  influence: 'Agente de Influência',
   vehicle: 'Veículo',
   antiair: 'Antiaéreo',
   heli: 'Helicóptero',
@@ -99,4 +103,4 @@ export const CLASS_LABEL: Record<UnitClass, string> = {
 };
 
 /** Items a country can steal-reward by level. */
-export const STEAL_TABLE = ['intel', 'docs', 'secret', 'tech', 'space', 'nuclear'];
+export const STEAL_TABLE = ['intel', 'docs', 'secret', 'tech', 'space'];

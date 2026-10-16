@@ -1,26 +1,29 @@
 import { COUNTRY_SEEDS, distanceKm, neighbors } from './data/countries';
 import { GROUP_NAMES, HOSTAGE_NAMES } from './data/names';
-import { MISSIONS, postureOf, STATIONS } from './data/rules';
+import { postureOf, PRESETS, STATIONS } from './data/rules';
+import { buildForce } from './forces';
 import { driftPrices, midPrice, rollStock } from './market';
 import { pick, randInt, randRange, weighted } from './rng';
 import type {
+  Agency,
   Country,
   GameEvent,
   GameOptions,
   GameState,
   Politics,
   Posture,
+  PresetDef,
+  Standing,
   Station,
   StationLevel,
   Tone,
   Unit,
 } from './types';
 import { def, makeUnit, unitValue } from './units';
-import { buildForce } from './forces';
 
 export const HOURS_PER_DAY = 24;
 export const DAYS_PER_MONTH = 30;
-/** Calendar day 0 of every campaign. */
+/** Calendar day 0 of every game. */
 export const EPOCH = Date.UTC(2031, 2, 1, 6, 0, 0);
 
 export const dayOf = (time: number) => Math.floor(time / HOURS_PER_DAY);
@@ -57,13 +60,32 @@ export function rollPolitics(s: GameState, level: number): Politics {
   return weighted(s, POLITICS_BY_LEVEL[level] ?? POLITICS_BY_LEVEL[3]);
 }
 
-export const country = (s: GameState, id: string): Country => s.countries[id];
-export const postureIn = (s: GameState, id: string): Posture => postureOf(s.countries[id].reputation);
-export const stationIn = (s: GameState, id: string): Station | undefined => s.stations.find((st) => st.countryId === id);
+// ── Agências ────────────────────────────────────────────────
 
-export const directorFree = (s: GameState) => s.director.status === 'free';
+/** A agência do jogador. */
+export const player = (s: GameState): Agency => s.agencies[0];
+export const agencyById = (s: GameState, id: string): Agency | undefined => s.agencies.find((a) => a.id === id);
+
+export function standing(a: Agency, countryId: string): Standing {
+  return (a.standing[countryId] ??= { reputation: 0, exposure: 0 });
+}
+
+export const postureIn = (a: Agency, id: string): Posture => postureOf(standing(a, id).reputation);
+export const stationIn = (a: Agency, id: string): Station | undefined => a.stations.find((st) => st.countryId === id);
+
+export const directorFree = (a: Agency) => a.director.status === 'free';
 /** The Diretor is on the ground, free, in this country. */
-export const directorAt = (s: GameState, id: string) => directorFree(s) && !s.flight && s.location === id;
+export const directorAt = (a: Agency, id: string) => directorFree(a) && !a.flight && a.location === id;
+
+export function addReputation(a: Agency, countryId: string, delta: number) {
+  const st = standing(a, countryId);
+  st.reputation = Math.max(-100, Math.min(100, st.reputation + delta));
+}
+
+export function addExposure(a: Agency, countryId: string, delta: number) {
+  const st = standing(a, countryId);
+  st.exposure = Math.max(0, Math.min(100, st.exposure + delta));
+}
 
 export function travelKm(a: string, b: string) {
   const ca = COUNTRY_SEEDS.find((c) => c.id === a)!;
@@ -71,32 +93,43 @@ export function travelKm(a: string, b: string) {
   return distanceKm(ca, cb);
 }
 
+// ── Relatório ───────────────────────────────────────────────
+
 export function log(s: GameState, text: string, tone: Tone = 'info', countryId?: string) {
   s.log.push({ at: s.time, tone, text, countryId });
   if (s.log.length > 400) s.log.splice(0, s.log.length - 400);
 }
 
-/** Evento: shows to the player and pauses the clock until acknowledged. */
-export function pushEvent(
+/** Evento for the player's agency: pauses the clock until acknowledged. Rival agencies raise none. */
+export function notify(
   s: GameState,
+  a: Agency,
   kind: GameEvent['kind'],
   title: string,
   body: string,
   tone: Tone = 'info',
   countryId?: string,
 ) {
+  if (!a.isPlayer) return;
   s.uidCounter += 1;
   s.events.push({ id: `ev${s.uidCounter}`, at: s.time, kind, title, body, tone, countryId });
   log(s, `${title} — ${body}`, tone, countryId);
 }
 
+/** Relatório line for the player's agency only. */
+export function note(s: GameState, a: Agency, text: string, tone: Tone = 'info', countryId?: string) {
+  if (a.isPlayer) log(s, text, tone, countryId);
+}
+
+// ── Valor e informação ──────────────────────────────────────
+
 /** Every Unidade the agency owns, wherever it is (Detidas excluded). */
-export function allUnits(s: GameState): Unit[] {
+export function allUnits(a: Agency): Unit[] {
   return [
-    ...s.fleet,
-    ...s.escort,
-    ...s.stations.flatMap((st) => st.units),
-    ...s.teams.flatMap((t) => [...t.units, ...(t.freighter ? [t.freighter] : [])]),
+    ...a.fleet,
+    ...a.escort,
+    ...a.stations.flatMap((st) => st.units),
+    ...a.teams.flatMap((t) => [...t.units, ...(t.freighter ? [t.freighter] : [])]),
   ];
 }
 
@@ -106,30 +139,32 @@ export function stationValue(level: StationLevel): number {
   return Math.round(v * 0.6);
 }
 
-/** Ativos: caixa + Carga (preço pago) + Unidades + Estações. */
-export function assets(s: GameState): number {
-  const cargo = s.cargo.reduce((a, l) => a + l.paidEach * l.qty, 0);
-  const spoils = s.teams.reduce((a, t) => a + t.spoils.reduce((b, l) => b + l.paidEach * l.qty, 0), 0);
-  const units = allUnits(s).reduce((a, u) => a + unitValue(u), 0);
-  const stations = s.stations.reduce((a, st) => a + (st.interdicted ? 0 : stationValue(st.level)), 0);
-  return Math.round(s.cash + cargo + spoils + units + stations);
+const lotsValue = (lots: { paidEach: number; qty: number }[]) => lots.reduce((a, l) => a + l.paidEach * l.qty, 0);
+
+/** Ativos: caixa + Carga + Cofres + Unidades + Estações. */
+export function assets(a: Agency): number {
+  const goods =
+    lotsValue(a.cargo) + a.teams.reduce((x, t) => x + lotsValue(t.spoils), 0) + a.stations.reduce((x, st) => x + lotsValue(st.vault), 0);
+  const units = allUnits(a).reduce((x, u) => x + unitValue(u), 0);
+  const stations = a.stations.reduce((x, st) => x + (st.interdicted ? 0 : stationValue(st.level)), 0);
+  return Math.round(a.cash + goods + units + stations);
 }
 
 /** Lucro = ativos − capital inicial. */
-export const profit = (s: GameState) => assets(s) - s.capital;
+export const profit = (a: Agency) => assets(a) - a.capital;
 
-export function seePrices(s: GameState, countryId: string) {
+export function seePrices(s: GameState, a: Agency, countryId: string) {
   const c = s.countries[countryId];
   const prices: Record<string, number> = {};
   for (const id of c.stock) prices[id] = midPrice(c, id);
-  c.seen = { at: s.time, prices };
+  standing(a, countryId).seen = { at: s.time, prices };
 }
 
-/** Countries whose market the agency sees live: the Diretor's, plus Estações (and their neighbors from Complexo up). */
-export function intelCountries(s: GameState): Set<string> {
+/** Countries whose market the agency sees live: the Diretor's, plus Estações (and neighbors from Complexo up). */
+export function intelCountries(a: Agency): Set<string> {
   const set = new Set<string>();
-  if (directorFree(s) && !s.flight) set.add(s.location);
-  for (const st of s.stations) {
+  if (directorFree(a) && !a.flight) set.add(a.location);
+  for (const st of a.stations) {
     if (st.interdicted) continue;
     set.add(st.countryId);
     if (STATIONS[st.level].wideIntel) neighbors(st.countryId, 4).forEach((n) => set.add(n));
@@ -137,35 +172,68 @@ export function intelCountries(s: GameState): Set<string> {
   return set;
 }
 
+// ── Nova partida ────────────────────────────────────────────
+
 const DIFF_CASH = [1, 1.25, 1, 0.85];
 
-export function newGame(opts: GameOptions): GameState {
-  const mission = MISSIONS.find((m) => m.id === opts.missionId) ?? MISSIONS[0];
-  const seed = opts.seed ?? Math.floor(Math.random() * 2 ** 31);
-  const s: GameState = {
-    version: 2,
-    seed,
-    rng: seed,
-    time: 0,
-    lastDay: 0,
-    options: { ...opts, missionId: mission.id },
-    mission,
-    director: { name: opts.directorName?.trim() || 'Diretor', status: 'free' },
-    location: mission.startCountry,
-    cash: Math.round(mission.cash * DIFF_CASH[opts.difficulty]),
+export function createAgency(
+  s: GameState,
+  preset: PresetDef,
+  opts: { id: string; name: string; isPlayer: boolean; director: string; cashMult: number },
+): Agency {
+  const a: Agency = {
+    id: opts.id,
+    name: opts.name,
+    isPlayer: opts.isPlayer,
+    director: { name: opts.director, status: 'free' },
+    location: preset.startCountry,
+    cash: Math.round(preset.cash * opts.cashMult),
     capital: 0,
     fleet: [],
     escort: [],
     cargo: [],
     stations: [],
     teams: [],
-    countries: {},
     threats: [],
+    standing: {},
+    arrears: 0,
+    stats: { operations: 0, coups: 0, combatsWon: 0, combatsLost: 0, trades: 0, contractsDone: 0, peakProfit: 0 },
+  };
+  for (const id of Object.keys(s.countries)) a.standing[id] = { reputation: randInt(s, -12, 18), exposure: 0 };
+  standing(a, preset.startCountry).reputation = Math.max(standing(a, preset.startCountry).reputation, 25);
+  for (const id of preset.startUnits) {
+    const u = makeUnit(s, id);
+    if (def(id).cls === 'cargo') a.fleet.push(u);
+    else a.escort.push(u);
+  }
+  for (const st of preset.startStations) {
+    const station: Station = { countryId: st.countryId, level: st.level, units: [], founded: 0, vault: [], detained: [] };
+    if (st.level >= 2) station.units.push(makeUnit(s, 'bodyguard'));
+    if (st.level >= 3) station.units.push(makeUnit(s, 'police'));
+    a.stations.push(station);
+    standing(a, st.countryId).reputation = Math.max(standing(a, st.countryId).reputation, 10);
+  }
+  intelCountries(a).forEach((id) => seePrices(s, a, id));
+  a.capital = assets(a);
+  return a;
+}
+
+export function newGame(opts: GameOptions): GameState {
+  const preset = opts.preset ?? PRESETS[0];
+  const seed = opts.seed ?? Math.floor(Math.random() * 2 ** 31);
+  const s: GameState = {
+    version: 3,
+    seed,
+    rng: seed,
+    time: 0,
+    lastDay: 0,
+    options: { ...opts, preset },
+    agencies: [],
+    countries: {},
+    tension: 20,
     contracts: [],
     log: [],
     events: [],
-    arrears: 0,
-    stats: { operations: 0, coups: 0, combatsWon: 0, combatsLost: 0, trades: 0, contractsDone: 0, peakProfit: 0 },
     uidCounter: 0,
   };
 
@@ -176,8 +244,6 @@ export function newGame(opts: GameOptions): GameState {
       continent: seedC.continent,
       level: seedC.level,
       politics: rollPolitics(s, seedC.level),
-      reputation: randInt(s, -12, 18),
-      exposure: 0,
       saturation: {},
       lon: seedC.lon,
       lat: seedC.lat,
@@ -185,42 +251,40 @@ export function newGame(opts: GameOptions): GameState {
       stock: [],
     };
     driftPrices(s, c);
-    c.stock = rollStock(s, c);
+    c.stock = rollStock(s, c, s.tension);
     s.countries[c.id] = c;
   }
-  // The home country starts friendlier.
-  s.countries[mission.startCountry].reputation = Math.max(s.countries[mission.startCountry].reputation, 25);
 
-  for (const id of mission.startUnits) {
-    const u = makeUnit(s, id);
-    if (def(id).cls === 'cargo') s.fleet.push(u);
-    else s.escort.push(u);
-  }
-  for (const st of mission.startStations) {
-    const station: Station = { countryId: st.countryId, level: st.level, units: [], founded: 0, detained: [] };
-    if (st.level >= 2) station.units.push(makeUnit(s, 'bodyguard'));
-    if (st.level >= 3) station.units.push(makeUnit(s, 'police'));
-    s.stations.push(station);
-    s.countries[st.countryId].reputation = Math.max(s.countries[st.countryId].reputation, 10);
-  }
+  s.agencies.push(
+    createAgency(s, preset, {
+      id: 'player',
+      name: opts.agencyName?.trim() || 'Agência',
+      isPlayer: true,
+      director: opts.directorName?.trim() || 'Diretor',
+      cashMult: DIFF_CASH[opts.difficulty],
+    }),
+  );
 
-  if (mission.kind === 'destroy' || mission.kind === 'rescue') {
-    const region = mission.region ?? ['EU'];
-    const pool = COUNTRY_SEEDS.filter((c) => region.includes(c.continent) && c.id !== mission.startCountry);
+  if (preset.objective === 'destroy' || preset.objective === 'rescue') {
+    const region = preset.region ?? ['EU'];
+    const pool = COUNTRY_SEEDS.filter((c) => region.includes(c.continent) && c.id !== preset.startCountry);
     const start = pick(s, pool);
-    const strength = 22 + mission.difficulty * 10 + (opts.difficulty - 1) * 6;
+    const strength = 22 + preset.challenge * 10 + (opts.difficulty - 1) * 6;
     s.group = {
       name: pick(s, GROUP_NAMES),
       countryId: start.id,
       units: buildForce(s, 'group', strength, 'army'),
       nextMoveAt: randRange(s, 72, 140),
       region,
-      hostage: mission.kind === 'rescue' ? pick(s, HOSTAGE_NAMES) : undefined,
+      hostage: preset.objective === 'rescue' ? pick(s, HOSTAGE_NAMES) : undefined,
     };
   }
 
-  intelCountries(s).forEach((id) => seePrices(s, id));
-  s.capital = assets(s);
-  log(s, `${mission.title}: operação iniciada em ${s.countries[s.location].name}.`, 'intel', s.location);
+  log(s, `${preset.title}: operação iniciada em ${s.countries[preset.startCountry].name}.`, 'intel', preset.startCountry);
   return s;
+}
+
+/** Tensão Global moves with wars, golpes and hostile operations. */
+export function addTension(s: GameState, delta: number) {
+  s.tension = Math.max(0, Math.min(100, s.tension + delta));
 }
