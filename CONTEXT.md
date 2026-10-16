@@ -10,6 +10,14 @@ Jogo de estratégia em tempo contínuo com pausa sobre dirigir uma agência priv
 O jogador encarnado: uma única pessoa que viaja com a **Frota**. Ao perder um **Combate** fica **Detido** (se o vencedor for o Estado) ou **Sequestrado** (se for o crime); só morre no **Modo Hardcore**.
 _Avoid_: presidente, chefe, jogador (quando se fala do personagem)
 
+**Origem**:
+Passado do **Diretor**, escolhido na Nova partida, com retrato próprio, uma **Vantagem** e uma **Desvantagem** que valem a partida inteira.
+_Avoid_: classe, personagem, perk, build
+
+**Vantagem** / **Desvantagem**:
+Efeitos permanentes de uma **Origem** sobre as regras (preços, Reputação, Exposição, Frota, Combate). Diferentes dos **Traços**, que pertencem ao **Pessoal**.
+_Avoid_: perk, bônus, buff, nerf
+
 **Sequestrado**:
 Estado do **Diretor** capturado por criminosos ou por um grupo inimigo; sai mediante resgate pago ou resgate armado por uma **Equipe**. Diferente de **Detida**, que é prisão pelo Estado.
 _Avoid_: capturado, refém
