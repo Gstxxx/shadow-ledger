@@ -1,0 +1,178 @@
+/* Estilos de componente do kit de arte. Requer tokens.css carregado antes. */
+
+/* ── NoiseBackdrop ─────────────────────────────────────── */
+.sl-noise {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  pointer-events: none;
+  contain: strict;
+}
+.sl-noise__grain {
+  position: absolute;
+  inset: -100%;
+  background-repeat: repeat;
+  will-change: transform;
+}
+.sl-noise--animated .sl-noise__grain {
+  animation: sl-grain 0.9s steps(1) infinite;
+}
+.sl-noise__scan {
+  position: absolute;
+  inset: 0;
+  background: repeating-linear-gradient(
+    to bottom,
+    rgba(0, 0, 0, 0) 0,
+    rgba(0, 0, 0, 0) 2px,
+    rgba(0, 0, 0, 0.22) 3px
+  );
+  mix-blend-mode: multiply;
+}
+.sl-noise__roll {
+  position: absolute;
+  left: 0;
+  right: 0;
+  height: 22%;
+  top: -22%;
+  background: linear-gradient(to bottom, transparent, rgba(110, 240, 245, 0.035), transparent);
+  animation: sl-roll 7s linear infinite;
+}
+.sl-noise__vignette {
+  position: absolute;
+  inset: 0;
+}
+@keyframes sl-grain {
+  0% { transform: translate(0, 0); }
+  12% { transform: translate(-17%, 9%); }
+  25% { transform: translate(8%, -21%); }
+  37% { transform: translate(-6%, 14%); }
+  50% { transform: translate(21%, 4%); }
+  62% { transform: translate(-13%, -9%); }
+  75% { transform: translate(4%, 19%); }
+  87% { transform: translate(15%, -15%); }
+}
+@keyframes sl-roll {
+  to { transform: translateY(560%); }
+}
+
+/* ── RadarSweep ────────────────────────────────────────── */
+.sl-radar {
+  position: relative;
+  border-radius: 50%;
+  overflow: hidden;
+  isolation: isolate;
+}
+.sl-radar__sweep {
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  background: conic-gradient(from 0deg, transparent 0deg, transparent 290deg, var(--sl-radar-tone-a) 345deg, var(--sl-radar-tone) 359.5deg, transparent 360deg);
+  animation: sl-spin var(--sl-radar-period, 4s) linear infinite;
+}
+.sl-radar__blip {
+  position: absolute;
+  width: 6px;
+  height: 6px;
+  margin: -3px 0 0 -3px;
+  border-radius: 50%;
+  background: var(--sl-radar-blip, var(--sl-cold));
+  box-shadow: 0 0 8px var(--sl-radar-blip, var(--sl-cold));
+  animation: sl-blip var(--sl-radar-period, 4s) linear infinite;
+}
+@keyframes sl-blip {
+  0% { opacity: 1; transform: scale(1.3); }
+  8% { opacity: 0.95; transform: scale(1); }
+  80% { opacity: 0.1; }
+  100% { opacity: 1; transform: scale(1.3); }
+}
+
+/* ── WorldGlow ─────────────────────────────────────────── */
+.sl-worldglow {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  pointer-events: none;
+}
+.sl-worldglow__drift {
+  position: absolute;
+  inset: -20%;
+  animation: sl-drift 38s var(--sl-ease-inout) infinite alternate;
+}
+.sl-worldglow__hot {
+  position: absolute;
+  border-radius: 50%;
+  transform: translate(-50%, -50%);
+  animation: sl-breathe 4.2s ease-in-out infinite alternate;
+}
+@keyframes sl-drift {
+  from { transform: translate3d(-3%, -2%, 0) scale(1); }
+  to { transform: translate3d(3%, 2%, 0) scale(1.06); }
+}
+@keyframes sl-breathe {
+  from { opacity: 0.55; }
+  to { opacity: 1; }
+}
+
+/* ── Analista ──────────────────────────────────────────── */
+.sl-analyst__lids {
+  transform-box: fill-box;
+  transform-origin: 50% 0%;
+  transform: scaleY(0);
+  animation: sl-blinklid 6.5s infinite;
+}
+@keyframes sl-blinklid {
+  0%, 95.5%, 100% { transform: scaleY(0); }
+  97% { transform: scaleY(1); }
+}
+.sl-analyst__mouth-talk {
+  transform-box: fill-box;
+  transform-origin: 50% 0%;
+  animation: sl-talk 0.32s ease-in-out infinite alternate;
+}
+@keyframes sl-talk {
+  from { transform: scaleY(0.25); }
+  to { transform: scaleY(1); }
+}
+.sl-analyst__led {
+  animation: sl-blink 1.4s steps(1) infinite;
+}
+
+/* ── Carimbo ───────────────────────────────────────────── */
+.sl-stamp--animate {
+  animation: sl-stamp-in var(--sl-dur-slow) var(--sl-ease-stamp) both;
+}
+
+/* ── Tarja ─────────────────────────────────────────────── */
+.sl-redact {
+  position: relative;
+  display: inline;
+  color: transparent;
+  background: var(--sl-redact);
+  box-decoration-break: clone;
+  -webkit-box-decoration-break: clone;
+  padding: 0 0.15em;
+  border-radius: 1px;
+  transition: color var(--sl-dur-base) var(--sl-ease-out), background-color var(--sl-dur-base) var(--sl-ease-out);
+  user-select: none;
+}
+.sl-redact--revealed {
+  color: inherit;
+  background: rgba(245, 176, 74, 0.18);
+  user-select: auto;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .sl-noise--animated .sl-noise__grain,
+  .sl-noise__roll,
+  .sl-radar__sweep,
+  .sl-radar__blip,
+  .sl-worldglow__drift,
+  .sl-worldglow__hot,
+  .sl-analyst__lids,
+  .sl-analyst__mouth-talk,
+  .sl-analyst__led,
+  .sl-stamp--animate {
+    animation: none !important;
+  }
+  .sl-noise__roll { display: none; }
+}

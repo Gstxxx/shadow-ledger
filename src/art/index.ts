@@ -1,0 +1,20 @@
+/**
+ * Kit visual do Shadow Ledger. Importe uma vez no app: `import './art/tokens.css'`
+ * (ou importe deste index, que já carrega tokens.css e art.css).
+ */
+import './tokens.css';
+import './art.css';
+
+export * from './tokens';
+export { Logo, Monogram, appIconSvg, appIconDataUrl } from './Logo';
+export type { LogoProps, LogoVariant, MonogramProps } from './Logo';
+export { GameIcon, iconSvgString, iconInner, iconStrokeWidth } from './icons/GameIcon';
+export type { GameIconProps, IconAccent } from './icons/GameIcon';
+export { ICONS, CLASS_ICON, STATION_TIER_ICON, GROUP_LABEL } from './icons/paths';
+export type { IconDef, IconGroup, GameIconId } from './icons/paths';
+export { NoiseBackdrop, RadarSweep, DossierPaper, WorldGlow, grainTile } from './backdrops';
+export type { NoiseBackdropProps, RadarSweepProps, RadarBlip, DossierPaperProps, WorldGlowProps, WorldGlowSpot } from './backdrops';
+export { AnalystPortrait, OperativePortrait } from './portraits';
+export type { AnalystMood, AnalystPortraitProps, OperativePortraitProps, OperativeTone } from './portraits';
+export { CornerBrackets, DossierFrame, Stamp, Redacted, RedactionBar, Divider, ClassificationBar, Tape } from './frame';
+export type { CornerBracketsProps, DossierFrameProps, StampProps, StampPreset, RedactedProps, RedactionBarProps, DividerProps, ClassificationBarProps, TapeProps } from './frame';

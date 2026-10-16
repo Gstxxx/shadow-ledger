@@ -1,0 +1,214 @@
+/*
+ * Shadow Ledger — design tokens.
+ * Três camadas: primitivos (--sl-p-*) → semânticos (--sl-*) → componente (--sl-c-*).
+ * Componentes de src/art só usam os semânticos/componente; para tematizar,
+ * sobrescreva os semânticos num seletor (ex.: [data-sl-theme="paper"]).
+ */
+@import url('https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;600;700&family=IBM+Plex+Sans:wght@400;500;600&family=JetBrains+Mono:wght@400;600&family=Special+Elite&display=swap');
+
+:root {
+  /* ── Primitivos: tinta (neutros frios, quase pretos) ── */
+  --sl-p-ink-950: #07090b;
+  --sl-p-ink-900: #0b0e12;
+  --sl-p-ink-850: #10141a;
+  --sl-p-ink-800: #151a21;
+  --sl-p-ink-700: #1e252e;
+  --sl-p-ink-600: #2a333e;
+  --sl-p-ink-500: #3b4552;
+  --sl-p-ink-400: #5a6675;
+  --sl-p-ink-300: #8a95a3;
+  --sl-p-ink-200: #b7c0ca;
+  --sl-p-ink-100: #dde3e9;
+
+  /* ── Papel (dossiê, tinta sépia) ── */
+  --sl-p-paper-100: #efe7d6;
+  --sl-p-paper-200: #e2d6bd;
+  --sl-p-paper-300: #cdbd9c;
+  --sl-p-paper-600: #6b5a3e;
+  --sl-p-paper-800: #3a2f1f;
+  --sl-p-paper-900: #241c11;
+
+  /* ── Âmbar (acento quente) ── */
+  --sl-p-amber-300: #ffcf7a;
+  --sl-p-amber-400: #f5b04a;
+  --sl-p-amber-500: #e5952a;
+  --sl-p-amber-700: #8f5814;
+
+  /* ── Vermelho-sinal ── */
+  --sl-p-signal-300: #ff8f86;
+  --sl-p-signal-400: #ff5f56;
+  --sl-p-signal-500: #e5372f;
+  --sl-p-signal-700: #8e1d18;
+
+  /* ── Ciano de radar (acento frio) ── */
+  --sl-p-radar-200: #a8fbff;
+  --sl-p-radar-300: #6ef0f5;
+  --sl-p-radar-400: #33d6e0;
+  --sl-p-radar-600: #13838c;
+  --sl-p-radar-800: #0a3a40;
+
+  /* ── Verde-terminal (sucesso, uso raro) ── */
+  --sl-p-ok-400: #6fdc8c;
+  --sl-p-ok-700: #1f6b3a;
+
+  /* ── Semânticos ── */
+  --sl-bg: var(--sl-p-ink-900);
+  --sl-bg-deep: var(--sl-p-ink-950);
+  --sl-surface: var(--sl-p-ink-850);
+  --sl-surface-raised: var(--sl-p-ink-800);
+  --sl-surface-sunken: var(--sl-p-ink-950);
+  --sl-line: rgba(183, 192, 202, 0.14);
+  --sl-line-strong: rgba(183, 192, 202, 0.32);
+
+  --sl-text: var(--sl-p-ink-100);        /* 14.9:1 sobre --sl-bg */
+  --sl-text-muted: var(--sl-p-ink-300);  /* 6.6:1 sobre --sl-bg (AA) */
+  --sl-text-faint: var(--sl-p-ink-400);  /* só decorativo / ≥18px */
+
+  --sl-warm: var(--sl-p-amber-400);      /* 9.8:1 sobre --sl-bg */
+  --sl-warm-strong: var(--sl-p-amber-300);
+  --sl-warm-deep: var(--sl-p-amber-700);
+  --sl-signal: var(--sl-p-signal-400);   /* 6.3:1 sobre --sl-bg */
+  --sl-signal-deep: var(--sl-p-signal-700);
+  --sl-cold: var(--sl-p-radar-300);      /* 13:1 sobre --sl-bg */
+  --sl-cold-strong: var(--sl-p-radar-200);
+  --sl-cold-deep: var(--sl-p-radar-800);
+  --sl-ok: var(--sl-p-ok-400);
+
+  --sl-on-warm: var(--sl-p-ink-950);
+  --sl-on-signal: var(--sl-p-ink-950);
+  --sl-on-cold: var(--sl-p-ink-950);
+
+  --sl-paper: var(--sl-p-paper-100);
+  --sl-paper-shade: var(--sl-p-paper-300);
+  --sl-paper-ink: var(--sl-p-paper-900); /* 14:1 sobre --sl-paper */
+  --sl-paper-ink-muted: var(--sl-p-paper-600); /* 5.6:1 sobre --sl-paper */
+  --sl-stamp-red: #b3261e;               /* 5.9:1 sobre --sl-paper */
+  --sl-stamp-blue: #1f4e8c;
+  --sl-redact: #0a0a0a;
+
+  --sl-focus: var(--sl-p-radar-300);
+
+  /* ── Tipografia ── */
+  --sl-font-display: 'Barlow Condensed', 'Arial Narrow', 'Roboto Condensed', sans-serif;
+  --sl-font-body: 'IBM Plex Sans', system-ui, 'Segoe UI', Roboto, sans-serif;
+  --sl-font-mono: 'JetBrains Mono', ui-monospace, 'Cascadia Mono', Consolas, monospace;
+  --sl-font-type: 'Special Elite', 'Courier New', ui-monospace, monospace;
+
+  /* Escala 1.2 a partir de 14px (paisagem 640×360: corpo nunca < 12px) */
+  --sl-fs-2xs: 0.6875rem; /* 11 — só rótulos mono em caixa alta */
+  --sl-fs-xs: 0.75rem;    /* 12 */
+  --sl-fs-sm: 0.875rem;   /* 14 */
+  --sl-fs-md: 1rem;       /* 16 */
+  --sl-fs-lg: 1.25rem;    /* 20 */
+  --sl-fs-xl: 1.5rem;     /* 24 */
+  --sl-fs-2xl: 2rem;      /* 32 */
+  --sl-fs-3xl: 2.75rem;   /* 44 */
+  --sl-fs-4xl: 4rem;      /* 64 */
+  --sl-lh-tight: 1.05;
+  --sl-lh-snug: 1.25;
+  --sl-lh-body: 1.5;
+  --sl-tracking-label: 0.14em;
+  --sl-tracking-display: 0.04em;
+
+  /* ── Espaço (base 4) ── */
+  --sl-space-0: 0;
+  --sl-space-1: 4px;
+  --sl-space-2: 8px;
+  --sl-space-3: 12px;
+  --sl-space-4: 16px;
+  --sl-space-5: 20px;
+  --sl-space-6: 24px;
+  --sl-space-8: 32px;
+  --sl-space-10: 40px;
+  --sl-space-12: 48px;
+  --sl-space-16: 64px;
+  --sl-touch: 44px; /* ADR 0003 */
+
+  /* ── Raios: quase retos; dossiê não tem pílula ── */
+  --sl-radius-0: 0;
+  --sl-radius-1: 2px;
+  --sl-radius-2: 4px;
+  --sl-radius-3: 8px;
+  --sl-radius-round: 999px;
+
+  /* ── Sombras / brilhos ── */
+  --sl-shadow-1: 0 1px 0 rgba(255, 255, 255, 0.04) inset, 0 1px 2px rgba(0, 0, 0, 0.5);
+  --sl-shadow-2: 0 1px 0 rgba(255, 255, 255, 0.05) inset, 0 6px 16px -4px rgba(0, 0, 0, 0.6);
+  --sl-shadow-3: 0 1px 0 rgba(255, 255, 255, 0.06) inset, 0 18px 40px -12px rgba(0, 0, 0, 0.75);
+  --sl-shadow-paper: 0 1px 1px rgba(0, 0, 0, 0.3), 0 10px 28px -10px rgba(0, 0, 0, 0.8);
+  --sl-glow-warm: 0 0 0 1px rgba(245, 176, 74, 0.35), 0 0 18px rgba(245, 176, 74, 0.25);
+  --sl-glow-cold: 0 0 0 1px rgba(110, 240, 245, 0.35), 0 0 18px rgba(110, 240, 245, 0.22);
+  --sl-glow-signal: 0 0 0 1px rgba(255, 95, 86, 0.4), 0 0 18px rgba(255, 95, 86, 0.28);
+
+  /* ── Motion ── */
+  --sl-dur-instant: 80ms;
+  --sl-dur-fast: 140ms;
+  --sl-dur-base: 220ms;
+  --sl-dur-slow: 380ms;
+  --sl-dur-scene: 700ms;
+  --sl-ease-out: cubic-bezier(0.16, 1, 0.3, 1);       /* entradas */
+  --sl-ease-in: cubic-bezier(0.55, 0, 0.75, 0.2);     /* saídas (mais rápidas) */
+  --sl-ease-inout: cubic-bezier(0.65, 0, 0.35, 1);
+  --sl-ease-stamp: cubic-bezier(0.2, 1.6, 0.4, 1);    /* carimbo: overshoot curto */
+
+  /* ── Camadas ── */
+  --sl-z-backdrop: 0;
+  --sl-z-map: 10;
+  --sl-z-hud: 100;
+  --sl-z-drawer: 200;
+  --sl-z-modal: 300;
+  --sl-z-toast: 400;
+
+  /* ── Componente ── */
+  --sl-c-icon-stroke: 1.75;
+  --sl-c-frame-corner: 14px;
+  --sl-c-frame-color: var(--sl-line-strong);
+  --sl-c-stamp-color: var(--sl-stamp-red);
+  --sl-c-divider-color: var(--sl-line-strong);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  :root {
+    --sl-dur-fast: 0ms;
+    --sl-dur-base: 0ms;
+    --sl-dur-slow: 0ms;
+    --sl-dur-scene: 0ms;
+  }
+}
+
+/* Classes utilitárias mínimas, opcionais */
+.sl-label {
+  font-family: var(--sl-font-mono);
+  font-size: var(--sl-fs-2xs);
+  letter-spacing: var(--sl-tracking-label);
+  text-transform: uppercase;
+  color: var(--sl-text-muted);
+}
+.sl-display {
+  font-family: var(--sl-font-display);
+  font-weight: 700;
+  letter-spacing: var(--sl-tracking-display);
+  text-transform: uppercase;
+  line-height: var(--sl-lh-tight);
+}
+.sl-focusable:focus-visible {
+  outline: 2px solid var(--sl-focus);
+  outline-offset: 2px;
+}
+
+@keyframes sl-stamp-in {
+  0% { transform: var(--sl-stamp-rot, rotate(-8deg)) scale(1.6); opacity: 0; }
+  60% { opacity: 1; }
+  100% { transform: var(--sl-stamp-rot, rotate(-8deg)) scale(1); opacity: 1; }
+}
+@keyframes sl-blink {
+  0%, 49% { opacity: 1; }
+  50%, 100% { opacity: 0.25; }
+}
+@keyframes sl-spin {
+  to { transform: rotate(360deg); }
+}
+@keyframes sl-pulse-ring {
+  0% { transform: scale(0.6); opacity: 0.9; }
+  100% { transform: scale(1.8); opacity: 0; }
+}
