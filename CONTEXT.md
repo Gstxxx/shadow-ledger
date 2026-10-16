@@ -86,6 +86,14 @@ _Avoid_: missão, meta
 Sequência futura de partidas com história, que carrega parte do progresso de uma para a próxima. Não existe no lançamento.
 _Avoid_: história, modo história
 
+**Tutorial**:
+**Preset** curto e roteirizado que apresenta os sistemas básicos um a um, com os sistemas avançados desligados.
+_Avoid_: treino, missão de treinamento
+
+**Analista**:
+Personagem fixa, a analista de inteligência do **Diretor**, que comenta **Eventos** e apresenta cada sistema na primeira vez que ele aparece, em qualquer partida. Pode ser silenciada.
+_Avoid_: assistente, conselheiro, tutorial (que é o Preset)
+
 **Dificuldade**:
 Nível escolhido no início da partida (Recruta, Operador, Diretor) que, entre outras coisas, define o número e a agressividade das **Agências Rivais**.
 _Avoid_: modo (reservado para **Modo Hardcore**)
