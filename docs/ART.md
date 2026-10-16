@@ -92,3 +92,16 @@ Todos são camadas `position:absolute; inset:0` (exceto o radar) e `pointer-even
 - Animações só com `transform`/`opacity`. Nada roda em JS por quadro.
 - Os filtros SVG mais caros (papel, carimbo) são estáticos e o navegador os pinta uma vez. Evite muitos `DossierPaper` animados ou redimensionando ao mesmo tempo; em listas longas use `lite`.
 - Ícones legíveis a 20px. Alvos de toque são responsabilidade de quem usa: envolva o ícone num botão de pelo menos 44px.
+
+## PWA
+
+- Os ícones ficam em `public/icons/`: `icon-192.png`, `icon-512.png`, `icon-maskable-512.png` (monograma a 50%, dentro da zona segura), `apple-touch-icon.png` (180), `favicon-32.png` e `favicon.svg`. Os SVG de origem são `icon.svg` e `icon-maskable.svg`, gerados por `appIconSvg()`.
+- Para regenerar depois de mudar o logo, exporte `appIconSvg(512)` e `appIconSvg(512, { maskable: true })` para os SVG (com `npx -y tsx`) e rasterize com `npx -y @resvg/resvg-js-cli --fit-width <px> <svg> <png>`. Nada disso entra no `package.json`.
+- As screenshots do manifest ficam em `public/screenshots/*.webp` (1280×720, `form_factor: wide`) e foram capturadas do jogo publicado.
+- Service worker (`public/sw.js`):
+  - A página vai à rede primeiro; o cache é a reserva offline.
+  - `/assets/*` com hash vem do cache primeiro.
+  - O resto do site é servido do cache e revalidado em segundo plano.
+  - A cada `index.html` novo, os assets de builds antigos são apagados.
+  - Só registra fora do servidor de dev (script inline no `<head>` do `index.html`).
+  - Mude `SHELL_VERSION` só quando mudar a lógica do SW.
