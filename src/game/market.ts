@@ -3,6 +3,7 @@ import { pick, randRange, shuffle } from './rng';
 import type { RngHolder } from './rng';
 import type { Agency, Country, ItemDef, Politics, Unit, UnitClass } from './types';
 import { def } from './units';
+import { originMods } from './data/origins';
 
 const POLITICS_MULT: Record<Politics, Partial<Record<UnitClass, number>> & { all?: number }> = {
   peace: { special: 1.1, lawyer: 1.1 },
@@ -70,11 +71,17 @@ function clampSat(v: number) {
 }
 
 /** Quote selling `qty` units, one at a time, each sale pushing the price down. Does not mutate. */
-export function quoteSell(c: Country, itemId: string, qty: number): { total: number; avg: number; after: number } {
+export function quoteSell(
+  c: Country,
+  itemId: string,
+  qty: number,
+  /** Origem do vendedor: multiplicador de preço e de Saturação. */
+  o: { priceMult?: number; satMult?: number } = {},
+): { total: number; avg: number; after: number } {
   if (!interested(c, def(itemId))) return { total: 0, avg: 0, after: c.saturation[itemId] ?? 0 };
   let sat = c.saturation[itemId] ?? 0;
-  const base = basePrice(c, itemId);
-  const step = saturationStep(c, itemId);
+  const base = basePrice(c, itemId) * (o.priceMult ?? 1);
+  const step = saturationStep(c, itemId) * (o.satMult ?? 1);
   let total = 0;
   for (let i = 0; i < qty; i++) {
     total += Math.round(base * (1 + sat) * SELL_SPREAD);
@@ -148,7 +155,7 @@ export function driftPrices(s: RngHolder, c: Country) {
 const activeFreighters = (a: Agency) => a.fleet.filter((u) => !u.idle);
 
 export function maxCargo(a: Agency): number {
-  return activeFreighters(a).reduce((a, u) => a + def(u.itemId).weight, 0);
+  return activeFreighters(a).reduce((x, u) => x + def(u.itemId).weight, 0) * (originMods(a).fleetCapMult ?? 1);
 }
 
 export const unitsWeight = (units: Unit[]) =>
@@ -168,5 +175,22 @@ export const freeCargo = (a: Agency) => Math.max(0, maxCargo(a) - usedCargo(a));
 /** Velocidade da Frota: a do cargueiro mais lento. */
 export function fleetSpeed(a: Agency): number {
   const planes = activeFreighters(a);
-  return planes.length ? Math.min(...planes.map((u) => def(u.itemId).speed ?? 500)) : 0;
+  if (!planes.length) return 0;
+  return Math.round(Math.min(...planes.map((u) => def(u.itemId).speed ?? 500)) * (originMods(a).fleetSpeedMult ?? 1));
+}
+
+/** Venda cotada como a agência venderia (com a Origem). */
+export function quoteSellFor(a: Agency, c: Country, itemId: string, qty: number) {
+  const m = originMods(a);
+  return quoteSell(c, itemId, qty, { priceMult: m.sellMult, satMult: m.saturationMult });
+}
+
+/** Compra cotada como a agência compraria (com a Origem: veículos e antiaéreo mais baratos para o Coronel). */
+export function quoteBuyFor(a: Agency, c: Country, itemId: string, qty: number) {
+  const q = quoteBuy(c, itemId, qty);
+  const cls = def(itemId).cls;
+  const mult = cls === 'vehicle' || cls === 'antiair' ? (originMods(a).vehicleCostMult ?? 1) : 1;
+  if (mult === 1) return q;
+  const total = Math.round(q.total * mult);
+  return { ...q, total, avg: qty ? Math.round(total / qty) : 0 };
 }

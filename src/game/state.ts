@@ -2,6 +2,9 @@ import { COUNTRY_SEEDS, distanceKm, neighbors } from './data/countries';
 import { GROUP_NAMES, HOSTAGE_NAMES, PLAYER_AGENCY_NAMES } from './data/names';
 import { postureOf, PRESETS, STATIONS } from './data/rules';
 import { setupRivals } from './ai/setup';
+import { originMods, ORIGINS, TUTORIAL_ORIGIN } from './data/origins';
+import type { OriginMods } from './data/origins';
+import { TUTORIAL_ID } from './tutorial/preset';
 import { SAVE_VERSION } from './save';
 import { isLocked } from './tutorial/locks';
 import { buildForce } from './forces';
@@ -11,6 +14,7 @@ import { keyRef, M, say, textOf } from './msg';
 import type { Msg } from '../i18n/lookup';
 import type {
   Agency,
+  OriginId,
   Country,
   GameEvent,
   GameOptions,
@@ -85,12 +89,20 @@ export const directorAt = (a: Agency, id: string) => directorFree(a) && !a.fligh
 
 export function addReputation(a: Agency, countryId: string, delta: number) {
   const st = standing(a, countryId);
-  st.reputation = Math.max(-100, Math.min(100, st.reputation + delta));
+  const gain = delta > 0 ? delta * (originMods(a).repGainMult ?? 1) : delta;
+  st.reputation = Math.max(-100, Math.min(100, st.reputation + gain));
 }
 
-export function addExposure(a: Agency, countryId: string, delta: number) {
+/** Exposição ganha ou perdida; `op` marca Operações Especiais e ações hostis (Origem Ex-Agente). */
+export function addExposure(s: GameState, a: Agency, countryId: string, delta: number, op = false) {
   const st = standing(a, countryId);
-  st.exposure = Math.max(0, Math.min(100, st.exposure + delta));
+  let d = delta;
+  if (d > 0) {
+    const m = originMods(a);
+    if (op) d *= m.opExposureMult ?? 1;
+    if (s.countries[countryId]?.politics === 'peace') d *= m.peaceExposureMult ?? 1;
+  }
+  st.exposure = Math.max(0, Math.min(100, st.exposure + d));
 }
 
 export function travelKm(a: string, b: string) {
@@ -187,7 +199,7 @@ export function intelCountries(a: Agency): Set<string> {
   for (const st of a.stations) {
     if (st.interdicted) continue;
     set.add(st.countryId);
-    if (STATIONS[st.level].wideIntel) neighbors(st.countryId, 4).forEach((n) => set.add(n));
+    if (STATIONS[st.level].wideIntel || originMods(a).wideIntel) neighbors(st.countryId, 4).forEach((n) => set.add(n));
   }
   return set;
 }
@@ -196,15 +208,38 @@ export function intelCountries(a: Agency): Set<string> {
 
 const DIFF_CASH = [1, 1.25, 1, 0.85];
 
+/** Escolta inicial ajustada pela Origem: uma Unidade a menos, ou só Pessoal jurídico e de influência. */
+export function startingUnits(ids: string[], m: OriginMods): string[] {
+  let out = [...ids];
+  if (m.oneUnitLess) {
+    for (let k = out.length - 1; k >= 0; k--) {
+      if (def(out[k]).cls !== 'cargo') {
+        out.splice(k, 1);
+        break;
+      }
+    }
+  }
+  if (m.noFighters) {
+    let n = 0;
+    out = out.map((id) => {
+      const c = def(id).cls;
+      if (c === 'cargo' || c === 'lawyer' || c === 'influence') return id;
+      return n++ % 2 === 0 ? 'lawyer1' : 'liaison1';
+    });
+  }
+  return out;
+}
+
 export function createAgency(
   s: GameState,
   preset: PresetDef,
-  opts: { id: string; name: string; isPlayer: boolean; director: string; cashMult: number },
+  opts: { id: string; name: string; isPlayer: boolean; director: string; cashMult: number; origin?: OriginId },
 ): Agency {
   const a: Agency = {
     id: opts.id,
     name: opts.name,
     isPlayer: opts.isPlayer,
+    origin: opts.origin ?? (opts.isPlayer ? 'none' : pick(s, ORIGINS).id),
     director: { name: opts.director, status: 'free' },
     location: preset.startCountry,
     cash: Math.round(preset.cash * opts.cashMult),
@@ -221,7 +256,9 @@ export function createAgency(
   };
   for (const id of Object.keys(s.countries)) a.standing[id] = { reputation: randInt(s, -12, 18), exposure: 0 };
   standing(a, preset.startCountry).reputation = Math.max(standing(a, preset.startCountry).reputation, 25);
-  for (const id of preset.startUnits) {
+  const repL5 = originMods(a).startRepLevel5;
+  if (repL5) for (const c of Object.values(s.countries)) if (c.level === 5) standing(a, c.id).reputation += repL5;
+  for (const id of startingUnits(preset.startUnits, originMods(a))) {
     const u = makeUnit(s, id);
     if (def(id).cls === 'cargo') a.fleet.push(u);
     else a.escort.push(u);
@@ -284,6 +321,7 @@ export function newGame(opts: GameOptions): GameState {
       isPlayer: true,
       director: opts.directorName?.trim() || say(M('msg.state.defaultDirector')),
       cashMult: DIFF_CASH[opts.difficulty],
+      origin: opts.origin ?? (preset.id === TUTORIAL_ID ? TUTORIAL_ORIGIN : 'none'),
     }),
   );
 

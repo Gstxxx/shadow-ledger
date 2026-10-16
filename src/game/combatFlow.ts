@@ -4,6 +4,7 @@ import { applyCasualties, autoDeploy, createCombat, estimateWin, runToEnd, succe
 import type { CombatSetup } from './combat';
 import { ITEMS, STEAL_TABLE } from './data/items';
 import { STATIONS, THREAT_BY_STATE } from './data/rules';
+import { originMods } from './data/origins';
 import { checkObjective } from './objective';
 import { pick, randInt, randRange } from './rng';
 import {
@@ -68,8 +69,21 @@ function toSetup(a: Agency, data: CombatSetupData): Omit<CombatSetup, 'tactic'> 
     sources: data.sources,
     directorPresent: data.directorPresent,
     fort: data.fort,
+    originBonus: originBonus(a, data),
   };
 }
+
+/** Força que a Origem soma a cada Unidade da agência neste tipo de Combate. */
+function originBonus(a: Agency, data: CombatSetupData): { all: number; military: number } | undefined {
+  const m = originMods(a);
+  let all = m.strength?.[data.type] ?? 0;
+  if (data.type === 'army' && data.directorPresent) all += m.directorArmy ?? 0;
+  const military = data.type === 'army' ? (m.militaryUnitsArmy ?? 0) : 0;
+  return all || military ? { all, military } : undefined;
+}
+
+/** Margem de erro (95%) da Prévia para `runs` simulações. */
+export const previewMargin = (p: number, runs: number) => 1.96 * Math.sqrt((p * (1 - p)) / runs);
 
 /** Prévia for every Tática. Uses a scratch rng derived from the game, never the game's own cursor. */
 export function previewAll(s: GameState, a: Agency, data: CombatSetupData, runs = 60): Record<Tactic, number> {
@@ -92,7 +106,11 @@ export function negotiateCost(s: GameState, data: CombatSetupData): number {
  */
 export function beginCombat(s: GameState, a: Agency, data: CombatSetupData) {
   if (data.directorPresent && a.isPlayer) {
-    s.pendingCombat = { agencyId: a.id, setup: data, preview: previewAll(s, a, data) };
+    const preview = previewAll(s, a, data);
+    const margin = originMods(a).previewMargin
+      ? (Object.fromEntries(TACTICS.map((t) => [t, previewMargin(preview[t], 60)])) as Record<Tactic, number>)
+      : undefined;
+    s.pendingCombat = { agencyId: a.id, setup: data, preview, margin };
     notify(s, a, 'engage', data.titleMsg ?? data.title, M('msg.combat.chooseTactic'), 'warn', data.reason.countryId);
     return;
   }
@@ -293,7 +311,7 @@ export function resolveCombat(s: GameState, c: CombatState) {
       if (ok) {
         notify(s, a, 'combat', M('msg.combat.threatWonTitle', { threat: ref.threat(r.threatKind) }), M('msg.combat.threatWonBody', { country, casualty }), 'good', r.countryId);
         addReputation(a, r.countryId, byState ? -4 : 3);
-        addExposure(a, r.countryId, 6);
+        addExposure(s, a, r.countryId, 6);
       } else {
         if (r.target === 'station') {
           if (r.threatKind === 'raid' || r.threatKind === 'lawsuit') interdict(s, a, r.countryId);
@@ -309,7 +327,7 @@ export function resolveCombat(s: GameState, c: CombatState) {
       a.stats.operations++;
       const team = r.by === 'director' ? undefined : a.teams.find((t) => t.id === r.by);
       addReputation(a, r.countryId, ok ? -20 : -12);
-      addExposure(a, r.countryId, (ok ? 35 : 45) * quiet);
+      addExposure(s, a, r.countryId, (ok ? 35 : 45) * quiet, true);
       addTension(s, r.op === 'neutralize' ? 3 : 1);
       if (ok) {
         if (r.op === 'bank') {
@@ -353,7 +371,7 @@ export function resolveCombat(s: GameState, c: CombatState) {
         standing(a, r.countryId).reputation = 75;
         cty.politics = 'disorder';
         cty.couped = true;
-        addExposure(a, r.countryId, 50);
+        addExposure(s, a, r.countryId, 50);
         const bonus = cty.level * 400_000;
         a.cash += bonus;
         notify(s, a, 'combat', M('msg.combat.coupWonTitle'), M('msg.combat.coupWonBody', { country, bonus: ref.money(bonus) }), 'good', r.countryId);
@@ -400,7 +418,7 @@ export function resolveCombat(s: GameState, c: CombatState) {
     case 'hostile': {
       const target = agencyById(s, r.targetId);
       addReputation(a, r.countryId, -10);
-      addExposure(a, r.countryId, 30 * quiet);
+      addExposure(s, a, r.countryId, 30 * quiet, true);
       if (!target) break;
       if (ok) {
         if (r.act === 'sabotage') stationLosesLevel(s, target, r.countryId);

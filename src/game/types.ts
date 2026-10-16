@@ -192,6 +192,9 @@ export interface PresetDef {
   locked?: SystemId[];
 }
 
+/** Origem do Diretor (src/game/data/origins.ts). 'none' = saves antigos, sem efeitos. */
+export type OriginId = 'none' | 'exagent' | 'banker' | 'colonel' | 'diplomat' | 'smuggler' | 'analyst';
+
 /** Dificuldade: Recruta, Operador, Diretor. */
 export type Difficulty = 1 | 2 | 3;
 
@@ -203,6 +206,8 @@ export interface GameOptions {
   agencyName?: string;
   /** Número de Agências Rivais; sem valor, a Dificuldade decide. */
   rivals?: number;
+  /** Origem do Diretor do jogador; sem valor, neutra (Tutorial: Contrabandista). */
+  origin?: OriginId;
   seed?: number;
 }
 
@@ -403,6 +408,8 @@ export interface CombatState {
   turned: string[];
   /** Converted enemy units awaiting transfer to the agency. */
   converted: Unit[];
+  /** Força somada pela Origem a cada Unidade da agência: geral e só para Unidades com força Militar. */
+  originBonus?: { all: number; military: number };
   /** Per agency unit: enemies knocked out and converted in this fight. */
   credits?: Record<string, { kos: number; converts: number }>;
   sources: ForceSource[];
@@ -428,6 +435,8 @@ export interface PendingCombat {
   setup: CombatSetupData;
   /** Prévia: chance de vitória por Tática. */
   preview: Record<Tactic, number>;
+  /** Margem de erro da Prévia (±, 95%), só para a Origem Analista de Sinais. */
+  margin?: Record<Tactic, number>;
 }
 
 export interface AgencyStats {
@@ -445,6 +454,8 @@ export interface Agency {
   id: string;
   name: string;
   isPlayer: boolean;
+  /** Origem do Diretor: Vantagem e Desvantagem para a partida inteira. */
+  origin: OriginId;
   director: Director;
   /** Country where the Diretor and the Frota are (origin while flying). */
   location: string;

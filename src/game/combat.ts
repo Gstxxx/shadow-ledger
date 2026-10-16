@@ -81,6 +81,8 @@ export function tacticMod(t: Tactic, type: CombatType): TacticMod {
 
 export interface CombatSetup {
   agencyId: string;
+  /** Força da Origem por Unidade da agência (ver CombatState.originBonus). */
+  originBonus?: { all: number; military: number };
   type: CombatType;
   reason: CombatReason;
   title: string;
@@ -100,6 +102,7 @@ export function createCombat(s: MintCtx, setup: CombatSetup): CombatState {
   const c: CombatState = {
     id: nextUid(s, 'c'),
     agencyId: setup.agencyId,
+    originBonus: setup.originBonus,
     type: setup.type,
     reason: setup.reason,
     title: setup.title,
@@ -205,7 +208,12 @@ export function autoDeploy(c: CombatState) {
 
 function eff(c: CombatState, ref: CombatUnitRef) {
   const mod = tacticMod(c.tactic, c.type);
-  const base = strOf(ref.unit, c.type) * (1 + ref.unit.xp * 0.006) * traitMult(ref.unit, 'strength');
+  let raw = strOf(ref.unit, c.type);
+  if (ref.side === 'p' && c.originBonus && raw > 0 && ref.unit.itemId !== FORT_ID) {
+    raw += c.originBonus.all + (ref.unit.hp.army > 0 ? c.originBonus.military : 0);
+    raw = Math.max(0.5, raw);
+  }
+  const base = raw * (1 + ref.unit.xp * 0.006) * traitMult(ref.unit, 'strength');
   return base * (ref.side === 'p' ? mod.player : mod.enemy);
 }
 

@@ -16,7 +16,10 @@ hasSave(); exportSave(): string | null; importSave(json): boolean; deleteSave()
 ```
 
 `GameOptions` (`src/game/types.ts`): `{ preset: PresetDef; difficulty: 1|2|3; hardcore: boolean;
-directorName?; agencyName?; rivals?: number; seed? }`. Um Sandbox personalizado é um `PresetDef` montado pelo
+directorName?; agencyName?; rivals?: number; origin?: OriginId; seed? }`.
+Origens do Diretor: `ORIGINS` (6) em `src/game/data/origins.ts` — `{ id, name, portrait, advantage, disadvantage, mods }`;
+textos traduzíveis nas chaves `origin.<id>.name/.desc/.advantage/.disadvantage`. Sem `origin`, a partida usa a neutra
+(`'none'`); no Tutorial, Contrabandista. A Origem da agência fica em `agency.origin`. Um Sandbox personalizado é um `PresetDef` montado pelo
 menu (id próprio, `objective`, `days`, `target?`, `cash`, `startCountry`, `startStations`, `startUnits`,
 `challenge`, `region?`). Os Presets prontos estão em `PRESETS` (`src/game/data/rules.ts`).
 

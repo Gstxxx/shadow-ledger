@@ -7,6 +7,7 @@ import { ITEM_LIST, ITEMS } from './data/items';
 import { BUYERS } from './data/names';
 import { STATIONS, THREAT_BY_STATE, THREAT_COMBAT } from './data/rules';
 import { TRAITS } from './data/traits';
+import { originMods } from './data/origins';
 import { buildForce } from './forces';
 import type { Faction } from './forces';
 import { driftPrices, interested, midPrice, recoverSaturation, rollStock } from './market';
@@ -118,7 +119,7 @@ function carryingArrival(s: GameState, a: Agency, t: Agency['teams'][number]) {
   const tons = t.spoils.reduce((x, l) => x + ITEMS[l.itemId].weight * l.qty, 0);
   const st = standing(a, t.location);
   st.exposure = Math.min(100, st.exposure + 5 + tons * 4);
-  const p = Math.min(0.5, 0.12 + st.exposure / 250);
+  const p = Math.min(0.65, (0.12 + st.exposure / 250) * (originMods(a).interceptMult ?? 1));
   if (!chance(s, p) || !t.units.length || isBlocked(s)) return;
   beginCombat(s, a, {
     type: 'urban',
@@ -332,7 +333,9 @@ function rollThreats(s: GameState, a: Agency) {
     const strength = Math.round(
       (4 + c.level * 2.5 + exp / 8) * kindMult * (0.75 + s.options.difficulty * 0.25) * randRange(s, 0.8, 1.2),
     );
-    const lead = s.options.difficulty === 3 ? randInt(s, 18, 48) : randInt(s, 24, 72);
+    const lead =
+      (s.options.difficulty === 3 ? randInt(s, 18, 48) : randInt(s, 24, 72)) +
+      (kind === 'raid' || kind === 'lawsuit' ? (originMods(a).legalWarningH ?? 0) : 0);
     s.uidCounter += 1;
     const threat: Threat = {
       id: `t${s.uidCounter}`,

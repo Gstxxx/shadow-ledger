@@ -16,8 +16,9 @@ import {
 import { recordAggression } from './ai/memory';
 import { recordWmdSale } from './tension';
 import { isLocked, LOCKED_MSG } from './tutorial/locks';
+import { originMods } from './data/origins';
 import { buildForce } from './forces';
-import { fleetSpeed, freeCargo, maxCargo, quoteBuy, quoteSell, rollRecruits, unitsWeight, usedCargo } from './market';
+import { fleetSpeed, freeCargo, maxCargo, quoteBuyFor, quoteSellFor, rollRecruits, unitsWeight, usedCargo } from './market';
 import { chance } from './rng';
 import {
   addExposure,
@@ -96,7 +97,7 @@ function tradeExposure(s: GameState, a: Agency, countryId: string, value: number
   const c = s.countries[countryId];
   const it = def(itemId);
   const k = it.wmd ? 3 : it.cls === 'special' ? 0.4 : ['arms', 'vehicle', 'jet', 'heli'].includes(it.cls) ? 1.2 : 0.8;
-  addExposure(a, countryId, Math.min(25, (value / (c.level * 500_000)) * 2 * k));
+  addExposure(s, a, countryId, Math.min(25, (value / (c.level * 500_000)) * 2 * k));
   if (it.wmd) addTension(s, 2);
 }
 
@@ -108,7 +109,7 @@ export function buy(s: GameState, a: Agency, itemId: string, qty: number): Resul
   if (qty <= 0) return no(M('msg.act.invalidQty'));
   const it = ITEMS[itemId];
   if (it.weight * qty > freeCargo(a) + 1e-6) return no(M('msg.act.noFleetSpace'));
-  const q = quoteBuy(c, itemId, qty);
+  const q = quoteBuyFor(a, c, itemId, qty);
   if (q.total > a.cash) return no(M('msg.act.noCash'));
   a.cash -= q.total;
   c.saturation[itemId] = q.after;
@@ -124,7 +125,7 @@ export function sell(s: GameState, a: Agency, itemId: string, qty: number): Resu
   if (r) return r;
   const c = s.countries[a.location];
   if (qty <= 0 || cargoQty(a, itemId) < qty) return no(M('msg.act.insufficientCargo'));
-  const q = quoteSell(c, itemId, qty);
+  const q = quoteSellFor(a, c, itemId, qty);
   if (q.total <= 0) return no(M('msg.act.countryNoBuy', { country: ref.country(c.id) }));
   removeCargo(a, itemId, qty);
   a.cash += q.total;
@@ -196,7 +197,7 @@ export function dismiss(s: GameState, a: Agency, uid: string): Result {
 
 export function stationCost(a: Agency, countryId: string, level: StationLevel): number {
   const p = postureIn(a, countryId);
-  return Math.round(STATIONS[level].cost * (p === 'enemy' ? 1.5 : p === 'ally' ? 0.85 : 1));
+  return Math.round(STATIONS[level].cost * (p === 'enemy' ? 1.5 : p === 'ally' ? 0.85 : 1) * (originMods(a).stationCostMult ?? 1));
 }
 
 export function openStation(s: GameState, a: Agency): Result {
@@ -207,7 +208,7 @@ export function openStation(s: GameState, a: Agency): Result {
   if (a.cash < cost) return no(M('msg.act.noCash'));
   a.cash -= cost;
   a.stations.push({ countryId: a.location, level: 1, units: [], founded: s.time, vault: [], detained: [] });
-  addExposure(a, a.location, 4);
+  addExposure(s, a, a.location, 4);
   seePrices(s, a, a.location);
   return ok(M('msg.act.cellOpened', { country: ref.country(a.location) }));
 }
@@ -344,7 +345,7 @@ export function fenceSpoils(s: GameState, a: Agency, teamId: string, lid: string
   const value = fenceValue(lot);
   a.cash += value;
   t.spoils = t.spoils.filter((l) => l !== lot);
-  addExposure(a, t.location, 3);
+  addExposure(s, a, t.location, 3);
   return ok(M('msg.act.fenced', { value: ref.money(value), item: ref.item(lot.itemId) }));
 }
 
@@ -438,7 +439,7 @@ export function react(s: GameState, a: Agency, threatId: string, reaction: Threa
         t.cancelled = true;
         return ok(M('msg.act.reactBribeOk'));
       }
-      addExposure(a, t.countryId, 12);
+      addExposure(s, a, t.countryId, 12);
       t.strength = Math.round(t.strength * 1.1);
       return ok(M('msg.act.reactBribeFail'));
     case 'reinforce':
@@ -476,7 +477,7 @@ export function deliverContract(s: GameState, a: Agency, id: string): Result {
   a.cash += k.reward;
   k.status = 'done';
   addReputation(a, k.countryId, k.reputation);
-  addExposure(a, k.countryId, 4);
+  addExposure(s, a, k.countryId, 4);
   a.stats.contractsDone++;
   note(s, a, M('msg.act.contractDeliveredNote', { buyer: k.buyer, reward: ref.money(k.reward) }), 'good', k.countryId);
   return ok(M('msg.act.contractDelivered', { reward: ref.money(k.reward) }));
@@ -810,8 +811,8 @@ export function denounce(s: GameState, a: Agency, targetId: string, countryId: s
   const cost = denounceCost(s, countryId);
   if (a.cash < cost) return no(M('msg.act.noCash'));
   a.cash -= cost;
-  addExposure(target, countryId, 25);
-  addExposure(a, countryId, 3);
+  addExposure(s, target, countryId, 25);
+  addExposure(s, a, countryId, 3);
   recordAggression(s, a.id, target.id, 1);
   notify(s, target, 'intel', M('msg.act.denounceTitle'), M('msg.act.denounceBody', { country: ref.country(countryId) }), 'warn', countryId);
   return ok(M('msg.act.denounced', { agency: target.name, country: ref.country(countryId) }));
