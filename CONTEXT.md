@@ -64,6 +64,14 @@ _Avoid_: fechada, bloqueada
 Estado de uma **Unidade** presa pelo Estado (por exemplo, numa **Estação** **Interditada**); fica fora de ação, mas pode ser recuperada.
 _Avoid_: capturada, presa, morta
 
+**Agência Rival**:
+Outra agência controlada pela IA, com Diretor, **Estações** e **Equipes** próprios, que compete por mercados e **Contratos** e age contra a agência do jogador. Quantas existem e quão agressivas são depende da **Dificuldade**.
+_Avoid_: inimigo, concorrente, IA (quando se fala da agência)
+
+**Dificuldade**:
+Nível escolhido no início da partida (Recruta, Operador, Diretor) que, entre outras coisas, define o número e a agressividade das **Agências Rivais**.
+_Avoid_: modo (reservado para **Modo Hardcore**)
+
 ### Relação com os países
 
 **Reputação**:
