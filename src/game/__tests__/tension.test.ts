@@ -5,7 +5,7 @@ import { advance } from '../sim';
 import { newGame } from '../state';
 import { CRISIS_DAYS, tensionBand, TENSION_TOP } from '../tension';
 
-const game = () => newGame({ preset: { ...PRESETS[0], days: 0 }, difficulty: 2, hardcore: false, seed: 5, rivals: 0 });
+const game = () => newGame({ preset: { ...PRESETS.find((p) => p.id === 'first-contract')!, days: 0 }, difficulty: 2, hardcore: false, seed: 5, rivals: 0 });
 
 describe('Tensão Global', () => {
   it('faixas Baixa → Média → Alta → Topo', () => {

@@ -7,7 +7,7 @@ import { advance } from '../sim';
 import { newGame, player, stationIn } from '../state';
 import { canFight, makeUnit, recoverDay, WOUND_DAYS } from '../units';
 
-const game = () => newGame({ preset: PRESETS[3], difficulty: 1, hardcore: false, seed: 7 });
+const game = () => newGame({ preset: PRESETS.find((p) => p.id === 'sahel-hunt')!, difficulty: 1, hardcore: false, seed: 7 });
 
 describe('Ferida e Danificada', () => {
   it('quem cai em Combate fica Ferido (Pessoal) ou Danificado (máquina), não morre', () => {

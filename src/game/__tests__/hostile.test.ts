@@ -7,7 +7,7 @@ import { newGame, player, standing, stationIn } from '../state';
 import { makeUnit } from '../units';
 
 const game = () => {
-  const s = newGame({ preset: PRESETS[0], difficulty: 2, hardcore: false, seed: 11 });
+  const s = newGame({ preset: PRESETS.find((p) => p.id === 'first-contract')!, difficulty: 2, hardcore: false, seed: 11 });
   const me = player(s);
   const rival = s.agencies.find((x) => !x.isPlayer)!;
   // The rival opens a Célula where the player is.

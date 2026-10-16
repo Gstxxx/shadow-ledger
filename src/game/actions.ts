@@ -16,6 +16,7 @@ import {
 } from './data/rules';
 import { recordAggression } from './ai/memory';
 import { recordWmdSale } from './tension';
+import { isLocked, LOCKED_MSG } from './tutorial/locks';
 import { buildForce } from './forces';
 import { fleetSpeed, freeCargo, maxCargo, quoteBuy, quoteSell, rollRecruits, unitsWeight, usedCargo } from './market';
 import { chance } from './rng';
@@ -513,6 +514,7 @@ function opSetup(s: GameState, a: Agency, countryId: string, op: OperationKind, 
 export function startOperation(s: GameState, a: Agency, op: OperationKind): Result {
   const r = directorReady(s, a);
   if (r) return r;
+  if (isLocked(s, 'operations')) return no(LOCKED_MSG);
   const blocked = operationBlocked(s, a.location, op);
   if (blocked) return no(blocked);
   if (!a.escort.length) return no('A Escolta está vazia.');
@@ -524,6 +526,7 @@ export function startOperation(s: GameState, a: Agency, op: OperationKind): Resu
 export function startCoup(s: GameState, a: Agency): Result {
   const r = directorReady(s, a);
   if (r) return r;
+  if (isLocked(s, 'operations')) return no(LOCKED_MSG);
   if (!a.escort.length) return no('A Escolta está vazia.');
   const c = s.countries[a.location];
   if (c.couped) return no('O governo atual já é obra de uma agência.');
@@ -585,6 +588,7 @@ function createTeam(s: GameState, a: Agency, location: string, units: Unit[]): T
 /** Destacar Unidades da Escolta (Diretor presente) ou de uma Estação numa Equipe. */
 export function formTeam(s: GameState, a: Agency, from: 'escort' | { stationCountry: string }, uids: string[]): Result {
   if (s.over) return no('A partida acabou.');
+  if (isLocked(s, 'teams')) return no(LOCKED_MSG);
   if (!uids.length) return no('Escolha ao menos uma Unidade.');
   if (from === 'escort') {
     const r = directorReady(s, a);
@@ -657,6 +661,7 @@ export function sendTeam(s: GameState, a: Agency, teamId: string, to: string, mo
 
 export function teamOperation(s: GameState, a: Agency, teamId: string, op: OperationKind): Result {
   if (s.over) return no('A partida acabou.');
+  if (isLocked(s, 'operations')) return no(LOCKED_MSG);
   const t = a.teams.find((x) => x.id === teamId);
   if (!t || t.travel) return no('Equipe indisponível.');
   const blocked = operationBlocked(s, t.location, op);

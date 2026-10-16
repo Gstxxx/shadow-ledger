@@ -3,6 +3,7 @@ import { ITEMS } from './data/items';
 import { WMD_TENSION } from './market';
 import { checkObjective } from './objective';
 import { log, notify, player } from './state';
+import { isLocked } from './tutorial/locks';
 import type { Agency, GameState } from './types';
 
 export type TensionBand = 'low' | 'medium' | 'high' | 'top';
@@ -52,6 +53,7 @@ export function recordWmdSale(s: GameState, a: Agency, itemId: string, qty: numb
 /** Contador da Crise Final: sobe no Topo, desce (2× mais rápido) fora dele. */
 export function tickTension(s: GameState, dt: number) {
   const c = (s.crisis ??= { hours: 0 });
+  if (isLocked(s, 'tension')) return;
   const before = c.hours;
   if (tensionBand(s.tension) === 'top') c.hours += dt;
   else c.hours = Math.max(0, c.hours - dt * 2);

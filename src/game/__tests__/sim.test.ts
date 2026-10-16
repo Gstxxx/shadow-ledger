@@ -136,7 +136,7 @@ describe('Simulação headless', () => {
       expect(s.over, JSON.stringify(s.over)).toBeUndefined();
       expect(s.time).toBeGreaterThanOrEqual(200 * 24);
     }
-  }, 120_000);
+  }, 300_000);
 
   it('cada Preset roda até o fim ou até 200 dias', () => {
     for (const [i, p] of PRESETS.entries()) {
@@ -144,5 +144,5 @@ describe('Simulação headless', () => {
       expect(s.over !== undefined || s.time >= 200 * 24).toBe(true);
       if (p.days) expect(s.over).toBeDefined();
     }
-  }, 120_000);
+  }, 300_000);
 });

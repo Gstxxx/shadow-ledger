@@ -5,7 +5,7 @@ import { newGame, player } from '../state';
 import { PRESETS } from '../data/rules';
 import { cargoQty } from '../cargo';
 
-const game = () => newGame({ preset: PRESETS[0], difficulty: 2, hardcore: false, seed: 42 });
+const game = () => newGame({ preset: PRESETS.find((p) => p.id === 'first-contract')!, difficulty: 2, hardcore: false, seed: 42 });
 
 describe('Saturação', () => {
   it('vender empurra o preço local para baixo e cada unidade sai mais barata', () => {

@@ -3,6 +3,7 @@ import { GROUP_NAMES, HOSTAGE_NAMES, PLAYER_AGENCY_NAMES } from './data/names';
 import { postureOf, PRESETS, STATIONS } from './data/rules';
 import { setupRivals } from './ai/setup';
 import { SAVE_VERSION } from './save';
+import { isLocked } from './tutorial/locks';
 import { buildForce } from './forces';
 import { driftPrices, midPrice, rollStock } from './market';
 import { pick, randInt, randRange, weighted } from './rng';
@@ -291,5 +292,6 @@ export function newGame(opts: GameOptions): GameState {
 
 /** Tensão Global moves with wars, golpes and hostile operations. */
 export function addTension(s: GameState, delta: number) {
+  if (isLocked(s, 'tension')) return;
   s.tension = Math.max(0, Math.min(100, s.tension + delta));
 }

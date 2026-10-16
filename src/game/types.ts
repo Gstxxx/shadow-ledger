@@ -1,5 +1,6 @@
 // Domain model. Names map 1:1 to the glossary in CONTEXT.md (see comments).
 import type { AiState } from './ai/types';
+import type { SystemId, TutorialState } from './tutorial/types';
 
 export type Continent = 'NA' | 'SA' | 'EU' | 'AF' | 'ME' | 'AS' | 'OC';
 
@@ -173,6 +174,8 @@ export interface PresetDef {
   /** Suggested challenge, for display. */
   challenge: 1 | 2 | 3;
   region?: Continent[];
+  /** Sistemas desligados neste Preset (Tutorial). */
+  locked?: SystemId[];
 }
 
 /** Dificuldade: Recruta, Operador, Diretor. */
@@ -464,6 +467,8 @@ export interface GameState {
   uidCounter: number;
   /** Memória das Agências Rivais (src/game/ai). */
   ai?: AiState;
+  /** Progresso do Tutorial e da Analista (src/game/tutorial). */
+  tutorial?: TutorialState;
   /** Quando foi gravado pela última vez (ms desde a época Unix). */
   savedAt?: number;
   /** Crise Final: horas acumuladas com a Tensão Global no Topo. */

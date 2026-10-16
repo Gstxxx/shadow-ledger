@@ -1,3 +1,4 @@
+import { TUTORIAL_PRESET } from '../tutorial/preset';
 import type { CombatType, ObjectiveKind, PresetDef, OperationKind, Politics, Posture, StationLevel, ThreatKind, UnitClass } from '../types';
 
 export interface StationSpec {
@@ -82,6 +83,7 @@ export const COMMERCIAL_FARE_PER_1000KM = 1_800;
 
 /** Presets de Sandbox (antigas missões). */
 export const PRESETS: PresetDef[] = [
+  TUTORIAL_PRESET,
   {
     id: 'first-contract',
     objective: 'profit',

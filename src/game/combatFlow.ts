@@ -92,11 +92,12 @@ export function beginCombat(s: GameState, a: Agency, data: CombatSetupData) {
     notify(s, a, 'engage', data.title, 'Escolha a Tática. A Prévia mostra a chance estimada de cada uma.', 'warn', data.reason.countryId);
     return;
   }
-  const preview = previewAll(s, a, data, 24);
-  const tactic = TACTICS.filter((t) => t !== 'negotiate').reduce(
-    (best, t) => (preview[t] > preview[best] ? t : best),
-    'defensive' as Tactic,
-  );
+  // Rivals skip the Prévia (it costs ~50 simulated fights); the player's automatic fights still use it.
+  let tactic: Tactic = data.playerDefends ? 'defensive' : 'assault';
+  if (a.isPlayer) {
+    const preview = previewAll(s, a, data, 16);
+    tactic = TACTICS.filter((t) => t !== 'negotiate').reduce((best, t) => (preview[t] > preview[best] ? t : best), 'defensive' as Tactic);
+  }
   const c = createCombat(s, { ...toSetup(a, data), tactic });
   autoDeploy(c);
   runToEnd(s, c);
@@ -128,6 +129,22 @@ export function abortPending(s: GameState): boolean {
   s.pendingCombat = undefined;
   s.events = s.events.filter((e) => e.kind !== 'engage');
   note(s, player(s), `${pend.setup.title}: abortado antes do contato.`, 'info', pend.setup.reason.countryId);
+  return true;
+}
+
+/** A live combat can still be called off before the first turn (not Ameaças nor the grupo hostil). */
+export function canAbortLive(s: GameState): boolean {
+  const c = s.combat;
+  return !!c && c.turn === 0 && !c.result && c.reason.kind !== 'threat' && c.reason.kind !== 'group' && c.reason.kind !== 'intercept';
+}
+
+/** Call off a live combat before contact: units go home unharmed (they were only clones in the grid). */
+export function abortLive(s: GameState): boolean {
+  if (!canAbortLive(s)) return false;
+  const c = s.combat!;
+  s.combat = undefined;
+  s.events = s.events.filter((e) => e.kind !== 'engage');
+  note(s, agencyById(s, c.agencyId) ?? player(s), `${c.title}: abortado antes do contato.`, 'info', c.reason.countryId);
   return true;
 }
 
