@@ -4,10 +4,12 @@ import { createRoot } from 'react-dom/client';
 import { gsap } from 'gsap';
 import { ConnectedMainMenu } from './ConnectedMainMenu';
 import { useSettings } from '../../store/settings';
+import { forceInstallMode, type InstallMode } from './install';
 
 const q = new URLSearchParams(location.search);
 if (q.get('rm') === '1') useSettings.getState().setReducedMotion(true);
 if (q.get('rm') === '0') useSettings.getState().setReducedMotion(false);
+if (q.get('install')) forceInstallMode(q.get('install') as InstallMode);
 
 // Para inspeção com o painel oculto (rAF parado): window.__gsap.ticker.tick()
 (window as unknown as { __gsap: typeof gsap }).__gsap = gsap;

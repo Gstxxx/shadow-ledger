@@ -6,6 +6,7 @@ import './menu.css';
 import { audio } from '../../audio/engine';
 import { PRESETS } from '../../game/data/rules';
 import { Dossier } from './Dossier';
+import { InstallTitleOffer } from './InstallOffer';
 import { ease, f } from './ease';
 import { buildIntro, finalState, HANDOFF_AT, type IntroEls } from './intro';
 import { COLS, LEDGER_CH, ledgerRows } from './ledger';
@@ -54,6 +55,7 @@ export function MainMenu(props: MainMenuProps) {
   const rule2 = useRef<HTMLElement>(null);
   const navRefs = useRef<(HTMLButtonElement | null)[]>([]);
   const extra = useRef<HTMLParagraphElement>(null);
+  const installRef = useRef<HTMLDivElement>(null);
   const intro = useRef<gsap.core.Timeline | null>(null);
 
   const els = useCallback(
@@ -70,7 +72,7 @@ export function MainMenu(props: MainMenuProps) {
       wmBar: wmBar.current!,
       wmRules: [rule1.current!, rule2.current!],
       nav: navRefs.current.filter((b): b is HTMLButtonElement => !!b),
-      extras: extra.current ? [extra.current] : [],
+      extras: [installRef.current, extra.current].filter((n): n is HTMLDivElement | HTMLParagraphElement => !!n),
     }),
     [],
   );
@@ -297,6 +299,7 @@ export function MainMenu(props: MainMenuProps) {
             </button>
           ))}
         </nav>
+        <InstallTitleOffer s={s} reduced={reduced} innerRef={installRef} />
         <p ref={extra} className="slm-sound-hint" data-on={soundOn || undefined} aria-hidden={soundOn || undefined}>
           <Volume2 size={14} strokeWidth={2} aria-hidden="true" />
           {s.soundHint}

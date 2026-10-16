@@ -2,14 +2,27 @@
 // com cada texto vindo de t(). Os textos vivem em src/i18n/{pt-BR,en}/menu.ts (chaves menu.*, preset.*, common.*).
 
 import { useMemo } from 'react';
-import { useT, type Key, type Lang, type Params } from '../../i18n';
+import { dictionaries, useT, type Key, type Lang, type Params } from '../../i18n';
 import { presetBrief, presetTitle } from '../../i18n/lookup';
 import type { Continent, ObjectiveKind } from '../../game/types';
 
 const CONTINENTS: Continent[] = ['NA', 'SA', 'EU', 'AF', 'ME', 'AS', 'OC'];
 const OBJECTIVES: ObjectiveKind[] = ['profit', 'quick', 'destroy', 'rescue'];
 
-function build(t: (key: Key, params?: Params) => string, money: (v: number) => string, date: (ms: number) => string) {
+// Reserva das chaves de instalação do PWA até elas entrarem em src/i18n (pedidas à sessão de i18n).
+const INSTALL_FALLBACK: Record<string, [string, string]> = {
+  'menu.install.cta': ['Instalar o app', 'Install the app'],
+  'menu.install.meta': ['Tela cheia, abre pelo ícone', 'Full screen, opens from an icon'],
+  'menu.install.title': ['App', 'App'],
+  'menu.install.help': ['Instale para jogar em tela cheia e abrir pelo ícone, mesmo sem internet.', 'Install to play full screen and launch from an icon, even offline.'],
+  'menu.install.installed': ['Instalado neste aparelho.', 'Installed on this device.'],
+  'menu.install.iosTitle': ['Instalar no iPhone ou iPad', 'Install on iPhone or iPad'],
+  'menu.install.iosStep1': ['Toque em Compartilhar na barra do Safari.', 'Tap Share in the Safari toolbar.'],
+  'menu.install.iosStep2': ['Escolha Adicionar à Tela de Início.', 'Choose Add to Home Screen.'],
+};
+
+function build(t: (key: Key, params?: Params) => string, money: (v: number) => string, date: (ms: number) => string, lang: Lang) {
+  const tx = (key: string) => ((dictionaries[lang] as Record<string, string>)[key] ? t(key as Key) : INSTALL_FALLBACK[key][lang === 'en' ? 1 : 0]);
   return {
     appName: t('menu.appName'),
     skipHint: t('menu.hint.skip'),
@@ -69,6 +82,17 @@ function build(t: (key: Key, params?: Params) => string, money: (v: number) => s
 
     objectiveNames: Object.fromEntries(OBJECTIVES.map((o) => [o, t(`menu.objective.${o}` as Key)])) as Record<ObjectiveKind, string>,
     continents: Object.fromEntries(CONTINENTS.map((c) => [c, t(`menu.continent.${c}` as Key)])) as Record<Continent, string>,
+    install: {
+      cta: tx('menu.install.cta'),
+      meta: tx('menu.install.meta'),
+      title: tx('menu.install.title'),
+      help: tx('menu.install.help'),
+      installed: tx('menu.install.installed'),
+      iosTitle: tx('menu.install.iosTitle'),
+      iosStep1: tx('menu.install.iosStep1'),
+      iosStep2: tx('menu.install.iosStep2'),
+      close: t('common.close'),
+    },
     money,
     date,
   };
@@ -81,7 +105,7 @@ export function useStrings(): Strings {
   const { t, fmt, lang } = useT();
   // t e fmt são recriados a cada render; o conteúdo só muda com o idioma.
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  return useMemo(() => build(t, fmt.money, (ms) => fmt.date(ms)), [lang]);
+  return useMemo(() => build(t, fmt.money, (ms) => fmt.date(ms), lang), [lang]);
 }
 
 /** Título e briefing de um Preset; um Preset sem chave no i18n usa o texto do próprio PresetDef. */

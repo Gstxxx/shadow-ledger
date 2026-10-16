@@ -825,3 +825,127 @@
 .slm-root[data-phase='intro'] .slm-sound-hint {
   visibility: hidden;
 }
+
+/* ── Instalar o app (PWA) ── */
+
+.slm-install-wrap {
+  position: relative;
+  width: min(420px, 100%);
+  margin-top: calc(clamp(14px, 4.4vh, 40px) * -0.5);
+}
+.slm-root[data-phase='intro'] .slm-install-wrap {
+  visibility: hidden;
+}
+.slm-install {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  min-height: 44px;
+  padding: 0 12px;
+  border: 1px dashed rgba(245, 176, 74, 0.55);
+  border-radius: var(--sl-radius-1);
+  background: rgba(245, 176, 74, 0.06);
+  color: var(--sl-warm-strong) !important;
+  text-align: left;
+  transition: background-color var(--sl-dur-fast) var(--sl-ease-out), border-color var(--sl-dur-fast);
+}
+.slm-install:hover,
+.slm-install:focus-visible {
+  background: rgba(245, 176, 74, 0.13);
+  border-style: solid;
+}
+.slm-install-label {
+  font-weight: 600;
+  font-size: var(--sl-fs-sm);
+  white-space: nowrap;
+}
+.slm-install-meta {
+  margin-left: auto;
+  font-family: var(--sl-font-mono);
+  font-size: var(--sl-fs-xs);
+  color: var(--sl-text-muted);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  min-width: 0;
+}
+.slm-install-ios {
+  position: absolute;
+  left: 0;
+  bottom: calc(100% + 8px);
+  z-index: 3;
+  width: min(340px, 100%);
+  padding: 10px 12px;
+  border-radius: var(--sl-radius-2);
+  background: var(--sl-paper);
+  color: var(--sl-paper-ink);
+  box-shadow: var(--sl-shadow-paper);
+}
+.slm-install-settings .slm-install-ios {
+  position: static;
+  width: auto;
+  box-shadow: none;
+  border: 1px solid rgba(36, 28, 17, 0.25);
+  background: rgba(255, 255, 255, 0.35);
+}
+.slm-install-ios-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  margin-bottom: 4px;
+}
+.slm-install-close {
+  display: grid;
+  place-items: center;
+  width: 44px;
+  height: 44px;
+  margin: -10px -12px -10px 0;
+  border: 0;
+  background: transparent;
+  color: var(--sl-paper-ink) !important;
+}
+.slm-install-ios ol {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  font-size: var(--sl-fs-sm);
+}
+.slm-install-ios li {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.slm-install-ios li svg {
+  flex: none;
+  color: var(--sl-stamp-blue);
+}
+.slm-install-done {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin: 0;
+  font-weight: 600;
+  color: var(--sl-p-ok-700);
+}
+@media (max-height: 420px) {
+  .slm-install-wrap {
+    margin-top: -6px;
+  }
+  .slm-install-meta {
+    display: none;
+  }
+  /* Com a oferta de instalar, o aviso de som cede o espaço vertical. */
+  .slm-install-wrap ~ .slm-sound-hint {
+    display: none;
+  }
+}
+@media (max-width: 760px) {
+  .slm-install-wrap {
+    width: min(360px, 100%);
+  }
+}

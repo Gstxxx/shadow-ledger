@@ -2,6 +2,7 @@ import { Segmented, Slider, Toggle } from '../controls';
 import type { Strings } from '../strings';
 import { LANGS, LANG_LABEL, useT, type Lang } from '../../../i18n';
 import type { MenuSettings } from '../types';
+import { InstallSettings } from '../InstallOffer';
 import { sfx } from '../settings';
 
 interface Props {
@@ -21,6 +22,9 @@ export function Settings({ s, value, onChange }: Props) {
           onChange={setLang}
           options={LANGS.map((l) => ({ value: l, label: LANG_LABEL[l] }))}
         />
+      </div>
+      <div data-enter>
+        <InstallSettings s={s} />
       </div>
       <div className="slm-settings-pair" data-enter>
         <Slider label={s.music} value={value.musicVolume} onChange={(musicVolume) => onChange({ musicVolume })} />
