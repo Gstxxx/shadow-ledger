@@ -1,6 +1,6 @@
 # Shadow Ledger
 
-**Jogue no navegador:** https://gstxxx.github.io/shadow-ledger/
+**Jogue no navegador:** https://shadow-ledger-delta.vercel.app
 
 Você é o Diretor de uma agência privada de inteligência. Voa o mundo com sua Frota de cargueiros, compra armas, informação e mercenários onde a guerra é barata e vende onde ela paga caro. Abre Estações, monta Equipes e decide até onde vai: um roubo de tecnologia aqui, um Golpe ali. Cada passo deixa rastro, e o mundo inteiro está ficando mais tenso.
 
