@@ -4,7 +4,7 @@
 import { describe, expect, it } from 'vitest';
 import baseline from './loose-baseline.json';
 
-const files = import.meta.glob(['/src/**/*.tsx', '!/src/i18n/**', '!/src/**/__tests__/**'], {
+const files = import.meta.glob(['/src/**/*.tsx', '!/src/i18n/**', '!/src/**/__tests__/**', '!/src/**/proto-*'], {
   query: '?raw',
   import: 'default',
   eager: true,

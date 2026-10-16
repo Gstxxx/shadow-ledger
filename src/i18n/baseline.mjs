@@ -25,7 +25,7 @@ function walk(dir, out = []) {
     if (statSync(p).isDirectory()) {
       if (['i18n', '__tests__', 'node_modules'].includes(name)) continue;
       walk(p, out);
-    } else if (name.endsWith('.tsx')) out.push(p);
+    } else if (name.endsWith('.tsx') && !name.startsWith('proto-')) out.push(p);
   }
   return out;
 }

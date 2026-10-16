@@ -5,7 +5,7 @@ import { format } from '../icu';
 import * as F from '../format';
 import { translate } from '../core';
 
-const placeholders = (s: string) => [...s.matchAll(/\{(\w+)/g)].map((m) => m[1]).sort();
+const placeholders = (s: string) => [...s.matchAll(/\{(\w+)\s*[,}]/g)].map((m) => m[1]).sort();
 
 describe('dicionários', () => {
   const ptKeys = Object.keys(ptBR);
