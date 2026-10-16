@@ -62,7 +62,7 @@ export function Dossier({ title, backLabel, closing, reduced, onRequestClose, on
 
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') onRequestClose();
+      if (e.key === 'Escape' && !e.defaultPrevented) onRequestClose();
     };
     window.addEventListener('keydown', onKey);
     return () => window.removeEventListener('keydown', onKey);

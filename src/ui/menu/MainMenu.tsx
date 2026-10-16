@@ -314,7 +314,7 @@ export function MainMenu(props: MainMenuProps) {
           onRequestClose={requestClose}
           onClosed={onClosed}
         >
-          {screen === 'new' && <NewGame s={s} lang={settings.lang} presets={presets} tutorial={tutorial} onStart={(cfg) => props.onStart?.(cfg)} />}
+          {screen === 'new' && <NewGame s={s} lang={settings.lang} presets={presets} tutorial={tutorial} reduced={reduced} onStart={(cfg) => props.onStart?.(cfg)} />}
           {screen === 'continue' && (
             <Continue
               s={s}

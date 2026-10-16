@@ -101,6 +101,8 @@ export function ConnectedMainMenu({ skipIntro }: { skipIntro?: boolean }) {
         difficulty: cfg.difficulty,
         hardcore: cfg.hardcore,
         rivals: cfg.rivals,
+        directorName: cfg.directorName,
+        agencyName: cfg.agencyName,
       };
       start(opts);
     },

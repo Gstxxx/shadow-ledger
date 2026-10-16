@@ -11,6 +11,8 @@ export interface StartConfig {
   hardcore: boolean;
   /** Número de Agências Rivais (0–4). */
   rivals: number;
+  directorName?: string;
+  agencyName?: string;
 }
 
 /** Resumo de um save local, para a lista de Continuar. */

@@ -1,0 +1,633 @@
+/* Nova partida em 2 passos (Cenário → Configurar). Sobre o papel do dossiê; tokens de src/art/tokens.css. */
+
+.slm-ng {
+  --ng-ink: var(--sl-paper-ink);
+  --ng-muted: var(--sl-paper-ink-muted);
+  --ng-line: rgba(36, 28, 17, 0.22);
+  --ng-sel: var(--sl-stamp-blue);
+  --ng-glow: 0 0 0 3px rgba(31, 78, 140, 0.18), 0 8px 22px -10px rgba(31, 78, 140, 0.55);
+  display: flex;
+  flex-direction: column;
+  min-height: 100%;
+}
+
+/* ── Indicador de passo ── */
+
+.slm-steps {
+  position: sticky;
+  top: calc(clamp(12px, 3vh, 24px) * -1);
+  z-index: 2;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  margin: calc(clamp(12px, 3vh, 24px) * -1) calc(clamp(12px, 3vw, 28px) * -1) 12px;
+  padding: 4px clamp(12px, 3vw, 28px);
+  list-style: none;
+  background: var(--sl-paper);
+  border-bottom: 1px solid var(--ng-line);
+}
+.slm-steps li {
+  display: flex;
+  align-items: center;
+}
+.slm-steps li + li::before {
+  content: '';
+  width: clamp(16px, 4vw, 40px);
+  height: 1px;
+  margin: 0 6px;
+  background: var(--ng-line);
+}
+.slm-step {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 44px;
+  padding: 0 10px 0 4px;
+  border: 0;
+  background: transparent;
+  color: var(--ng-muted) !important;
+  font-weight: 600;
+  font-size: var(--sl-fs-sm) !important;
+  border-radius: var(--sl-radius-1);
+}
+.slm-step:hover {
+  background: rgba(36, 28, 17, 0.06);
+}
+.slm-step-num {
+  display: inline-grid;
+  place-items: center;
+  width: 26px;
+  height: 26px;
+  border: 1.5px solid currentColor;
+  border-radius: 50%;
+  font-family: var(--sl-font-mono);
+  font-size: var(--sl-fs-xs);
+}
+.slm-step[aria-current='step'] {
+  color: var(--ng-ink) !important;
+}
+.slm-step[aria-current='step'] .slm-step-num {
+  background: var(--ng-ink);
+  border-color: var(--ng-ink);
+  color: var(--sl-paper);
+}
+
+.slm-ng-body {
+  flex: 1;
+  outline: none;
+}
+.slm-ng-body h3:focus {
+  outline: none;
+}
+
+/* ── Passo 1: cartões + detalhes ── */
+
+.slm-ng-scenario.is-split {
+  display: grid;
+  grid-template-columns: minmax(0, 0.95fr) minmax(0, 1.05fr);
+  gap: clamp(14px, 2.6vw, 28px);
+  align-items: start;
+}
+.slm-cards {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 3px;
+}
+.slm-card {
+  position: relative;
+  display: grid;
+  grid-template-columns: 40px minmax(0, 1fr) 26px;
+  align-items: start;
+  gap: 10px;
+  width: 100%;
+  min-height: 64px;
+  padding: 10px 10px 10px 10px;
+  border: 1.5px solid var(--ng-line);
+  border-radius: var(--sl-radius-2);
+  background: rgba(255, 255, 255, 0.28);
+  color: var(--ng-ink) !important;
+  text-align: left;
+  transition:
+    border-color var(--sl-dur-fast) var(--sl-ease-out),
+    box-shadow var(--sl-dur-base) var(--sl-ease-out),
+    background-color var(--sl-dur-fast);
+}
+.slm-card:hover {
+  border-color: rgba(36, 28, 17, 0.5);
+  background: rgba(255, 255, 255, 0.45);
+}
+.slm-card[aria-checked='true'] {
+  border: 2px solid var(--ng-sel);
+  padding: 9.5px;
+  background: rgba(255, 255, 255, 0.6);
+  box-shadow: var(--ng-glow);
+}
+.slm-card:focus-visible {
+  outline: 3px solid var(--sl-stamp-blue);
+  outline-offset: 2px;
+}
+.slm-card-icon {
+  display: grid;
+  place-items: center;
+  width: 40px;
+  height: 40px;
+  border-radius: var(--sl-radius-2);
+  background: rgba(36, 28, 17, 0.07);
+  color: var(--ng-ink);
+}
+.slm-card-main {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+.slm-card-badge {
+  align-self: flex-start;
+  padding: 1px 8px;
+  margin-bottom: 2px;
+  border-radius: var(--sl-radius-1);
+  background: var(--sl-stamp-blue);
+  color: #fff;
+  font-family: var(--sl-font-mono);
+  font-size: var(--sl-fs-xs);
+  font-weight: 600;
+  line-height: 1.6;
+}
+.slm-card--tutorial {
+  border-color: rgba(31, 78, 140, 0.55);
+  background: rgba(31, 78, 140, 0.06);
+}
+.slm-card-title {
+  font-weight: 600;
+  font-size: var(--sl-fs-md);
+  line-height: 1.25;
+}
+.slm-card-outcome {
+  font-size: var(--sl-fs-sm);
+  line-height: 1.3;
+}
+.slm-card-meta {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 2px 12px;
+  margin-top: 2px;
+  font-family: var(--sl-font-mono);
+  font-size: var(--sl-fs-xs);
+  color: var(--ng-muted);
+}
+.slm-card-check {
+  display: grid;
+  place-items: center;
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  border: 1.5px solid var(--ng-line);
+  color: transparent;
+  transition: background-color var(--sl-dur-fast), color var(--sl-dur-fast), border-color var(--sl-dur-fast);
+}
+[aria-checked='true'] > .slm-card-check,
+[aria-checked='true'] .slm-diff-head .slm-card-check {
+  background: var(--ng-sel);
+  border-color: var(--ng-sel);
+  color: #fff;
+}
+.slm-dots {
+  display: inline-flex;
+  gap: 3px;
+}
+.slm-dots i {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  border: 1.5px solid var(--ng-muted);
+}
+.slm-dots i.on {
+  background: var(--ng-ink);
+  border-color: var(--ng-ink);
+}
+
+/* Detalhes */
+.slm-details {
+  position: sticky;
+  top: 56px;
+  display: flex;
+  flex-direction: column;
+}
+.slm-details-back {
+  align-self: flex-start;
+  margin: -4px 0 6px -10px;
+}
+.slm-details-kicker {
+  font-family: var(--sl-font-mono);
+  font-size: var(--sl-fs-xs);
+  font-weight: 600;
+  color: var(--sl-stamp-red);
+}
+.slm-details-title {
+  margin: 2px 0 8px;
+  font-family: var(--sl-font-display);
+  font-weight: 700;
+  font-size: clamp(24px, 4.6vh, 36px);
+  line-height: 1;
+  text-transform: uppercase;
+}
+.slm-details-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 10px;
+}
+.slm-details-brief {
+  margin: 0;
+  font-family: var(--sl-font-type);
+  font-size: var(--sl-fs-md);
+  line-height: 1.45;
+}
+.slm-details-note {
+  margin: 6px 0 0;
+  padding-left: 10px;
+  border-left: 3px solid var(--sl-stamp-blue);
+  font-size: var(--sl-fs-sm);
+  color: var(--ng-ink);
+}
+.slm-minimap {
+  margin: 0;
+  aspect-ratio: 2 / 1;
+  overflow: hidden;
+  border: 1px solid var(--ng-line);
+  border-radius: var(--sl-radius-2);
+  background: #e7dcc4;
+}
+.slm-minimap svg {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+.slm-minimap path {
+  fill: rgba(36, 28, 17, 0.12);
+  stroke: rgba(239, 231, 214, 0.9);
+  stroke-width: 0.5;
+}
+.slm-minimap path.on {
+  fill: rgba(36, 28, 17, 0.42);
+}
+.slm-minimap-home {
+  fill: var(--sl-stamp-red);
+}
+.slm-minimap-ring {
+  fill: none;
+  stroke: var(--sl-stamp-red);
+  stroke-width: 1.5;
+}
+.slm-minimap-station {
+  fill: var(--sl-stamp-blue);
+  stroke: #fff;
+  stroke-width: 1;
+}
+.slm-details-sub {
+  margin: 14px 0 4px;
+  font-family: var(--sl-font-mono);
+  font-size: var(--sl-fs-xs);
+  font-weight: 600;
+  color: var(--ng-muted);
+}
+.slm-start-list {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0 18px;
+  margin: 0;
+}
+.slm-start-list > div {
+  padding: 6px 0;
+  border-top: 1px solid var(--ng-line);
+}
+.slm-start-list dt {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-family: var(--sl-font-mono);
+  font-size: var(--sl-fs-xs);
+  color: var(--ng-muted);
+}
+.slm-start-list dt svg {
+  color: var(--ng-ink);
+}
+.slm-start-list dd {
+  margin: 2px 0 0;
+  font-size: var(--sl-fs-sm);
+  font-weight: 500;
+  line-height: 1.3;
+}
+
+/* ── Passo 2: Configurar ── */
+
+.slm-ng-config {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  max-width: 880px;
+}
+.slm-group {
+  margin: 0;
+  padding: 0;
+  border: 0;
+  min-width: 0;
+}
+.slm-group > legend {
+  padding: 0;
+  margin-bottom: 8px;
+  font-family: var(--sl-font-display);
+  font-weight: 700;
+  font-size: var(--sl-fs-lg);
+  text-transform: uppercase;
+  letter-spacing: 0.02em;
+}
+.slm-names {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px 18px;
+}
+.slm-name {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.slm-name-row {
+  display: flex;
+  gap: 6px;
+}
+.slm-input {
+  flex: 1;
+  min-width: 0;
+  height: 44px;
+  padding: 0 12px;
+  border: 1.5px solid rgba(36, 28, 17, 0.45);
+  border-radius: var(--sl-radius-1);
+  background: rgba(255, 255, 255, 0.55);
+  color: var(--ng-ink);
+  font: inherit;
+  font-weight: 600;
+  user-select: text;
+}
+.slm-input:focus-visible {
+  outline: 3px solid var(--sl-stamp-blue);
+  outline-offset: 1px;
+}
+.slm-input[aria-invalid='true'] {
+  border-color: var(--sl-stamp-red);
+}
+.slm-roll {
+  border: 1.5px solid rgba(36, 28, 17, 0.45) !important;
+  width: 44px;
+  justify-content: center;
+}
+.slm-error {
+  margin: 6px 0 0;
+  color: var(--sl-stamp-red);
+  font-size: var(--sl-fs-sm);
+  font-weight: 600;
+}
+.slm-two {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0 18px;
+}
+
+.slm-diffs {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 8px;
+  padding: 3px;
+}
+.slm-diff {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-height: 44px;
+  padding: 10px 12px;
+  border: 1.5px solid var(--ng-line);
+  border-radius: var(--sl-radius-2);
+  background: rgba(255, 255, 255, 0.28);
+  color: var(--ng-ink) !important;
+  text-align: left;
+  transition: border-color var(--sl-dur-fast), box-shadow var(--sl-dur-base) var(--sl-ease-out);
+}
+.slm-diff:hover {
+  border-color: rgba(36, 28, 17, 0.5);
+}
+.slm-diff[aria-checked='true'] {
+  border: 2px solid var(--ng-sel);
+  padding: 9.5px 11.5px;
+  background: rgba(255, 255, 255, 0.6);
+  box-shadow: var(--ng-glow);
+}
+.slm-diff-head {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.slm-diff-head strong {
+  flex: 1;
+  font-family: var(--sl-font-display);
+  font-size: var(--sl-fs-lg);
+  text-transform: uppercase;
+  line-height: 1;
+}
+.slm-diff-text {
+  font-size: var(--sl-fs-sm);
+  line-height: 1.3;
+}
+.slm-diff-rivals {
+  margin-top: auto;
+  font-family: var(--sl-font-mono);
+  font-size: var(--sl-fs-xs);
+  color: var(--ng-muted);
+}
+
+.slm-hardcore {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 14px;
+  width: 100%;
+  min-height: 64px;
+  padding: 10px 14px;
+  border: 1.5px solid var(--ng-line);
+  border-radius: var(--sl-radius-2);
+  background: rgba(255, 255, 255, 0.28);
+  color: var(--ng-ink) !important;
+  text-align: left;
+  transition: background-color var(--sl-dur-base), border-color var(--sl-dur-base);
+}
+.slm-hardcore-text {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+.slm-hardcore-text strong {
+  font-family: var(--sl-font-display);
+  font-size: var(--sl-fs-xl);
+  text-transform: uppercase;
+  line-height: 1;
+}
+.slm-hardcore-text span {
+  font-size: var(--sl-fs-sm);
+  line-height: 1.3;
+}
+.slm-hardcore-track {
+  position: relative;
+  width: 64px;
+  height: 34px;
+  border: 2px solid var(--ng-ink);
+  border-radius: 2px;
+  transition: background-color var(--sl-dur-base), border-color var(--sl-dur-base);
+}
+.slm-hardcore-thumb {
+  position: absolute;
+  top: 4px;
+  left: 4px;
+  width: 22px;
+  height: 22px;
+  background: var(--ng-ink);
+  transition: transform var(--sl-dur-base) var(--sl-ease-out), background-color var(--sl-dur-base);
+}
+.slm-hardcore[aria-checked='true'] {
+  border: 2px solid var(--sl-stamp-red);
+  background: rgba(179, 38, 30, 0.08);
+}
+.slm-hardcore[aria-checked='true'] .slm-hardcore-icon,
+.slm-hardcore[aria-checked='true'] .slm-hardcore-text {
+  color: var(--sl-stamp-red);
+}
+.slm-hardcore[aria-checked='true'] .slm-hardcore-track {
+  background: var(--sl-stamp-red);
+  border-color: var(--sl-stamp-red);
+}
+.slm-hardcore[aria-checked='true'] .slm-hardcore-thumb {
+  transform: translateX(30px);
+  background: var(--sl-paper);
+}
+.slm-hardcore:focus-visible,
+.slm-diff:focus-visible,
+.slm-step:focus-visible {
+  outline: 3px solid var(--sl-stamp-blue);
+  outline-offset: 2px;
+}
+
+.slm-summary-box {
+  padding: 12px 14px;
+  border: 1.5px dashed rgba(36, 28, 17, 0.4);
+  border-radius: var(--sl-radius-2);
+}
+.slm-summary-box h4 {
+  margin: 0 0 6px;
+  font-family: var(--sl-font-mono);
+  font-size: var(--sl-fs-xs);
+  font-weight: 600;
+  color: var(--ng-muted);
+}
+.slm-summary-box dl {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 8px 18px;
+  margin: 0;
+}
+.slm-summary-box dt {
+  font-family: var(--sl-font-mono);
+  font-size: var(--sl-fs-2xs);
+  color: var(--ng-muted);
+}
+.slm-summary-box dd {
+  margin: 0;
+  font-weight: 600;
+  font-size: var(--sl-fs-sm);
+}
+.slm-danger {
+  color: var(--sl-stamp-red);
+}
+
+/* ── Rodapé fixo ── */
+
+.slm-ng-foot {
+  position: sticky;
+  bottom: 0;
+  z-index: 2;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin: 12px calc(clamp(12px, 3vw, 28px) * -1) 0;
+  padding: 8px clamp(12px, 3vw, 28px) max(8px, env(safe-area-inset-bottom));
+  background: var(--sl-paper);
+  border-top: 1px solid var(--ng-line);
+}
+.slm-ng-foot-info {
+  font-family: var(--sl-font-mono);
+  font-size: var(--sl-fs-xs);
+  color: var(--ng-muted);
+}
+.slm-btn--lg {
+  min-height: 48px;
+  padding: 0 22px;
+  font-size: var(--sl-fs-md) !important;
+}
+.slm-btn--danger {
+  background: var(--sl-stamp-red);
+  color: #fff !important;
+}
+.slm-btn--danger:hover {
+  background: #8e1d18;
+}
+
+/* ── Celular deitado ── */
+
+.slm-ng[data-compact] .slm-details {
+  position: static;
+}
+.slm-ng[data-compact] .slm-minimap {
+  max-height: 160px;
+}
+.slm-ng[data-compact] .slm-details-grid {
+  grid-template-columns: minmax(0, 1.2fr) minmax(0, 1fr);
+  align-items: start;
+}
+.slm-ng[data-compact] .slm-start-list,
+.slm-ng[data-compact] .slm-summary-box dl {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+.slm-ng[data-compact] .slm-cards {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+@media (max-height: 420px) {
+  .slm-card {
+    min-height: 56px;
+    padding-top: 7px;
+    padding-bottom: 7px;
+  }
+  .slm-card-outcome {
+    font-size: var(--sl-fs-xs);
+  }
+  .slm-diff-text,
+  .slm-hardcore-text span {
+    font-size: var(--sl-fs-xs);
+  }
+  .slm-details-brief {
+    font-size: var(--sl-fs-sm);
+  }
+  .slm-ng-foot {
+    padding-top: 5px;
+    padding-bottom: 5px;
+  }
+}
+@media (max-width: 560px) {
+  .slm-ng[data-compact] .slm-cards,
+  .slm-names,
+  .slm-two {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .slm-diffs {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
