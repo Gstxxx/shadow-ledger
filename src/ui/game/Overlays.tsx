@@ -7,6 +7,7 @@ import { useGame, useGameStore } from '../../store/game';
 import { audio } from '../../audio/engine';
 import { useT } from '../../i18n';
 import { countryName, presetTitle } from '../../i18n/lookup';
+import { msgText } from './msgText';
 
 const TONE_ICON: Record<Tone, typeof Info> = {
   info: Info,
@@ -18,7 +19,7 @@ const TONE_ICON: Record<Tone, typeof Info> = {
 
 /** Evento: pausa o relógio até o jogador reconhecer. */
 export function EventModal() {
-  const { t } = useT();
+  const { t, lang } = useT();
   const s = useGame();
   const ack = useGameStore((st) => st.ackEvent);
   const select = useGameStore((st) => st.select);
@@ -37,9 +38,9 @@ export function EventModal() {
           {formatDate(ev.at)} · {formatClock(ev.at)}
         </span>
         <h2 id="ev-title">
-          <Icon size={20} /> {ev.title}
+          <Icon size={20} /> {msgText(ev.titleMsg, ev.title, lang)}
         </h2>
-        <p>{ev.body}</p>
+        <p>{msgText(ev.bodyMsg, ev.body, lang)}</p>
         <div className="event-actions">
           {more > 0 && <span className="mono hint-sm">{t('game.overlay.queued', { n: more })}</span>}
           {ev.countryId && (
@@ -94,7 +95,7 @@ export function DirectorBanner() {
 }
 
 export function GameOver({ onQuit }: { onQuit: () => void }) {
-  const { t, fmt } = useT();
+  const { t, fmt, lang } = useT();
   const s = useGame();
   const a = player(s);
   if (!s.over || s.events.length) return null;
@@ -103,7 +104,7 @@ export function GameOver({ onQuit }: { onQuit: () => void }) {
       <div className={`event-card big tone-${s.over.won ? 'good' : 'bad'}`} role="dialog" aria-modal>
         <span className="event-stamp mono">{presetTitle(s.options.preset.id)}</span>
         <h2>{s.over.won ? t('game.overlay.over.won') : t('game.overlay.over.lost')}</h2>
-        <p>{s.over.reason}</p>
+        <p>{msgText(s.over.reasonMsg, s.over.reason, lang)}</p>
         <div className="kv-grid mono">
           <span>{t('game.overlay.over.days')}</span>
           <b>{Math.floor(s.time / 24)}</b>
@@ -133,7 +134,7 @@ export function GameOver({ onQuit }: { onQuit: () => void }) {
 }
 
 export function LogPanel({ open, onToggle }: { open: boolean; onToggle: () => void }) {
-  const { t } = useT();
+  const { t, lang } = useT();
   const s = useGame();
   const select = useGameStore((st) => st.select);
   const list = s.log.slice(-60).reverse();
@@ -141,7 +142,7 @@ export function LogPanel({ open, onToggle }: { open: boolean; onToggle: () => vo
     <aside className={`log${open ? ' open' : ''}`}>
       <button className="log-head mono" onClick={onToggle}>
         {t('game.overlay.log')} {open ? '▾' : '▴'}
-        {!open && list[0] && <span className="log-peek">{list[0].text}</span>}
+        {!open && list[0] && <span className="log-peek">{msgText(list[0].msg, list[0].text, lang)}</span>}
       </button>
       {open && (
         <ol className="log-list">
@@ -152,10 +153,10 @@ export function LogPanel({ open, onToggle }: { open: boolean; onToggle: () => vo
               </span>
               {l.countryId ? (
                 <button className="link" onClick={() => select(l.countryId!)}>
-                  {l.text}
+                  {msgText(l.msg, l.text, lang)}
                 </button>
               ) : (
-                <span>{l.text}</span>
+                <span>{msgText(l.msg, l.text, lang)}</span>
               )}
             </li>
           ))}

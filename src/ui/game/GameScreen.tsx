@@ -80,6 +80,7 @@ export function GameScreen() {
       } else if (e.key === '1') setSpeed(1);
       else if (e.key === '2') setSpeed(2);
       else if (e.key === '3' || e.key === '4') setSpeed(4);
+      else if (e.key === '8') setSpeed(8);
       else if (e.key === 'Escape') setMenu((m) => !m);
     };
     window.addEventListener('keydown', onKey);

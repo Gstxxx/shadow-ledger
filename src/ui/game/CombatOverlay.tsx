@@ -2,7 +2,7 @@ import { useEffect, useMemo, useRef, useState } from 'react';
 import { FastForward, Pause, Play, SkipForward, Swords } from 'lucide-react';
 import { canPlace, place, stepCombat, succeeded, TACTICS, unplace, autoDeploy } from '../../game/combat';
 import { cancelPending, negotiateCost } from '../../game/actions';
-import { chooseTactic, finishCombat, forceUnits } from '../../game/combatFlow';
+import { abortLive, canAbortLive, chooseTactic, finishCombat, forceUnits } from '../../game/combatFlow';
 import { agencyById, player } from '../../game/state';
 import type { CombatState, CombatUnitRef, Tactic, Unit } from '../../game/types';
 import { canFight, FORT_ID, maxStrOf, strOf } from '../../game/units';
@@ -11,6 +11,7 @@ import { audio } from '../../audio/engine';
 import { useT } from '../../i18n';
 import { combatLabel, itemName, tacticBlurb, tacticName } from '../../i18n/lookup';
 import { Portrait } from './Portrait';
+import { msgText } from './msgText';
 import { RedactedTitle, RollingNumber, useCombatFx } from '../combat-fx';
 
 export function CombatOverlay() {
@@ -28,7 +29,7 @@ function PendingView() {
   const a = agencyById(s, pend.agencyId) ?? player(s);
   const mutate = useGameStore((st) => st.mutate);
   const act = useGameStore((st) => st.act);
-  const { t, fmt } = useT();
+  const { t, fmt, lang } = useT();
   const setup = pend.setup;
   const ours = setup.sources.flatMap((src) => forceUnits(a, src)).filter((u) => canFight(u, setup.type));
   const best = TACTICS.filter((t) => t !== 'negotiate').reduce((b, t) => (pend.preview[t] > pend.preview[b] ? t : b), 'assault' as Tactic);
@@ -58,7 +59,7 @@ function PendingView() {
       <div className="combat-card">
         <header className="cb-head">
           <span className="chip type">{combatLabel(setup.type)}</span>
-          <h2>{setup.title}</h2>
+          <h2>{msgText(setup.titleMsg, setup.title, lang)}</h2>
           <span className="mono hint-sm">{setup.playerDefends ? t('game.combat.defendHint') : t('game.combat.attackHint')}</span>
         </header>
         <div className="forces">
@@ -140,7 +141,7 @@ function LiveView() {
   const s = useGame();
   const c = s.combat!;
   const mutate = useGameStore((st) => st.mutate);
-  const { t } = useT();
+  const { t, lang } = useT();
   const [running, setRunning] = useState(c.reserve.length === 0 && c.units.some((u) => u.side === 'p'));
   const [fast, setFast] = useState(false);
   const [sel, setSel] = useState<string | null>(null);
@@ -226,7 +227,7 @@ function LiveView() {
         <header className="cb-head">
           <span className="chip type">{combatLabel(c.type)}</span>
           <h2>
-            <RedactedTitle>{c.title}</RedactedTitle>
+            <RedactedTitle>{msgText(c.titleMsg, c.title, lang)}</RedactedTitle>
           </h2>
           <span className="mono hint-sm">
             {tacticName(c.tactic)} · <TurnLabel turn={c.turn} max={c.maxTurns} />
@@ -270,7 +271,7 @@ function LiveView() {
 
         <div className="cb-log mono">
           {c.log.slice(-3).map((l, i) => (
-            <div key={`${c.turn}-${i}`}>{l}</div>
+            <div key={`${c.turn}-${i}`}>{msgText(c.logMsg?.[c.log.length - Math.min(3, c.log.length) + i], l, lang)}</div>
           ))}
         </div>
 
@@ -289,6 +290,19 @@ function LiveView() {
             <>
               {c.turn === 0 && !running ? (
                 <>
+                  {canAbortLive(s) && (
+                    <button
+                      className="btn ghost"
+                      onClick={() => {
+                        audio.sfx('close');
+                        mutate((g) => {
+                          abortLive(g);
+                        });
+                      }}
+                    >
+                      {t('game.combat.abort')}
+                    </button>
+                  )}
                   <button className="btn ghost" onClick={() => mutate((g) => autoDeploy(g.combat!))} disabled={!c.reserve.length}>
                     {t('game.combat.deployRest')}
                   </button>

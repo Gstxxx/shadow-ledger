@@ -73,10 +73,10 @@ export function TopBar({ onMenu, onLeft, onRight }: { onMenu: () => void; onLeft
         >
           {paused ? <Play size={16} /> : <Pause size={16} />}
         </button>
-        {([1, 2, 4] as Speed[]).map((v) => (
+        {([1, 2, 4, 8] as Speed[]).map((v) => (
           <button
             key={v}
-            className="btn sm"
+            className={`btn sm${v === 8 ? ' hide-xs' : ''}`}
             aria-pressed={!paused && speed === v}
             onClick={() => {
               audio.sfx('click');
