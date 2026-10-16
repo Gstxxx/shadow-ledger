@@ -181,8 +181,12 @@ Pessoa do **Pessoal**, de qualquer gênero, que em **Combate** converte Unidades
 _Avoid_: secretária, garota, girl
 
 **Arma de Destruição em Massa**:
-Item químico, biológico ou nuclear que só pode ser comerciado, nunca usado como **Unidade**.
+Item químico, biológico ou nuclear que só pode ser comerciado, nunca usado como **Unidade**. É conteúdo de fim de jogo: só aparece quando a **Tensão Global** está alta.
 _Avoid_: WMD, ADM
+
+**Tensão Global**:
+Medidor único do mundo inteiro, que sobe com guerras, golpes e operações hostis (da agência e das **Agências Rivais**) e libera o mercado de **Armas de Destruição em Massa** quando chega ao topo.
+_Avoid_: DEFCON, caos, instabilidade (que é uma situação política de um país)
 
 **Voo Comercial**:
 Transporte pago por pessoa, de velocidade fixa, que uma **Equipe** formada só por **Pessoal** pode usar sem depender da **Frota**.
