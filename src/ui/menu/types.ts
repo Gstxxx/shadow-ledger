@@ -58,4 +58,4 @@ export interface MainMenuProps {
   skipIntro?: boolean;
 }
 
-export type Screen = 'new' | 'continue' | 'settings' | 'credits';
+export type Screen = 'new' | 'continue' | 'howto' | 'settings' | 'credits';

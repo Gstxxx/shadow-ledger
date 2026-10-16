@@ -11,6 +11,7 @@ const ptBR = {
 
   menuNew: 'Nova partida',
   menuContinue: 'Continuar',
+  menuHowTo: 'Como jogar',
   menuSettings: 'Configurações',
   menuCredits: 'Créditos',
   menuNewMeta: (n: number) => `${n} Presets`,
@@ -116,6 +117,7 @@ const en: Strings = {
   soundHint: 'Tap anywhere to turn on sound',
   menuNew: 'New game',
   menuContinue: 'Continue',
+  menuHowTo: 'How to play',
   menuSettings: 'Settings',
   menuCredits: 'Credits',
   menuNewMeta: (n) => `${n} Scenarios`,

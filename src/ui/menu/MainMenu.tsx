@@ -13,6 +13,7 @@ import { sfx, useMenuSettings } from './settings';
 import { stringsFor } from './strings';
 import { Continue } from './screens/Continue';
 import { Credits } from './screens/Credits';
+import { HowToPlay } from './screens/HowToPlay';
 import { NewGame } from './screens/NewGame';
 import { Settings } from './screens/Settings';
 import type { MainMenuProps, Screen } from './types';
@@ -222,6 +223,7 @@ export function MainMenu(props: MainMenuProps) {
   const items: { id: Screen; label: string; meta?: string }[] = [
     { id: 'new', label: s.menuNew, meta: s.menuNewMeta(presets.length) },
     { id: 'continue', label: s.menuContinue, meta: s.menuContinueMeta(saves.length) },
+    { id: 'howto', label: s.menuHowTo },
     { id: 'settings', label: s.menuSettings },
     { id: 'credits', label: s.menuCredits },
   ];
@@ -229,6 +231,7 @@ export function MainMenu(props: MainMenuProps) {
   const titles: Record<Screen, string> = {
     new: s.newTitle,
     continue: s.continueTitle,
+    howto: s.menuHowTo,
     settings: s.settingsTitle,
     credits: s.creditsTitle,
   };
@@ -326,6 +329,7 @@ export function MainMenu(props: MainMenuProps) {
               onImport={props.onImportSave}
             />
           )}
+          {screen === 'howto' && <HowToPlay lang={settings.lang} reduced={reduced} />}
           {screen === 'settings' && <Settings s={s} value={settings} onChange={update} />}
           {screen === 'credits' && <Credits s={s} reduced={reduced} />}
         </Dossier>
