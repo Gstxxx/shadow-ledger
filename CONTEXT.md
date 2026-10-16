@@ -1,6 +1,6 @@
 # Shadow Ledger
 
-Jogo de estratégia em tempo contínuo com pausa sobre dirigir uma agência privada de inteligência que negocia armas, informação e mercenários pelo mundo. É um remake web das mecânicas de *Guns Girls Lawyers Spies*, com nomes, textos e arte novos.
+Jogo de estratégia em tempo contínuo com pausa sobre dirigir uma agência privada de inteligência que negocia armas, informação e mercenários pelo mundo. É um remake web das mecânicas de *Guns Girls Lawyers Spies*, com nomes, textos e arte novos. O mapa e os países são reais; governos, guerras e alvos são gerados pelo jogo, e não aparece nenhuma pessoa real.
 
 ## Language
 
@@ -111,8 +111,12 @@ _Avoid_: ataque aleatório
 ### Ações
 
 **Operação Especial**:
-Ação hostil contra um país: roubo a banco, roubo de tecnologia ou eliminação política. Pode ser executada pelo **Diretor** (com a **Escolta**) ou por uma **Equipe**, e derruba a reputação da agência naquele país.
+Ação hostil contra um país: roubo a banco, roubo de tecnologia ou **Neutralização**. Pode ser executada pelo **Diretor** (com a **Escolta**) ou por uma **Equipe**, e derruba a reputação da agência naquele país.
 _Avoid_: missão (reservado para o objetivo da partida), ataque
+
+**Neutralização**:
+**Operação Especial** paga pela oposição de um país para tirar de cena um alvo político fictício. É apresentada de forma abstrata, sem cena explícita.
+_Avoid_: assassinato, eliminação política
 
 **Golpe**:
 Derrubada do governo de um país. Exige o **Diretor** presente; não é uma **Operação Especial**.
@@ -169,8 +173,16 @@ Intermediário que compra na hora, com forte desconto, um item que uma **Equipe*
 _Avoid_: mercado negro, fence
 
 **Pessoal**:
-**Unidades** humanas (guarda-costas, comandos, agentes, advogados, agentes de influência), em oposição a veículos e aeronaves.
+**Unidades** humanas (guarda-costas, comandos, agentes, advogados, **Agentes de Influência**), em oposição a veículos e aeronaves.
 _Avoid_: humanos, infantaria
+
+**Agente de Influência**:
+Pessoa do **Pessoal**, de qualquer gênero, que em **Combate** converte Unidades inimigas para o lado da agência em vez de feri-las.
+_Avoid_: secretária, garota, girl
+
+**Arma de Destruição em Massa**:
+Item químico, biológico ou nuclear que só pode ser comerciado, nunca usado como **Unidade**.
+_Avoid_: WMD, ADM
 
 **Voo Comercial**:
 Transporte pago por pessoa, de velocidade fixa, que uma **Equipe** formada só por **Pessoal** pode usar sem depender da **Frota**.
