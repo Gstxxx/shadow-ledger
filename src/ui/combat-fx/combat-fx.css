@@ -1,0 +1,163 @@
+/* Camada de efeitos de Combate. Só transform/opacity animam; nada aqui muda layout. */
+
+.cfx-layer {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  z-index: 5;
+  overflow: visible;
+}
+.cfx-layer > * {
+  position: absolute;
+  will-change: transform, opacity;
+}
+
+/* Cópia de uma Unidade que já saiu da grade (abatida ou convertida). */
+.cfx-ghost {
+  pointer-events: none;
+  transition: none !important;
+  animation: none !important;
+}
+.cfx-ghost > * {
+  animation: none !important;
+}
+
+/* Golpe */
+.cfx-flash {
+  border-radius: 3px;
+  background: var(--cfx-color);
+  box-shadow: 0 0 0 1px var(--cfx-color), 0 0 14px -2px var(--cfx-color);
+  mix-blend-mode: screen;
+  opacity: 0;
+}
+.cfx-dmg {
+  font-family: var(--sl-font-mono, ui-monospace, monospace);
+  font-weight: 700;
+  font-size: clamp(11px, 2.4vh, 17px);
+  line-height: 1;
+  white-space: nowrap;
+  text-shadow:
+    0 1px 0 #000,
+    0 0 6px rgba(0, 0, 0, 0.9);
+  font-variant-numeric: tabular-nums;
+}
+
+/* Abate: tarja e tiras */
+.cfx-redact {
+  position: absolute;
+  left: 20%;
+  right: 20%;
+  top: 28%;
+  height: 18%;
+  background: var(--sl-redact, #0a0a0a);
+  box-shadow: 0 1px 0 rgba(255, 255, 255, 0.08) inset;
+  transform: scaleX(0);
+  transform-origin: 0 50%;
+}
+.cfx-ghost .cfx-strip {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 3px;
+}
+
+/* Conversão: tinta do novo lado + selo */
+.cfx-tint {
+  position: absolute;
+  inset: 6%;
+  border-radius: 8px;
+  background: var(--cfx-color);
+  mix-blend-mode: color;
+  opacity: 0;
+}
+.cfx-seal {
+  position: absolute;
+  right: 4%;
+  top: 2%;
+  width: 46%;
+  aspect-ratio: 1;
+  color: var(--cfx-color);
+  opacity: 0;
+  filter: drop-shadow(0 1px 0 rgba(0, 0, 0, 0.8));
+}
+.cfx-seal svg {
+  width: 100%;
+  height: 100%;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 3;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+/* Ruptura */
+.cfx-sweep {
+  background: linear-gradient(90deg, transparent 0%, color-mix(in srgb, var(--cfx-color) 70%, transparent) 50%, transparent 100%);
+  mix-blend-mode: screen;
+}
+.cfx-wash {
+  background: linear-gradient(90deg, transparent, var(--cfx-color) 50%, transparent);
+  mix-blend-mode: screen;
+  opacity: 0;
+}
+
+/* Resultado: carimbo de borracha */
+.cfx-stamp {
+  left: 50%;
+  top: 50%;
+  padding: 0.18em 0.5em 0.1em;
+  border: 0.12em solid currentColor;
+  border-radius: 0.12em;
+  font-family: var(--sl-font-display, 'Barlow Condensed', 'Arial Narrow', sans-serif);
+  font-weight: 700;
+  font-size: clamp(30px, 11vh, 76px);
+  line-height: 1;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  white-space: nowrap;
+  /* tinta falhada do carimbo */
+  -webkit-mask-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='180' height='90'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='2' seed='7'/><feColorMatrix values='0 0 0 0 0  0 0 0 0 0  0 0 0 0 0  0 0 0 -2.2 1.6'/></filter><rect width='100%' height='100%' filter='url(%23n)'/></svg>");
+  mask-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='180' height='90'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='2' seed='7'/><feColorMatrix values='0 0 0 0 0  0 0 0 0 0  0 0 0 0 0  0 0 0 -2.2 1.6'/></filter><rect width='100%' height='100%' filter='url(%23n)'/></svg>");
+  background: rgba(7, 9, 11, 0.55);
+  opacity: 0;
+}
+.cfx-stamp.is-ok {
+  color: #6fdc8c;
+}
+.cfx-stamp.is-fail {
+  color: #ff5f56;
+}
+
+/* Título com tarja (RedactedTitle) */
+.cfx-title {
+  position: relative;
+  display: inline-block;
+}
+.cfx-title-bar {
+  position: absolute;
+  inset: -0.06em -0.18em;
+  background: var(--sl-redact, #0a0a0a);
+  box-shadow: 0 0 0 1px rgba(183, 192, 202, 0.25);
+  transform-origin: 100% 50%;
+  pointer-events: none;
+}
+
+/* Contador de turno (RollingNumber) */
+.cfx-roll {
+  position: relative;
+  display: inline-block;
+  overflow: hidden;
+  vertical-align: bottom;
+  font-variant-numeric: tabular-nums;
+}
+.cfx-roll > span {
+  display: inline-block;
+}
+.cfx-roll > .cfx-roll-out {
+  position: absolute;
+  left: 0;
+  top: 0;
+}
