@@ -1,7 +1,11 @@
 import { ITEMS } from './data/items';
 import { CALLSIGNS, FIRST_NAMES, LAST_NAMES } from './data/names';
 import { pick, randInt } from './rng';
-import type { CombatType, GameState, ItemDef, Strength, Unit } from './types';
+import type { RngHolder } from './rng';
+import type { CombatType, ItemDef, Strength, Unit } from './types';
+
+/** Minimal context to mint units: an rng cursor and the uid counter. */
+export type MintCtx = RngHolder & { uidCounter: number };
 
 export const FORT_ID = '__fort';
 
@@ -22,12 +26,12 @@ export function def(itemId: string): ItemDef {
   return itemId === FORT_ID ? FORT_DEF : ITEMS[itemId];
 }
 
-export function nextUid(s: GameState, prefix = 'u'): string {
+export function nextUid(s: MintCtx, prefix = 'u'): string {
   s.uidCounter += 1;
   return `${prefix}${s.uidCounter}`;
 }
 
-export function makeUnit(s: GameState, itemId: string, paid?: number): Unit {
+export function makeUnit(s: MintCtx, itemId: string, paid?: number): Unit {
   const it = ITEMS[itemId];
   const human = it.cls === 'human' || it.cls === 'lawyer' || it.cls === 'secretary';
   const name = human
@@ -44,7 +48,7 @@ export function makeUnit(s: GameState, itemId: string, paid?: number): Unit {
   };
 }
 
-export function makeFort(s: GameState, str: number, type: CombatType): Unit {
+export function makeFort(s: MintCtx, str: number, type: CombatType): Unit {
   const hp: Strength = { legal: 0, urban: 0, army: 0, air: 0, convert: 0 };
   hp[type] = str;
   return { uid: nextUid(s, 'f'), itemId: FORT_ID, name: 'Defesa da Estação', hp, xp: 0, paid: 0, seed: 0 };
@@ -64,7 +68,19 @@ export function maxStrOf(u: Unit, type: CombatType): number {
   return usesConvert(u, type) ? d.str.convert : d.str[type];
 }
 
-export const canFight = (u: Unit, type: CombatType) => strOf(u, type) > 0;
+export const canFight = (u: Unit, type: CombatType) => !u.idle && strOf(u, type) > 0;
+
+export const isPersonnel = (u: Unit) => {
+  const c = def(u.itemId).cls;
+  return c === 'human' || c === 'lawyer' || c === 'secretary';
+};
+
+/** Manutenção mensal: salário do Pessoal (3% do preço) ou manutenção técnica das máquinas (1,5%). */
+export function upkeepOf(u: Unit): number {
+  if (u.itemId === FORT_ID) return 0;
+  const d = def(u.itemId);
+  return Math.round(d.price * (isPersonnel(u) ? 0.03 : 0.015));
+}
 
 export const rankOf = (u: Unit) => Math.min(5, Math.floor(u.xp / 20));
 

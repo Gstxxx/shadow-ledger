@@ -20,3 +20,12 @@ export const GROUP_NAMES = [
 ];
 
 export const HOSTAGE_NAMES = ['Dra. Helena Varga', 'Embaixador Paulo Reis', 'Eng. Mira Sandoval', 'Ministro Ade Okoye'];
+
+/** Compradores de Contratos (fictícios). */
+export const BUYERS = [
+  'Ministério da Defesa', 'Guarda Presidencial', 'Milícia Costeira', 'Consórcio Halden', 'Frente de Libertação',
+  'Polícia Federal', 'Serviço Secreto', 'Petroleira Ardent', 'Segurança Privada Orion', 'Governo Provincial',
+  'Clã Mercante Ashur', 'Cooperativa de Mineração', 'Exército Regional', 'Comitê de Reconstrução',
+];
+
+export const TEAM_NAMES = ['Ônix', 'Garoa', 'Quartzo', 'Nevoeiro', 'Siroco', 'Basalto', 'Cinábrio', 'Tufão', 'Grafite', 'Âmbar'];

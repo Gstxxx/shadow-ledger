@@ -1,7 +1,7 @@
-import type { CombatType, MissionDef, Politics, Standing, StationTier, UnitClass } from '../types';
+import type { CombatType, MissionDef, OperationKind, Politics, Posture, StationLevel, ThreatKind, UnitClass } from '../types';
 
 export interface StationSpec {
-  tier: StationTier;
+  level: StationLevel;
   name: string;
   cost: number;
   capacity: number;
@@ -16,12 +16,12 @@ export interface StationSpec {
 const HUMANS: UnitClass[] = ['human', 'lawyer', 'secretary'];
 const GROUND: UnitClass[] = [...HUMANS, 'vehicle', 'antiair'];
 
-export const STATIONS: Record<StationTier, StationSpec> = {
-  1: { tier: 1, name: 'Célula', cost: 250_000, capacity: 2, allows: HUMANS, fort: { legal: 2, urban: 2, army: 2, air: 2 }, income: 3_500, wideIntel: false },
-  2: { tier: 2, name: 'Casa Segura', cost: 800_000, capacity: 4, allows: HUMANS, fort: { legal: 3, urban: 3, army: 3, air: 3 }, income: 9_000, wideIntel: false },
-  3: { tier: 3, name: 'Escritório', cost: 2_500_000, capacity: 6, allows: GROUND, fort: { legal: 4, urban: 4, army: 4, air: 4 }, income: 24_000, wideIntel: false },
-  4: { tier: 4, name: 'Complexo', cost: 6_000_000, capacity: 8, allows: [...GROUND, 'heli'], fort: { legal: 4, urban: 5, army: 5, air: 5 }, income: 52_000, wideIntel: true },
-  5: { tier: 5, name: 'Base', cost: 14_000_000, capacity: 10, allows: [...GROUND, 'heli', 'jet'], fort: { legal: 4, urban: 5, army: 6, air: 6 }, income: 105_000, wideIntel: true },
+export const STATIONS: Record<StationLevel, StationSpec> = {
+  1: { level: 1, name: 'Célula', cost: 250_000, capacity: 2, allows: HUMANS, fort: { legal: 2, urban: 2, army: 2, air: 2 }, income: 3_500, wideIntel: false },
+  2: { level: 2, name: 'Casa Segura', cost: 800_000, capacity: 4, allows: HUMANS, fort: { legal: 3, urban: 3, army: 3, air: 3 }, income: 9_000, wideIntel: false },
+  3: { level: 3, name: 'Escritório', cost: 2_500_000, capacity: 6, allows: GROUND, fort: { legal: 4, urban: 4, army: 4, air: 4 }, income: 24_000, wideIntel: false },
+  4: { level: 4, name: 'Complexo', cost: 6_000_000, capacity: 8, allows: [...GROUND, 'heli'], fort: { legal: 4, urban: 5, army: 5, air: 5 }, income: 52_000, wideIntel: true },
+  5: { level: 5, name: 'Base', cost: 14_000_000, capacity: 10, allows: [...GROUND, 'heli', 'jet'], fort: { legal: 4, urban: 5, army: 6, air: 6 }, income: 105_000, wideIntel: true },
 };
 
 export const POLITICS_LABEL: Record<Politics, string> = {
@@ -42,12 +42,43 @@ export const POLITICS_COLOR: Record<Politics, string> = {
   war: '#ef4444',
 };
 
-export const STANDING_LABEL: Record<Standing, string> = { enemy: 'Inimigo do Estado', neutral: 'Neutro', ally: 'Aliado' };
-export const STANDING_COLOR: Record<Standing, string> = { enemy: '#ef4444', neutral: '#94a3b8', ally: '#22c55e' };
+export const POSTURE_LABEL: Record<Posture, string> = { enemy: 'Inimigo do Estado', neutral: 'Neutro', ally: 'Aliado' };
+export const POSTURE_COLOR: Record<Posture, string> = { enemy: '#e5484d', neutral: '#8b93a1', ally: '#3fb68b' };
 
 export const COMBAT_LABEL: Record<CombatType, string> = { legal: 'Jurídico', urban: 'Urbano', army: 'Militar', air: 'Aéreo' };
 
-export const standingOf = (v: number): Standing => (v <= -30 ? 'enemy' : v >= 30 ? 'ally' : 'neutral');
+/** Postura a partir da Reputação. */
+export const postureOf = (reputation: number): Posture => (reputation <= -30 ? 'enemy' : reputation >= 30 ? 'ally' : 'neutral');
+
+export const THREAT_LABEL: Record<ThreatKind, string> = {
+  raid: 'Batida policial',
+  lawsuit: 'Processo judicial',
+  criminal: 'Ataque criminoso',
+  military: 'Ataque militar',
+};
+
+/** Who is behind each Ameaça: the State (Detido / Interditada) or crime (Sequestrado / perde Nível). */
+export const THREAT_BY_STATE: Record<ThreatKind, boolean> = { raid: true, lawsuit: true, criminal: false, military: true };
+
+export const THREAT_COMBAT: Record<ThreatKind, CombatType> = { raid: 'urban', lawsuit: 'legal', criminal: 'urban', military: 'army' };
+
+export const OPERATION_LABEL: Record<OperationKind, string> = {
+  bank: 'Roubo a banco',
+  tech: 'Roubo de tecnologia',
+  eliminate: 'Eliminação política',
+};
+
+export const OPERATION_COMBAT: Record<OperationKind, CombatType> = { bank: 'urban', tech: 'urban', eliminate: 'army' };
+
+export const OPERATION_BLURB: Record<OperationKind, string> = {
+  bank: 'Esvazia o cofre central. Rende caixa, derruba a Reputação e dispara a Exposição.',
+  tech: 'Invade um laboratório estatal e leva informação classificada como Carga.',
+  eliminate: 'Remove uma figura política: o país entra em instabilidade e os preços de armas sobem.',
+};
+
+/** Hours of travel for a Voo Comercial (fixed speed) and price per person. */
+export const COMMERCIAL_SPEED = 750;
+export const COMMERCIAL_FARE_PER_1000KM = 1_800;
 
 export const MISSIONS: MissionDef[] = [
   {
@@ -58,7 +89,7 @@ export const MISSIONS: MissionDef[] = [
     days: 90,
     cash: 4_000_000,
     startCountry: '840',
-    startStations: [{ countryId: '484', tier: 1 }],
+    startStations: [{ countryId: '484', level: 1 }],
     startUnits: ['cargo0', 'bodyguard', 'bodyguard', 'lawyer1'],
     difficulty: 1,
   },
@@ -70,7 +101,7 @@ export const MISSIONS: MissionDef[] = [
     days: 120,
     cash: 7_000_000,
     startCountry: '380',
-    startStations: [{ countryId: '300', tier: 1 }, { countryId: '818', tier: 2 }],
+    startStations: [{ countryId: '300', level: 1 }, { countryId: '818', level: 2 }],
     startUnits: ['cargo1', 'police', 'soldier', 'soldier', 'lawyer1', 'liaison1'],
     difficulty: 2,
   },
@@ -83,7 +114,7 @@ export const MISSIONS: MissionDef[] = [
     target: 25_000_000,
     cash: 10_000_000,
     startCountry: '756',
-    startStations: [{ countryId: '756', tier: 2 }],
+    startStations: [{ countryId: '756', level: 2 }],
     startUnits: ['cargo1', 'swat', 'bodyguard', 'lawyer2'],
     difficulty: 2,
   },
@@ -95,7 +126,7 @@ export const MISSIONS: MissionDef[] = [
     days: 120,
     cash: 8_000_000,
     startCountry: '818',
-    startStations: [{ countryId: '818', tier: 3 }, { countryId: '566', tier: 1 }],
+    startStations: [{ countryId: '818', level: 3 }, { countryId: '566', level: 1 }],
     startUnits: ['cargo1', 'commando', 'soldier', 'soldier', 'swat', 'technical', 'liaison1'],
     difficulty: 2,
     region: ['AF', 'ME'],
@@ -108,7 +139,7 @@ export const MISSIONS: MissionDef[] = [
     days: 90,
     cash: 6_000_000,
     startCountry: '591',
-    startStations: [{ countryId: '170', tier: 1 }, { countryId: '604', tier: 1 }],
+    startStations: [{ countryId: '170', level: 1 }, { countryId: '604', level: 1 }],
     startUnits: ['cargo1', 'commando', 'swat', 'swat', 'soldier', 'liaison1'],
     difficulty: 2,
     region: ['SA', 'NA'],
@@ -121,7 +152,7 @@ export const MISSIONS: MissionDef[] = [
     days: 100,
     cash: 12_000_000,
     startCountry: '276',
-    startStations: [{ countryId: '276', tier: 2 }, { countryId: '616', tier: 1 }],
+    startStations: [{ countryId: '276', level: 2 }, { countryId: '616', level: 1 }],
     startUnits: ['cargo1', 'commando', 'commando', 'swat', 'apc', 'liaison2', 'lawyer2'],
     difficulty: 3,
     region: ['EU'],
@@ -134,7 +165,7 @@ export const MISSIONS: MissionDef[] = [
     days: 180,
     cash: 20_000_000,
     startCountry: '392',
-    startStations: [{ countryId: '392', tier: 2 }, { countryId: '764', tier: 1 }],
+    startStations: [{ countryId: '392', level: 2 }, { countryId: '764', level: 1 }],
     startUnits: ['cargo2', 'swat', 'swat', 'soldier', 'lawyer2', 'liaison2', 'jet1'],
     difficulty: 3,
   },
