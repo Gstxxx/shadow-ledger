@@ -1,68 +1,227 @@
+@import '@fontsource-variable/archivo/wdth.css';
+@import '@fontsource/ibm-plex-mono/400.css';
+@import '@fontsource/ibm-plex-mono/500.css';
+@import '@fontsource/ibm-plex-mono/600.css';
+
+/* ── Tokens ─────────────────────────────────────────────
+   One accent with one meaning: amber = the agency itself
+   (its Diretor, Estações, selection). Red = hostile. */
 :root {
-  font-family: Inter, system-ui, Avenir, Helvetica, Arial, sans-serif;
-  line-height: 1.5;
-  font-weight: 400;
+  --ink-0: #060708;
+  --ink-1: #0b0d10;
+  --ink-2: #111419;
+  --ink-3: #181c22;
+  --ink-4: #222730;
+  --line: rgba(233, 228, 216, 0.08);
+  --line-2: rgba(233, 228, 216, 0.16);
+  --paper: #e9e4d8;
+  --paper-2: #b9b3a6;
+  --paper-3: #7f7a70;
+  --paper-4: #545049;
+  --amber: #f2a93b;
+  --amber-2: #c98522;
+  --amber-glow: rgba(242, 169, 59, 0.16);
+  --red: #e5484d;
+  --red-glow: rgba(229, 72, 77, 0.16);
+  --green: #46b98d;
+  --blue: #6c9cf0;
+  --violet: #a58cf0;
 
-  color-scheme: light dark;
-  color: rgba(255, 255, 255, 0.87);
-  background-color: #242424;
+  --display: 'Archivo Variable', 'Archivo', system-ui, sans-serif;
+  --mono: 'IBM Plex Mono', ui-monospace, 'SFMono-Regular', monospace;
 
+  --top: 52px;
+  --side: 372px;
+  --r: 3px;
+  --ease-land: cubic-bezier(0.16, 1, 0.3, 1);
+  --ease-leave: cubic-bezier(0.55, 0, 0.9, 0.4);
+
+  color-scheme: dark;
+  font-family: var(--display);
+  font-stretch: 100%;
+  color: var(--paper);
+  background: var(--ink-1);
   font-synthesis: none;
   text-rendering: optimizeLegibility;
   -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
 }
 
-a {
-  font-weight: 500;
-  color: #646cff;
-  text-decoration: inherit;
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
 }
-a:hover {
-  color: #535bf2;
+
+html,
+body,
+#root {
+  margin: 0;
+  height: 100%;
+  overflow: hidden;
+  background: var(--ink-1);
+  overscroll-behavior: none;
 }
 
 body {
-  margin: 0;
-  display: flex;
-  place-items: center;
-  min-width: 320px;
-  min-height: 100vh;
-}
-
-h1 {
-  font-size: 3.2em;
-  line-height: 1.1;
+  -webkit-tap-highlight-color: transparent;
+  user-select: none;
 }
 
 button {
-  border-radius: 8px;
-  border: 1px solid transparent;
-  padding: 0.6em 1.2em;
-  font-size: 1em;
-  font-weight: 500;
-  font-family: inherit;
-  background-color: #1a1a1a;
+  font: inherit;
+  color: inherit;
+  background: none;
+  border: 0;
+  padding: 0;
   cursor: pointer;
-  transition: border-color 0.25s;
-}
-button:hover {
-  border-color: #646cff;
-}
-button:focus,
-button:focus-visible {
-  outline: 4px auto -webkit-focus-ring-color;
+  touch-action: manipulation;
 }
 
-@media (prefers-color-scheme: light) {
-  :root {
-    color: #213547;
-    background-color: #ffffff;
+button:disabled {
+  cursor: not-allowed;
+}
+
+input,
+select {
+  font: inherit;
+  color: inherit;
+}
+
+:focus-visible {
+  outline: 1px solid var(--amber);
+  outline-offset: 2px;
+}
+
+::selection {
+  background: var(--amber);
+  color: var(--ink-0);
+}
+
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+::-webkit-scrollbar-thumb {
+  background: var(--ink-4);
+  border-radius: 3px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.mono {
+  font-family: var(--mono);
+  font-feature-settings: 'zero' 1;
+}
+
+.num {
+  font-family: var(--mono);
+  font-variant-numeric: tabular-nums;
+}
+
+/* ── Buttons ─────────────────────────────────────────── */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  min-height: 40px;
+  padding: 0 14px;
+  border: 1px solid var(--line-2);
+  border-radius: var(--r);
+  background: var(--ink-3);
+  font-size: 13px;
+  font-weight: 560;
+  font-stretch: 105%;
+  letter-spacing: 0.01em;
+  transition:
+    background 0.15s,
+    border-color 0.15s,
+    color 0.15s,
+    transform 0.08s;
+}
+.btn:hover:not(:disabled) {
+  border-color: var(--paper-3);
+  background: var(--ink-4);
+}
+.btn:active:not(:disabled) {
+  transform: translateY(1px);
+}
+.btn:disabled {
+  opacity: 0.38;
+}
+.btn.primary {
+  background: var(--amber);
+  border-color: var(--amber);
+  color: var(--ink-0);
+}
+.btn.primary:hover:not(:disabled) {
+  background: #ffbb52;
+  border-color: #ffbb52;
+}
+.btn.danger {
+  border-color: rgba(229, 72, 77, 0.5);
+  color: #ff8a8d;
+}
+.btn.danger:hover:not(:disabled) {
+  background: var(--red-glow);
+  border-color: var(--red);
+}
+.btn.ghost {
+  background: transparent;
+  border-color: transparent;
+}
+.btn.ghost:hover:not(:disabled) {
+  background: var(--ink-3);
+  border-color: var(--line);
+}
+.btn.sm {
+  min-height: 32px;
+  padding: 0 10px;
+  font-size: 12px;
+}
+.btn.icon {
+  width: 40px;
+  padding: 0;
+}
+
+@media (pointer: coarse) {
+  .btn {
+    min-height: 44px;
   }
-  a:hover {
-    color: #747bff;
+  .btn.sm {
+    min-height: 40px;
   }
-  button {
-    background-color: #f9f9f9;
+  .btn.icon {
+    width: 44px;
+  }
+}
+
+/* ── Rotate notice (ADR 0003: celular em paisagem) ───── */
+.rotate-notice {
+  display: none;
+}
+@media (orientation: portrait) and (max-width: 760px) {
+  .rotate-notice {
+    position: fixed;
+    inset: 0;
+    z-index: 9999;
+    display: grid;
+    place-items: center;
+    gap: 16px;
+    padding: 32px;
+    text-align: center;
+    background: var(--ink-0);
+    color: var(--paper-2);
+    font-size: 15px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    transition-duration: 0.01ms !important;
   }
 }
