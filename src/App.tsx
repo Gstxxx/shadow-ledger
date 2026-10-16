@@ -3,12 +3,9 @@ import { RotateCw, Volume2, VolumeX } from 'lucide-react';
 import { audio } from './audio/engine';
 import { useGameStore } from './store/game';
 import { useSettings } from './store/settings';
-import { Backdrop } from './ui/title/Backdrop';
-import { NewGame } from './ui/title/NewGame';
-import { CreditsScreen, SettingsScreen } from './ui/title/Settings';
-import { TitleScreen } from './ui/title/TitleScreen';
 import { GameScreen } from './ui/game/GameScreen';
 import { Toasts } from './ui/game/Toasts';
+import { ConnectedMainMenu } from './ui/menu';
 import './ui/title/title.css';
 
 export default function App() {
@@ -47,11 +44,7 @@ export default function App() {
 
   return (
     <>
-      {screen !== 'game' && <Backdrop />}
-      {screen === 'title' && <TitleScreen intro={intro} />}
-      {screen === 'newgame' && <NewGame />}
-      {screen === 'settings' && <SettingsScreen />}
-      {screen === 'credits' && <CreditsScreen />}
+      {screen !== 'game' && <ConnectedMainMenu skipIntro={!intro} />}
       {screen === 'game' && <GameScreen />}
       {screen !== 'game' && (
         <button className="btn icon ghost sound-toggle" aria-label={muted ? 'Ligar música' : 'Silenciar música'} onClick={() => setMuted(!muted)}>

@@ -202,9 +202,9 @@ export function MainMenu(props: MainMenuProps) {
       setScreen(to);
       return;
     }
-    // O item escolhido é "lançado": uma tarja passa por cima dele e o dossiê abre por baixo.
+    // O item escolhido é "lançado": uma tarja passa por cima dele enquanto o dossiê já entra (≤ 0,45 s no total).
     gsap.fromTo(bar, { scaleX: 0, transformOrigin: '0% 50%' }, { scaleX: 1, duration: f(6), ease: ease.glide });
-    gsap.delayedCall(f(4), () => setScreen(to));
+    setScreen(to);
   };
 
   const requestClose = useCallback(() => setClosing(true), []);
