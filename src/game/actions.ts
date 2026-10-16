@@ -15,6 +15,7 @@ import {
   VAULT_CAPACITY,
 } from './data/rules';
 import { recordAggression } from './ai/memory';
+import { recordWmdSale } from './tension';
 import { buildForce } from './forces';
 import { fleetSpeed, freeCargo, maxCargo, quoteBuy, quoteSell, rollRecruits, unitsWeight, usedCargo } from './market';
 import { chance } from './rng';
@@ -124,6 +125,11 @@ export function sell(s: GameState, a: Agency, itemId: string, qty: number): Resu
   removeCargo(a, itemId, qty);
   a.cash += q.total;
   c.saturation[itemId] = q.after;
+  const it = ITEMS[itemId];
+  if (it.wmd) recordWmdSale(s, a, itemId, qty, c.id);
+  // Armamento pesado vendido a quem está em guerra empurra a Tensão Global.
+  else if ((c.politics === 'war' || c.politics === 'civilwar') && ['vehicle', 'jet', 'heli', 'antiair', 'arms'].includes(it.cls))
+    addTension(s, Math.min(1, 0.03 * qty));
   tradeExposure(s, a, c.id, q.total, itemId);
   a.stats.trades++;
   seePrices(s, a, c.id);

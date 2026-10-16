@@ -28,7 +28,7 @@ Decisões que o código precisou tomar sem uma resposta no `CONTEXT.md` ou nos A
 
 ## Mundo
 
-- **Tensão Global** começa em 20, decai 0,12/dia; sobe com Golpe (+12), Neutralização (+6), outras Operações (+3), países entrando em guerra (+4) e comércio de **Armas de Destruição em Massa** (+2). O mercado delas abre a partir de 75, só em países de nível 3+ em guerra, guerra civil, guerra fria ou sob sanções. (`state.ts: addTension`, `market.ts: WMD_TENSION`)
+- **Tensão Global**: faixas Baixa (<30), Média (30–55), Alta (55–75) e Topo (≥75, abre as Armas de Destruição em Massa). Começa em 20; decai 0,45/dia menos 0,015 por país em guerra. Sobe com Golpe (+6), Neutralização (+3), outras Operações (+1), país entrando em guerra (+2), armamento pesado vendido a quem está em guerra (+0,03 por unidade, máx. 1 por venda) e venda de ADM (+2). Mais tensão = mais mudanças políticas e Contratos maiores. **Crise Final**: 45 dias acumulados no Topo (o contador desce 2× mais rápido fora dele). Sem provocação do jogador, um ano termina na faixa Baixa/Média (Operador) ou Alta (Diretor). (`tension.ts`)
 - **Traços**: 9 Traços (Sangue-frio, Leal, Modesto, Exigente, Resistente, Aprende rápido, Discreto, Persuasivo, Nervoso). Ao subir de patente (a cada 20 de experiência), a pessoa ganha um Traço positivo. (`data/traits.ts`)
 
 ## Agências Rivais

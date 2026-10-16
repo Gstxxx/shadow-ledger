@@ -1,6 +1,7 @@
 import { create } from 'zustand';
 import type { Result } from '../game/actions';
 import { advance, isBlocked } from '../game/sim';
+import { loadSave } from '../game/save';
 import { newGame, player } from '../game/state';
 import type { Agency, GameOptions, GameState } from '../game/types';
 import { audio } from '../audio/engine';
@@ -64,8 +65,7 @@ function readSave(): GameState | null {
   try {
     const raw = localStorage.getItem(SAVE_KEY);
     if (!raw) return null;
-    const s = JSON.parse(raw) as GameState;
-    return s.version === 3 ? s : null;
+    return loadSave(raw);
   } catch {
     return null;
   }
@@ -98,9 +98,9 @@ export function exportSave(): string | null {
 
 export function importSave(json: string): boolean {
   try {
-    const s = JSON.parse(json) as GameState;
-    if (s.version !== 3 || !Array.isArray(s.agencies)) return false;
-    localStorage.setItem(SAVE_KEY, json);
+    const s = loadSave(json);
+    if (!s) return false;
+    localStorage.setItem(SAVE_KEY, JSON.stringify(s));
     return true;
   } catch {
     return false;

@@ -1,6 +1,7 @@
 import { Menu, PanelLeft, PanelRight, Pause, Play } from 'lucide-react';
 import { daysLeft } from '../../game/objective';
-import { formatClock, formatDate, player, profit } from '../../game/state';
+import { formatClock, formatDate, formatDuration, player, profit } from '../../game/state';
+import { crisisHoursLeft, TENSION_BAND_LABEL, tensionBand } from '../../game/tension';
 import { OBJECTIVE_LABEL } from '../../game/data/rules';
 import { WMD_TENSION } from '../../game/market';
 import { useGame, useGameStore } from '../../store/game';
@@ -45,8 +46,11 @@ export function TopBar({ onMenu, onLeft, onRight }: { onMenu: () => void; onLeft
         <span className="tb-k mono">Lucro</span>
         <span className={`tb-v num ${p >= 0 ? 'pos' : 'neg'}`}>{money(p)}</span>
       </div>
-      <div className="tb-stat hide-sm" title="Tensão Global">
-        <span className="tb-k mono">Tensão Global</span>
+      <div className="tb-stat hide-xs">
+        <span className="tb-k mono">
+          Tensão Global · {TENSION_BAND_LABEL[tensionBand(s.tension)]}
+          {(s.crisis?.hours ?? 0) > 0 && <span className="crisis"> · Crise em {formatDuration(crisisHoursLeft(s))}</span>}
+        </span>
         <span className="tension">
           <span className="tension-fill" style={{ width: `${s.tension}%`, background: s.tension >= WMD_TENSION ? 'var(--red)' : 'var(--paper-2)' }} />
           <span className="tension-mark" style={{ left: `${WMD_TENSION}%` }} />

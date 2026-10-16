@@ -439,7 +439,8 @@ export interface Agency {
 }
 
 export interface GameState {
-  version: 3;
+  /** Versão do formato do save (src/game/save.ts). */
+  saveVersion: number;
   seed: number;
   rng: number;
   /** Relógio contínuo em horas de jogo desde o início. */
@@ -465,4 +466,8 @@ export interface GameState {
   ai?: AiState;
   /** Quando foi gravado pela última vez (ms desde a época Unix). */
   savedAt?: number;
+  /** Crise Final: horas acumuladas com a Tensão Global no Topo. */
+  crisis?: { hours: number };
+  /** Vendas de Armas de Destruição em Massa, para o epílogo da Crise Final. */
+  wmdLedger?: { agencyId: string; itemId: string; qty: number; countryId: string; at: number }[];
 }

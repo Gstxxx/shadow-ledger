@@ -280,7 +280,7 @@ export function resolveCombat(s: GameState, c: CombatState) {
       const team = r.by === 'director' ? undefined : a.teams.find((t) => t.id === r.by);
       addReputation(a, r.countryId, ok ? -20 : -12);
       addExposure(a, r.countryId, (ok ? 35 : 45) * quiet);
-      addTension(s, r.op === 'neutralize' ? 6 : 3);
+      addTension(s, r.op === 'neutralize' ? 3 : 1);
       if (ok) {
         if (r.op === 'bank') {
           const loot = Math.round(cty.level * 450_000 * randRange(s, 0.7, 1.3));
@@ -317,7 +317,7 @@ export function resolveCombat(s: GameState, c: CombatState) {
       break;
     }
     case 'coup': {
-      addTension(s, 12);
+      addTension(s, 6);
       if (ok) {
         a.stats.coups++;
         standing(a, r.countryId).reputation = 75;

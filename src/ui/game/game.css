@@ -1403,3 +1403,14 @@ button.unit-row:hover {
   color: var(--violet);
   border: 1px solid var(--violet);
 }
+
+.crisis {
+  color: var(--red);
+  font-weight: 600;
+  animation: crisis-blink 1.2s steps(2) infinite;
+}
+@keyframes crisis-blink {
+  50% {
+    opacity: 0.45;
+  }
+}

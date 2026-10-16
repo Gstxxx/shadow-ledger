@@ -1,5 +1,6 @@
 // Continuous clock (ADR 0001): advance in small steps, stop at the first Evento.
 import { tickRivals } from './ai/brain';
+import { contractScale, politicsChurn, tickTension } from './tension';
 import { beginCombat } from './combatFlow';
 import { COUNTRY_SEEDS, neighbors } from './data/countries';
 import { ITEM_LIST, ITEMS } from './data/items';
@@ -55,6 +56,7 @@ function tick(s: GameState, dt: number) {
   for (const c of Object.values(s.countries)) recoverSaturation(c, dt);
   for (const a of s.agencies) tickAgency(s, a, dt);
   if (!isBlocked(s)) tickRivals(s);
+  tickTension(s, dt);
 
   for (const k of s.contracts) {
     if (k.status === 'offered' && s.time >= k.offerExpires) k.status = 'expired';
@@ -176,18 +178,20 @@ function dailyWorld(s: GameState) {
   const day = s.lastDay;
   for (const c of Object.values(s.countries)) {
     driftPrices(s, c);
-    if (chance(s, 0.003)) {
+    if (chance(s, politicsChurn(s.tension))) {
       const before = c.politics;
       c.politics = c.couped && chance(s, 0.5) ? 'peace' : rollPolitics(s, c.level);
       if (c.politics !== before) {
         c.couped = false;
-        if (c.politics === 'war' || c.politics === 'civilwar') addTension(s, 4);
+        if (c.politics === 'war' || c.politics === 'civilwar') addTension(s, 2);
         log(s, `${c.name}: o cenário político mudou.`, 'intel', c.id);
       }
     }
     if (day % 7 === Number(c.id) % 7) c.stock = rollStock(s, c, s.tension);
   }
-  addTension(s, -0.12);
+  // Decai devagar em tempo de paz; guerras abertas seguram a tensão.
+  const wars = Object.values(s.countries).filter((c) => c.politics === 'war' || c.politics === 'civilwar').length;
+  addTension(s, -0.45 + wars * 0.015);
   const me = player(s);
   if (s.group && !s.group.defeated && intelCountries(me).has(s.group.countryId)) {
     s.group.seenAt = { countryId: s.group.countryId, at: s.time };
@@ -272,7 +276,7 @@ function rollContracts(s: GameState) {
   );
   if (!items.length) return;
   const it = pick(s, items);
-  const budget = randRange(s, 0.5, 3.5) * 1_000_000 * (0.6 + c.level * 0.2);
+  const budget = randRange(s, 0.5, 3.5) * 1_000_000 * (0.6 + c.level * 0.2) * contractScale(s.tension);
   const qty = Math.max(1, Math.min(25, Math.round(budget / it.price)));
   const premium = randRange(s, 1.25, 1.6);
   s.uidCounter += 1;

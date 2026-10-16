@@ -2,6 +2,7 @@ import { COUNTRY_SEEDS, distanceKm, neighbors } from './data/countries';
 import { GROUP_NAMES, HOSTAGE_NAMES, PLAYER_AGENCY_NAMES } from './data/names';
 import { postureOf, PRESETS, STATIONS } from './data/rules';
 import { setupRivals } from './ai/setup';
+import { SAVE_VERSION } from './save';
 import { buildForce } from './forces';
 import { driftPrices, midPrice, rollStock } from './market';
 import { pick, randInt, randRange, weighted } from './rng';
@@ -223,7 +224,9 @@ export function newGame(opts: GameOptions): GameState {
   const preset = opts.preset ?? PRESETS[0];
   const seed = opts.seed ?? Math.floor(Math.random() * 2 ** 31);
   const s: GameState = {
-    version: 3,
+    saveVersion: SAVE_VERSION,
+    crisis: { hours: 0 },
+    wmdLedger: [],
     seed,
     rng: seed,
     time: 0,
