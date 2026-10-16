@@ -188,6 +188,10 @@ _Avoid_: WMD, ADM
 Medidor único do mundo inteiro, que sobe com guerras, golpes e operações hostis (da agência e das **Agências Rivais**) e libera o mercado de **Armas de Destruição em Massa** quando chega ao topo.
 _Avoid_: DEFCON, caos, instabilidade (que é uma situação política de um país)
 
+**Crise Final**:
+Fim de partida em que, após a **Tensão Global** ficar no topo por tempo demais, um país usa uma **Arma de Destruição em Massa**. Todas as agências perdem, inclusive a do jogador.
+_Avoid_: apocalipse, game over (genérico), guerra nuclear
+
 **Voo Comercial**:
 Transporte pago por pessoa, de velocidade fixa, que uma **Equipe** formada só por **Pessoal** pode usar sem depender da **Frota**.
 
