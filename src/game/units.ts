@@ -34,10 +34,42 @@ export function nextUid(s: MintCtx, prefix = 'u'): string {
 
 export const isPersonnelItem = (it: ItemDef) => it.cls === 'human' || it.cls === 'lawyer' || it.cls === 'influence';
 
+/** Names already in use by living Pessoal, when the context is a full game. */
+function namesInUse(s: MintCtx): Set<string> {
+  const g = s as MintCtx & { agencies?: { escort: Unit[]; fleet: Unit[]; stations: { units: Unit[]; detained: Unit[] }[]; teams: { units: Unit[] }[] }[] };
+  const set = new Set<string>();
+  for (const a of g.agencies ?? []) {
+    for (const u of a.escort) set.add(u.name);
+    for (const st of a.stations) for (const u of [...st.units, ...st.detained]) set.add(u.name);
+    for (const t of a.teams) for (const u of t.units) set.add(u.name);
+  }
+  return set;
+}
+
+const INITIALS = 'ABCDEFGHJKLMNPRSTV';
+
+/** A personal name nobody alive in the game already has: new draw, then a middle initial, then a suffix. */
+function uniquePersonName(s: MintCtx): string {
+  const used = namesInUse(s);
+  for (let i = 0; i < 12; i++) {
+    const n = `${pick(s, FIRST_NAMES)} ${pick(s, LAST_NAMES)}`;
+    if (!used.has(n)) return n;
+  }
+  const first = pick(s, FIRST_NAMES);
+  const last = pick(s, LAST_NAMES);
+  for (const ch of INITIALS) {
+    const n = `${first} ${ch}. ${last}`;
+    if (!used.has(n)) return n;
+  }
+  let k = 2;
+  while (used.has(`${first} ${last} ${k}`)) k++;
+  return `${first} ${last} ${k}`;
+}
+
 export function makeUnit(s: MintCtx, itemId: string, paid?: number): Unit {
   const it = ITEMS[itemId];
   const human = isPersonnelItem(it);
-  const name = human ? `${pick(s, FIRST_NAMES)} ${pick(s, LAST_NAMES)}` : `${pick(s, CALLSIGNS)}-${randInt(s, 10, 99)}`;
+  const name = human ? uniquePersonName(s) : `${pick(s, CALLSIGNS)}-${randInt(s, 10, 99)}`;
   const traits: TraitId[] = [];
   if (human) {
     const n = chance(s, 0.4) ? 2 : 1;

@@ -11,6 +11,14 @@ import type {
 } from './types';
 import { canFight, def, FORT_ID, knockOut, makeFort, nextUid, strOf, traitMult, usesConvert } from './units';
 import type { MintCtx } from './units';
+import { M, say } from './msg';
+import type { Msg } from './msg';
+
+/** Linha do log do Combate: texto pt em `log` e a Msg em `logMsg` (mesmo índice). */
+function line(c: CombatState, m: Msg) {
+  c.log.push(say(m));
+  (c.logMsg ??= []).push(m);
+}
 
 export const ROWS = 3;
 export const COLS = 8;
@@ -76,6 +84,7 @@ export interface CombatSetup {
   type: CombatType;
   reason: CombatReason;
   title: string;
+  titleMsg?: Msg;
   player: Unit[];
   enemy: Unit[];
   tactic: Tactic;
@@ -94,6 +103,7 @@ export function createCombat(s: MintCtx, setup: CombatSetup): CombatState {
     type: setup.type,
     reason: setup.reason,
     title: setup.title,
+    ...(setup.titleMsg ? { titleMsg: setup.titleMsg } : {}),
     playerDefends: setup.playerDefends,
     tactic: setup.tactic,
     turn: 0,
@@ -105,6 +115,7 @@ export function createCombat(s: MintCtx, setup: CombatSetup): CombatState {
     reserve: clone(setup.player.filter((u) => canFight(u, setup.type))),
     reach: Array(ROWS).fill(DEPLOY_COLS - 1),
     log: [],
+    logMsg: [],
     fx: [],
     downed: [],
     turned: [],
@@ -121,7 +132,7 @@ export function createCombat(s: MintCtx, setup: CombatSetup): CombatState {
     const skip = Math.min(enemy.length - 1, Math.floor(enemy.length * mod.bypass));
     if (skip > 0) {
       enemy = enemy.slice(0, enemy.length - skip);
-      c.log.push(`Infiltração: ${skip} posição(ões) hostil(is) contornada(s) antes do contato.`);
+      line(c, M('msg.fight.infiltration', { n: skip }));
     }
   }
   const slots: [number, number][] = [];
@@ -131,12 +142,12 @@ export function createCombat(s: MintCtx, setup: CombatSetup): CombatState {
     c.units.push({ key: u.uid, side: 'e', unit: u, row, col });
   });
 
-  if (setup.fort && c.reserve.length === 0) {
+  if (setup.fort) {
     for (let row = 0; row < ROWS; row++) {
       const f = makeFort(s, setup.fort, setup.type);
       c.units.push({ key: f.uid, side: 'p', unit: f, row, col: 0 });
     }
-    c.log.push('Sem Unidades no local: as defesas fixas da Estação seguram a linha.');
+    if (c.reserve.length === 0) line(c, M('msg.fight.noUnits'));
   }
   return c;
 }
@@ -207,6 +218,11 @@ function damage(u: Unit, type: CombatType) {
   else u.hp[type] = Math.max(0, u.hp[type] - 1);
 }
 
+function credit(c: CombatState, ref: CombatUnitRef) {
+  const all = (c.credits ??= {});
+  return (all[ref.unit.uid] ??= { kos: 0, converts: 0 });
+}
+
 function duel(s: RngHolder, c: CombatState, a: CombatUnitRef, b: CombatUnitRef) {
   const mod = tacticMod(c.tactic, c.type);
   for (let i = 0; i < EXCHANGES; i++) {
@@ -223,9 +239,12 @@ function duel(s: RngHolder, c: CombatState, a: CombatUnitRef, b: CombatUnitRef) 
       if (chance(s, Math.min(0.9, (0.45 * boost * conv) / (conv + strOf(l.unit, c.type) || 1)))) {
         c.units = c.units.filter((u) => u !== l);
         c.fx.push({ kind: 'convert', key: l.key, row: l.row, col: l.col });
-        c.log.push(`${w.unit.name} convenceu ${l.unit.name} a trocar de lado.`);
+        line(c, M('msg.fight.convinced', { unit: w.unit.name, target: l.unit.name }));
         gainXp(w.unit, 6);
-        if (l.side === 'e') c.converted.push(l.unit);
+        if (l.side === 'e') {
+          c.converted.push(l.unit);
+          credit(c, w).converts++;
+        }
         else if (l.unit.itemId !== FORT_ID) c.turned.push(l.unit.uid);
         return;
       }
@@ -236,8 +255,9 @@ function duel(s: RngHolder, c: CombatState, a: CombatUnitRef, b: CombatUnitRef) 
     if (strOf(l.unit, c.type) <= 0) {
       c.units = c.units.filter((u) => u !== l);
       c.fx.push({ kind: 'down', key: l.key, row: l.row, col: l.col });
-      c.log.push(`${w.unit.name} tirou ${l.unit.name} de combate.`);
+      line(c, M('msg.fight.downed', { unit: w.unit.name, target: l.unit.name }));
       if (l.side === 'p' && l.unit.itemId !== FORT_ID) c.downed.push(l.unit.uid);
+      if (w.side === 'p') credit(c, w).kos++;
       gainXp(w.unit, 6);
       return;
     }
@@ -276,7 +296,7 @@ export function stepCombat(s: RngHolder, c: CombatState) {
           if (!front(c, row, 'e')) {
             c.result = 'win';
             c.fx.push({ kind: 'breach', key: p.key, row, col: p.col });
-            c.log.push(`${p.unit.name} rompeu a linha hostil!`);
+            line(c, M('msg.fight.breach', { unit: p.unit.name }));
           }
           return;
         }
@@ -295,7 +315,7 @@ export function stepCombat(s: RngHolder, c: CombatState) {
           if (!front(c, row, 'p')) {
             c.result = 'lose';
             c.fx.push({ kind: 'breach', key: e.key, row, col: e.col });
-            c.log.push(`${e.unit.name} alcançou o alvo.`);
+            line(c, M('msg.fight.reached', { unit: e.unit.name }));
           }
           return;
         }
@@ -314,13 +334,13 @@ export function stepCombat(s: RngHolder, c: CombatState) {
     const playerLeft = c.units.some((u) => u.side === 'p') || c.reserve.length > 0;
     if (!enemiesLeft) {
       c.result = 'win';
-      c.log.push('Todas as forças hostis foram neutralizadas.');
+      line(c, M('msg.fight.win'));
     } else if (!playerLeft) {
       c.result = 'lose';
-      c.log.push('Não sobrou ninguém para segurar a linha.');
+      line(c, M('msg.fight.lose'));
     } else if (c.turn >= c.maxTurns) {
       c.result = 'draw';
-      c.log.push(c.playerDefends ? 'A linha aguentou até o fim.' : 'O tempo acabou antes de tomar o alvo.');
+      line(c, M(c.playerDefends ? 'msg.fight.drawDefend' : 'msg.fight.drawAttack'));
     }
   }
 }

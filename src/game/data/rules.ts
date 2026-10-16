@@ -18,11 +18,11 @@ const HUMANS: UnitClass[] = ['human', 'lawyer', 'influence'];
 const GROUND: UnitClass[] = [...HUMANS, 'vehicle', 'antiair'];
 
 export const STATIONS: Record<StationLevel, StationSpec> = {
-  1: { level: 1, name: 'Célula', cost: 250_000, capacity: 2, allows: HUMANS, fort: { legal: 2, urban: 2, army: 2, air: 2 }, income: 3_500, wideIntel: false },
-  2: { level: 2, name: 'Casa Segura', cost: 800_000, capacity: 4, allows: HUMANS, fort: { legal: 3, urban: 3, army: 3, air: 3 }, income: 9_000, wideIntel: false },
-  3: { level: 3, name: 'Escritório', cost: 2_500_000, capacity: 6, allows: GROUND, fort: { legal: 4, urban: 4, army: 4, air: 4 }, income: 24_000, wideIntel: false },
-  4: { level: 4, name: 'Complexo', cost: 6_000_000, capacity: 8, allows: [...GROUND, 'heli'], fort: { legal: 4, urban: 5, army: 5, air: 5 }, income: 52_000, wideIntel: true },
-  5: { level: 5, name: 'Base', cost: 14_000_000, capacity: 10, allows: [...GROUND, 'heli', 'jet'], fort: { legal: 4, urban: 5, army: 6, air: 6 }, income: 105_000, wideIntel: true },
+  1: { level: 1, name: 'Célula', cost: 250_000, capacity: 2, allows: HUMANS, fort: { legal: 4, urban: 4, army: 4, air: 4 }, income: 5_000, wideIntel: false },
+  2: { level: 2, name: 'Casa Segura', cost: 800_000, capacity: 4, allows: HUMANS, fort: { legal: 5, urban: 5, army: 5, air: 5 }, income: 13_000, wideIntel: false },
+  3: { level: 3, name: 'Escritório', cost: 2_500_000, capacity: 6, allows: GROUND, fort: { legal: 5, urban: 6, army: 6, air: 6 }, income: 32_000, wideIntel: false },
+  4: { level: 4, name: 'Complexo', cost: 6_000_000, capacity: 8, allows: [...GROUND, 'heli'], fort: { legal: 6, urban: 7, army: 7, air: 7 }, income: 64_000, wideIntel: true },
+  5: { level: 5, name: 'Base', cost: 14_000_000, capacity: 10, allows: [...GROUND, 'heli', 'jet'], fort: { legal: 6, urban: 7, army: 8, air: 8 }, income: 120_000, wideIntel: true },
 };
 
 export const POLITICS_LABEL: Record<Politics, string> = {

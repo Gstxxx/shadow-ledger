@@ -1,8 +1,7 @@
 // Tensão Global: um medidor do mundo inteiro, com faixas e a Crise Final.
-import { ITEMS } from './data/items';
 import { WMD_TENSION } from './market';
 import { checkObjective } from './objective';
-import { log, notify, player } from './state';
+import { log, M, notify, player, ref, say } from './state';
 import { isLocked } from './tutorial/locks';
 import type { Agency, GameState } from './types';
 
@@ -62,8 +61,8 @@ export function tickTension(s: GameState, dt: number) {
       s,
       player(s),
       'intel',
-      'Tensão Global no Topo',
-      `O mercado de Armas de Destruição em Massa está aberto. Se a tensão ficar no Topo por ${CRISIS_DAYS} dias, um país usa uma.`,
+      M('msg.tension.topTitle'),
+      M('msg.tension.topBody', { days: CRISIS_DAYS }),
       'warn',
     );
   }
@@ -76,17 +75,17 @@ function finalCrisis(s: GameState) {
   const lines = s.agencies
     .map((a) => {
       const sold = ledger.filter((x) => x.agencyId === a.id);
-      if (!sold.length) return `${a.name}: nada vendido.`;
-      const parts = sold.map((x) => `${x.qty}× ${ITEMS[x.itemId]?.name ?? x.itemId} a ${s.countries[x.countryId]?.name ?? '?'}`);
-      return `${a.name}: ${parts.join('; ')}.`;
+      if (!sold.length) return say(M('msg.tension.ledgerNone', { agency: a.name }));
+      const parts = sold.map((x) =>
+        say(M('msg.tension.ledgerSale', { qty: x.qty, item: ref.item(x.itemId), country: s.countries[x.countryId] ? ref.country(x.countryId) : '?' })),
+      );
+      return say(M('msg.tension.ledgerLine', { agency: a.name, sales: parts.join('; ') }));
     })
     .join(' ');
-  log(s, `Crise Final. ${lines}`, 'bad');
-  s.over = {
-    won: false,
-    reason: `A Tensão Global ficou no Topo tempo demais e uma arma foi usada. Ninguém vence. ${lines}`,
-    score: 0,
-  };
-  notify(s, player(s), 'objective', 'Crise Final', s.over.reason, 'bad');
+  // `lines` (lista por agência) vai como texto pt: não há Ref de lista (ver i18n-engine-missing.md).
+  log(s, M('msg.tension.finalCrisisLog', { lines }), 'bad');
+  const reason = M('msg.tension.finalCrisisReason', { lines });
+  s.over = { won: false, reason: say(reason), reasonMsg: reason, score: 0 };
+  notify(s, player(s), 'objective', M('msg.tension.finalCrisisTitle'), reason, 'bad');
   checkObjective(s);
 }

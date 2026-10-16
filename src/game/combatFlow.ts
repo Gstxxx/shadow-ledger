@@ -3,8 +3,7 @@ import { addCargo, addLot, lotId } from './cargo';
 import { applyCasualties, autoDeploy, createCombat, estimateWin, runToEnd, succeeded, TACTICS } from './combat';
 import type { CombatSetup } from './combat';
 import { ITEMS, STEAL_TABLE } from './data/items';
-import { OPERATION_LABEL, STATIONS, THREAT_BY_STATE, THREAT_LABEL } from './data/rules';
-import { TRAITS } from './data/traits';
+import { STATIONS, THREAT_BY_STATE } from './data/rules';
 import { checkObjective } from './objective';
 import { pick, randInt, randRange } from './rng';
 import {
@@ -12,16 +11,20 @@ import {
   addReputation,
   addTension,
   agencyById,
+  M,
   note,
   notify,
   player,
+  ref,
   standing,
   stationIn,
 } from './state';
 import type { Agency, CombatSetupData, CombatState, ForceSource, GameState, StationLevel, Tactic, Unit } from './types';
 import { def, promote, restore, traitMult } from './units';
+import type { Msg } from './msg';
 
-const money = (n: number) => `US$ ${Math.round(n).toLocaleString('pt-BR')}`;
+/** Título de Combate como parâmetro: a Msg quando há, senão o texto pt. */
+const titleParam = (x: { title: string; titleMsg?: Msg }) => (x.titleMsg ? ref.msg(x.titleMsg) : x.title);
 
 export function forceUnits(a: Agency, src: ForceSource): Unit[] {
   switch (src.kind) {
@@ -58,6 +61,7 @@ function toSetup(a: Agency, data: CombatSetupData): Omit<CombatSetup, 'tactic'> 
     type: data.type,
     reason: data.reason,
     title: data.title,
+    titleMsg: data.titleMsg,
     enemy: data.enemy,
     player: data.sources.flatMap((src) => forceUnits(a, src)),
     playerDefends: data.playerDefends,
@@ -89,7 +93,7 @@ export function negotiateCost(s: GameState, data: CombatSetupData): number {
 export function beginCombat(s: GameState, a: Agency, data: CombatSetupData) {
   if (data.directorPresent && a.isPlayer) {
     s.pendingCombat = { agencyId: a.id, setup: data, preview: previewAll(s, a, data) };
-    notify(s, a, 'engage', data.title, 'Escolha a Tática. A Prévia mostra a chance estimada de cada uma.', 'warn', data.reason.countryId);
+    notify(s, a, 'engage', data.titleMsg ?? data.title, M('msg.combat.chooseTactic'), 'warn', data.reason.countryId);
     return;
   }
   // Rivals skip the Prévia (it costs ~50 simulated fights); the player's automatic fights still use it.
@@ -128,7 +132,7 @@ export function abortPending(s: GameState): boolean {
   if (!pend || pend.setup.reason.kind === 'threat' || pend.setup.reason.kind === 'group') return false;
   s.pendingCombat = undefined;
   s.events = s.events.filter((e) => e.kind !== 'engage');
-  note(s, player(s), `${pend.setup.title}: abortado antes do contato.`, 'info', pend.setup.reason.countryId);
+  note(s, player(s), M('msg.combat.aborted', { title: titleParam(pend.setup) }), 'info', pend.setup.reason.countryId);
   return true;
 }
 
@@ -144,7 +148,7 @@ export function abortLive(s: GameState): boolean {
   const c = s.combat!;
   s.combat = undefined;
   s.events = s.events.filter((e) => e.kind !== 'engage');
-  note(s, agencyById(s, c.agencyId) ?? player(s), `${c.title}: abortado antes do contato.`, 'info', c.reason.countryId);
+  note(s, agencyById(s, c.agencyId) ?? player(s), M('msg.combat.aborted', { title: titleParam(c) }), 'info', c.reason.countryId);
   return true;
 }
 
@@ -165,7 +169,7 @@ export function captureDirector(s: GameState, a: Agency, byState: boolean, count
   const c = s.countries[countryId];
   if (s.options.hardcore && a.isPlayer) {
     a.director.status = 'dead';
-    notify(s, a, 'director', 'Diretor morto', `O Diretor caiu em ${c.name}. No Modo Hardcore não há segunda chance.`, 'bad', countryId);
+    notify(s, a, 'director', M('msg.combat.directorDeadTitle'), M('msg.combat.directorDeadBody', { country: ref.country(countryId) }), 'bad', countryId);
     checkObjective(s);
     return;
   }
@@ -174,22 +178,22 @@ export function captureDirector(s: GameState, a: Agency, byState: boolean, count
     a.director.status = 'detained';
     a.director.releaseAt = s.time + randInt(s, 6, 14) * 24;
     a.director.price = Math.round(150_000 * c.level * (1 + s.options.difficulty * 0.3));
-    notify(s, a, 'director', 'Diretor Detido', `As autoridades de ${c.name} prenderam o Diretor. Pague a fiança ou espere a soltura.`, 'bad', countryId);
+    notify(s, a, 'director', M('msg.combat.directorDetainedTitle'), M('msg.combat.directorDetainedBody', { country: ref.country(countryId) }), 'bad', countryId);
   } else {
     a.director.status = 'kidnapped';
     a.director.releaseAt = undefined;
     a.director.price = Math.round(400_000 * c.level * (1 + s.options.difficulty * 0.4));
-    notify(s, a, 'director', 'Diretor Sequestrado', `Criminosos levaram o Diretor em ${c.name}. Pague o resgate ou mande uma Equipe.`, 'bad', countryId);
+    notify(s, a, 'director', M('msg.combat.directorKidnappedTitle'), M('msg.combat.directorKidnappedBody', { country: ref.country(countryId) }), 'bad', countryId);
   }
 }
 
 export function stationLosesLevel(s: GameState, a: Agency, countryId: string) {
   const st = stationIn(a, countryId);
   if (!st) return;
-  const name = s.countries[countryId].name;
+  const country = ref.country(countryId);
   if (st.level === 1) {
     a.stations = a.stations.filter((x) => x !== st);
-    notify(s, a, 'station', 'Célula destruída', `A Célula em ${name} foi destruída, com o Cofre e as Unidades que sobraram.`, 'bad', countryId);
+    notify(s, a, 'station', M('msg.combat.cellDestroyedTitle'), M('msg.combat.cellDestroyedBody', { country }), 'bad', countryId);
     return;
   }
   st.level = (st.level - 1) as StationLevel;
@@ -198,14 +202,17 @@ export function stationLosesLevel(s: GameState, a: Agency, countryId: string) {
   const keep = st.units.filter((u) => spec.allows.includes(def(u.itemId).cls)).slice(0, spec.capacity);
   const lost = st.units.length - keep.length;
   st.units = keep;
-  notify(s, a, 'station', 'Estação rebaixada', `A Estação em ${name} caiu para ${spec.name}${lost ? ` e perdeu ${lost} Unidade(s)` : ''}.`, 'bad', countryId);
+  const body = lost
+    ? M('msg.combat.stationDowngradedLostBody', { country, station: ref.station(st.level), lost })
+    : M('msg.combat.stationDowngradedBody', { country, station: ref.station(st.level) });
+  notify(s, a, 'station', M('msg.combat.stationDowngradedTitle'), body, 'bad', countryId);
 }
 
 function interdict(s: GameState, a: Agency, countryId: string) {
   const st = stationIn(a, countryId);
   if (!st) return;
   const c = s.countries[countryId];
-  const fine = Math.round(STATIONS[st.level].cost * 0.35 + 120_000 * c.level);
+  const fine = Math.round(STATIONS[st.level].cost * 0.35 + 40_000 * c.level);
   st.interdicted = { fine, since: s.time };
   st.detained.push(...st.units);
   st.units = [];
@@ -213,8 +220,8 @@ function interdict(s: GameState, a: Agency, countryId: string) {
     s,
     a,
     'station',
-    'Estação Interditada',
-    `O Estado apreendeu a Estação em ${c.name}; ${st.detained.length} Unidade(s) Detida(s). Multa: ${money(fine)}.`,
+    M('msg.combat.stationSeizedTitle'),
+    M('msg.combat.stationSeizedBody', { country: ref.country(countryId), n: st.detained.length, fine: ref.money(fine) }),
     'bad',
     countryId,
   );
@@ -247,9 +254,17 @@ export function resolveCombat(s: GameState, c: CombatState) {
     involved.push(...kept);
     setForceUnits(a, src, kept);
   }
+  const fought = new Set([...c.units.filter((x) => x.side === 'p').map((x) => x.unit), ...c.downed.map((uid) => ({ uid }))].map((u) => u.uid));
   for (const u of involved) {
+    if (fought.has(u.uid) && u.itemId !== '__fort') {
+      const rec = (u.record ??= { combats: 0, wins: 0, kos: 0, converts: 0, joinedAt: 0 });
+      rec.combats++;
+      if (ok) rec.wins++;
+      rec.kos += c.credits?.[u.uid]?.kos ?? 0;
+      rec.converts += c.credits?.[u.uid]?.converts ?? 0;
+    }
     const t = promote(s, u);
-    if (t) note(s, a, `${u.name} subiu de patente e ganhou o Traço ${TRAITS[t].name}.`, 'good');
+    if (t) note(s, a, M('msg.combat.promoted', { unit: u.name, trait: ref.trait(t) }), 'good');
   }
   // Converted enemies join the first force on the field.
   if (c.converted.length && c.sources.length) {
@@ -260,17 +275,15 @@ export function resolveCombat(s: GameState, c: CombatState) {
       return v;
     });
     setForceUnits(a, first, [...forceUnits(a, first), ...joined]);
-    note(s, a, `${joined.length} Unidade(s) inimiga(s) convertida(s) agora trabalham para a agência.`, 'good');
+    note(s, a, M('msg.combat.convertedJoin', { n: joined.length }), 'good');
   }
   if (ok) a.stats.combatsWon++;
   else a.stats.combatsLost++;
 
   const r = c.reason;
   const cty = s.countries[r.countryId];
-  const parts: string[] = [];
-  if (downedTotal) parts.push(`${downedTotal} fora de ação (Feridas/Danificadas)`);
-  if (lostTotal) parts.push(`${lostTotal} convertida(s) pelo outro lado`);
-  const casualty = parts.length ? ` ${parts.join('; ')}.` : '';
+  const casualty = ref.casualty(downedTotal, lostTotal);
+  const country = ref.country(r.countryId);
   const quiet = discretion(involved);
 
   switch (r.kind) {
@@ -278,7 +291,7 @@ export function resolveCombat(s: GameState, c: CombatState) {
       a.threats = a.threats.filter((t) => t.id !== r.threatId);
       const byState = THREAT_BY_STATE[r.threatKind];
       if (ok) {
-        notify(s, a, 'combat', `${THREAT_LABEL[r.threatKind]}: defesa bem-sucedida`, `A agência segurou a posição em ${cty.name}.${casualty}`, 'good', r.countryId);
+        notify(s, a, 'combat', M('msg.combat.threatWonTitle', { threat: ref.threat(r.threatKind) }), M('msg.combat.threatWonBody', { country, casualty }), 'good', r.countryId);
         addReputation(a, r.countryId, byState ? -4 : 3);
         addExposure(a, r.countryId, 6);
       } else {
@@ -286,7 +299,7 @@ export function resolveCombat(s: GameState, c: CombatState) {
           if (r.threatKind === 'raid' || r.threatKind === 'lawsuit') interdict(s, a, r.countryId);
           else stationLosesLevel(s, a, r.countryId);
         } else {
-          notify(s, a, 'combat', `${THREAT_LABEL[r.threatKind]}: derrota`, `A Escolta não segurou o ataque em ${cty.name}.${casualty}`, 'bad', r.countryId);
+          notify(s, a, 'combat', M('msg.combat.threatLostTitle', { threat: ref.threat(r.threatKind) }), M('msg.combat.threatLostBody', { country, casualty }), 'bad', r.countryId);
         }
         if (c.directorPresent) captureDirector(s, a, byState, r.countryId);
       }
@@ -300,10 +313,10 @@ export function resolveCombat(s: GameState, c: CombatState) {
       addTension(s, r.op === 'neutralize' ? 3 : 1);
       if (ok) {
         if (r.op === 'bank') {
-          const loot = Math.round(cty.level * 450_000 * randRange(s, 0.7, 1.3));
+          const loot = Math.round(cty.level * 150_000 * randRange(s, 0.7, 1.3));
           a.cash += loot;
           cty.bankRobbedAt = s.time;
-          notify(s, a, 'combat', 'Roubo a banco concluído', `O cofre central em ${cty.name} rendeu ${money(loot)}.${casualty}`, 'good', r.countryId);
+          notify(s, a, 'combat', M('msg.combat.bankTitle'), M('msg.combat.bankBody', { country, loot: ref.money(loot), casualty }), 'good', r.countryId);
         } else if (r.op === 'tech') {
           const itemId = stealByLevel(cty.level);
           const paid = Math.round(ITEMS[itemId].price * 0.5);
@@ -316,19 +329,19 @@ export function resolveCombat(s: GameState, c: CombatState) {
             s,
             a,
             'combat',
-            'Roubo de tecnologia concluído',
+            M('msg.combat.techTitle'),
             team
-              ? `${team.name} capturou ${ITEMS[itemId].name} em ${cty.name}. Venda agora ao Receptador ou leve a um Cofre ou ao Diretor.${casualty}`
-              : `${ITEMS[itemId].name} capturado em ${cty.name} e embarcado na Frota.${casualty}`,
+              ? M('msg.combat.techBodyTeam', { team: team.name, item: ref.item(itemId), country, casualty })
+              : M('msg.combat.techBodyDirector', { item: ref.item(itemId), country, casualty }),
             'good',
             r.countryId,
           );
         } else {
           cty.politics = pick(s, ['disorder', 'civilwar'] as const);
-          notify(s, a, 'combat', 'Neutralização concluída', `O alvo saiu de cena. ${cty.name} entra em instabilidade e as armas encarecem.${casualty}`, 'good', r.countryId);
+          notify(s, a, 'combat', M('msg.combat.neutralizeTitle'), M('msg.combat.neutralizeBody', { country, casualty }), 'good', r.countryId);
         }
       } else {
-        notify(s, a, 'combat', `${OPERATION_LABEL[r.op]} fracassou`, `A ação em ${cty.name} deu errado.${casualty}`, 'bad', r.countryId);
+        notify(s, a, 'combat', M('msg.combat.opFailedTitle', { op: ref.op(r.op) }), M('msg.combat.opFailedBody', { country, casualty }), 'bad', r.countryId);
         if (c.directorPresent) captureDirector(s, a, true, r.countryId);
       }
       break;
@@ -341,12 +354,12 @@ export function resolveCombat(s: GameState, c: CombatState) {
         cty.politics = 'disorder';
         cty.couped = true;
         addExposure(a, r.countryId, 50);
-        const bonus = cty.level * 800_000;
+        const bonus = cty.level * 400_000;
         a.cash += bonus;
-        notify(s, a, 'combat', 'Golpe vitorioso', `O novo governo de ${cty.name} deve tudo à agência: Aliado, e um "agradecimento" de ${money(bonus)}.`, 'good', r.countryId);
+        notify(s, a, 'combat', M('msg.combat.coupWonTitle'), M('msg.combat.coupWonBody', { country, bonus: ref.money(bonus) }), 'good', r.countryId);
       } else {
         standing(a, r.countryId).reputation = -80;
-        notify(s, a, 'combat', 'Golpe fracassado', `O governo de ${cty.name} resistiu e agora caça a agência.${casualty}`, 'bad', r.countryId);
+        notify(s, a, 'combat', M('msg.combat.coupLostTitle'), M('msg.combat.coupLostBody', { country, casualty }), 'bad', r.countryId);
         if (c.directorPresent) captureDirector(s, a, true, r.countryId);
       }
       break;
@@ -359,13 +372,16 @@ export function resolveCombat(s: GameState, c: CombatState) {
           s,
           a,
           'objective',
-          g.hostage ? 'Refém resgatado' : 'Grupo eliminado',
-          g.hostage ? `${g.hostage} está a salvo. ${g.name} foi desmantelado.` : `${g.name} deixou de existir em ${cty.name}.`,
+          M(g.hostage ? 'msg.combat.hostageFreedTitle' : 'msg.combat.groupDestroyedTitle'),
+          g.hostage
+            ? M('msg.combat.hostageFreedBody', { hostage: g.hostage, group: g.name })
+            : M('msg.combat.groupDestroyedBody', { group: g.name, country }),
           'good',
           r.countryId,
         );
       } else {
-        notify(s, a, 'combat', 'Confronto perdido', `${g?.name ?? 'O grupo'} escapou em ${cty.name}.${casualty}`, 'bad', r.countryId);
+        const group = g?.name ?? ref.msg(M('msg.combat.theGroup'));
+        notify(s, a, 'combat', M('msg.combat.groupLostTitle'), M('msg.combat.groupLostBody', { group, country, casualty }), 'bad', r.countryId);
         if (c.directorPresent) captureDirector(s, a, false, r.countryId);
       }
       break;
@@ -374,10 +390,10 @@ export function resolveCombat(s: GameState, c: CombatState) {
       const st = stationIn(a, r.countryId);
       if (ok) {
         liftInterdiction(a, r.countryId);
-        notify(s, a, 'station', 'Recurso vencido', `A Justiça de ${cty.name} devolveu a Estação e liberou as Unidades Detidas.`, 'good', r.countryId);
+        notify(s, a, 'station', M('msg.combat.appealWonTitle'), M('msg.combat.appealWonBody', { country }), 'good', r.countryId);
       } else if (st?.interdicted) {
         st.interdicted.fine = Math.round(st.interdicted.fine * 1.25);
-        notify(s, a, 'station', 'Recurso negado', `A multa em ${cty.name} subiu para ${money(st.interdicted.fine)}.`, 'bad', r.countryId);
+        notify(s, a, 'station', M('msg.combat.appealLostTitle'), M('msg.combat.appealLostBody', { country, fine: ref.money(st.interdicted.fine) }), 'bad', r.countryId);
       }
       break;
     }
@@ -386,7 +402,6 @@ export function resolveCombat(s: GameState, c: CombatState) {
       addReputation(a, r.countryId, -10);
       addExposure(a, r.countryId, 30 * quiet);
       if (!target) break;
-      const label = r.act === 'sabotage' ? 'Sabotagem' : 'Assalto ao Cofre';
       if (ok) {
         if (r.act === 'sabotage') stationLosesLevel(s, target, r.countryId);
         else {
@@ -398,21 +413,22 @@ export function resolveCombat(s: GameState, c: CombatState) {
             st.vault = [];
           }
         }
-        notify(s, a, 'combat', `${label} concluído`, `A ação contra ${target.name} em ${cty.name} deu certo.${casualty}`, 'good', r.countryId);
-        notify(s, target, 'station', `${label} sofrido`, `${a.name} atacou a Estação em ${cty.name}.`, 'bad', r.countryId);
+        notify(s, a, 'combat', M(`msg.combat.hostileDoneTitle.${r.act}`), M('msg.combat.hostileDoneBody', { target: target.name, country, casualty }), 'good', r.countryId);
+        notify(s, target, 'station', M(`msg.combat.hostileSufferedTitle.${r.act}`), M('msg.combat.hostileSufferedBody', { agency: a.name, country }), 'bad', r.countryId);
       } else {
-        notify(s, a, 'combat', `${label} fracassou`, `A Estação de ${target.name} em ${cty.name} resistiu.${casualty}`, 'bad', r.countryId);
-        notify(s, target, 'station', 'Ataque repelido', `A Estação em ${cty.name} repeliu ${a.name}.`, 'good', r.countryId);
+        notify(s, a, 'combat', M(`msg.combat.hostileFailedTitle.${r.act}`), M('msg.combat.hostileFailedBody', { target: target.name, country, casualty }), 'bad', r.countryId);
+        notify(s, target, 'station', M('msg.combat.hostileRepelledTitle'), M('msg.combat.hostileRepelledBody', { country, agency: a.name }), 'good', r.countryId);
       }
       break;
     }
     case 'intercept': {
       const team = a.teams.find((t) => t.id === r.teamId);
       if (ok) {
-        notify(s, a, 'team', 'Interceptação evitada', `${team?.name ?? 'A Equipe'} passou pela polícia de ${cty.name} com a carga.${casualty}`, 'good', r.countryId);
+        const tname = team?.name ?? ref.msg(M('msg.combat.theTeam'));
+        notify(s, a, 'team', M('msg.combat.interceptAvoidedTitle'), M('msg.combat.interceptAvoidedBody', { team: tname, country, casualty }), 'good', r.countryId);
       } else if (team) {
         team.spoils = [];
-        notify(s, a, 'team', 'Itens apreendidos', `A polícia de ${cty.name} apreendeu o que a ${team.name} carregava.${casualty}`, 'bad', r.countryId);
+        notify(s, a, 'team', M('msg.combat.interceptSeizedTitle'), M('msg.combat.interceptSeizedBody', { country, team: team.name, casualty }), 'bad', r.countryId);
       }
       break;
     }
@@ -422,9 +438,9 @@ export function resolveCombat(s: GameState, c: CombatState) {
         a.director.heldIn = undefined;
         a.director.price = undefined;
         a.director.releaseAt = undefined;
-        notify(s, a, 'director', 'Diretor resgatado', `A Equipe tirou o Diretor do cativeiro em ${cty.name}.`, 'good', r.countryId);
+        notify(s, a, 'director', M('msg.combat.rescueWonTitle'), M('msg.combat.rescueWonBody', { country }), 'good', r.countryId);
       } else {
-        notify(s, a, 'team', 'Resgate fracassou', `A Equipe não conseguiu chegar ao Diretor em ${cty.name}.${casualty}`, 'bad', r.countryId);
+        notify(s, a, 'team', M('msg.combat.rescueLostTitle'), M('msg.combat.rescueLostBody', { country, casualty }), 'bad', r.countryId);
       }
       break;
     }
@@ -436,7 +452,7 @@ export function resolveCombat(s: GameState, c: CombatState) {
     if (t.units.length === 0 && t.spoils.length === 0) {
       if (t.freighter) a.fleet.push(t.freighter);
       a.teams = a.teams.filter((x) => x !== t);
-      note(s, a, `${t.name} foi desfeita: não sobrou ninguém.`, 'bad');
+      note(s, a, M('msg.combat.teamDissolved', { team: t.name }), 'bad');
     }
   }
   checkObjective(s);

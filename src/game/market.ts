@@ -14,12 +14,12 @@ const POLITICS_MULT: Record<Politics, Partial<Record<UnitClass, number>> & { all
 };
 
 /** Spread between buying and selling at the mid price. */
-const BUY_SPREAD = 1.04;
-const SELL_SPREAD = 0.94;
+const BUY_SPREAD = 1.07;
+const SELL_SPREAD = 0.91;
 /** Saturação is clamped to ±60% of the price. */
 export const SATURATION_LIMIT = 0.6;
 /** Hours for Saturação to fall to ~37% of its value. */
-export const SATURATION_RECOVERY_H = 96;
+export const SATURATION_RECOVERY_H = 240;
 
 /** Rich countries favor high-rank goods, poor countries favor cheap low-rank goods. */
 function levelAffinity(level: number, rank: number) {
@@ -60,7 +60,7 @@ export const sellPrice = (c: Country, itemId: string) =>
 export function saturationStep(c: Country, itemId: string): number {
   const it = def(itemId);
   const depth = 0.5 + c.level * 0.5; // 1..3
-  const weight = it.cls === 'arms' || it.cls === 'special' ? 0.05 : 0.07;
+  const weight = it.cls === 'arms' || it.cls === 'special' ? 0.15 : 0.2;
   const priceFactor = 1 + Math.log10(Math.max(1, it.price / 100_000)) * 0.25;
   return (weight * priceFactor) / depth;
 }
@@ -137,9 +137,9 @@ export function rollRecruits(c: Country): string[] {
 
 export function driftPrices(s: RngHolder, c: Country) {
   for (const it of ITEM_LIST) {
-    const cur = c.drift[it.id] ?? randRange(s, 0.85, 1.15);
-    const next = cur + randRange(s, -0.04, 0.04) + (1 - cur) * 0.08;
-    c.drift[it.id] = Math.min(1.3, Math.max(0.72, next));
+    const cur = c.drift[it.id] ?? randRange(s, 0.92, 1.08);
+    const next = cur + randRange(s, -0.03, 0.03) + (1 - cur) * 0.08;
+    c.drift[it.id] = Math.min(1.15, Math.max(0.87, next));
   }
 }
 

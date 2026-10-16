@@ -2,17 +2,19 @@ import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 import { audio } from '../audio/engine';
 
-export type Speed = 1 | 2 | 4;
+export type Speed = 1 | 2 | 4 | 8 | 16;
+/** Velocidade com que a partida começa (as rápidas 8× e 16× são só durante o jogo). */
+export type DefaultSpeed = 1 | 2 | 4;
 
 interface SettingsState {
   music: number;
   sfx: number;
-  defaultSpeed: Speed;
+  defaultSpeed: DefaultSpeed;
   /** Reduce motion: skip the title sequence and long transitions. */
   reducedMotion: boolean;
   setMusic(v: number): void;
   setSfx(v: number): void;
-  setDefaultSpeed(v: Speed): void;
+  setDefaultSpeed(v: DefaultSpeed): void;
   setReducedMotion(v: boolean): void;
 }
 

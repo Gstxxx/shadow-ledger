@@ -1,4 +1,5 @@
 // Domain model. Names map 1:1 to the glossary in CONTEXT.md (see comments).
+import type { Msg } from '../i18n/lookup';
 import type { AiState } from './ai/types';
 import type { SystemId, TutorialState } from './tutorial/types';
 
@@ -105,6 +106,18 @@ export interface Injury {
   days?: number;
 }
 
+/** Histórico curto de uma Unidade, para a ficha. */
+export interface UnitRecord {
+  combats: number;
+  wins: number;
+  /** Inimigos que ela tirou de combate. */
+  kos: number;
+  /** Inimigos convertidos (Agentes de Influência). */
+  converts: number;
+  /** Quando entrou para a agência (horas de jogo). */
+  joinedAt: number;
+}
+
 /** Unidade. */
 export interface Unit {
   uid: string;
@@ -124,6 +137,7 @@ export interface Unit {
   idle?: boolean;
   /** Segurança local contratada para uma única defesa. */
   temp?: boolean;
+  record?: UnitRecord;
 }
 
 /** Lote de Carga (ou de Cofre). */
@@ -212,6 +226,10 @@ export interface LogEntry {
   tone: Tone;
   text: string;
   countryId?: string;
+  /** Mensagem estruturada (traduzível); `text` continua com o texto pt. */
+  msg?: Msg;
+  /** Corpo (quando a linha veio de um Evento: msg = título, detail = corpo). */
+  detail?: Msg;
 }
 
 /** Evento: acontecimento que exige atenção e pausa o relógio. Only the player's agency raises Eventos. */
@@ -223,6 +241,8 @@ export interface GameEvent {
   body: string;
   tone: Tone;
   countryId?: string;
+  titleMsg?: Msg;
+  bodyMsg?: Msg;
 }
 
 // ── Diretor ──────────────────────────────────────────────
@@ -358,6 +378,7 @@ export interface CombatState {
   type: CombatType;
   reason: CombatReason;
   title: string;
+  titleMsg?: Msg;
   /** The side defending: holding until the end (draw) counts as a win for the defender. */
   playerDefends: boolean;
   tactic: Tactic;
@@ -372,6 +393,8 @@ export interface CombatState {
   /** Furthest column held per row. */
   reach: number[];
   log: string[];
+  /** Paralelo a `log` (mesmo índice), quando a linha é traduzível. */
+  logMsg?: Msg[];
   fx: CombatFx[];
   result?: 'win' | 'lose' | 'draw';
   /** Agency units knocked out (become Feridas / Danificadas). */
@@ -380,6 +403,8 @@ export interface CombatState {
   turned: string[];
   /** Converted enemy units awaiting transfer to the agency. */
   converted: Unit[];
+  /** Per agency unit: enemies knocked out and converted in this fight. */
+  credits?: Record<string, { kos: number; converts: number }>;
   sources: ForceSource[];
   /** Diretor está presente (perde → Detido/Sequestrado/morte). */
   directorPresent: boolean;
@@ -389,6 +414,7 @@ export interface CombatSetupData {
   type: CombatType;
   reason: CombatReason;
   title: string;
+  titleMsg?: Msg;
   enemy: Unit[];
   sources: ForceSource[];
   playerDefends: boolean;
@@ -463,7 +489,7 @@ export interface GameState {
   events: GameEvent[];
   pendingCombat?: PendingCombat;
   combat?: CombatState;
-  over?: { won: boolean; reason: string; score: number };
+  over?: { won: boolean; reason: string; score: number; reasonMsg?: Msg };
   uidCounter: number;
   /** Memória das Agências Rivais (src/game/ai). */
   ai?: AiState;

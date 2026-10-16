@@ -40,6 +40,8 @@ interface GameStore {
   mutate(fn: (s: GameState) => void): void;
   tick(seconds: number): void;
   setSpeed(v: Speed): void;
+  /** Avança o relógio até o próximo Evento (ou até `maxHours`). Returns hours simulated. */
+  skipToNextEvent(maxHours?: number): number;
   togglePause(): void;
   select(id: string | null): void;
   ackEvent(id?: string): void;
@@ -182,6 +184,16 @@ export const useGameStore = create<GameStore>()((set, get) => ({
   },
 
   setSpeed: (v) => set({ speed: v, paused: false }),
+
+  skipToNextEvent: (maxHours = 24 * 30) => {
+    const g = get().game;
+    if (!g || isBlocked(g)) return 0;
+    let done = 0;
+    while (done < maxHours && !isBlocked(g)) done += advance(g, Math.min(24, maxHours - done)) || maxHours;
+    writeSave(g);
+    set({ rev: get().rev + 1 });
+    return done;
+  },
   togglePause: () => set({ paused: !get().paused }),
   select: (id) => set({ selected: id }),
 

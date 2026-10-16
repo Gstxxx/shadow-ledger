@@ -7,12 +7,15 @@ import { isLocked } from './tutorial/locks';
 import { buildForce } from './forces';
 import { driftPrices, midPrice, rollStock } from './market';
 import { pick, randInt, randRange, weighted } from './rng';
+import { keyRef, M, say, textOf } from './msg';
+import type { Msg } from '../i18n/lookup';
 import type {
   Agency,
   Country,
   GameEvent,
   GameOptions,
   GameState,
+  LogEntry,
   Politics,
   Posture,
   PresetDef,
@@ -98,8 +101,15 @@ export function travelKm(a: string, b: string) {
 
 // ── Relatório ───────────────────────────────────────────────
 
-export function log(s: GameState, text: string, tone: Tone = 'info', countryId?: string) {
-  s.log.push({ at: s.time, tone, text, countryId });
+export { keyRef, M, ref, say, textOf } from './msg';
+
+const msgOf = (m: string | Msg): Msg | undefined => (typeof m === 'string' ? undefined : m);
+
+export function log(s: GameState, text: string | Msg, tone: Tone = 'info', countryId?: string, detail?: Msg) {
+  const entry: LogEntry = { at: s.time, tone, text: detail ? `${textOf(text)} — ${say(detail)}` : textOf(text), countryId };
+  if (typeof text !== 'string') entry.msg = text;
+  if (detail) entry.detail = detail;
+  s.log.push(entry);
   if (s.log.length > 400) s.log.splice(0, s.log.length - 400);
 }
 
@@ -108,19 +118,25 @@ export function notify(
   s: GameState,
   a: Agency,
   kind: GameEvent['kind'],
-  title: string,
-  body: string,
+  title: string | Msg,
+  body: string | Msg,
   tone: Tone = 'info',
   countryId?: string,
 ) {
   if (!a.isPlayer) return;
   s.uidCounter += 1;
-  s.events.push({ id: `ev${s.uidCounter}`, at: s.time, kind, title, body, tone, countryId });
-  log(s, `${title} — ${body}`, tone, countryId);
+  const ev: GameEvent = { id: `ev${s.uidCounter}`, at: s.time, kind, title: textOf(title), body: textOf(body), tone, countryId };
+  const tm = msgOf(title);
+  const bm = msgOf(body);
+  if (tm) ev.titleMsg = tm;
+  if (bm) ev.bodyMsg = bm;
+  s.events.push(ev);
+  if (tm && bm) log(s, tm, tone, countryId, bm);
+  else log(s, `${ev.title} — ${ev.body}`, tone, countryId);
 }
 
 /** Relatório line for the player's agency only. */
-export function note(s: GameState, a: Agency, text: string, tone: Tone = 'info', countryId?: string) {
+export function note(s: GameState, a: Agency, text: string | Msg, tone: Tone = 'info', countryId?: string) {
   if (a.isPlayer) log(s, text, tone, countryId);
 }
 
@@ -139,7 +155,8 @@ export function allUnits(a: Agency): Unit[] {
 export function stationValue(level: StationLevel): number {
   let v = 0;
   for (let l = 1; l <= level; l++) v += STATIONS[l as StationLevel].cost;
-  return Math.round(v * 0.6);
+  // Valor contábil = custo: abrir ou subir uma Estação não deve parecer prejuízo.
+  return v;
 }
 
 const lotsValue = (lots: { paidEach: number; qty: number }[]) => lots.reduce((a, l) => a + l.paidEach * l.qty, 0);
@@ -265,7 +282,7 @@ export function newGame(opts: GameOptions): GameState {
       id: 'player',
       name: opts.agencyName?.trim() || pick(s, PLAYER_AGENCY_NAMES),
       isPlayer: true,
-      director: opts.directorName?.trim() || 'Diretor',
+      director: opts.directorName?.trim() || say(M('msg.state.defaultDirector')),
       cashMult: DIFF_CASH[opts.difficulty],
     }),
   );
@@ -274,7 +291,7 @@ export function newGame(opts: GameOptions): GameState {
     const region = preset.region ?? ['EU'];
     const pool = COUNTRY_SEEDS.filter((c) => region.includes(c.continent) && c.id !== preset.startCountry);
     const start = pick(s, pool);
-    const strength = 22 + preset.challenge * 10 + (opts.difficulty - 1) * 6;
+    const strength = 12 + preset.challenge * 6 + (opts.difficulty - 1) * 5;
     s.group = {
       name: pick(s, GROUP_NAMES),
       countryId: start.id,
@@ -285,7 +302,12 @@ export function newGame(opts: GameOptions): GameState {
     };
   }
 
-  log(s, `${preset.title}: operação iniciada em ${s.countries[preset.startCountry].name}.`, 'intel', preset.startCountry);
+  log(
+    s,
+    { key: 'msg.state.operationStarted', params: { preset: keyRef(`preset.${preset.id}.title`, preset.title), country: { country: preset.startCountry } } },
+    'intel',
+    preset.startCountry,
+  );
   setupRivals(s);
   return s;
 }

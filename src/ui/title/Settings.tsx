@@ -3,7 +3,7 @@ import { ArrowLeft, Download, Upload } from 'lucide-react';
 import { audio } from '../../audio/engine';
 import { exportSave, importSave, useGameStore } from '../../store/game';
 import { useSettings } from '../../store/settings';
-import type { Speed } from '../../store/settings';
+import type { DefaultSpeed } from '../../store/settings';
 import { sweepOut } from './sweep';
 
 /** Configurações: volumes, velocidade padrão, movimento e o save (exportar/importar, ADR 0003). */
@@ -56,7 +56,7 @@ export function SettingsPanel({ embedded, onClose }: { embedded?: boolean; onClo
       <div className="field">
         <span className="field-label">Velocidade padrão do relógio</span>
         <div className="seg">
-          {([1, 2, 4] as Speed[]).map((v) => (
+          {([1, 2, 4] as DefaultSpeed[]).map((v) => (
             <button key={v} className="btn sm" aria-pressed={st.defaultSpeed === v} onClick={() => st.setDefaultSpeed(v)}>
               {v}×
             </button>

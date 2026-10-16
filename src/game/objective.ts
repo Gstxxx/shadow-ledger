@@ -1,4 +1,5 @@
-import { dayOf, notify, player, profit } from './state';
+import { dayOf, M, notify, player, profit, ref, say } from './state';
+import type { Msg } from './msg';
 import type { GameState } from './types';
 
 export const daysLeft = (s: GameState) => {
@@ -14,30 +15,29 @@ export function checkObjective(s: GameState) {
   const p = profit(me);
   me.stats.peakProfit = Math.max(me.stats.peakProfit, p);
   const day = dayOf(s.time);
-  const end = (won: boolean, reason: string, score: number) => {
-    s.over = { won, reason, score: Math.round(score) };
-    notify(s, me, 'objective', won ? 'Objetivo cumprido' : 'Objetivo fracassado', reason, won ? 'good' : 'bad');
+  const end = (won: boolean, reason: Msg, score: number) => {
+    s.over = { won, reason: say(reason), reasonMsg: reason, score: Math.round(score) };
+    notify(s, me, 'objective', M(won ? 'msg.obj.wonTitle' : 'msg.obj.lostTitle'), reason, won ? 'good' : 'bad');
   };
-  const money = (n: number) => `US$ ${Math.round(n).toLocaleString('pt-BR')}`;
 
-  if (me.director.status === 'dead') return end(false, 'O Diretor morreu em ação (Modo Hardcore).', p);
+  if (me.director.status === 'dead') return end(false, M('msg.obj.directorDied'), p);
 
   switch (pr.objective) {
     case 'profit':
       if (pr.days && s.time >= pr.days * 24) {
-        if (p > 0) end(true, `${pr.days} dias encerrados com lucro de ${money(p)}.`, p);
-        else end(false, `${pr.days} dias encerrados no vermelho (${money(p)}).`, p);
+        if (p > 0) end(true, M('msg.obj.profitWon', { days: pr.days, profit: ref.money(p) }), p);
+        else end(false, M('msg.obj.profitLost', { days: pr.days, profit: ref.money(p) }), p);
       }
       return;
     case 'quick':
-      if (p >= (pr.target ?? 0)) end(true, `Meta de ${money(pr.target ?? 0)} atingida em ${day} dias.`, Math.max(1, 1000 - day));
-      else if (pr.days && s.time >= pr.days * 24) end(false, 'O prazo acabou antes da meta.', p);
+      if (p >= (pr.target ?? 0)) end(true, M('msg.obj.quickWon', { target: ref.money(pr.target ?? 0), day }), Math.max(1, 1000 - day));
+      else if (pr.days && s.time >= pr.days * 24) end(false, M('msg.obj.quickLost'), p);
       return;
     case 'destroy':
     case 'rescue':
-      if (s.group?.defeated) end(true, pr.objective === 'rescue' ? 'Refém resgatado com vida.' : 'Alvo eliminado.', p + 10_000_000);
+      if (s.group?.defeated) end(true, M(pr.objective === 'rescue' ? 'msg.obj.rescueWon' : 'msg.obj.destroyWon'), p + 10_000_000);
       else if (pr.days && s.time >= pr.days * 24)
-        end(false, pr.objective === 'rescue' ? 'O refém não foi encontrado a tempo.' : 'O alvo escapou.', p);
+        end(false, M(pr.objective === 'rescue' ? 'msg.obj.rescueLost' : 'msg.obj.destroyLost'), p);
       return;
   }
 }
