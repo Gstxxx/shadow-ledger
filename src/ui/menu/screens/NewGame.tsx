@@ -7,7 +7,7 @@ import { ITEMS } from '../../../game/data/items';
 import { FIRST_NAMES, LAST_NAMES, PLAYER_AGENCY_NAMES } from '../../../game/data/names';
 import { DIFFICULTY_AI } from '../../../game/ai/profiles';
 import type { Continent, Difficulty, ObjectiveKind, PresetDef } from '../../../game/types';
-import { Segmented } from '../controls';
+import { Segmented, Stepper } from '../controls';
 import { ease, f } from '../ease';
 import { sfx } from '../settings';
 import { presetText, type Strings } from '../strings';
@@ -95,6 +95,7 @@ export function NewGame({ s, lang, presets, tutorial, reduced, onStart }: Props)
   const [objective, setObjective] = useState<ObjectiveKind>('profit');
   const [days, setDays] = useState(90);
   const [target, setTarget] = useState(TARGETS[1]);
+  const [rivals, setRivals] = useState<number | null>(null);
 
   const sandbox = useMemo<PresetDef>(() => {
     const start = capitalOf(region);
@@ -210,11 +211,15 @@ export function NewGame({ s, lang, presets, tutorial, reduced, onStart }: Props)
       preset: entry.preset,
       difficulty,
       hardcore,
-      rivals: DIFFICULTY_AI[difficulty].count[0],
+      // Só o Sandbox fixa o número de rivais; nos Presets a Dificuldade decide.
+      rivals: entry.kind === 'sandbox' ? sandboxRivals : undefined,
       directorName: director.trim(),
       agencyName: agency.trim(),
     });
   };
+
+  const sandboxRivals = rivals ?? DIFFICULTY_AI[difficulty].count[0];
+  const rivalsShown = (d: Difficulty) => (entry.kind === 'sandbox' ? String(sandboxRivals) : rivalCount(d));
 
   const titleOf = (e: Entry) => (e.kind === 'sandbox' ? t.sandboxTitle : presetText(lang, e.preset).title);
   const outcomeOf = (e: Entry) => (e.kind === 'sandbox' ? t.sandboxOutcome : t.outcome(e.preset.objective, e.preset.days, e.preset.target));
@@ -306,6 +311,7 @@ export function NewGame({ s, lang, presets, tutorial, reduced, onStart }: Props)
                 lang={lang}
                 entry={entry}
                 difficulty={difficulty}
+                rivals={rivalsShown(difficulty)}
                 compact={compact}
                 title={titleOf(entry)}
                 outcome={outcomeOf(entry)}
@@ -378,6 +384,7 @@ export function NewGame({ s, lang, presets, tutorial, reduced, onStart }: Props)
                     options={DEADLINES.map((d) => ({ value: d, label: d ? t.days(d) : t.noDeadline }))}
                   />
                 )}
+                <Stepper label={t.rivals} value={sandboxRivals} min={0} max={4} onChange={setRivals} format={(v) => (v === 0 ? s.rivalsNone : String(v))} />
               </fieldset>
             )}
 
@@ -449,7 +456,7 @@ export function NewGame({ s, lang, presets, tutorial, reduced, onStart }: Props)
                 <div>
                   <dt>{t.difficulty}</dt>
                   <dd>
-                    {t.difficultyCards[difficulty - 1].name} · {t.rivalsLine(rivalCount(difficulty))}
+                    {t.difficultyCards[difficulty - 1].name} · {t.rivalsLine(rivalsShown(difficulty))}
                   </dd>
                 </div>
                 <div>
@@ -552,6 +559,7 @@ function Details({
   lang,
   entry,
   difficulty,
+  rivals,
   compact,
   title,
   outcome,
@@ -562,6 +570,7 @@ function Details({
   lang: Lang;
   entry: Entry;
   difficulty: Difficulty;
+  rivals: string;
   compact: boolean;
   title: string;
   outcome: string;
@@ -583,7 +592,7 @@ function Details({
     { icon: 'team', label: t.escort, value: escort.join(', ') || '—' },
     { icon: 'station-safehouse', label: t.stations, value: p.startStations.map((x) => `${t.tiers[x.level]} · ${countryName(x.countryId)}`).join(', ') },
     { icon: 'money', label: t.cash, value: t.money(Math.round(p.cash * CASH_MULT[difficulty])) },
-    { icon: 'rival', label: t.rivals, value: t.rivalsBy(rivalCount(difficulty), t.difficultyCards[difficulty - 1].name) },
+    { icon: 'rival', label: t.rivals, value: entry.kind === 'sandbox' ? rivals : t.rivalsBy(rivals, t.difficultyCards[difficulty - 1].name) },
     { icon: 'director', label: t.homeBase, value: countryName(p.startCountry) },
   ];
 

@@ -14,7 +14,7 @@ const pt = {
   startHere: 'Comece aqui',
   tutorialNote: 'Tutorial com a Analista: Comércio, Estações e Equipes, um sistema por vez.',
   sandboxTitle: 'Sandbox personalizado',
-  sandboxBrief: 'Monte o mundo do seu jeito: região inicial, capital, Objetivo e prazo. As Agências Rivais seguem a Dificuldade.',
+  sandboxBrief: 'Monte o mundo do seu jeito: região inicial, capital, Objetivo, prazo e quantas Agências Rivais.',
   sandboxOutcome: 'Você define o Objetivo',
 
   outcome: (kind: ObjectiveKind, days: number, target?: number) => {
@@ -58,7 +58,7 @@ const pt = {
     { name: 'Operador', text: 'O equilíbrio pensado para o jogo: rivais atentos, margens justas.' },
     { name: 'Diretor', text: 'Rivais agressivos e bem financiados, margens estreitas, pouca folga para erro.' },
   ],
-  rivalsLine: (n: string) => `${n} Agência${n === '1' ? '' : 's'} Rival${n === '1' ? '' : 'is'}`,
+  rivalsLine: (n: string) => (n === '1' ? '1 Agência Rival' : `${n} Agências Rivais`),
   hardcore: 'Modo Hardcore',
   hardcoreOff: 'Desligado: se o Diretor perder um Combate, fica Detido ou é Sequestrado e pode ser resgatado.',
   hardcoreOn: 'Ligado: se o Diretor perder um Combate, morre e a partida acaba.',
@@ -90,7 +90,7 @@ const en: NewGameStrings = {
   startHere: 'Start here',
   tutorialNote: 'Tutorial with the Analyst: Trade, Stations and Teams, one system at a time.',
   sandboxTitle: 'Custom Sandbox',
-  sandboxBrief: 'Build the world your way: starting region, capital, Objective and deadline. Rival Agencies follow the Difficulty.',
+  sandboxBrief: 'Build the world your way: starting region, capital, Objective, deadline and how many Rival Agencies.',
   sandboxOutcome: 'You set the Objective',
   outcome: (kind, days, target) => {
     const d = days ? `${days} days` : '';

@@ -9,8 +9,8 @@ export interface StartConfig {
   preset: PresetDef;
   difficulty: Difficulty;
   hardcore: boolean;
-  /** Número de Agências Rivais (0–4). */
-  rivals: number;
+  /** Número de Agências Rivais (0–4); sem valor, a Dificuldade decide. */
+  rivals?: number;
   directorName?: string;
   agencyName?: string;
 }

@@ -5,7 +5,7 @@
 import { useCallback, useMemo, useState } from 'react';
 import { profit } from '../../game/state';
 import type { GameOptions, GameState } from '../../game/types';
-import { exportSave, hasSave, importSave, useGameStore } from '../../store/game';
+import { deleteSave, exportSave, hasSave, importSave, useGameStore } from '../../store/game';
 import { useSettings } from '../../store/settings';
 import { MainMenu } from './MainMenu';
 import { defaultSettings } from './settings';
@@ -96,7 +96,7 @@ export function ConnectedMainMenu({ skipIntro }: { skipIntro?: boolean }) {
 
   const onStart = useCallback(
     (cfg: StartConfig) => {
-      const opts: GameOptions & { rivals: number } = {
+      const opts: GameOptions = {
         preset: cfg.preset,
         difficulty: cfg.difficulty,
         hardcore: cfg.hardcore,
@@ -139,6 +139,10 @@ export function ConnectedMainMenu({ skipIntro }: { skipIntro?: boolean }) {
       saves={saves}
       onStart={onStart}
       onContinue={() => continueSaved()}
+      onDeleteSave={() => {
+        deleteSave();
+        setRev((r) => r + 1);
+      }}
       onExportSave={onExportSave}
       onImportSave={onImportSave}
     />
