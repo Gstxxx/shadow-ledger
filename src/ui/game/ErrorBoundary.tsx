@@ -1,6 +1,7 @@
 import { Component } from 'react';
 import type { ReactNode } from 'react';
 import { useGameStore } from '../../store/game';
+import { t } from '../../i18n';
 
 /** Keeps a rendering bug from turning the game into a black screen. */
 export class ErrorBoundary extends Component<{ children: ReactNode }, { error: Error | null }> {
@@ -15,8 +16,8 @@ export class ErrorBoundary extends Component<{ children: ReactNode }, { error: E
     return (
       <div className="scrim">
         <div className="event-card tone-bad" role="alertdialog">
-          <h2>Falha na operação</h2>
-          <p>Algo quebrou na interface. O save automático está guardado; volte ao menu e use Continuar.</p>
+          <h2>{t('game.error.title')}</h2>
+          <p>{t('game.error.body')}</p>
           <p className="mono hint-sm">{this.state.error.message}</p>
           <div className="event-actions">
             <button
@@ -26,7 +27,7 @@ export class ErrorBoundary extends Component<{ children: ReactNode }, { error: E
                 this.setState({ error: null });
               }}
             >
-              Voltar ao menu
+              {t('game.error.back')}
             </button>
           </div>
         </div>

@@ -1,15 +1,14 @@
 import { Building2, Crown, Gavel, Landmark, PlaneTakeoff, ShieldAlert, Cpu, UserX } from 'lucide-react';
 import * as A from '../../game/actions';
 import { cargoQty } from '../../game/cargo';
-import { CONTINENT_LABEL } from '../../game/data/countries';
-import { ITEMS } from '../../game/data/items';
-import { OPERATION_BLURB, OPERATION_LABEL, POLITICS_COLOR, POLITICS_LABEL, STATIONS } from '../../game/data/rules';
+import { POLITICS_COLOR, STATIONS } from '../../game/data/rules';
 import { fleetSpeed } from '../../game/market';
 import { directorAt, formatDuration, player, postureIn, standing, stationIn } from '../../game/state';
 import type { OperationKind, StationLevel } from '../../game/types';
 import { def } from '../../game/units';
 import { useGame, useGameStore } from '../../store/game';
-import { money, tons } from '../fmt';
+import { useT } from '../../i18n';
+import { continentName, countryName, itemName, operationBlurb, operationLabel, politicsLabel, stationName } from '../../i18n/lookup';
 import { Empty, ExpBar, PostureChip, RepBar, Section } from './bits';
 import { UnitCard } from './unit/UnitCard';
 import { useOpenUnit } from './unit/DossierHost';
@@ -19,6 +18,7 @@ import { Help } from './help/Glossary';
 const OP_ICON: Record<OperationKind, typeof Landmark> = { bank: Landmark, tech: Cpu, neutralize: UserX };
 
 export function CountryPanel() {
+  const { t } = useT();
   const s = useGame();
   const a = player(s);
   const id = useGameStore((st) => st.selected) ?? a.location;
@@ -31,23 +31,23 @@ export function CountryPanel() {
     <div className="panel-scroll">
       <header className="cty-head">
         <div className="cty-title">
-          <h2>{c.name}</h2>
+          <h2>{countryName(c.id)}</h2>
           <span className="mono cty-sub">
-            {CONTINENT_LABEL[c.continent]} · nível {c.level} ·{' '}
-            <span style={{ color: POLITICS_COLOR[c.politics] }}>{POLITICS_LABEL[c.politics]}</span>
-            {c.couped && ' · governo pós-Golpe'}
+            {continentName(c.continent)} · {t('game.country.level', { n: c.level })} ·{' '}
+            <span style={{ color: POLITICS_COLOR[c.politics] }}>{politicsLabel(c.politics)}</span>
+            {c.couped && ` · ${t('game.country.couped')}`}
           </span>
         </div>
         <PostureChip posture={postureIn(a, id)} />
       </header>
       <div className="kv">
         <span className="k">
-          <Help term="reputation">Reputação</Help>
+          <Help term="reputation">{t('game.country.reputation')}</Help>
         </span>
         <RepBar value={sd.reputation} />
         <span className="v num">{Math.round(sd.reputation)}</span>
         <span className="k">
-          <Help term="exposure">Exposição</Help>
+          <Help term="exposure">{t('game.country.exposure')}</Help>
         </span>
         <ExpBar value={sd.exposure} />
         <span className="v num">{Math.round(sd.exposure)}</span>
@@ -66,7 +66,7 @@ export function CountryPanel() {
       <RivalsHere countryId={id} />
 
       {here && (
-        <Section title="Operações Especiais">
+        <Section title={t('game.country.ops.title')}>
           <div className="ops">
             {(['bank', 'tech', 'neutralize'] as OperationKind[]).map((op) => {
               const Icon = OP_ICON[op];
@@ -79,20 +79,20 @@ export function CountryPanel() {
                   onClick={() => act((g, ag) => A.startOperation(g, ag, op), 'open')}
                 >
                   <Icon size={18} />
-                  <span className="op-name">{OPERATION_LABEL[op]}</span>
-                  <span className="op-meta mono">força hostil ~{A.operationStrength(s, a, id, op)}</span>
-                  <span className="op-blurb">{blocked ?? OPERATION_BLURB[op]}</span>
+                  <span className="op-name">{operationLabel(op)}</span>
+                  <span className="op-meta mono">{t('game.country.ops.hostileForce', { n: A.operationStrength(s, a, id, op) })}</span>
+                  <span className="op-blurb">{blocked ?? operationBlurb(op)}</span>
                 </button>
               );
             })}
             <button className="op coup" disabled={!a.escort.length || !!c.couped} onClick={() => act((g, ag) => A.startCoup(g, ag), 'open')}>
               <Crown size={18} />
-              <span className="op-name">Golpe</span>
-              <span className="op-meta mono">força hostil ~{A.operationStrength(s, a, id, 'coup')}</span>
-              <span className="op-blurb">Derruba o governo. Só com o Diretor presente. O novo governo vira Aliado.</span>
+              <span className="op-name">{t('game.country.ops.coup')}</span>
+              <span className="op-meta mono">{t('game.country.ops.hostileForce', { n: A.operationStrength(s, a, id, 'coup') })}</span>
+              <span className="op-blurb">{t('game.country.ops.coupBlurb')}</span>
             </button>
           </div>
-          <p className="hint-sm">Operações derrubam a Reputação e disparam a Exposição neste país. A Prévia aparece antes do contato.</p>
+          <p className="hint-sm">{t('game.country.ops.hint')}</p>
         </Section>
       )}
     </div>
@@ -100,6 +100,7 @@ export function CountryPanel() {
 }
 
 function RivalsHere({ countryId }: { countryId: string }) {
+  const { t, fmt } = useT();
   const s = useGame();
   const a = player(s);
   const act = useGameStore((st) => st.act);
@@ -107,70 +108,72 @@ function RivalsHere({ countryId }: { countryId: string }) {
   if (!rivals.length) return null;
   const canDenounce = !!stationIn(a, countryId) || directorAt(a, countryId);
   return (
-    <Section title="Agências Rivais aqui">
+    <Section title={t('game.country.rivals.title')}>
       {rivals.map((r) => {
         const st = r.stations.find((x) => x.countryId === countryId)!;
         return (
           <div key={r.id} className="row-line">
             <span>
               {r.name}
-              <small className="mono"> · {STATIONS[st.level].name}{st.interdicted ? ' · Interditada' : ''}</small>
+              <small className="mono"> · {stationName(st.level)}{st.interdicted ? ` · ${t('game.country.rivals.seized')}` : ''}</small>
             </span>
             <button
               className="btn sm"
               disabled={!canDenounce || a.cash < A.denounceCost(s, countryId)}
-              title={canDenounce ? undefined : 'Exige uma Estação ou o Diretor no país'}
+              title={canDenounce ? undefined : t('game.country.rivals.denounceNeeds')}
               onClick={() => act((g, ag) => A.denounce(g, ag, r.id, countryId), 'click')}
             >
-              Denunciar {money(A.denounceCost(s, countryId))}
+              {t('game.country.rivals.denounce', { cost: fmt.money(A.denounceCost(s, countryId)) })}
             </button>
           </div>
         );
       })}
-      <p className="hint-sm">Sabotagem e assalto ao Cofre são feitos por uma Equipe no país (aba Equipes).</p>
+      <p className="hint-sm">{t('game.country.rivals.hint')}</p>
     </Section>
   );
 }
 
 function TravelBox({ countryId }: { countryId: string }) {
+  const { t } = useT();
   const s = useGame();
   const a = player(s);
   const act = useGameStore((st) => st.act);
   const hours = A.flightHours(a, countryId);
   const reason =
     a.director.status !== 'free'
-      ? 'O Diretor não está livre.'
+      ? t('game.country.travel.notFree')
       : a.flight
-        ? 'A Frota está em voo.'
+        ? t('game.country.travel.inFlight')
         : !Number.isFinite(hours)
-          ? 'Nenhum cargueiro operante.'
+          ? t('game.country.travel.noFreighter')
           : null;
   return (
     <div className="travel">
-      <button className="btn primary" disabled={!!reason} onClick={() => act((g, ag) => A.travel(g, ag, countryId), 'depart')}>
-        <PlaneTakeoff size={16} /> Voar para cá
+      <button className="btn primary" data-tour="fly" disabled={!!reason} onClick={() => act((g, ag) => A.travel(g, ag, countryId), 'depart')}>
+        <PlaneTakeoff size={16} /> {t('game.country.travel.fly')}
       </button>
-      <span className="mono hint-sm">{reason ?? `${formatDuration(hours)} de voo · Frota a ${fleetSpeed(a)} km/h`}</span>
+      <span className="mono hint-sm">{reason ?? t('game.country.travel.info', { time: formatDuration(hours), speed: fleetSpeed(a) })}</span>
     </div>
   );
 }
 
 function ContractsHere({ countryId }: { countryId: string }) {
+  const { t, fmt } = useT();
   const s = useGame();
   const a = player(s);
   const act = useGameStore((st) => st.act);
   const list = s.contracts.filter((k) => k.countryId === countryId && k.status === 'accepted' && k.agencyId === a.id);
   if (!list.length) return null;
   return (
-    <Section title="Entregas aqui">
+    <Section title={t('game.country.deliveries.title')}>
       {list.map((k) => (
         <div key={k.id} className="row-line">
           <span>
-            {k.qty}× {ITEMS[k.itemId].name} para {k.buyer}
-            <small className="mono"> · tem {cargoQty(a, k.itemId)}</small>
+            {t('game.country.deliveries.line', { qty: k.qty, item: itemName(k.itemId), buyer: k.buyer })}
+            <small className="mono"> · {t('game.country.deliveries.have', { n: cargoQty(a, k.itemId) })}</small>
           </span>
           <button className="btn sm primary" disabled={cargoQty(a, k.itemId) < k.qty} onClick={() => act((g, ag) => A.deliverContract(g, ag, k.id), 'sell')}>
-            Entregar {money(k.reward)}
+            {t('game.country.deliveries.deliver', { reward: fmt.money(k.reward) })}
           </button>
         </div>
       ))}
@@ -179,6 +182,7 @@ function ContractsHere({ countryId }: { countryId: string }) {
 }
 
 function StationSection({ countryId }: { countryId: string }) {
+  const { t, fmt } = useT();
   const s = useGame();
   const a = player(s);
   const openUnit = useOpenUnit();
@@ -189,13 +193,13 @@ function StationSection({ countryId }: { countryId: string }) {
   if (!st) {
     if (!here) return null;
     return (
-      <Section title="Estação">
+      <Section title={t('game.country.station.title')}>
         <div className="row-line">
           <span>
-            <Building2 size={14} /> Abrir uma Célula: renda diária, preços ao vivo e defesa local.
+            <Building2 size={14} /> {t('game.country.station.openCell')}
           </span>
-          <button className="btn sm primary" onClick={() => act((g, ag) => A.openStation(g, ag), 'buy')}>
-            Abrir {money(A.stationCost(a, countryId, 1))}
+          <button className="btn sm primary" data-tour="open-station" onClick={() => act((g, ag) => A.openStation(g, ag), 'buy')}>
+            {t('game.country.station.open', { cost: fmt.money(A.stationCost(a, countryId, 1)) })}
           </button>
         </div>
       </Section>
@@ -204,18 +208,18 @@ function StationSection({ countryId }: { countryId: string }) {
   const spec = STATIONS[st.level];
   const next = st.level < 5 ? STATIONS[(st.level + 1) as StationLevel] : null;
   return (
-    <Section title={`Estação · ${spec.name}`} right={<span className="mono hint-sm">{st.units.length}/{spec.capacity} Unidades</span>}>
+    <Section title={t('game.country.station.titleLevel', { name: stationName(st.level) })} right={<span className="mono hint-sm">{t('game.country.station.units', { n: st.units.length, cap: spec.capacity })}</span>}>
       {st.interdicted && (
         <div className="alert bad">
           <ShieldAlert size={16} />
-          <span>Interditada: não rende nem informa. {st.detained.length} Unidade(s) Detida(s).</span>
+          <span>{t('game.country.station.seizedMsg', { n: st.detained.length })}</span>
           <div className="alert-actions">
             <button className="btn sm" disabled={a.cash < st.interdicted.fine} onClick={() => act((g, ag) => A.payFine(g, ag, countryId), 'buy')}>
-              Pagar multa {money(st.interdicted.fine)}
+              {t('game.country.station.payFine', { fine: fmt.money(st.interdicted.fine) })}
             </button>
             {here && (
               <button className="btn sm" onClick={() => act((g, ag) => A.appeal(g, ag), 'open')}>
-                <Gavel size={14} /> Recorrer
+                <Gavel size={14} /> {t('game.country.station.appeal')}
               </button>
             )}
           </div>
@@ -224,10 +228,10 @@ function StationSection({ countryId }: { countryId: string }) {
       {here && next && !st.interdicted && (
         <div className="row-line">
           <span className="hint-sm">
-            {next.name}: {next.capacity} Unidades, renda {money(next.income)}/dia{next.wideIntel ? ', informa países vizinhos' : ''}.
+            {t(next.wideIntel ? 'game.country.station.upgradeInfoWide' : 'game.country.station.upgradeInfo', { name: stationName(next.level), cap: next.capacity, income: fmt.money(next.income) })}
           </span>
           <button className="btn sm" onClick={() => act((g, ag) => A.upgradeStation(g, ag), 'buy')}>
-            Subir {money(A.stationCost(a, countryId, next.level))}
+            {t('game.country.station.upgrade', { cost: fmt.money(A.stationCost(a, countryId, next.level)) })}
           </button>
         </div>
       )}
@@ -240,17 +244,17 @@ function StationSection({ countryId }: { countryId: string }) {
             action={
               here && !st.interdicted ? (
                 <button className="btn sm" onClick={() => act((g, ag) => A.transferUnit(g, ag, u.uid, 'escort'))}>
-                  → Escolta
+                  {t('game.country.station.toEscort')}
                 </button>
               ) : undefined
             }
           />
         ))}
-        {!st.units.length && <Empty>Sem Unidades de Estação: só as defesas fixas protegem o lugar.</Empty>}
+        {!st.units.length && <Empty>{t('game.country.station.noUnits')}</Empty>}
       </div>
       {here && !st.interdicted && a.escort.length > 0 && (
         <details className="details">
-          <summary>Deixar Unidades da Escolta aqui</summary>
+          <summary>{t('game.country.station.leaveEscort')}</summary>
           <div className="unit-list">
             {a.escort.map((u) => (
               <UnitCard
@@ -263,7 +267,7 @@ function StationSection({ countryId }: { countryId: string }) {
                     disabled={!spec.allows.includes(def(u.itemId).cls) || st.units.length >= spec.capacity}
                     onClick={() => act((g, ag) => A.transferUnit(g, ag, u.uid, 'station'))}
                   >
-                    → Estação
+                    {t('game.country.station.toStation')}
                   </button>
                 }
               />
@@ -273,21 +277,21 @@ function StationSection({ countryId }: { countryId: string }) {
       )}
       <div className="vault">
         <span className="mono hint-sm">
-          Cofre · {tons(A.vaultWeight(st))} de {tons(A.vaultWeight(st) + A.vaultFree(st))}
+          {t('game.country.station.vault', { used: fmt.tons(A.vaultWeight(st)), total: fmt.tons(A.vaultWeight(st) + A.vaultFree(st)) })}
         </span>
         {st.vault.map((l) => (
           <div key={l.lid} className="row-line">
             <span>
-              {l.qty}× {ITEMS[l.itemId].name}
+              {t('game.qtyItem', { qty: l.qty, item: itemName(l.itemId) })}
             </span>
             {here && !st.interdicted && (
               <button className="btn sm" onClick={() => act((g, ag) => A.withdraw(g, ag, l.itemId, l.qty))}>
-                Retirar
+                {t('game.country.station.withdraw')}
               </button>
             )}
           </div>
         ))}
-        {!st.vault.length && <span className="hint-sm">vazio</span>}
+        {!st.vault.length && <span className="hint-sm">{t('game.country.station.vaultEmpty')}</span>}
       </div>
     </Section>
   );

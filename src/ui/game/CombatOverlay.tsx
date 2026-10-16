@@ -1,15 +1,15 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { FastForward, Pause, Play, SkipForward, Swords } from 'lucide-react';
-import { canPlace, place, stepCombat, succeeded, TACTIC_BLURB, TACTIC_LABEL, TACTICS, unplace, autoDeploy } from '../../game/combat';
+import { canPlace, place, stepCombat, succeeded, TACTICS, unplace, autoDeploy } from '../../game/combat';
 import { cancelPending, negotiateCost } from '../../game/actions';
 import { chooseTactic, finishCombat, forceUnits } from '../../game/combatFlow';
-import { COMBAT_LABEL } from '../../game/data/rules';
 import { agencyById, player } from '../../game/state';
 import type { CombatState, CombatUnitRef, Tactic, Unit } from '../../game/types';
-import { canFight, def, FORT_ID, maxStrOf, strOf } from '../../game/units';
+import { canFight, FORT_ID, maxStrOf, strOf } from '../../game/units';
 import { useGame, useGameStore } from '../../store/game';
 import { audio } from '../../audio/engine';
-import { money, pct } from '../fmt';
+import { useT } from '../../i18n';
+import { combatLabel, itemName, tacticBlurb, tacticName } from '../../i18n/lookup';
 import { Portrait } from './Portrait';
 
 export function CombatOverlay() {
@@ -27,6 +27,7 @@ function PendingView() {
   const a = agencyById(s, pend.agencyId) ?? player(s);
   const mutate = useGameStore((st) => st.mutate);
   const act = useGameStore((st) => st.act);
+  const { t, fmt } = useT();
   const setup = pend.setup;
   const ours = setup.sources.flatMap((src) => forceUnits(a, src)).filter((u) => canFight(u, setup.type));
   const best = TACTICS.filter((t) => t !== 'negotiate').reduce((b, t) => (pend.preview[t] > pend.preview[b] ? t : b), 'assault' as Tactic);
@@ -55,23 +56,23 @@ function PendingView() {
     <div className="combat-screen">
       <div className="combat-card">
         <header className="cb-head">
-          <span className="chip type">{COMBAT_LABEL[setup.type]}</span>
+          <span className="chip type">{combatLabel(setup.type)}</span>
           <h2>{setup.title}</h2>
-          <span className="mono hint-sm">{setup.playerDefends ? 'Defesa: segurar a linha basta' : 'Ataque: é preciso romper ou neutralizar'}</span>
+          <span className="mono hint-sm">{setup.playerDefends ? t('game.combat.defendHint') : t('game.combat.attackHint')}</span>
         </header>
         <div className="forces">
           <div className="force ours">
-            <span className="mono hint-sm">Agência · força {ourStr}</span>
+            <span className="mono hint-sm">{t('game.combat.ours', { n: ourStr })}</span>
             <div className="force-row">
               {ours.map((u) => (
                 <Portrait key={u.uid} unit={u} size={34} />
               ))}
-              {!ours.length && <span className="hint-sm">Ninguém em condições de lutar{setup.fort ? ': só as defesas fixas.' : '.'}</span>}
+              {!ours.length && <span className="hint-sm">{t(setup.fort ? 'game.combat.noFightersFort' : 'game.combat.noFighters')}</span>}
             </div>
           </div>
           <Swords size={22} className="vs" />
           <div className="force theirs">
-            <span className="mono hint-sm">Hostis · força {theirStr}</span>
+            <span className="mono hint-sm">{t('game.combat.theirs', { n: theirStr })}</span>
             <div className="force-row">
               {setup.enemy.map((u) => (
                 <Portrait key={u.uid} unit={u} size={34} hostile />
@@ -79,32 +80,32 @@ function PendingView() {
             </div>
           </div>
         </div>
-        <div className="tactics" role="radiogroup" aria-label="Tática">
-          {TACTICS.map((t) => {
-            const p = pend.preview[t];
-            const cant = t === 'negotiate' && a.cash < nego;
+        <div className="tactics" role="radiogroup" aria-label={t('game.combat.tactic')}>
+          {TACTICS.map((tc) => {
+            const p = pend.preview[tc];
+            const cant = tc === 'negotiate' && a.cash < nego;
             return (
-              <button key={t} role="radio" aria-checked={tactic === t} className="tactic" disabled={cant} onClick={() => (audio.sfx('click'), setTactic(t))}>
+              <button key={tc} role="radio" aria-checked={tactic === tc} className="tactic" disabled={cant} onClick={() => (audio.sfx('click'), setTactic(tc))}>
                 <span className="tac-top">
-                  <span className="tac-name">{TACTIC_LABEL[t]}</span>
-                  <span className={`num tac-p ${p >= 0.6 ? 'pos' : p < 0.35 ? 'neg' : ''}`}>{pct(p)}</span>
+                  <span className="tac-name">{tacticName(tc)}</span>
+                  <span className={`num tac-p ${p >= 0.6 ? 'pos' : p < 0.35 ? 'neg' : ''}`}>{fmt.pct(p)}</span>
                 </span>
                 <span className="tac-bar">
                   <span style={{ width: `${p * 100}%` }} />
                 </span>
                 <span className="tac-blurb">
-                  {TACTIC_BLURB[t]}
-                  {t === 'negotiate' && ` Custo: ${money(nego)}.`}
+                  {tacticBlurb(tc)}
+                  {tc === 'negotiate' && ` ${t('game.combat.negotiateCost', { cost: fmt.money(nego) })}`}
                 </span>
               </button>
             );
           })}
         </div>
-        <p className="hint-sm">Prévia: chance estimada de sucesso em simulações deste confronto.</p>
+        <p className="hint-sm">{t('game.combat.forecastNote')}</p>
         {hopeless && (
           <div className="alert bad cb-risk" role="alert">
             <span>
-              <b>Chance quase nula ({pct(bestP)}).</b> Sua força {ourStr} contra {theirStr}. Perder custa Unidades
+              <b>Chance quase nula ({fmt.pct(bestP)}).</b> Sua força {ourStr} contra {theirStr}. Perder custa Unidades
               {setup.sources.some((src) => src.kind === 'escort') ? ' e pode deixar o Diretor Detido ou Sequestrado' : ''}.
               {abortable ? ' Abortar agora não tem custo.' : ''}
             </span>
@@ -113,7 +114,7 @@ function PendingView() {
         <footer className="cb-actions">
           {abortable && (
             <button className="btn ghost" onClick={() => act((g) => cancelPending(g))}>
-              Abortar
+              {t('game.combat.abort')}
             </button>
           )}
           <span className="tb-spacer" />
@@ -121,7 +122,7 @@ function PendingView() {
             {hopeless && armed ? 'Comandar mesmo assim' : 'Comandar na grade'}
           </button>
           <button className={`btn ${hopeless ? (armed ? 'danger' : '') : 'primary'}`} onClick={() => go(false)}>
-            {hopeless && armed ? 'Lutar mesmo assim' : 'Combate Automático'}
+            {hopeless && armed ? 'Lutar mesmo assim' : t('game.combat.auto')}
           </button>
         </footer>
       </div>
@@ -140,6 +141,7 @@ function LiveView() {
   const s = useGame();
   const c = s.combat!;
   const mutate = useGameStore((st) => st.mutate);
+  const { t } = useT();
   const [running, setRunning] = useState(c.reserve.length === 0 && c.units.some((u) => u.side === 'p'));
   const [fast, setFast] = useState(false);
   const [sel, setSel] = useState<string | null>(null);
@@ -228,10 +230,10 @@ function LiveView() {
     <div className="combat-screen live">
       <div className="combat-card wide">
         <header className="cb-head">
-          <span className="chip type">{COMBAT_LABEL[c.type]}</span>
+          <span className="chip type">{combatLabel(c.type)}</span>
           <h2>{c.title}</h2>
           <span className="mono hint-sm">
-            {TACTIC_LABEL[c.tactic]} · turno {c.turn}/{c.maxTurns}
+            {tacticName(c.tactic)} · {t('game.combat.turn', { turn: c.turn, max: c.maxTurns })}
           </span>
         </header>
 
@@ -246,7 +248,7 @@ function LiveView() {
                   className={`cell${deployable ? ' deploy' : ''}${target ? ' target' : ''}${col >= c.cols - c.deployCols ? ' hostile-zone' : ''}`}
                   style={{ gridRow: row + 1, gridColumn: col + 1 }}
                   onClick={() => cellClick(row, col)}
-                  aria-label={`Linha ${row + 1}, coluna ${col + 1}`}
+                  aria-label={t('game.combat.cell', { row: row + 1, col: col + 1 })}
                 />
               );
             })}
@@ -261,7 +263,7 @@ function LiveView() {
 
         {manual && (
           <div className="reserve">
-            <span className="mono hint-sm">Reserva · toque numa Unidade e depois numa casa das três primeiras colunas</span>
+            <span className="mono hint-sm">{t('game.combat.reserve')}</span>
             <div className="reserve-row">
               {c.reserve.map((u) => (
                 <button key={u.uid} className={`res-unit${sel === u.uid ? ' sel' : ''}`} onClick={() => (audio.sfx('click'), setSel(sel === u.uid ? null : u.uid))}>
@@ -283,11 +285,11 @@ function LiveView() {
           {c.result ? (
             <>
               <span className={`result ${ok ? 'pos' : 'neg'}`}>
-                {ok ? (c.result === 'draw' ? 'Linha mantida' : 'Vitória') : c.result === 'draw' ? 'Alvo não tomado' : 'Derrota'}
+                {ok ? (c.result === 'draw' ? t('game.combat.result.hold') : t('game.combat.result.win')) : c.result === 'draw' ? t('game.combat.result.notTaken') : t('game.combat.result.lose')}
               </span>
               <span className="tb-spacer" />
               <button className="btn primary" onClick={finish}>
-                Concluir
+                {t('game.combat.finish')}
               </button>
             </>
           ) : (
@@ -295,27 +297,27 @@ function LiveView() {
               {c.turn === 0 && !running ? (
                 <>
                   <button className="btn ghost" onClick={() => mutate((g) => autoDeploy(g.combat!))} disabled={!c.reserve.length}>
-                    Posicionar o resto
+                    {t('game.combat.deployRest')}
                   </button>
                   <span className="tb-spacer" />
                   <button className="btn primary" onClick={begin} disabled={!c.units.some((u) => u.side === 'p')}>
-                    <Play size={16} /> Iniciar
+                    <Play size={16} /> {t('game.combat.start')}
                   </button>
                 </>
               ) : (
                 <>
-                  <button className="btn icon" aria-label={running ? 'Pausar' : 'Continuar'} onClick={() => setRunning(!running)}>
+                  <button className="btn icon" aria-label={running ? t('game.combat.pause') : t('game.combat.resume')} onClick={() => setRunning(!running)}>
                     {running ? <Pause size={16} /> : <Play size={16} />}
                   </button>
-                  <button className="btn icon" aria-label="Um turno" onClick={step} disabled={running}>
+                  <button className="btn icon" aria-label={t('game.combat.oneTurn')} onClick={step} disabled={running}>
                     <SkipForward size={16} />
                   </button>
-                  <button className="btn icon" aria-label="Acelerar" aria-pressed={fast} onClick={() => setFast(!fast)}>
+                  <button className="btn icon" aria-label={t('game.combat.fast')} aria-pressed={fast} onClick={() => setFast(!fast)}>
                     <FastForward size={16} />
                   </button>
                   <span className="tb-spacer" />
                   <button className="btn" onClick={skip}>
-                    Pular para o fim
+                    {t('game.combat.skip')}
                   </button>
                 </>
               )}
@@ -328,6 +330,7 @@ function LiveView() {
 }
 
 function Token({ r, c, hit, ghost }: { r: CombatUnitRef; c: CombatState; hit?: boolean; ghost?: 'down' | 'convert' }) {
+  const { t } = useT();
   const u: Unit = r.unit;
   const fort = u.itemId === FORT_ID;
   const max = Math.max(1, maxStrOf(u, c.type) || strOf(u, c.type));
@@ -341,13 +344,13 @@ function Token({ r, c, hit, ghost }: { r: CombatUnitRef; c: CombatState; hit?: b
         width: `${100 / c.cols}%`,
         height: `${100 / c.rows}%`,
       }}
-      title={`${u.name} · ${def(u.itemId).name}`}
+      title={`${u.name} · ${itemName(u.itemId)}`}
     >
       {fort ? <span className="fort">▦</span> : <Portrait unit={u} size={40} hostile={r.side === 'e'} />}
       <span className="tk-bar">
         <span style={{ width: `${Math.min(100, (cur / max) * 100)}%` }} />
       </span>
-      <span className="tk-name">{fort ? 'Defesa' : u.name.split(' ')[0]}</span>
+      <span className="tk-name">{fort ? t('game.combat.fort') : u.name.split(' ')[0]}</span>
     </div>
   );
 }

@@ -5,7 +5,8 @@ import { formatClock, formatDate, formatDuration, player } from '../../game/stat
 import type { Tone } from '../../game/types';
 import { useGame, useGameStore } from '../../store/game';
 import { audio } from '../../audio/engine';
-import { money } from '../fmt';
+import { useT } from '../../i18n';
+import { countryName, presetTitle } from '../../i18n/lookup';
 
 const TONE_ICON: Record<Tone, typeof Info> = {
   info: Info,
@@ -17,6 +18,7 @@ const TONE_ICON: Record<Tone, typeof Info> = {
 
 /** Evento: pausa o relógio até o jogador reconhecer. */
 export function EventModal() {
+  const { t } = useT();
   const s = useGame();
   const ack = useGameStore((st) => st.ackEvent);
   const select = useGameStore((st) => st.select);
@@ -39,7 +41,7 @@ export function EventModal() {
         </h2>
         <p>{ev.body}</p>
         <div className="event-actions">
-          {more > 0 && <span className="mono hint-sm">+{more} na fila</span>}
+          {more > 0 && <span className="mono hint-sm">{t('game.overlay.queued', { n: more })}</span>}
           {ev.countryId && (
             <button
               className="btn"
@@ -48,7 +50,7 @@ export function EventModal() {
                 ack(ev.id);
               }}
             >
-              Ver no mapa
+              {t('game.overlay.viewOnMap')}
             </button>
           )}
           <button
@@ -59,7 +61,7 @@ export function EventModal() {
               ack(ev.id);
             }}
           >
-            Entendido
+            {t('game.overlay.ack')}
           </button>
         </div>
       </div>
@@ -69,58 +71,60 @@ export function EventModal() {
 
 /** Diretor Detido ou Sequestrado: o que dá para fazer. */
 export function DirectorBanner() {
+  const { t, fmt } = useT();
   const s = useGame();
   const a = player(s);
   const act = useGameStore((st) => st.act);
   const d = a.director;
   if (d.status !== 'detained' && d.status !== 'kidnapped') return null;
-  const where = d.heldIn ? s.countries[d.heldIn].name : '';
+  const where = d.heldIn ? countryName(s.countries[d.heldIn].id) : '';
   return (
     <div className="director-banner">
       <XCircle size={18} />
       <span>
-        <strong>Diretor {d.status === 'detained' ? 'Detido' : 'Sequestrado'}</strong> em {where}.{' '}
-        {d.status === 'detained' && d.releaseAt !== undefined && `Soltura em ${formatDuration(d.releaseAt - s.time)}. `}
-        Uma Equipe no país pode tentar o resgate.
+        <strong>{d.status === 'detained' ? t('game.overlay.banner.detained') : t('game.overlay.banner.kidnapped')}</strong> {t('game.overlay.banner.where', { where })}{' '}
+        {d.status === 'detained' && d.releaseAt !== undefined && `${t('game.overlay.banner.releaseIn', { time: formatDuration(d.releaseAt - s.time) })} `}
+        {t('game.overlay.banner.rescueHint')}
       </span>
       <button className="btn sm danger" disabled={a.cash < (d.price ?? 0)} onClick={() => act((g, ag) => A.payRelease(g, ag), 'buy')}>
-        {d.status === 'detained' ? 'Pagar fiança' : 'Pagar resgate'} {money(d.price ?? 0)}
+        {d.status === 'detained' ? t('game.overlay.payBail', { price: fmt.money(d.price ?? 0) }) : t('game.overlay.payRansom', { price: fmt.money(d.price ?? 0) })}
       </button>
     </div>
   );
 }
 
 export function GameOver({ onQuit }: { onQuit: () => void }) {
+  const { t, fmt } = useT();
   const s = useGame();
   const a = player(s);
   if (!s.over || s.events.length) return null;
   return (
     <div className="scrim">
       <div className={`event-card big tone-${s.over.won ? 'good' : 'bad'}`} role="dialog" aria-modal>
-        <span className="event-stamp mono">{s.options.preset.title}</span>
-        <h2>{s.over.won ? 'Objetivo cumprido' : 'Fim de operação'}</h2>
+        <span className="event-stamp mono">{presetTitle(s.options.preset.id)}</span>
+        <h2>{s.over.won ? t('game.overlay.over.won') : t('game.overlay.over.lost')}</h2>
         <p>{s.over.reason}</p>
         <div className="kv-grid mono">
-          <span>Dias</span>
+          <span>{t('game.overlay.over.days')}</span>
           <b>{Math.floor(s.time / 24)}</b>
-          <span>Pontuação</span>
-          <b>{s.over.score.toLocaleString('pt-BR')}</b>
-          <span>Combates</span>
+          <span>{t('game.overlay.over.score')}</span>
+          <b>{fmt.num(s.over.score)}</b>
+          <span>{t('game.overlay.over.combats')}</span>
           <b>
-            {a.stats.combatsWon} vencidos · {a.stats.combatsLost} perdidos
+            {t('game.overlay.over.combatsValue', { won: a.stats.combatsWon, lost: a.stats.combatsLost })}
           </b>
-          <span>Operações / Golpes</span>
+          <span>{t('game.overlay.over.opsCoups')}</span>
           <b>
             {a.stats.operations} / {a.stats.coups}
           </b>
-          <span>Contratos</span>
+          <span>{t('game.overlay.over.contracts')}</span>
           <b>{a.stats.contractsDone}</b>
-          <span>Melhor lucro</span>
-          <b>{money(a.stats.peakProfit)}</b>
+          <span>{t('game.overlay.over.bestProfit')}</span>
+          <b>{fmt.money(a.stats.peakProfit)}</b>
         </div>
         <div className="event-actions">
           <button className="btn primary" onClick={onQuit}>
-            Voltar ao menu
+            {t('game.overlay.backToMenu')}
           </button>
         </div>
       </div>
@@ -129,13 +133,14 @@ export function GameOver({ onQuit }: { onQuit: () => void }) {
 }
 
 export function LogPanel({ open, onToggle }: { open: boolean; onToggle: () => void }) {
+  const { t } = useT();
   const s = useGame();
   const select = useGameStore((st) => st.select);
   const list = s.log.slice(-60).reverse();
   return (
     <aside className={`log${open ? ' open' : ''}`}>
       <button className="log-head mono" onClick={onToggle}>
-        Relatório {open ? '▾' : '▴'}
+        {t('game.overlay.log')} {open ? '▾' : '▴'}
         {!open && list[0] && <span className="log-peek">{list[0].text}</span>}
       </button>
       {open && (

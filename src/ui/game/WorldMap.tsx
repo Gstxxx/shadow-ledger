@@ -9,6 +9,8 @@ import { intelCountries, player, postureIn, standing } from '../../game/state';
 import type { Flight, GameState } from '../../game/types';
 import { useGame, useGameStore } from '../../store/game';
 import { audio } from '../../audio/engine';
+import { useT } from '../../i18n';
+import { countryName } from '../../i18n/lookup';
 
 const W = 1000;
 const H = 520;
@@ -142,6 +144,7 @@ interface View {
 }
 
 export function WorldMap({ mode }: { mode: MapMode }) {
+  const { t } = useT();
   const s = useGame();
   const a = player(s);
   const selected = useGameStore((st) => st.selected);
@@ -340,15 +343,15 @@ export function WorldMap({ mode }: { mode: MapMode }) {
           })}
 
           {/* Ameaças anunciadas */}
-          {a.threats.map((t) => {
-            const cc = s.countries[t.countryId];
+          {a.threats.map((th) => {
+            const cc = s.countries[th.countryId];
             const [x, y] = project(cc.lon, cc.lat);
-            const left = Math.max(0, t.strikesAt - s.time);
+            const left = Math.max(0, th.strikesAt - s.time);
             return (
-              <g key={t.id} transform={`translate(${x} ${y})`} className="threat-pin">
+              <g key={th.id} transform={`translate(${x} ${y})`} className="threat-pin">
                 <circle r={11 * inv} fill="none" stroke="var(--red)" strokeWidth={1.4 * inv} className="pulse" />
                 <text y={-14 * inv} fontSize={9 * inv} textAnchor="middle" className="map-label hostile">
-                  {Math.ceil(left)}h
+                  {t('game.map.hours', { n: Math.ceil(left) })}
                 </text>
               </g>
             );
@@ -412,17 +415,17 @@ export function WorldMap({ mode }: { mode: MapMode }) {
             const [x, y] = project(c.lon, c.lat);
             return (
               <text key={c.id} x={x} y={y + 14 * inv} fontSize={9.5 * inv} textAnchor="middle" className={`map-label${c.id === selected ? ' sel' : ''}`}>
-                {c.name}
+                {countryName(c.id)}
               </text>
             );
           })}
         </g>
       </svg>
       <div className="map-zoom">
-        <button className="btn icon sm" aria-label="Aproximar" onClick={() => zoomAt(box.x + box.w / 2, box.y + box.h / 2, 1.4)}>
+        <button className="btn icon sm" aria-label={t('game.map.zoomIn')} onClick={() => zoomAt(box.x + box.w / 2, box.y + box.h / 2, 1.4)}>
           +
         </button>
-        <button className="btn icon sm" aria-label="Afastar" onClick={() => zoomAt(box.x + box.w / 2, box.y + box.h / 2, 1 / 1.4)}>
+        <button className="btn icon sm" aria-label={t('game.map.zoomOut')} onClick={() => zoomAt(box.x + box.w / 2, box.y + box.h / 2, 1 / 1.4)}>
           −
         </button>
       </div>

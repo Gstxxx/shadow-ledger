@@ -1,26 +1,27 @@
 import type { ReactNode } from 'react';
-import { TRAITS } from '../../game/data/traits';
-import { CLASS_LABEL } from '../../game/data/items';
 import type { CombatType, Unit } from '../../game/types';
 import { def, rankOf, upkeepOf } from '../../game/units';
-import { money } from '../fmt';
+import { useT } from '../../i18n';
+import type { Key } from '../../i18n';
+import { classLabel, itemName, traitBlurb, traitName } from '../../i18n/lookup';
 import { Portrait } from './Portrait';
 
-const STR_KEYS: [CombatType | 'convert', string][] = [
-  ['legal', 'J'],
-  ['urban', 'U'],
-  ['army', 'M'],
-  ['air', 'A'],
-  ['convert', 'I'],
+const STR_KEYS: [CombatType | 'convert', Key][] = [
+  ['legal', 'game.unitRow.pip.legal'],
+  ['urban', 'game.unitRow.pip.urban'],
+  ['army', 'game.unitRow.pip.army'],
+  ['air', 'game.unitRow.pip.air'],
+  ['convert', 'game.unitRow.pip.convert'],
 ];
 
 export function StrengthPips({ unit }: { unit: Unit }) {
+  const { t } = useT();
   const d = def(unit.itemId);
   return (
     <span className="pips mono">
-      {STR_KEYS.filter(([k]) => d.str[k] > 0).map(([k, l]) => (
-        <span key={k} className="pip" title={`${l}: ${unit.hp[k]}/${d.str[k]}`}>
-          {l}
+      {STR_KEYS.filter(([k]) => d.str[k] > 0).map(([k, lk]) => (
+        <span key={k} className="pip" title={`${t(lk)}: ${unit.hp[k]}/${d.str[k]}`}>
+          {t(lk)}
           <b className={unit.hp[k] < d.str[k] ? 'low' : ''}>{unit.hp[k]}</b>
         </span>
       ))}
@@ -29,14 +30,15 @@ export function StrengthPips({ unit }: { unit: Unit }) {
 }
 
 export function UnitRow({ unit, action, selected, onClick }: { unit: Unit; action?: ReactNode; selected?: boolean; onClick?: () => void }) {
+  const { t, fmt, lang } = useT();
   const d = def(unit.itemId);
   const rank = rankOf(unit);
   const status = unit.injury
     ? unit.injury.kind === 'wounded'
-      ? `Ferida · ${Math.ceil(unit.injury.days ?? 0)} d`
-      : 'Danificada'
+      ? t('game.unitRow.wounded', { n: Math.ceil(unit.injury.days ?? 0) })
+      : t('game.unit.status.damaged.label')
     : unit.idle
-      ? 'Parada'
+      ? t('game.unit.status.idle.label')
       : null;
   const Tag = onClick ? 'button' : 'div';
   return (
@@ -48,21 +50,21 @@ export function UnitRow({ unit, action, selected, onClick }: { unit: Unit; actio
           {rank > 0 && <span className="rank">{'▮'.repeat(rank)}</span>}
         </span>
         <span className="ur-sub">
-          {d.name}
-          {d.cls === 'cargo' ? ` · ${d.weight} t · ${d.speed} km/h` : ` · ${CLASS_LABEL[d.cls]}`}
+          {itemName(unit.itemId, lang)}
+          {d.cls === 'cargo' ? ` · ${d.weight} t · ${d.speed} km/h` : ` · ${classLabel(d.cls, lang)}`}
         </span>
         <span className="ur-tags">
           {d.cls !== 'cargo' && <StrengthPips unit={unit} />}
-          {unit.traits.map((t) => (
-            <span key={t} className={`trait${t === 'nervous' || t === 'demanding' ? ' neg' : ''}`} title={TRAITS[t].blurb}>
-              {TRAITS[t].name}
+          {unit.traits.map((tr) => (
+            <span key={tr} className={`trait${tr === 'nervous' || tr === 'demanding' ? ' neg' : ''}`} title={traitBlurb(tr, lang)}>
+              {traitName(tr, lang)}
             </span>
           ))}
           {status && <span className="status">{status}</span>}
         </span>
       </span>
       <span className="ur-side">
-        <span className="mono hint-sm">{money(upkeepOf(unit))}/mês</span>
+        <span className="mono hint-sm">{t('game.unitRow.perMonth', { price: fmt.money(upkeepOf(unit)) })}</span>
         {action}
       </span>
     </Tag>

@@ -8,56 +8,57 @@ import { ITEMS } from '../../../game/data/items';
 import { buyPrice, freeCargo, interested, midPrice, quoteBuy, quoteSell, rollRecruits, sellPrice } from '../../../game/market';
 import { directorAt, intelCountries, standing } from '../../../game/state';
 import type { Agency, Country, GameState, ItemDef } from '../../../game/types';
+import type { Key, Params } from '../../../i18n';
 
 export type Segment = 'opps' | 'arms' | 'vehicles' | 'air' | 'intel' | 'people' | 'hire';
 
 export const SEGMENTS: {
   id: Segment;
-  label: string;
+  labelKey: Key;
   icon: string;
-  hint: string;
+  hintKey: Key;
 }[] = [
   {
     id: 'opps',
-    label: 'Oportunidades',
+    labelKey: 'game.market.seg.opps',
     icon: 'forecast',
-    hint: 'Os melhores negócios que você conhece a partir daqui.',
+    hintKey: 'game.market.seg.opps.hint',
   },
   {
     id: 'arms',
-    label: 'Armamento',
+    labelKey: 'game.market.seg.arms',
     icon: 'rifles',
-    hint: 'Caixas de 100 armas. Leves e com muita procura em conflitos.',
+    hintKey: 'game.market.seg.arms.hint',
   },
   {
     id: 'vehicles',
-    label: 'Veículos',
+    labelKey: 'game.market.seg.vehicles',
     icon: 'tank1',
-    hint: 'Pesados: ocupam muito espaço no avião.',
+    hintKey: 'game.market.seg.vehicles.hint',
   },
   {
     id: 'air',
-    label: 'Aeronaves',
+    labelKey: 'game.market.seg.air',
     icon: 'heli1',
-    hint: 'Helicópteros e caças. Caças voam ao lado e não ocupam espaço.',
+    hintKey: 'game.market.seg.air.hint',
   },
   {
     id: 'intel',
-    label: 'Informação',
+    labelKey: 'game.market.seg.intel',
     icon: 'intel',
-    hint: 'Quase não pesam e valem muito. Só para revenda.',
+    hintKey: 'game.market.seg.intel.hint',
   },
   {
     id: 'people',
-    label: 'Mercenários',
+    labelKey: 'game.market.seg.people',
     icon: 'soldier',
-    hint: 'Vão para a Carga: revenda ou aliste na sua Escolta.',
+    hintKey: 'game.market.seg.people.hint',
   },
   {
     id: 'hire',
-    label: 'Contratar',
+    labelKey: 'game.market.seg.hire',
     icon: 'team',
-    hint: 'Gente e aviões para a sua agência. Não são revendidos.',
+    hintKey: 'game.market.seg.hire.hint',
   },
 ];
 
@@ -238,8 +239,8 @@ export interface Opportunity {
   qty: number;
   profit: number;
   live: boolean;
-  /** Por que não dá para fazer agora (null = dá). */
-  block: string | null;
+  /** Por que não dá para fazer agora (null = dá). `string` = texto ainda sem chave de i18n. */
+  block: BlockReason | string;
 }
 
 /**
@@ -275,6 +276,7 @@ export function opportunities(s: GameState, a: Agency, countryId: string, limit 
     if (margin <= 0) continue;
     const fit = maxAffordable(s, a, c, itemId);
     const w = ITEMS[itemId].weight;
+    // Sem chave de i18n ainda: textos em minúsculas, diferentes de block.notAllFits/noCash.
     const block = fit > 0 ? null : w > freeCargo(a) + 1e-6 ? `não cabe no avião (${w} t)` : 'caixa insuficiente';
     out.push({
       kind: 'buy-here',
@@ -350,28 +352,34 @@ export function maxAffordable(s: GameState, a: Agency, c: Country, itemId: strin
   return n;
 }
 
-export type BlockReason = string | null;
+/** Motivo de bloqueio como chave de i18n (+ parâmetros); quem renderiza traduz. */
+export interface BlockMsg {
+  key: Key;
+  params?: Params;
+}
+
+export type BlockReason = BlockMsg | null;
 
 /** Por que não dá para comprar `qty` agora (null = pode). */
 export function whyCantBuy(s: GameState, a: Agency, countryId: string, itemId: string, qty: number): BlockReason {
   const c = s.countries[countryId];
-  if (!directorAt(a, countryId)) return a.flight ? 'O Diretor está em voo.' : 'Só o Diretor compra, e ele não está aqui.';
-  if (!c.stock.includes(itemId)) return 'Este país não vende o item.';
+  if (!directorAt(a, countryId)) return { key: a.flight ? 'game.market.block.directorFlying' : 'game.market.block.onlyDirectorBuys' };
+  if (!c.stock.includes(itemId)) return { key: 'game.market.block.notSold' };
   const w = ITEMS[itemId].weight * qty;
   if (w > freeCargo(a) + 1e-6)
-    return freeCargo(a) < ITEMS[itemId].weight ? 'Avião cheio: venda ou deixe Carga numa Estação.' : 'Não cabe tudo no avião.';
-  if (quoteBuy(c, itemId, qty).total > a.cash) return 'Caixa insuficiente.';
+    return { key: freeCargo(a) < ITEMS[itemId].weight ? 'game.market.block.planeFull' : 'game.market.block.notAllFits' };
+  if (quoteBuy(c, itemId, qty).total > a.cash) return { key: 'game.market.block.noCash' };
   return null;
 }
 
 /** Por que não dá para vender `qty` agora (null = pode). */
 export function whyCantSell(s: GameState, a: Agency, countryId: string, itemId: string, qty: number): BlockReason {
   const c = s.countries[countryId];
-  if (!directorAt(a, countryId)) return a.flight ? 'O Diretor está em voo.' : 'Só o Diretor vende, e ele não está aqui.';
-  if (!interested(c, ITEMS[itemId])) return 'Ninguém aqui compra este item.';
+  if (!directorAt(a, countryId)) return { key: a.flight ? 'game.market.block.directorFlying' : 'game.market.block.onlyDirectorSells' };
+  if (!interested(c, ITEMS[itemId])) return { key: 'game.market.block.nobodyBuys' };
   const owned = cargoQty(a, itemId);
-  if (!owned) return 'Você não tem este item na Carga.';
-  if (owned < qty) return `Você só tem ${owned} na Carga.`;
+  if (!owned) return { key: 'game.market.block.noneInCargo' };
+  if (owned < qty) return { key: 'game.market.block.onlyHave', params: { n: owned } };
   return null;
 }
 
@@ -409,12 +417,12 @@ export function recruitRows(s: GameState, a: Agency, countryId: string): Recruit
     const it = ITEMS[itemId];
     const price = A.recruitPrice(countryId, itemId);
     const needsSpace = it.cls !== 'jet' && it.cls !== 'cargo';
-    const block = !here
-      ? 'Só com o Diretor no país.'
+    const block: BlockReason = !here
+      ? { key: 'game.market.block.onlyWithDirector' }
       : price > a.cash
-        ? 'Caixa insuficiente.'
+        ? { key: 'game.market.block.noCash' }
         : needsSpace && it.weight > freeCargo(a) + 1e-6
-          ? 'Sem espaço no avião.'
+          ? { key: 'game.market.block.noSpace' }
           : null;
     return { itemId, it, price, block };
   });

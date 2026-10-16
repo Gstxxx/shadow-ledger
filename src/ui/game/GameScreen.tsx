@@ -3,6 +3,8 @@ import { X } from 'lucide-react';
 import { player, standing } from '../../game/state';
 import { useGame, useGameStore } from '../../store/game';
 import { audio } from '../../audio/engine';
+import { useT } from '../../i18n';
+import type { Key } from '../../i18n';
 import { SettingsPanel } from '../title/Settings';
 import { AgencyPanel } from './AgencyPanel';
 import { CombatOverlay } from './CombatOverlay';
@@ -14,10 +16,10 @@ import { DossierHost } from './unit/DossierHost';
 import type { MapMode } from './WorldMap';
 import './game.css';
 
-const MODES: { id: MapMode; label: string }[] = [
-  { id: 'posture', label: 'Postura' },
-  { id: 'exposure', label: 'Exposição' },
-  { id: 'politics', label: 'Política' },
+const MODES: { id: MapMode; labelKey: Key }[] = [
+  { id: 'posture', labelKey: 'game.screen.mode.posture' },
+  { id: 'exposure', labelKey: 'game.screen.mode.exposure' },
+  { id: 'politics', labelKey: 'game.screen.mode.politics' },
 ];
 
 /** Drives the continuous clock with requestAnimationFrame. */
@@ -38,6 +40,7 @@ function useGameLoop() {
 
 export function GameScreen() {
   useGameLoop();
+  const { t } = useT();
   const s = useGame();
   const quit = useGameStore((st) => st.quit);
   const togglePause = useGameStore((st) => st.togglePause);
@@ -48,6 +51,13 @@ export function GameScreen() {
   const [logOpen, setLogOpen] = useState(false);
   const a = player(s);
   const selected = useGameStore((st) => st.selected);
+
+  // Ao pousar (ou sair de Detido/Sequestrado), o painel do país segue o Diretor.
+  const select = useGameStore((st) => st.select);
+  const landedAt = a.flight ? null : a.location;
+  useEffect(() => {
+    if (landedAt) select(landedAt);
+  }, [landedAt, select]);
 
   // On phones the country drawer opens when a country is picked on the map.
   useEffect(() => {
@@ -89,24 +99,24 @@ export function GameScreen() {
       <DirectorBanner />
       <div className="game-body">
         <aside className={`side left${drawer === 'left' ? ' open' : ''}`}>
-          <button className="btn icon ghost drawer-close only-narrow" aria-label="Fechar" onClick={() => setDrawer(null)}>
+          <button className="btn icon ghost drawer-close only-narrow" aria-label={t('common.close')} onClick={() => setDrawer(null)}>
             <X size={18} />
           </button>
           <CountryPanel />
         </aside>
-        <main className="map-area">
+        <main className="map-area" data-tour="map">
           <WorldMap mode={mode} />
-          <div className="map-modes" role="group" aria-label="Camada do mapa">
+          <div className="map-modes" role="group" aria-label={t('game.screen.mapLayer')}>
             {MODES.map((m) => (
               <button key={m.id} className="btn sm" aria-pressed={mode === m.id} onClick={() => setMode(m.id)}>
-                {m.label}
+                {t(m.labelKey)}
               </button>
             ))}
           </div>
           <LogPanel open={logOpen} onToggle={() => setLogOpen(!logOpen)} />
         </main>
         <aside className={`side right${drawer === 'right' ? ' open' : ''}`}>
-          <button className="btn icon ghost drawer-close only-narrow" aria-label="Fechar" onClick={() => setDrawer(null)}>
+          <button className="btn icon ghost drawer-close only-narrow" aria-label={t('common.close')} onClick={() => setDrawer(null)}>
             <X size={18} />
           </button>
           <AgencyPanel />
@@ -118,14 +128,14 @@ export function GameScreen() {
       {menu && (
         <div className="scrim" onClick={() => setMenu(false)}>
           <div className="event-card" role="dialog" aria-modal onClick={(e) => e.stopPropagation()}>
-            <h2>Pausa</h2>
+            <h2>{t('game.screen.pauseTitle')}</h2>
             <SettingsPanel embedded />
             <div className="event-actions">
               <button className="btn" onClick={() => (audio.sfx('close'), quit())}>
-                Salvar e sair
+                {t('game.screen.saveQuit')}
               </button>
               <button className="btn primary" onClick={() => (audio.sfx('click'), setMenu(false))}>
-                Voltar ao jogo
+                {t('game.screen.backToGame')}
               </button>
             </div>
           </div>

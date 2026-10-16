@@ -2,54 +2,29 @@ import { useEffect, useRef, useState } from 'react';
 import { X } from 'lucide-react';
 import { GameIcon, OperativePortrait, Stamp } from '../../../art';
 import * as A from '../../../game/actions';
-import { CLASS_LABEL } from '../../../game/data/items';
 import { STATIONS } from '../../../game/data/rules';
-import { TRAITS } from '../../../game/data/traits';
 import { directorAt, player, stationIn } from '../../../game/state';
 import type { Agency, GameState, Strength, Unit } from '../../../game/types';
 import { REPAIR_MIN_LEVEL, def, isPersonnel, rankOf, repairCost, unitValue, upkeepOf } from '../../../game/units';
 import { useGame, useGameStore } from '../../../store/game';
-import { money, tons } from '../../fmt';
+import { useT } from '../../../i18n';
+import type { I18n, Key, Lang } from '../../../i18n';
+import { classLabel, countryName, itemBlurb, itemName, stationName, traitBlurb, traitName } from '../../../i18n/lookup';
 import { Help } from '../help/Glossary';
 import './unit.css';
 
 /** Tipos de força, na ordem em que aparecem na ficha, com o ícone do kit. */
 export const STRENGTH_META: {
   key: keyof Strength;
-  label: string;
+  labelKey: Key;
   icon: string;
-  blurb: string;
+  blurbKey: Key;
 }[] = [
-  {
-    key: 'urban',
-    label: 'Urbano',
-    icon: 'combat-urban',
-    blurb: 'Ruas, prédios, batidas e ataques criminosos.',
-  },
-  {
-    key: 'army',
-    label: 'Militar',
-    icon: 'combat-army',
-    blurb: 'Campo aberto contra tropas e blindados.',
-  },
-  {
-    key: 'legal',
-    label: 'Jurídico',
-    icon: 'combat-legal',
-    blurb: 'Processos, multas e recursos.',
-  },
-  {
-    key: 'air',
-    label: 'Aéreo',
-    icon: 'combat-air',
-    blurb: 'Defesa e ataque no céu.',
-  },
-  {
-    key: 'convert',
-    label: 'Influência',
-    icon: 'tactic-negotiate',
-    blurb: 'Converte Unidades inimigas para o seu lado (menos no Aéreo).',
-  },
+  { key: 'urban', labelKey: 'game.unit.strength.urban', icon: 'combat-urban', blurbKey: 'game.unit.strength.urban.blurb' },
+  { key: 'army', labelKey: 'game.unit.strength.army', icon: 'combat-army', blurbKey: 'game.unit.strength.army.blurb' },
+  { key: 'legal', labelKey: 'game.unit.strength.legal', icon: 'combat-legal', blurbKey: 'game.unit.strength.legal.blurb' },
+  { key: 'air', labelKey: 'game.unit.strength.air', icon: 'combat-air', blurbKey: 'game.unit.strength.air.blurb' },
+  { key: 'convert', labelKey: 'game.unit.strength.convert', icon: 'tactic-negotiate', blurbKey: 'game.unit.strength.convert.blurb' },
 ];
 
 export type UnitPlace =
@@ -77,47 +52,55 @@ export function findUnit(a: Agency, uid: string): { unit: Unit; place: UnitPlace
   return null;
 }
 
-export function placeLabel(s: GameState, a: Agency, p: UnitPlace): string {
+/** Onde a Unidade está, já traduzido (`t` e `lang` vêm do `useT()` de quem renderiza). */
+export function placeLabel(s: GameState, a: Agency, p: UnitPlace, t: I18n['t'], lang: Lang): string {
   switch (p.kind) {
     case 'escort':
-      return 'Escolta do Diretor';
+      return t('game.unit.place.escort');
     case 'fleet':
-      return 'Frota (cargueiro)';
+      return t('game.unit.place.fleet');
     case 'station': {
       const st = stationIn(a, p.countryId);
-      return `${p.detained ? 'Detida na ' : ''}${st ? STATIONS[st.level].name : 'Estação'} em ${s.countries[p.countryId]?.name ?? '?'}`;
+      const params = {
+        station: st ? stationName(st.level, lang) : t('game.unit.place.stationFallback'),
+        country: s.countries[p.countryId] ? countryName(p.countryId, lang) : '?',
+      };
+      return t(p.detained ? 'game.unit.place.stationDetained' : 'game.unit.place.station', params);
     }
     case 'team': {
-      const t = a.teams.find((x) => x.id === p.teamId);
-      return t ? `${t.name} em ${s.countries[t.location]?.name ?? '?'}` : 'Equipe';
+      const tm = a.teams.find((x) => x.id === p.teamId);
+      return tm
+        ? t('game.unit.place.team', { team: tm.name, country: s.countries[tm.location] ? countryName(tm.location, lang) : '?' })
+        : t('game.unit.place.teamFallback');
     }
   }
 }
 
-export function statusOf(u: Unit, detained?: boolean): { label: string; detail: string; stamp: string } | null {
+/** Estado fora de ação da Unidade, já traduzido (`t` vem do `useT()` de quem renderiza). */
+export function statusOf(u: Unit, t: I18n['t'], detained?: boolean): { label: string; detail: string; stamp: string } | null {
   if (detained)
     return {
-      label: 'Detida',
-      detail: 'Presa pelo Estado até a Estação ser liberada (multa ou recurso).',
-      stamp: 'DETIDO',
+      label: t('game.unit.status.detained.label'),
+      detail: t('game.unit.status.detained.detail'),
+      stamp: t('game.unit.status.detained.stamp'),
     };
   if (u.injury?.kind === 'wounded')
     return {
-      label: 'Ferida',
-      detail: `Fora de ação por ~${Math.ceil(u.injury.days ?? 0)} d (duas vezes mais rápido numa Estação).`,
-      stamp: 'FERIDA',
+      label: t('game.unit.status.wounded.label'),
+      detail: t('game.unit.status.wounded.detail', { n: Math.ceil(u.injury.days ?? 0) }),
+      stamp: t('game.unit.status.wounded.stamp'),
     };
   if (u.injury?.kind === 'damaged')
     return {
-      label: 'Danificada',
-      detail: `Precisa de conserto numa Estação Escritório ou maior.`,
-      stamp: 'AVARIADA',
+      label: t('game.unit.status.damaged.label'),
+      detail: t('game.unit.status.damaged.detail'),
+      stamp: t('game.unit.status.damaged.stamp'),
     };
   if (u.idle)
     return {
-      label: 'Parada',
-      detail: 'Manutenção atrasada: não entra em Combate até você pagar.',
-      stamp: 'PARADA',
+      label: t('game.unit.status.idle.label'),
+      detail: t('game.unit.status.idle.detail'),
+      stamp: t('game.unit.status.idle.stamp'),
     };
   return null;
 }
@@ -127,6 +110,7 @@ export function UnitDossier({ uid, onClose }: { uid: string; onClose: () => void
   const s = useGame();
   const a = player(s);
   const act = useGameStore((st) => st.act);
+  const { t, fmt, lang } = useT();
   const found = findUnit(a, uid);
   const dialog = useRef<HTMLDivElement>(null);
   const [confirm, setConfirm] = useState(false);
@@ -171,7 +155,7 @@ export function UnitDossier({ uid, onClose }: { uid: string; onClose: () => void
   const human = isPersonnel(u);
   const rank = rankOf(u);
   const xpInRank = rank >= 5 ? 1 : (u.xp - rank * 20) / 20;
-  const status = statusOf(u, place.kind === 'station' && place.detained);
+  const status = statusOf(u, t, place.kind === 'station' && place.detained);
   const here = place.kind === 'escort' || place.kind === 'fleet' ? true : place.kind === 'station' ? directorAt(a, place.countryId) : false;
   const stHere = stationIn(a, a.location);
   const atStationHere = place.kind === 'station' && !place.detained && directorAt(a, place.countryId);
@@ -201,8 +185,10 @@ export function UnitDossier({ uid, onClose }: { uid: string; onClose: () => void
       >
         <div className="ud-grip only-sheet" aria-hidden />
         <header className="ud-head">
-          <span className="ud-kicker mono">Ficha de Unidade · {d.cls === 'cargo' ? 'Frota' : CLASS_LABEL[d.cls]}</span>
-          <button className="btn icon ghost ud-x" aria-label="Fechar ficha" onClick={onClose} data-autofocus>
+          <span className="ud-kicker mono">
+            {t('game.unit.kicker', { kind: d.cls === 'cargo' ? t('game.unit.kickerFleet') : classLabel(d.cls, lang) })}
+          </span>
+          <button className="btn icon ghost ud-x" aria-label={t('game.unit.closeDossier')} onClick={onClose} data-autofocus>
             <X size={18} />
           </button>
         </header>
@@ -232,7 +218,7 @@ export function UnitDossier({ uid, onClose }: { uid: string; onClose: () => void
               {u.name}
             </h2>
             <p className="ud-role">
-              {d.name} · {d.cls === 'cargo' ? `${d.weight} t · ${d.speed} km/h` : CLASS_LABEL[d.cls]}
+              {itemName(u.itemId, lang)} · {d.cls === 'cargo' ? `${d.weight} t · ${d.speed} km/h` : classLabel(d.cls, lang)}
             </p>
             <p className="ud-where">
               <GameIcon
@@ -248,7 +234,7 @@ export function UnitDossier({ uid, onClose }: { uid: string; onClose: () => void
                 size={16}
                 accent="cold"
               />
-              {placeLabel(s, a, place)}
+              {placeLabel(s, a, place, t, lang)}
             </p>
             {status && (
               <p className="ud-status" role="status">
@@ -257,12 +243,14 @@ export function UnitDossier({ uid, onClose }: { uid: string; onClose: () => void
             )}
 
             {human && (
-              <div className="ud-rank" aria-label={`Patente ${rank} de 5`}>
-                <span className="ud-k">Patente {rank}/5</span>
+              <div className="ud-rank" aria-label={t('game.unit.rankOf', { n: rank })}>
+                <span className="ud-k">{t('game.unit.rank', { n: rank })}</span>
                 <span className="ud-bar" aria-hidden>
                   <span style={{ width: `${Math.round(xpInRank * 100)}%` }} />
                 </span>
-                <span className="ud-v mono">{rank >= 5 ? 'máxima' : `${Math.round(xpInRank * 100)}% até a ${rank + 1}ª`}</span>
+                <span className="ud-v mono">
+                  {rank >= 5 ? t('game.unit.rankMax') : t('game.unit.rankProgress', { pct: Math.round(xpInRank * 100), next: rank + 1 })}
+                </span>
               </div>
             )}
           </div>
@@ -271,7 +259,7 @@ export function UnitDossier({ uid, onClose }: { uid: string; onClose: () => void
         {strengths.length > 0 && (
           <section className="ud-sec">
             <h3>
-              <Help term="strength">Força por tipo de Combate</Help>
+              <Help term="strength">{t('game.unit.strengthTitle')}</Help>
             </h3>
             <ul className="ud-str">
               {strengths.map((m) => {
@@ -281,13 +269,13 @@ export function UnitDossier({ uid, onClose }: { uid: string; onClose: () => void
                   <li key={m.key}>
                     <GameIcon id={m.icon} size={20} accent={cur < max ? 'signal' : 'warm'} />
                     <span className="ud-str-l">
-                      {m.label}
-                      <small>{m.blurb}</small>
+                      {t(m.labelKey)}
+                      <small>{t(m.blurbKey)}</small>
                     </span>
                     <span className="ud-bar" aria-hidden>
                       <span style={{ width: `${(cur / Math.max(1, max)) * 100}%` }} className={cur < max ? 'low' : ''} />
                     </span>
-                    <span className="ud-v mono" aria-label={`${cur} de ${max}`}>
+                    <span className="ud-v mono" aria-label={t('game.unit.strengthValueAria', { cur, max })}>
                       {cur}/{max}
                     </span>
                   </li>
@@ -300,19 +288,19 @@ export function UnitDossier({ uid, onClose }: { uid: string; onClose: () => void
         {human && (
           <section className="ud-sec">
             <h3>
-              <Help term="trait">Traços</Help>
+              <Help term="trait">{t('game.unit.traits')}</Help>
             </h3>
             {u.traits.length ? (
               <ul className="ud-traits">
-                {u.traits.map((t) => (
-                  <li key={t} className={t === 'nervous' || t === 'demanding' ? 'neg' : ''}>
-                    <b>{TRAITS[t].name}</b>
-                    <span>{TRAITS[t].blurb}</span>
+                {u.traits.map((tr) => (
+                  <li key={tr} className={tr === 'nervous' || tr === 'demanding' ? 'neg' : ''}>
+                    <b>{traitName(tr, lang)}</b>
+                    <span>{traitBlurb(tr, lang)}</span>
                   </li>
                 ))}
               </ul>
             ) : (
-              <p className="ud-empty">Nenhum Traço ainda. Ganha um a cada patente nova.</p>
+              <p className="ud-empty">{t('game.unit.noTraits')}</p>
             )}
           </section>
         )}
@@ -320,41 +308,41 @@ export function UnitDossier({ uid, onClose }: { uid: string; onClose: () => void
         <section className="ud-sec ud-money">
           <div>
             <span className="ud-k">
-              <Help term="upkeep">Manutenção</Help>
+              <Help term="upkeep">{t('game.unit.upkeep')}</Help>
             </span>
-            <span className="ud-v num">{money(upkeepOf(u))}/mês</span>
+            <span className="ud-v num">{t('game.unit.perMonth', { price: fmt.money(upkeepOf(u)) })}</span>
           </div>
           <div>
-            <span className="ud-k">Valor pago</span>
-            <span className="ud-v num">{money(u.paid)}</span>
+            <span className="ud-k">{t('game.unit.paid')}</span>
+            <span className="ud-v num">{fmt.money(u.paid)}</span>
           </div>
           <div>
-            <span className="ud-k">Vale hoje</span>
-            <span className="ud-v num">{money(unitValue(u))}</span>
+            <span className="ud-k">{t('game.unit.worth')}</span>
+            <span className="ud-v num">{fmt.money(unitValue(u))}</span>
           </div>
           {d.weight > 0 && d.cls !== 'jet' && d.cls !== 'cargo' && (
             <div>
-              <span className="ud-k">Peso no avião</span>
-              <span className="ud-v num">{tons(d.weight)}</span>
+              <span className="ud-k">{t('game.unit.weight')}</span>
+              <span className="ud-v num">{fmt.tons(d.weight)}</span>
             </div>
           )}
         </section>
-        <p className="ud-blurb">{d.blurb}</p>
+        <p className="ud-blurb">{itemBlurb(u.itemId, lang)}</p>
 
         <footer className="ud-actions">
           {canStation && (
             <button
               className="btn"
               disabled={!stationAllows}
-              title={!stationAllows ? 'Esta Estação não abriga a Unidade ou está cheia.' : undefined}
+              title={!stationAllows ? t('game.unit.stationDisallows') : undefined}
               onClick={() => act((g, ag) => A.transferUnit(g, ag, u.uid, 'station'))}
             >
-              <GameIcon id="station-safehouse" size={16} accent="cold" /> Deixar na Estação
+              <GameIcon id="station-safehouse" size={16} accent="cold" /> {t('game.unit.leaveAtStation')}
             </button>
           )}
           {atStationHere && (
             <button className="btn" onClick={() => act((g, ag) => A.transferUnit(g, ag, u.uid, 'escort'))}>
-              <GameIcon id="director" size={16} accent="cold" /> Levar na Escolta
+              <GameIcon id="director" size={16} accent="cold" /> {t('game.unit.takeInEscort')}
             </button>
           )}
           {place.kind === 'escort' && (
@@ -363,12 +351,12 @@ export function UnitDossier({ uid, onClose }: { uid: string; onClose: () => void
               disabled={!directorAt(a, a.location)}
               onClick={() => act((g, ag) => A.formTeam(g, ag, 'escort', [u.uid]), 'open')}
             >
-              <GameIcon id="team" size={16} accent="cold" /> Destacar em Equipe
+              <GameIcon id="team" size={16} accent="cold" /> {t('game.unit.detachTeam')}
             </button>
           )}
           {canRepair && (
             <button className="btn" disabled={a.cash < repairCost(u)} onClick={() => act((g, ag) => A.repair(g, ag, u.uid), 'buy')}>
-              Consertar · <span className="num">{money(repairCost(u))}</span>
+              {t('game.unit.repair')} <span className="num">{fmt.money(repairCost(u))}</span>
             </button>
           )}
           <span className="ud-spacer" />
@@ -376,10 +364,11 @@ export function UnitDossier({ uid, onClose }: { uid: string; onClose: () => void
             (confirm ? (
               <span className="ud-confirm" role="alert">
                 <span>
-                  Dispensar {u.name}? Você recupera <b className="num">{money(Math.round(unitValue(u) * 0.6))}</b>. Não dá para desfazer.
+                  {t('game.unit.dismissAsk', { name: u.name })} <b className="num">{fmt.money(Math.round(unitValue(u) * 0.6))}</b>
+                  {t('game.unit.dismissWarn')}
                 </span>
                 <button className="btn ghost" autoFocus onClick={() => setConfirm(false)}>
-                  Manter
+                  {t('game.unit.keep')}
                 </button>
                 <button
                   className="btn danger"
@@ -389,12 +378,12 @@ export function UnitDossier({ uid, onClose }: { uid: string; onClose: () => void
                     else setConfirm(false);
                   }}
                 >
-                  Dispensar
+                  {t('game.unit.dismiss')}
                 </button>
               </span>
             ) : (
               <button className="btn danger" onClick={() => setConfirm(true)}>
-                Dispensar…
+                {t('game.unit.dismissEllipsis')}
               </button>
             ))}
         </footer>
