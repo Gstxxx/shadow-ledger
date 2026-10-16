@@ -2,7 +2,16 @@
 
 Sem servidor próprio: o jogo é estático (Vite) e os saves ficam no navegador do jogador.
 
-## Como funciona
+## Caminho principal: Vercel
+
+O GitHub Actions está bloqueado por cobrança, então o deploy principal é o **Vercel**, ligado ao repositório: cada push na `main` gera deploy automático.
+
+- URL: https://shadow-ledger-delta.vercel.app
+- Projeto: `gstxxxs-projects/shadow-ledger`, preset Vite, base `/` (sem `--base`).
+- `vercel.json` (raiz): rewrite para `/index.html` (fallback SPA, exceto `/assets/`) e cache imutável de 1 ano em `/assets/*` (arquivos com hash).
+- Pages e itch abaixo continuam como alternativas, válidas quando a cobrança do GitHub for resolvida.
+
+## Como funciona (workflows do GitHub)
 
 | Workflow | Gatilho | O que faz |
 |---|---|---|
