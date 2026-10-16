@@ -1,4 +1,4 @@
-import { memo, useCallback, useMemo, useRef, useState } from 'react';
+import { memo, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { geoGraticule10, geoInterpolate, geoNaturalEarth1, geoPath } from 'd3-geo';
 import type { GeoPermissibleObjects } from 'd3-geo';
 import { feature } from 'topojson-client';
@@ -115,6 +115,26 @@ const Countries = memo(function Countries({
   );
 });
 
+/** Visible part of the map in SVG units: follows the container's aspect so the map always fills it. */
+interface Box {
+  x: number;
+  y: number;
+  w: number;
+  h: number;
+}
+let box: Box = { x: 0, y: 0, w: W, h: H };
+
+function boxFor(cw: number, ch: number): Box {
+  if (!cw || !ch) return { x: 0, y: 0, w: W, h: H };
+  const aspect = ch / cw;
+  if (aspect > H / W) {
+    const h = W * aspect;
+    return { x: 0, y: (H - h) / 2, w: W, h };
+  }
+  const w = H / aspect;
+  return { x: (W - w) / 2, y: 0, w, h: H };
+}
+
 interface View {
   k: number;
   x: number;
@@ -126,8 +146,30 @@ export function WorldMap({ mode }: { mode: MapMode }) {
   const a = player(s);
   const selected = useGameStore((st) => st.selected);
   const select = useGameStore((st) => st.select);
-  const [view, setView] = useState<View>({ k: 1, x: 0, y: 0 });
+  const [view, setView] = useState<View>(() => {
+    const c = s.countries[a.location];
+    return focusView(c.lon, c.lat, 1.8);
+  });
+  // Follow the Diretor when the Frota lands somewhere new.
+  useEffect(() => {
+    if (a.flight) return;
+    const c = s.countries[a.location];
+    setView((v) => focusView(c.lon, c.lat, Math.max(v.k, 1.8)));
+  }, [a.location, a.flight]); // eslint-disable-line react-hooks/exhaustive-deps
   const svg = useRef<SVGSVGElement>(null);
+  const [vb, setVb] = useState<Box>(box);
+  useEffect(() => {
+    const el = svg.current;
+    if (!el) return;
+    const ro = new ResizeObserver(() => {
+      const r = el.getBoundingClientRect();
+      box = boxFor(r.width, r.height);
+      setVb(box);
+      setView((v) => clampView(v));
+    });
+    ro.observe(el);
+    return () => ro.disconnect();
+  }, []);
   const pointers = useRef(new Map<number, { x: number; y: number }>());
   const drag = useRef<{ moved: number; pinch?: number } | null>(null);
 
@@ -149,15 +191,13 @@ export function WorldMap({ mode }: { mode: MapMode }) {
 
   const toSvg = (cx: number, cy: number) => {
     const r = svg.current!.getBoundingClientRect();
-    const scale = Math.max(W / r.width, H / r.height);
-    const ox = (r.width * scale - W) / 2;
-    const oy = (r.height * scale - H) / 2;
-    return { x: (cx - r.left) * scale - ox, y: (cy - r.top) * scale - oy };
+    const scale = box.w / r.width;
+    return { x: box.x + (cx - r.left) * scale, y: box.y + (cy - r.top) * scale };
   };
 
   const zoomAt = (px: number, py: number, factor: number) => {
     setView((v) => {
-      const k = Math.max(1, Math.min(8, v.k * factor));
+      const k = Math.max(minK(), Math.min(10, v.k * factor));
       const f = k / v.k;
       const x = px - (px - v.x) * f;
       const y = py - (py - v.y) * f;
@@ -216,7 +256,7 @@ export function WorldMap({ mode }: { mode: MapMode }) {
       <svg
         ref={svg}
         className="map"
-        viewBox={`0 0 ${W} ${H}`}
+        viewBox={`${vb.x} ${vb.y} ${vb.w} ${vb.h}`}
         preserveAspectRatio="xMidYMid meet"
         onWheel={onWheel}
         onPointerDown={onPointerDown}
@@ -379,10 +419,10 @@ export function WorldMap({ mode }: { mode: MapMode }) {
         </g>
       </svg>
       <div className="map-zoom">
-        <button className="btn icon sm" aria-label="Aproximar" onClick={() => zoomAt(W / 2, H / 2, 1.4)}>
+        <button className="btn icon sm" aria-label="Aproximar" onClick={() => zoomAt(box.x + box.w / 2, box.y + box.h / 2, 1.4)}>
           +
         </button>
-        <button className="btn icon sm" aria-label="Afastar" onClick={() => zoomAt(W / 2, H / 2, 1 / 1.4)}>
+        <button className="btn icon sm" aria-label="Afastar" onClick={() => zoomAt(box.x + box.w / 2, box.y + box.h / 2, 1 / 1.4)}>
           −
         </button>
       </div>
@@ -390,8 +430,16 @@ export function WorldMap({ mode }: { mode: MapMode }) {
   );
 }
 
+const minK = () => Math.max(box.w / W, box.h / H);
+
+function focusView(lon: number, lat: number, k: number): View {
+  const [px, py] = project(lon, lat);
+  return clampView({ k, x: box.x + box.w / 2 - px * k, y: box.y + box.h / 2 - py * k });
+}
+
 function clampView(v: View): View {
-  const minX = W - W * v.k;
-  const minY = H - H * v.k;
-  return { k: v.k, x: Math.min(0, Math.max(minX, v.x)), y: Math.min(0, Math.max(minY, v.y)) };
+  const k = Math.max(minK(), v.k);
+  const x = Math.min(box.x, Math.max(box.x + box.w - W * k, v.x));
+  const y = Math.min(box.y, Math.max(box.y + box.h - H * k, v.y));
+  return { k, x, y };
 }

@@ -116,30 +116,35 @@ export function CountryPanel() {
                     </span>
                     <span className="num">{owned || '·'}</span>
                   </button>
-                  {isOpen && (
+                  {isOpen && (() => {
+                    const canBuy = inStock ? maxBuy(itemId) : 0;
+                    const nBuy = Math.min(qty, canBuy);
+                    const nSell = sp ? Math.min(qty, owned) : 0;
+                    return (
                     <div className="mk-trade">
-                      <Stepper value={qty} max={Math.max(inStock ? maxBuy(itemId) : 0, owned, 1)} onChange={setQty} />
+                      <Stepper value={qty} max={Math.max(canBuy, owned, 1)} onChange={setQty} />
                       <div className="mk-btns">
                         <button
                           className="btn sm"
-                          disabled={!inStock || qty > maxBuy(itemId)}
-                          onClick={() => act((g, ag) => A.buy(g, ag, itemId, qty), 'buy')}
+                          disabled={nBuy < 1}
+                          onClick={() => act((g, ag) => A.buy(g, ag, itemId, nBuy), 'buy')}
                         >
-                          Comprar {inStock ? money(quoteBuy(c, itemId, qty).total) : ''}
+                          {nBuy ? `Comprar ${nBuy} · ${money(quoteBuy(c, itemId, nBuy).total)}` : inStock ? 'Sem caixa ou espaço' : 'Não vende aqui'}
                         </button>
                         <button
                           className="btn sm primary"
-                          disabled={!sp || owned < qty}
-                          onClick={() => act((g, ag) => A.sell(g, ag, itemId, qty), 'sell')}
+                          disabled={nSell < 1}
+                          onClick={() => act((g, ag) => A.sell(g, ag, itemId, nSell), 'sell')}
                         >
-                          Vender {sp ? money(quoteSell(c, itemId, Math.min(qty, Math.max(1, owned))).total) : ''}
+                          {nSell ? `Vender ${nSell} · ${money(quoteSell(c, itemId, nSell).total)}` : sp ? 'Nada na Carga' : 'Não compra aqui'}
                         </button>
                       </div>
                       <p className="hint-sm">
                         {tons(it.weight)} por unidade. {it.blurb} Cada venda derruba o preço local (Saturação), que se recupera em alguns dias.
                       </p>
                     </div>
-                  )}
+                    );
+                  })()}
                 </div>
               );
             })}

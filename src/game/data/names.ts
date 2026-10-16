@@ -29,3 +29,6 @@ export const BUYERS = [
 ];
 
 export const TEAM_NAMES = ['Ônix', 'Garoa', 'Quartzo', 'Nevoeiro', 'Siroco', 'Basalto', 'Cinábrio', 'Tufão', 'Grafite', 'Âmbar'];
+
+/** Nome padrão da agência do jogador quando ele não escolhe um. */
+export const PLAYER_AGENCY_NAMES = ['Atalaia Consultoria', 'Grupo Sextante', 'Meridiano Associados', 'Vigia Risk', 'Bússola Global', 'Contrapeso & Filhos'];

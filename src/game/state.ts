@@ -1,5 +1,5 @@
 import { COUNTRY_SEEDS, distanceKm, neighbors } from './data/countries';
-import { GROUP_NAMES, HOSTAGE_NAMES } from './data/names';
+import { GROUP_NAMES, HOSTAGE_NAMES, PLAYER_AGENCY_NAMES } from './data/names';
 import { postureOf, PRESETS, STATIONS } from './data/rules';
 import { setupRivals } from './ai/setup';
 import { buildForce } from './forces';
@@ -259,7 +259,7 @@ export function newGame(opts: GameOptions): GameState {
   s.agencies.push(
     createAgency(s, preset, {
       id: 'player',
-      name: opts.agencyName?.trim() || 'Agência',
+      name: opts.agencyName?.trim() || pick(s, PLAYER_AGENCY_NAMES),
       isPlayer: true,
       director: opts.directorName?.trim() || 'Diretor',
       cashMult: DIFF_CASH[opts.difficulty],

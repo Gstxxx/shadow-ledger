@@ -5,7 +5,8 @@ export function money(n: number): string {
   if (a >= 1e9) return `${sign}US$ ${(a / 1e9).toFixed(2).replace('.', ',')} bi`;
   if (a >= 1e6) return `${sign}US$ ${(a / 1e6).toFixed(a >= 1e8 ? 0 : 1).replace('.', ',')} mi`;
   if (a >= 1e4) return `${sign}US$ ${Math.round(a / 1e3)} mil`;
-  return `${sign}US$ ${Math.round(a).toLocaleString('pt-BR')}`;
+  if (a < 50) return 'US$ 0';
+  return `${sign}US$ ${(a / 1e3).toFixed(1).replace('.', ',')} mil`;
 }
 
 export const moneyFull = (n: number) => `US$ ${Math.round(n).toLocaleString('pt-BR')}`;
