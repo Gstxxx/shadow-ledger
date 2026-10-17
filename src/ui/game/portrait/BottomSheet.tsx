@@ -41,9 +41,12 @@ export function BottomSheet({
   const justDragged = useRef(false);
 
   // Deslocamento (px a partir do topo do contêiner) de cada estado.
+  const probe = useRef<HTMLSpanElement>(null);
   const offsets = () => {
     const h = root.current?.parentElement?.clientHeight ?? window.innerHeight;
-    return { full: 0, half: Math.round(h * 0.5), peek: Math.max(0, h - PEEK_PX) } as Record<SheetSnap, number>;
+    // Recolhida, as abas ficam acima do home indicator (--safe-b, medido pela sonda).
+    const safeB = probe.current?.offsetHeight ?? 0;
+    return { full: 0, half: Math.round(h * 0.5), peek: Math.max(0, h - PEEK_PX - safeB) } as Record<SheetSnap, number>;
   };
   const [, force] = useState(0);
   useEffect(() => {
@@ -106,6 +109,7 @@ export function BottomSheet({
       style={{ transform: `translateY(${off}px)` }}
       data-snap={snap}
     >
+      <span ref={probe} className="safe-probe" aria-hidden />
       <div className="sheet-head" onPointerDown={start} onPointerMove={move} onPointerUp={end} onPointerCancel={end}>
         <button
           type="button"

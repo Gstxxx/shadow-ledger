@@ -54,7 +54,7 @@ export function TopBar({ onMenu, onLeft, onRight }: { onMenu: () => void; onLeft
       </div>
   );
   const tensionStat = (
-      <div className="tb-stat hide-xs">
+      <div className="tb-stat hide-xs tb-tension">
         <span className="tb-k mono">
           {t('game.topbar.tension')} · {tensionBandLabel(tensionBand(s.tension))}
           {(s.crisis?.hours ?? 0) > 0 && <span className="crisis"> · {t('game.topbar.crisisIn', { time: formatDuration(crisisHoursLeft(s)) })}</span>}

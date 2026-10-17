@@ -572,3 +572,16 @@
 .linkish:focus-visible {
   outline: 2px solid var(--amber);
 }
+/* Borda esmaecida = há mais abas para rolar. */
+.mkt-segs.fade-r {
+  -webkit-mask-image: linear-gradient(90deg, #000 calc(100% - 44px), transparent);
+  mask-image: linear-gradient(90deg, #000 calc(100% - 44px), transparent);
+}
+.mkt-segs.fade-l {
+  -webkit-mask-image: linear-gradient(90deg, transparent, #000 44px);
+  mask-image: linear-gradient(90deg, transparent, #000 44px);
+}
+.mkt-segs.fade-l.fade-r {
+  -webkit-mask-image: linear-gradient(90deg, transparent, #000 44px, #000 calc(100% - 44px), transparent);
+  mask-image: linear-gradient(90deg, transparent, #000 44px, #000 calc(100% - 44px), transparent);
+}

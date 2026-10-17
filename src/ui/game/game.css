@@ -885,7 +885,7 @@ button.unit-row:hover {
 .event-card {
   position: relative;
   width: min(480px, 100%);
-  max-height: calc(100vh - 32px);
+  max-height: calc(100dvh - 32px);
   overflow: auto;
   padding: 18px 20px 16px;
   background: var(--ink-1);
@@ -1014,7 +1014,7 @@ button.unit-row:hover {
 }
 .combat-card {
   width: min(760px, 100%);
-  max-height: calc(100vh - 24px);
+  max-height: calc(100dvh - 24px);
   overflow: auto;
   display: flex;
   flex-direction: column;

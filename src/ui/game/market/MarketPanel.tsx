@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { GameIcon } from '../../../art';
 import * as A from '../../../game/actions';
 import { maxCargo, quoteBuy, quoteSell, usedCargo } from '../../../game/market';
@@ -65,6 +65,21 @@ export function MarketPanel({ countryId }: { countryId: string }) {
     setOpen(null);
   }, [countryId]);
   const active = segs.some((g) => g.id === seg) ? seg : 'opps';
+  // Esmaece a borda das abas quando há mais para rolar (o "Veículos" cortado não parecia rolável).
+  const segsRef = useRef<HTMLDivElement>(null);
+  const [segFade, setSegFade] = useState('');
+  const updateSegFade = () => {
+    const el = segsRef.current;
+    if (!el) return;
+    const left = el.scrollLeft > 4;
+    const right = el.scrollLeft + el.clientWidth < el.scrollWidth - 4;
+    setSegFade(`${left ? ' fade-l' : ''}${right ? ' fade-r' : ''}`);
+  };
+  useEffect(() => {
+    updateSegFade();
+    window.addEventListener('resize', updateSegFade);
+    return () => window.removeEventListener('resize', updateSegFade);
+  }, [segs.length]); // eslint-disable-line react-hooks/exhaustive-deps
   const meta = SEGMENTS.find((g) => g.id === active)!;
 
   const used = usedCargo(a);
@@ -120,7 +135,7 @@ export function MarketPanel({ countryId }: { countryId: string }) {
         </div>
       ) : (
         <>
-          <div className="mkt-segs" role="tablist" aria-label={t('game.market.segmentsAria')}>
+          <div className={`mkt-segs${segFade}`} ref={segsRef} onScroll={updateSegFade} role="tablist" aria-label={t('game.market.segmentsAria')}>
             {segs.map((g) => (
               <button
                 key={g.id}

@@ -286,9 +286,6 @@
     border: 0;
     border-top: 2px solid var(--amber);
   }
-  .ud-actions {
-    position: static;
-  }
   .ud-grip {
     display: block;
     position: absolute;
@@ -556,4 +553,11 @@
   border: 1px solid var(--line);
   font-size: 13px;
   color: var(--paper);
+}
+
+/* Em telas baixas (deitado) o rodapé rola junto; em pé fica fixo acima do home indicator. */
+@media (max-height: 520px) {
+  .ud-actions {
+    position: static;
+  }
 }

@@ -16,6 +16,10 @@ import { DossierHost } from './unit/DossierHost';
 import { BottomSheet } from './portrait/BottomSheet';
 import type { SheetSnap } from './portrait/BottomSheet';
 import { PORTRAIT_QUERY, usePortrait } from './portrait/usePortrait';
+import { installSafeAreaDebug } from './portrait/safeArea';
+import './portrait/safe.css';
+
+installSafeAreaDebug();
 import { countryName } from '../../i18n/lookup';
 import type { MapMode } from './WorldMap';
 import './game.css';
@@ -74,6 +78,15 @@ export function GameScreen() {
       setSnap((v) => (v === 'peek' ? 'half' : v));
     } else if (window.matchMedia('(max-width: 900px), (max-height: 520px)').matches) setDrawer('left');
   }, [selected]);
+
+  // Depuração (só em dev): window.__slSheet('peek'|'half'|'full', 'country'|'agency') para screenshots.
+  useEffect(() => {
+    if (!import.meta.env.DEV) return;
+    (window as unknown as { __slSheet?: unknown }).__slSheet = (s: SheetSnap, tab?: 'country' | 'agency') => {
+      setSnap(s);
+      if (tab) setSheetTab(tab);
+    };
+  }, []);
 
   /** Abre o painel pedido no layout atual (gaveta deitado, aba da folha em pé). */
   const openPanel = (side: 'left' | 'right') => {

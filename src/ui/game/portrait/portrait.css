@@ -37,6 +37,9 @@
 }
 .sheet-head {
   flex: none;
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
   touch-action: none;
   user-select: none;
   cursor: grab;
@@ -46,6 +49,9 @@
 }
 .sheet-grip {
   display: grid;
+  flex: none;
+  -webkit-appearance: none;
+  appearance: none;
   place-items: center;
   width: 100%;
   height: 22px;
@@ -71,7 +77,9 @@
 }
 .sheet-tab {
   position: relative;
-  flex: 1;
+  flex: 1 1 0;
+  min-width: 0;
+  white-space: nowrap;
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -258,4 +266,12 @@
 /* Valores da barra nunca quebram linha (em qualquer orientação). */
 .topbar .tb-v {
   white-space: nowrap;
+}
+
+.sheet-tab > span:not(.sheet-badge) {
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.sheet-tab > svg {
+  flex: none;
 }

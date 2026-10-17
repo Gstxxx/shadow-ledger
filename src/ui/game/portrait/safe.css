@@ -1,0 +1,200 @@
+/* ── Áreas seguras (iPhone com notch/Dynamic Island, home indicator) ── */
+:root {
+  --safe-t: env(safe-area-inset-top, 0px);
+  --safe-r: env(safe-area-inset-right, 0px);
+  --safe-b: env(safe-area-inset-bottom, 0px);
+  --safe-l: env(safe-area-inset-left, 0px);
+}
+
+/* Altura real da tela: dvh acompanha as barras do Safari. No PWA em tela cheia o iOS
+   encolhe o 100% em vez de cobrir a barra de status; lvh cobre a tela inteira. */
+html .game {
+  bottom: auto;
+  height: 100vh;
+  height: 100dvh;
+}
+@media (display-mode: standalone) {
+  html .game {
+    height: 100lvh;
+  }
+}
+
+html .topbar {
+  height: calc(var(--top) + var(--safe-t));
+  padding-top: var(--safe-t);
+  padding-left: calc(14px + var(--safe-l));
+  padding-right: calc(10px + var(--safe-r));
+}
+html .game.upright .topbar {
+  padding-top: var(--safe-t);
+  padding-left: calc(6px + var(--safe-l));
+  padding-right: calc(2px + var(--safe-r));
+}
+html .tb-details {
+  top: calc(var(--top) + var(--safe-t));
+  padding-left: calc(14px + var(--safe-l));
+  padding-right: calc(14px + var(--safe-r));
+}
+html .map-modes {
+  left: calc(10px + var(--safe-l));
+}
+html .map-zoom {
+  right: calc(10px + var(--safe-r));
+}
+html .log {
+  left: calc(10px + var(--safe-l));
+  right: calc(10px + var(--safe-r));
+  bottom: calc(10px + var(--safe-b));
+}
+html .game.upright .log {
+  bottom: 10px;
+}
+html .toasts {
+  bottom: calc(16px + var(--safe-b));
+}
+
+/* Gavetas (deitado) e colunas laterais: conteúdo fora do notch e do home indicator. */
+html .side.left {
+  padding-left: var(--safe-l);
+}
+html .side.right {
+  padding-right: var(--safe-r);
+}
+html .side .panel-scroll {
+  padding-bottom: calc(24px + var(--safe-b));
+}
+
+/* Folha inferior (em pé): encosta no fundo real; o conteúdo para antes do home indicator. */
+html .game.upright.sheet-peek .map-area {
+  bottom: calc(76px + var(--safe-b));
+}
+html .sheet-head {
+  padding-left: var(--safe-l);
+  padding-right: var(--safe-r);
+}
+html .sheet-body > .panel-scroll,
+html .sheet-body > .agency > .panel-scroll {
+  padding-bottom: calc(var(--sheet-off, 0px) + 24px + var(--safe-b));
+}
+html .safe-probe {
+  position: absolute;
+  width: 0;
+  height: var(--safe-b);
+  visibility: hidden;
+  pointer-events: none;
+}
+
+/* Modais e Combate. */
+html .scrim,
+html .combat-screen,
+html .ud-scrim {
+  padding-top: max(16px, var(--safe-t));
+  padding-right: max(16px, var(--safe-r));
+  padding-bottom: max(16px, var(--safe-b));
+  padding-left: max(16px, var(--safe-l));
+}
+html .event-card,
+html .combat-card {
+  max-height: calc(100dvh - 32px - var(--safe-t) - var(--safe-b));
+}
+@media (orientation: portrait) and (max-width: 820px) {
+  html .scrim,
+  html .combat-screen {
+    padding: var(--safe-t) var(--safe-r) 0 var(--safe-l);
+  }
+  html .event-card,
+  html .event-card.big,
+  html .combat-card,
+  html .combat-card.wide {
+    max-height: none;
+    padding-bottom: var(--safe-b);
+  }
+  html .cb-actions,
+  html .event-actions {
+    padding-bottom: calc(8px + var(--safe-b));
+  }
+}
+@media (max-height: 520px), (max-width: 640px) {
+  html .ud-scrim {
+    padding: var(--safe-t) var(--safe-r) 0 var(--safe-l);
+  }
+  html .ud-actions {
+    padding-bottom: calc(12px + var(--safe-b));
+  }
+}
+
+/* Debug (?safe=): pinta as faixas inseguras por cima de tudo. */
+.safe-debug body::before,
+.safe-debug body::after {
+  content: '';
+  position: fixed;
+  left: 0;
+  right: 0;
+  z-index: 10000;
+  pointer-events: none;
+  background: repeating-linear-gradient(45deg, rgba(229, 72, 77, 0.45) 0 6px, rgba(229, 72, 77, 0.2) 6px 12px);
+}
+.safe-debug body::before {
+  top: 0;
+  height: var(--safe-t);
+}
+.safe-debug body::after {
+  bottom: 0;
+  height: var(--safe-b);
+}
+.safe-debug #root::before,
+.safe-debug #root::after {
+  content: '';
+  position: fixed;
+  top: 0;
+  bottom: 0;
+  z-index: 10000;
+  pointer-events: none;
+  background: rgba(229, 72, 77, 0.3);
+}
+.safe-debug #root::before {
+  left: 0;
+  width: var(--safe-l);
+}
+.safe-debug #root::after {
+  right: 0;
+  width: var(--safe-r);
+}
+
+/* Botões da barra nunca encolhem abaixo do alvo de toque. */
+html .topbar .btn,
+html .topbar .tb-speed .btn {
+  flex: none;
+}
+html .topbar .tb-stat.hide-xs {
+  min-width: 0;
+  overflow: hidden;
+}
+html .topbar .tb-more,
+html .topbar .tb-clock {
+  flex: none;
+}
+html .topbar .tb-stat.hide-xs .tb-v {
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+/* Deitado e baixo: a Tensão sai da barra (fica no painel e no mapa). */
+@media (max-height: 520px) and (max-width: 1100px) {
+  html .topbar .tb-tension,
+  html .topbar .tb-agency {
+    display: none;
+  }
+}
+html .side.right .drawer-close {
+  right: calc(6px + var(--safe-r));
+}
+/* Ações da Prévia/Combate sempre visíveis, mesmo quando o cartão rola (deitado e baixo). */
+html .combat-card > .cb-actions {
+  position: sticky;
+  bottom: -16px;
+  z-index: 2;
+  margin-bottom: -16px;
+  padding-top: 8px;
+  padding-bottom: 16px;
+  background: var(--ink-1);
+}
