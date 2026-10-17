@@ -128,7 +128,8 @@ export default {
   'game.market.chart.today': 'hoje',
   'game.market.chart.aria': 'Preço de {item} nos últimos {n} dias',
   'game.market.trade.destProfit': 'Lucro em {country}: {pl} ({pct})',
-  'game.market.trade.bestQty': 'Lucro máximo com {n} unidades',
+  'game.market.trade.bestQty': 'Lucro máximo com {n, plural, one {# unidade} other {# unidades}}',
   'game.market.trade.setQty': 'Usar {n}',
   'game.market.trade.lossFrom': 'A partir de {n} unidades dá prejuízo.',
+  'game.market.trade.bestQtyOne': 'Lucro máximo com 1 unidade',
 } as const;
