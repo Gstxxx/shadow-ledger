@@ -1,5 +1,6 @@
 import { useRef, useState } from 'react';
 import { Download, FileUp, Play, Skull, Trash2 } from 'lucide-react';
+import { GModal, GToast } from '../../../art/game-ui-2';
 import type { Strings } from '../strings';
 import type { SaveSlot } from '../types';
 import { sfx } from '../settings';
@@ -15,7 +16,8 @@ interface Props {
 
 export function Continue({ s, saves, onContinue, onDelete, onExport, onImport }: Props) {
   const file = useRef<HTMLInputElement>(null);
-  const [armed, setArmed] = useState<string | null>(null);
+  // Save à espera de confirmação para apagar (abre o modal de dossiê).
+  const [confirm, setConfirm] = useState<SaveSlot | null>(null);
   const [status, setStatus] = useState<{ tone: 'busy' | 'ok' | 'bad'; text: string } | null>(null);
 
   const sorted = [...saves].sort((a, b) => b.savedAt - a.savedAt);
@@ -80,22 +82,15 @@ export function Continue({ s, saves, onContinue, onDelete, onExport, onImport }:
                 {onDelete && (
                   <button
                     type="button"
-                    className={`g-btn slm-icon-btn ${armed === sv.id ? 'g-btn--danger' : 'g-btn--ghost'}`}
+                    className="g-btn g-btn--ghost slm-icon-btn"
                     onClick={() => {
-                      if (armed === sv.id) {
-                        sfx('redact');
-                        onDelete(sv.id);
-                        setArmed(null);
-                      } else {
-                        sfx('alert');
-                        setArmed(sv.id);
-                      }
+                      sfx('alert');
+                      setConfirm(sv);
                     }}
-                    onBlur={() => setArmed((a) => (a === sv.id ? null : a))}
-                    aria-label={armed === sv.id ? s.confirmDelete : s.deleteAria(sv.label)}
+                    aria-label={s.deleteAria(sv.label)}
                   >
                     <Trash2 size={18} aria-hidden="true" />
-                    <span className="slm-icon-btn-text">{armed === sv.id ? s.confirmDelete : s.delete}</span>
+                    <span className="slm-icon-btn-text">{s.delete}</span>
                   </button>
                 )}
               </div>
@@ -119,12 +114,40 @@ export function Continue({ s, saves, onContinue, onDelete, onExport, onImport }:
             {s.importFile}
           </button>
           {status && (
-            <p className={`slm-status slm-status--${status.tone}`} role="status">
-              {status.text}
-            </p>
+            <div className="slm-status">
+              <GToast tone={status.tone === 'bad' ? 'bad' : status.tone === 'ok' ? 'good' : 'neutral'}>{status.text}</GToast>
+            </div>
           )}
         </div>
       )}
+
+      <GModal
+        open={!!confirm}
+        variant="dossier"
+        tone="bad"
+        kicker={confirm ? `${confirm.presetTitle} · ${s.day(confirm.gameDay)}` : undefined}
+        title={s.confirmDelete}
+        closeLabel={s.close}
+        width={420}
+        onClose={() => setConfirm(null)}
+        actions={
+          <button
+            type="button"
+            className="g-btn g-btn--danger"
+            onClick={() => {
+              if (!confirm || !onDelete) return;
+              sfx('redact');
+              onDelete(confirm.id);
+              setConfirm(null);
+            }}
+          >
+            <Trash2 size={18} aria-hidden="true" />
+            {s.delete}
+          </button>
+        }
+      >
+        <p className="slm-confirm-label">{confirm?.label}</p>
+      </GModal>
     </div>
   );
 }

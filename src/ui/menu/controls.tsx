@@ -1,4 +1,5 @@
 import { useId, type ReactNode } from 'react';
+import { GRange, GStepper } from '../../art/game-ui-2';
 import { sfx } from './settings';
 
 export function Segmented<T extends string | number>({
@@ -70,9 +71,8 @@ export function Toggle({
         }}
       >
         <span className="slm-toggle-label">{label}</span>
-        <span className="slm-toggle-track" aria-hidden="true">
-          <span className="slm-toggle-thumb" />
-        </span>
+        {/* Interruptor basculante do kit de jogo: o estilo lê aria-checked do próprio trilho. */}
+        <span className="g-toggle" aria-checked={checked} aria-hidden="true" />
       </button>
       {help && (
         <p className="slm-help" id={id}>
@@ -102,19 +102,7 @@ export function Slider({
         <span>{label}</span>
         <span className="slm-mono">{pct}%</span>
       </label>
-      <input
-        id={id}
-        className="slm-range"
-        type="range"
-        min={0}
-        max={100}
-        step={5}
-        value={pct}
-        style={{ ['--pct' as string]: `${pct}%` }}
-        onChange={(e) => onChange(Number(e.target.value) / 100)}
-        onPointerUp={onCommit}
-        onKeyUp={onCommit}
-      />
+      <GRange id={id} className="slm-range" min={0} max={100} step={5} value={pct} onChange={(v) => onChange(v / 100)} onPointerUp={onCommit} onKeyUp={onCommit} />
     </div>
   );
 }
@@ -135,26 +123,13 @@ export function Stepper({
   format?(v: number): string;
 }) {
   const id = useId();
-  const set = (v: number) => {
-    const n = Math.max(min, Math.min(max, v));
-    if (n !== value) sfx('click');
-    onChange(n);
-  };
   return (
     <div className="slm-field">
       <span className="slm-field-label" id={id}>
         {label}
       </span>
       <div className="slm-stepper" role="group" aria-labelledby={id}>
-        <button type="button" className="g-btn g-btn--icon slm-step-btn" aria-label="−" disabled={value <= min} onClick={() => set(value - 1)}>
-          −
-        </button>
-        <output className="slm-step-value" aria-live="polite">
-          {format ? format(value) : value}
-        </output>
-        <button type="button" className="g-btn g-btn--icon slm-step-btn" aria-label="+" disabled={value >= max} onClick={() => set(value + 1)}>
-          +
-        </button>
+        <GStepper value={value} min={min} max={max} onChange={onChange} format={format ? (n) => format(n) : undefined} />
       </div>
     </div>
   );

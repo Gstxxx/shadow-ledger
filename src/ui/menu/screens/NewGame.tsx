@@ -465,9 +465,7 @@ export function NewGame({ s, lang, presets, tutorial, reduced, onStart }: Props)
                 <strong>{t.hardcore}</strong>
                 <span>{hardcore ? t.hardcoreOn : t.hardcoreOff}</span>
               </span>
-              <span className="slm-hardcore-track" aria-hidden="true">
-                <span className="slm-hardcore-thumb" />
-              </span>
+              <span className="g-toggle slm-hardcore-switch" aria-checked={hardcore} aria-hidden="true" />
             </button>
 
             <section className="slm-summary-box" aria-label={t.summary}>
@@ -572,7 +570,7 @@ function NameField({
       <div className="slm-name-row">
         <input
           id={id}
-          className="slm-input"
+          className="g-input slm-input"
           value={value}
           maxLength={32}
           autoComplete="off"

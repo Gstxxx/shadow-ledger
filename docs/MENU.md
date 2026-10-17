@@ -62,6 +62,15 @@ O menu importa `src/art/game-ui.css` e usa o kit da art-kit em vez de controles 
 - **Botões dos dossiês:** são `.g-btn` (`--primary`, `--ghost`, `--danger`, `--lg`, `--icon`).
 - **Segmentados:** são `.g-seg` / `.g-seg__opt`, com quebra de linha quando há muitas opções e 44 px de toque.
 
+Fase 2 do kit (`src/art/game-ui-2`):
+- os interruptores usam o trilho `.g-toggle` (a linha inteira continua sendo o alvo, com rótulo e explicação);
+- volumes em `GRange`;
+- Agências Rivais do Sandbox em `GStepper`;
+- nomes do Diretor e da agência em `.g-input`;
+- apagar save confirma num `GModal` de dossiê com tom de perigo;
+- mensagens de importação em `GToast`;
+- instruções de instalação no iOS em `.g-tip`.
+
 O reset de botões do menu usa `:where(.slm-root) button` (especificidade zero), para as classes `.g-*` vencerem.
 
 ## Área segura (notch, Dynamic Island, home indicator)

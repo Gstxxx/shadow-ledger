@@ -17,7 +17,7 @@ function IosSteps({ s, onClose, reduced }: { s: Strings; onClose?: () => void; r
     };
   }, [reduced, onClose]);
   return (
-    <div ref={box} className="slm-install-ios" role="note" aria-label={s.install.iosTitle}>
+    <div ref={box} className="g-tip slm-install-ios" role="note" aria-label={s.install.iosTitle}>
       <div className="slm-install-ios-head">
         <strong>{s.install.iosTitle}</strong>
         {onClose && (

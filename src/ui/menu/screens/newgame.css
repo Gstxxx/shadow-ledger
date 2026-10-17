@@ -357,26 +357,6 @@
   display: flex;
   gap: 6px;
 }
-.slm-input {
-  flex: 1;
-  min-width: 0;
-  height: 44px;
-  padding: 0 12px;
-  border: 1.5px solid rgba(36, 28, 17, 0.45);
-  border-radius: var(--sl-radius-1);
-  background: rgba(255, 255, 255, 0.55);
-  color: var(--ng-ink);
-  font: inherit;
-  font-weight: 600;
-  user-select: text;
-}
-.slm-input:focus-visible {
-  outline: 3px solid var(--sl-stamp-blue);
-  outline-offset: 1px;
-}
-.slm-input[aria-invalid='true'] {
-  border-color: var(--sl-stamp-red);
-}
 .slm-error {
   margin: 6px 0 0;
   color: var(--sl-stamp-red);
@@ -470,23 +450,6 @@
   font-size: var(--sl-fs-sm);
   line-height: 1.3;
 }
-.slm-hardcore-track {
-  position: relative;
-  width: 64px;
-  height: 34px;
-  border: 2px solid var(--ng-ink);
-  border-radius: 2px;
-  transition: background-color var(--sl-dur-base), border-color var(--sl-dur-base);
-}
-.slm-hardcore-thumb {
-  position: absolute;
-  top: 4px;
-  left: 4px;
-  width: 22px;
-  height: 22px;
-  background: var(--ng-ink);
-  transition: transform var(--sl-dur-base) var(--sl-ease-out), background-color var(--sl-dur-base);
-}
 .slm-hardcore[aria-checked='true'] {
   border: 2px solid var(--sl-stamp-red);
   background: rgba(179, 38, 30, 0.08);
@@ -494,14 +457,6 @@
 .slm-hardcore[aria-checked='true'] .slm-hardcore-icon,
 .slm-hardcore[aria-checked='true'] .slm-hardcore-text {
   color: var(--sl-stamp-red);
-}
-.slm-hardcore[aria-checked='true'] .slm-hardcore-track {
-  background: var(--sl-stamp-red);
-  border-color: var(--sl-stamp-red);
-}
-.slm-hardcore[aria-checked='true'] .slm-hardcore-thumb {
-  transform: translateX(30px);
-  background: var(--sl-paper);
 }
 .slm-hardcore:focus-visible,
 .slm-diff:focus-visible,
@@ -628,3 +583,24 @@
     gap: 8px;
   }
 }
+
+.g-input.slm-input {
+  flex: 1;
+  min-width: 0;
+  min-height: 44px;
+  font-weight: 600;
+  user-select: text;
+}
+.g-input.slm-input[aria-invalid='true'] {
+  box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.85), inset 0 0 0 1px var(--g-danger);
+}
+.slm-hardcore .g-toggle {
+  flex: none;
+  pointer-events: none;
+  transform: scale(1.25);
+  transform-origin: 100% 50%;
+}
+.slm-hardcore[aria-checked='true'] .g-toggle {
+  box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.85), inset 0 0 0 1px var(--g-danger), inset 0 0 12px rgba(229, 72, 77, 0.35);
+}
+

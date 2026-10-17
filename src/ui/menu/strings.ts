@@ -24,6 +24,7 @@ function build(t: (key: Key, params?: Params) => string, money: (v: number) => s
     menuContinueMeta: (n: number) => t('menu.nav.continueMeta', { n }),
 
     back: t('common.back'),
+    close: t('common.close'),
     day: (n: number) => t('common.day', { n }),
 
     newTitle: t('menu.new.title'),

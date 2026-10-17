@@ -24,10 +24,12 @@ export function Dossier({ title, backLabel, closing, reduced, onRequestClose, on
   const el = useRef<HTMLElement>(null);
   const back = useRef<HTMLButtonElement>(null);
 
+  // A entrada roda só ao abrir: trocar "Reduzir movimento" lá dentro não pode fazer o dossiê entrar de novo.
+  const reducedAtOpen = useRef(reduced);
   useLayoutEffect(() => {
     const node = el.current!;
     sfx('open');
-    if (reduced) {
+    if (reducedAtOpen.current) {
       back.current?.focus();
       return;
     }
@@ -45,7 +47,7 @@ export function Dossier({ title, backLabel, closing, reduced, onRequestClose, on
     }, node);
     back.current?.focus({ preventScroll: true });
     return () => ctx.revert();
-  }, [reduced]);
+  }, []);
 
   useEffect(() => {
     if (!closing) return;
