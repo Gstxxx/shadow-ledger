@@ -6,6 +6,7 @@ import '@fontsource/ibm-plex-mono/600.css';
 import Gallery from './proto-gallery';
 import { GameScreenMock } from './proto-gamekit';
 import { StageDemo } from './proto-stage';
+import { SimpleDemo } from './proto-simple';
 import { DIRECTOR_ORIGINS, DirectorPortrait, AnalystPortrait, GameIcon, ICONS, Logo, OperativePortrait, type AnalystMood } from './index';
 
 // Montagem temporária para revisão. `?solo=...` mostra um asset grande para inspeção:
@@ -42,6 +43,7 @@ function Solo(): ReactNode {
     const list = q.get('o') ? [q.get('o') as (typeof DIRECTOR_ORIGINS)[number]] : DIRECTOR_ORIGINS;
     return wrap(list.map((o) => <DirectorPortrait key={o} origin={o} mood={mood} size={size} blink={false} />));
   }
+  if (solo === 'simple') return <SimpleDemo screen={(q.get('s') as 'trade' | 'country' | 'kit') ?? 'trade'} />;
   if (solo === 'stage') return <StageDemo initial={(q.get('m') as 'country' | 'agency' | 'item' | 'none') ?? 'country'} />;
   if (solo === 'game') return <div style={{ background: 'var(--g-bg)', minHeight: '100vh' }}><GameScreenMock width={Number(q.get('w') ?? 1440)} /></div>;
   if (solo === 'logo') return wrap(<Logo variant="full" height={140} />);

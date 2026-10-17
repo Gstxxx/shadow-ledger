@@ -1,0 +1,400 @@
+/*
+ * Shadow Ledger — componentes de JOGO, fase 3 (telas simplificadas, docs/UX-RULES.md):
+ * veredito no topo, 1 número grande, 1 ação primária, "Detalhes" recolhível, alavanca de modo.
+ * Carregado por game-ui.css; mesmos tokens --g-*.
+ */
+
+/* ═════════════════════════════════════════════════════════════════════
+   Veredito
+   ═════════════════════════════════════════════════════════════════════ */
+.g-verdict {
+  --tone: var(--g-text-2);
+  --tone-bg: rgba(167, 176, 186, 0.08);
+  --c: 12px;
+  position: relative;
+  isolation: isolate;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 12px 16px;
+  padding: 14px 16px 14px 18px;
+  container-type: inline-size;
+}
+.g-verdict::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  clip-path: polygon(var(--c) 0, 100% 0, 100% calc(100% - var(--c)), calc(100% - var(--c)) 100%, 0 100%, 0 var(--c));
+  background:
+    linear-gradient(90deg, var(--tone) 0 4px, transparent 4px),
+    radial-gradient(120% 140% at 0% 50%, var(--tone-bg), transparent 60%),
+    linear-gradient(180deg, #1b2128, #13171c);
+  box-shadow:
+    inset 0 0 0 1px color-mix(in srgb, var(--tone) 40%, transparent),
+    inset 0 1px 0 rgba(255, 255, 255, 0.06);
+}
+.g-verdict__icon {
+  flex: none;
+  display: grid;
+  place-items: center;
+  width: 56px;
+  height: 56px;
+  color: var(--tone);
+  background: radial-gradient(circle at 50% 40%, color-mix(in srgb, var(--tone) 22%, #11151a), #0a0d10 75%);
+  clip-path: polygon(8px 0, 100% 0, 100% calc(100% - 8px), calc(100% - 8px) 100%, 0 100%, 0 8px);
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--tone) 45%, transparent);
+  filter: drop-shadow(0 0 10px color-mix(in srgb, var(--tone) 35%, transparent));
+}
+.g-verdict__text {
+  flex: 1 1 220px;
+  min-width: 0;
+  display: grid;
+  gap: 4px;
+}
+.g-verdict__kicker {
+  font-family: var(--g-font-mono);
+  font-size: 10.5px;
+  font-weight: 600;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--tone);
+}
+.g-verdict__title {
+  margin: 0;
+  font-family: var(--g-font-display);
+  font-stretch: 78%;
+  font-weight: 800;
+  font-size: 22px;
+  line-height: 1.05;
+  letter-spacing: 0.01em;
+  color: var(--g-text);
+}
+.g-verdict__detail {
+  font-size: 13px;
+  line-height: 1.4;
+  color: var(--g-text-2);
+}
+.g-verdict__actions {
+  flex: none;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  align-items: center;
+}
+/* estreito: ações descem e ocupam a largura toda, primária primeiro */
+@container (max-width: 460px) {
+  .g-verdict__actions {
+    flex: 1 1 100%;
+    /* primária primeiro (à esquerda, ou na linha de cima quando quebra) */
+    flex-direction: row-reverse;
+    flex-wrap: wrap-reverse;
+    justify-content: flex-start;
+  }
+  .g-verdict__actions > * {
+    /* dividem a linha; se o rótulo não couber, a secundária desce para a linha de baixo */
+    flex: 1 1 auto;
+  }
+  .g-verdict__icon {
+    width: 46px;
+    height: 46px;
+  }
+  .g-verdict__title {
+    font-size: 19px;
+  }
+}
+.g-verdict--good {
+  --tone: var(--g-ok);
+  --tone-bg: rgba(70, 185, 141, 0.16);
+}
+.g-verdict--neutral {
+  --tone: var(--g-action);
+  --tone-bg: rgba(242, 169, 59, 0.1);
+}
+.g-verdict--warn {
+  --tone: var(--g-action-hi);
+  --tone-bg: rgba(242, 169, 59, 0.18);
+}
+.g-verdict--danger {
+  --tone: var(--g-danger);
+  --tone-bg: rgba(229, 72, 77, 0.18);
+}
+.g-verdict--live {
+  --tone: var(--g-live);
+  --tone-bg: rgba(79, 216, 224, 0.12);
+}
+
+/* ═════════════════════════════════════════════════════════════════════
+   Número grande
+   ═════════════════════════════════════════════════════════════════════ */
+.g-big {
+  --tone: var(--g-text);
+  display: inline-grid;
+  gap: 2px;
+  min-width: 0;
+}
+.g-big__k {
+  font-family: var(--g-font-mono);
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--g-text-3);
+}
+.g-big__v {
+  display: flex;
+  align-items: baseline;
+  gap: 6px;
+  flex-wrap: wrap;
+  font-family: var(--g-font-mono);
+  font-variant-numeric: tabular-nums;
+  font-feature-settings: 'tnum' 1, 'zero' 1;
+  font-weight: 600;
+  font-size: clamp(30px, 7vw, 44px);
+  line-height: 1;
+  letter-spacing: -0.02em;
+  color: var(--tone);
+  text-shadow: 0 0 18px color-mix(in srgb, var(--tone) 22%, transparent);
+  white-space: nowrap;
+}
+.g-big__unit {
+  font-size: 0.42em;
+  font-weight: 500;
+  letter-spacing: 0.02em;
+  color: var(--g-text-3);
+}
+.g-big__delta {
+  font-size: 0.36em;
+  font-weight: 600;
+  letter-spacing: 0;
+}
+.g-big__delta--up {
+  color: var(--g-ok-hi);
+}
+.g-big__delta--down {
+  color: var(--g-danger-hi);
+}
+.g-big__sub {
+  font-size: 12.5px;
+  color: var(--g-text-2);
+}
+.g-big--ok {
+  --tone: var(--g-ok-hi);
+}
+.g-big--danger {
+  --tone: var(--g-danger-hi);
+}
+.g-big--action {
+  --tone: var(--g-action-hi);
+}
+.g-big--sm .g-big__v {
+  font-size: clamp(22px, 5vw, 30px);
+}
+
+/* ═════════════════════════════════════════════════════════════════════
+   Detalhes recolhíveis (gaveta de equipamento)
+   ═════════════════════════════════════════════════════════════════════ */
+.g-details {
+  position: relative;
+}
+.g-details__head {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  min-height: 44px;
+  padding: 0 12px 0 14px;
+  border: 0;
+  color: var(--g-text-2);
+  background: linear-gradient(180deg, #1c2229, #151a20);
+  box-shadow:
+    inset 0 0 0 1px rgba(214, 222, 232, 0.12),
+    inset 0 1px 0 rgba(255, 255, 255, 0.05),
+    inset 0 -2px 0 rgba(0, 0, 0, 0.35);
+  font-family: var(--g-font-mono);
+  font-size: 11.5px;
+  font-weight: 600;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  text-align: left;
+  cursor: pointer;
+  touch-action: manipulation;
+  transition:
+    color var(--g-fade) var(--g-ease),
+    box-shadow var(--g-fade) var(--g-ease),
+    transform var(--g-press) var(--g-ease);
+}
+.g-details__chev {
+  flex: none;
+  width: 0;
+  height: 0;
+  border: 5px solid transparent;
+  border-left: 7px solid currentColor;
+  margin-right: -2px;
+  transition: transform var(--g-fade) var(--g-ease);
+}
+.g-details__summary {
+  margin-left: auto;
+  font-weight: 500;
+  letter-spacing: 0.04em;
+  text-transform: none;
+  color: var(--g-text-3);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  min-width: 0;
+}
+/* pega estriada de gaveta à direita */
+.g-details__grip {
+  flex: none;
+  width: 14px;
+  height: 14px;
+  background: repeating-linear-gradient(180deg, rgba(214, 222, 232, 0.3) 0 1px, rgba(0, 0, 0, 0.6) 1px 2px, transparent 2px 3px);
+}
+@media (hover: hover) {
+  .g-details__head:hover {
+    color: var(--g-text);
+    box-shadow:
+      inset 0 0 0 1px rgba(242, 169, 59, 0.45),
+      inset 0 1px 0 rgba(255, 255, 255, 0.05);
+  }
+}
+.g-details__head:active {
+  transform: translateY(1px);
+}
+.g-details__head:focus-visible {
+  outline: 2px solid var(--g-focus);
+  outline-offset: 2px;
+}
+.g-details__head[aria-expanded='true'] {
+  color: var(--g-text);
+  box-shadow:
+    inset 0 0 0 1px rgba(214, 222, 232, 0.16),
+    inset 3px 0 0 var(--g-action);
+}
+.g-details__head[aria-expanded='true'] .g-details__chev {
+  transform: rotate(90deg);
+}
+/* corpo: anima a altura com grid 0fr → 1fr */
+.g-details__body {
+  display: grid;
+  grid-template-rows: 0fr;
+  transition: grid-template-rows 180ms var(--g-ease);
+}
+.g-details__body[data-open='true'] {
+  grid-template-rows: 1fr;
+}
+.g-details__inner {
+  min-height: 0;
+  overflow: hidden;
+}
+.g-details__pad {
+  padding: 12px 14px 14px;
+  background: linear-gradient(180deg, rgba(0, 0, 0, 0.35), rgba(0, 0, 0, 0.15));
+  box-shadow:
+    inset 0 2px 6px rgba(0, 0, 0, 0.6),
+    inset 1px 0 0 rgba(214, 222, 232, 0.08),
+    inset -1px 0 0 rgba(214, 222, 232, 0.08),
+    inset 0 -1px 0 rgba(214, 222, 232, 0.08);
+  font-size: 13px;
+  color: var(--g-text-2);
+}
+
+/* ═════════════════════════════════════════════════════════════════════
+   Alavanca de modo (Comprar | Vender)
+   ═════════════════════════════════════════════════════════════════════ */
+.g-mode {
+  --n: 2;
+  --i: 0;
+  --tone: var(--g-action);
+  --tone-hi: var(--g-action-hi);
+  --tone-lo: var(--g-action-lo);
+  --c: 7px;
+  position: relative;
+  display: grid;
+  grid-template-columns: repeat(var(--n), 1fr);
+  padding: 4px;
+  background: var(--g-sunken);
+  clip-path: polygon(var(--c) 0, 100% 0, 100% calc(100% - var(--c)), calc(100% - var(--c)) 100%, 0 100%, 0 var(--c));
+  box-shadow:
+    inset 0 2px 5px rgba(0, 0, 0, 0.85),
+    inset 0 0 0 1px rgba(255, 255, 255, 0.07);
+}
+/* o "cabo" que desliza até a opção ativa */
+.g-mode__knob {
+  position: absolute;
+  top: 4px;
+  bottom: 4px;
+  left: 4px;
+  width: calc((100% - 8px) / var(--n));
+  transform: translateX(calc(100% * var(--i)));
+  background:
+    repeating-linear-gradient(90deg, rgba(0, 0, 0, 0.22) 0 1px, transparent 1px 3px) 7px center / 9px 55% no-repeat,
+    repeating-linear-gradient(90deg, rgba(0, 0, 0, 0.22) 0 1px, transparent 1px 3px) calc(100% - 7px) center / 9px 55% no-repeat,
+    linear-gradient(180deg, var(--tone-hi), var(--tone) 50%, var(--tone-lo));
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.5),
+    inset 0 -2px 0 rgba(0, 0, 0, 0.3),
+    0 0 12px color-mix(in srgb, var(--tone) 35%, transparent);
+  transition:
+    transform 160ms var(--g-ease),
+    background 160ms var(--g-ease);
+  pointer-events: none;
+}
+.g-mode__opt {
+  position: relative;
+  z-index: 1;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  min-height: 46px;
+  padding: 0 14px;
+  border: 0;
+  background: none;
+  color: var(--g-text-3);
+  font-family: var(--g-font-display);
+  font-stretch: 78%;
+  font-weight: 800;
+  font-size: 16px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  cursor: pointer;
+  touch-action: manipulation;
+  transition: color 160ms var(--g-ease);
+}
+.g-mode__opt:hover {
+  color: var(--g-text);
+}
+.g-mode__opt[aria-checked='true'] {
+  color: var(--g-on-action);
+}
+.g-mode__opt:focus-visible {
+  outline: 2px solid var(--g-focus);
+  outline-offset: -3px;
+}
+.g-mode__opt svg {
+  width: 20px;
+  height: 20px;
+}
+.g-mode--ok {
+  --tone: var(--g-ok);
+  --tone-hi: var(--g-ok-hi);
+  --tone-lo: #1f6b4f;
+}
+.g-mode--danger {
+  --tone: var(--g-danger);
+  --tone-hi: var(--g-danger-hi);
+  --tone-lo: var(--g-danger-lo);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .g-details__body,
+  .g-details__chev,
+  .g-details__head,
+  .g-mode__knob,
+  .g-mode__opt {
+    transition: none !important;
+  }
+}

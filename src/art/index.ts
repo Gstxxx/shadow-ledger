@@ -22,5 +22,7 @@ export { GButton, GIconButton, GSegmented, GPanel, GTabs, GChip, GBadge, GMeter,
 export type { GButtonProps, GButtonVariant, GIconButtonProps, GSegmentedProps, GSegOption, GPanelProps, GTabsProps, GTabItem, GChipProps, GMeterProps, GCounterProps, GMenuItemProps } from './game-ui';
 export { GDial, GCard, GSeal, GUnitCard, GModal, useModalStack, GActionBar, GToast, GTip, GRange, GStepper, GToggle, GTelex, GMapMarker, GBoard, GToken } from './game-ui-2';
 export type { GDialProps, GCardProps, GUnitCardProps, GModalProps, GActionBarProps, GDockItem, GRangeProps, GStepperProps, GMapMarkerProps, GMarkerKind, GBoardProps } from './game-ui-2';
+export { GVerdict, GBigNumber, GDetails, GModeSwitch } from './game-ui-3';
+export type { GVerdictProps, GVerdictTone, GBigNumberProps, GDetailsProps, GModeSwitchProps, GModeOption } from './game-ui-3';
 export { CornerBrackets, DossierFrame, Stamp, Redacted, RedactionBar, Divider, ClassificationBar, Tape } from './frame';
 export type { CornerBracketsProps, DossierFrameProps, StampProps, StampPreset, RedactedProps, RedactionBarProps, DividerProps, ClassificationBarProps, TapeProps } from './frame';

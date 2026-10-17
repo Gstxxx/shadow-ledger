@@ -295,3 +295,22 @@ Demo em `/src/art/gallery.html?solo=stage`. Parâmetros: `&m=agency|item|none` e
 **`<GActionBar items active onSelect label compact>`** é o dock para flutuar sobre o mapa: botões de 72×58px com ícone, rótulo e contador (`alert` em vermelho), e `aria-current` no item aberto. A classe `.g-dock` não define posição, e o exemplo usa `bottom: max(10px, var(--safe-b))`. Abaixo de 380px fica mais estreito; com `compact` mostra só ícones.
 
 `<GTabs orientation="vertical">` também funciona fora do modal (classe `.g-tabs--side`).
+
+## Telas simples (fase 3: `game-ui-3.css`, `game-ui-3.tsx`)
+
+São as peças para as regras de `docs/UX-RULES.md`: veredito no topo, um número grande, uma ação primária, "Detalhes" recolhível e listas curtas. Demo em `/src/art/gallery.html?solo=simple`, com `&s=trade|country|kit` e `&safe=t,r,b,l`.
+
+![kit](art/simples-kit.webp)
+![compra 440](art/simples-compra-440.webp)
+![compra 956×440](art/simples-compra-956x440.webp)
+![país 1440](art/simples-pais-1440.webp)
+![kit 360](art/simples-kit-360.webp)
+
+| Peça | Componente | Notas |
+|---|---|---|
+| Veredito | `<GVerdict tone="good\|neutral\|warn\|danger\|live" icon kicker title detail primary secondary role>` | Faixa e brilho na cor do tom, ícone grande num poço e a frase curta em display. Com container abaixo de 460px, as ações descem e ocupam a largura toda, primária primeiro; se não couberem lado a lado, a secundária vai para a linha de baixo. `role="status"` por padrão; use `"alert"` só para perigo urgente e `"none"` quando o veredito é estático. |
+| Número grande | `<GBigNumber label value unit delta deltaText sub tone size>` | Algarismos tabulares com `clamp(30px, 7vw, 44px)`. A variação usa ▲ verde e ▼ vermelha. `size="sm"` serve para números secundários. |
+| Detalhes | `<GDetails label summary open onToggle defaultOpen>` | Cabeçalho de 44px com seta, resumo e pega estriada. O corpo é rebaixado e abre em 180ms (grid 0fr → 1fr). Fechado, fica `inert` e `aria-hidden`; o botão tem `aria-expanded/aria-controls`. Toca o som de abrir e fechar. |
+| Alavanca de modo | `<GModeSwitch options={[{value,label,icon,tone}]} value onChange label>` | Segmentos de 46px com um cabo que desliza até o modo ativo em 160ms e muda de cor com o `tone` da opção (ex.: Comprar âmbar, Vender verde). É um radiogroup e as setas trocam o modo. |
+
+O rodapé do `GModal` agora gruda embaixo (`position: sticky`) quando o modal rola, então a ação primária fica sempre à vista, inclusive deitado e com pouca altura.

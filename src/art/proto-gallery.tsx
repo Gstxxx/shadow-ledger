@@ -31,6 +31,7 @@ import {
 } from './index';
 import { GameKitShowcase, GameScreenMock, MenuMock } from './proto-gamekit';
 import { GameKitPhase2 } from './proto-gamekit2';
+import { SimpleDemo } from './proto-simple';
 
 // ── utilidades da página ─────────────────────────────────────────────
 const lum = (hex: string) => {
@@ -516,6 +517,8 @@ export default function Gallery() {
         <GameKitShowcase />
         <h3>Fase 2: HUD, fichas, cartas, modais, teletipo, controles, mapa, tabuleiro, telex</h3>
         <GameKitPhase2 />
+        <h3>Fase 3: telas simples (veredito, número grande, detalhes, alavanca de modo)</h3>
+        <SimpleDemo screen="kit" />
         <h3>Menu principal</h3>
         <MenuMock />
         <h3>Tela de jogo recriada com .g-*</h3>
