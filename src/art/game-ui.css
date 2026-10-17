@@ -300,7 +300,9 @@
   opacity: 1 !important;
 }
 .g-skin .btn.danger,
-.g-skin .btn.primary {
+.g-skin .btn.primary,
+.g-skin .btn[aria-pressed='true'],
+.g-skin .btn.paused {
   color: var(--txt) !important;
 }
 .g-skin .btn {
@@ -316,7 +318,7 @@
 
   position: relative;
   isolation: isolate;
-  display: inline-flex;
+  /* display fica com a regra antiga, para .hide-xs/.only-* continuarem valendo */
   align-items: center;
   justify-content: center;
   gap: 8px;
@@ -453,7 +455,9 @@
 }
 
 /* variantes */
-.g-skin .btn.primary {
+.g-skin .btn.primary,
+.g-skin .btn[aria-pressed='true'],
+.g-skin .btn.paused {
   --rim: var(--g-action-rim);
   --face-hi: var(--g-action-hi);
   --face: var(--g-action);
