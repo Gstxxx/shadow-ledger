@@ -68,13 +68,14 @@ html .side .panel-scroll {
 html .game.upright.sheet-peek .map-area {
   bottom: calc(76px + var(--safe-b));
 }
-html .sheet-head {
+html .gsheet-head {
   padding-left: var(--safe-l);
   padding-right: var(--safe-r);
 }
-html .sheet-body > .panel-scroll,
-html .sheet-body > .agency > .panel-scroll {
-  padding-bottom: calc(var(--sheet-off, 0px) + 24px + var(--safe-b));
+/* A parte visível da folha (em qualquer posição) termina acima do home indicator. */
+html .gsheet {
+  box-sizing: border-box;
+  padding-bottom: calc(var(--sheet-off, 0px) + var(--safe-b));
 }
 html .safe-probe {
   position: absolute;

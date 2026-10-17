@@ -7,6 +7,9 @@ import { StrictMode, useState } from 'react';
 import { createRoot } from 'react-dom/client';
 import '../../../index.css';
 import '../game.css';
+// Como no app: o CSS do título/menu também está carregado (pega colisões de nomes de classe).
+import '../../title/title.css';
+import '../../menu/menu.css';
 import { PRESETS } from '../../../game/data/rules';
 import { player } from '../../../game/state';
 import { useGame, useGameStore } from '../../../store/game';

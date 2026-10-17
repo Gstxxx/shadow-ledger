@@ -18,7 +18,7 @@
   left: 8px;
 }
 
-.sheet {
+.gsheet {
   position: absolute;
   inset: 0;
   z-index: 25;
@@ -32,10 +32,10 @@
   will-change: transform;
   touch-action: none;
 }
-.sheet.dragging {
+.gsheet.dragging {
   transition: none;
 }
-.sheet-head {
+.gsheet-head {
   flex: none;
   display: flex;
   flex-direction: column;
@@ -44,10 +44,10 @@
   user-select: none;
   cursor: grab;
 }
-.sheet.dragging .sheet-head {
+.gsheet.dragging .gsheet-head {
   cursor: grabbing;
 }
-.sheet-grip {
+.gsheet-grip {
   display: grid;
   flex: none;
   -webkit-appearance: none;
@@ -60,22 +60,22 @@
   background: none;
   cursor: inherit;
 }
-.sheet-grip > span {
+.gsheet-grip > span {
   width: 44px;
   height: 4px;
   border-radius: 2px;
   background: var(--line-2);
 }
-.sheet-grip:focus-visible > span {
+.gsheet-grip:focus-visible > span {
   outline: 2px solid var(--amber);
   outline-offset: 4px;
 }
-.sheet-tabs {
+.gsheet-tabs {
   display: flex;
   gap: 6px;
   padding: 0 10px 8px;
 }
-.sheet-tab {
+.gsheet-tab {
   position: relative;
   flex: 1 1 0;
   min-width: 0;
@@ -93,30 +93,30 @@
   font-weight: 600;
   cursor: pointer;
 }
-.sheet-tab[aria-selected='true'] {
+.gsheet-tab[aria-selected='true'] {
   border-color: var(--amber);
   background: var(--amber-glow);
   color: var(--paper);
 }
-.sheet-tab.hot {
+.gsheet-tab.hot {
   color: #ff9da0;
 }
-.sheet-tab:focus-visible {
+.gsheet-tab:focus-visible {
   outline: 2px solid var(--amber);
   outline-offset: 2px;
 }
-.sheet-badge {
+.gsheet-badge {
   min-width: 18px;
   padding: 0 5px;
   border-radius: 9px;
   background: var(--ink-4);
   font: 500 11px/18px var(--mono);
 }
-.sheet-tab.hot .sheet-badge {
+.gsheet-tab.hot .gsheet-badge {
   background: var(--red);
   color: var(--paper);
 }
-.sheet-body {
+.gsheet-body {
   flex: 1;
   min-height: 0;
   display: flex;
@@ -125,15 +125,15 @@
   touch-action: pan-y;
 }
 /* O painel rola dentro da folha; o padding deixa o fim alcançável com a folha a meia altura. */
-.sheet-body > .panel-scroll,
-.sheet-body > .agency > .panel-scroll {
-  padding-bottom: calc(var(--sheet-off, 0px) + 24px);
+.gsheet-body > .panel-scroll,
+.gsheet-body > .agency > .panel-scroll {
+  padding-bottom: 24px;
 }
-.sheet-body > .agency {
+.gsheet-body > .agency {
   flex: 1;
   min-height: 0;
 }
-.sheet.snap-peek .sheet-body {
+.gsheet.snap-peek .gsheet-body {
   visibility: hidden;
 }
 
@@ -268,10 +268,10 @@
   white-space: nowrap;
 }
 
-.sheet-tab > span:not(.sheet-badge) {
+.gsheet-tab > span:not(.gsheet-badge) {
   overflow: hidden;
   text-overflow: ellipsis;
 }
-.sheet-tab > svg {
+.gsheet-tab > svg {
   flex: none;
 }

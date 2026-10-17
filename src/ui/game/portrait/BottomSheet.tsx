@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react';
+import { useLayoutEffect, useRef, useState } from 'react';
 import type { ReactNode } from 'react';
 import './portrait.css';
 
@@ -42,18 +42,27 @@ export function BottomSheet({
 
   // Deslocamento (px a partir do topo do contêiner) de cada estado.
   const probe = useRef<HTMLSpanElement>(null);
-  const offsets = () => {
-    const h = root.current?.parentElement?.clientHeight ?? window.innerHeight;
-    // Recolhida, as abas ficam acima do home indicator (--safe-b, medido pela sonda).
-    const safeB = probe.current?.offsetHeight ?? 0;
-    return { full: 0, half: Math.round(h * 0.5), peek: Math.max(0, h - PEEK_PX - safeB) } as Record<SheetSnap, number>;
-  };
-  const [, force] = useState(0);
-  useEffect(() => {
-    const onResize = () => force((n) => n + 1);
-    window.addEventListener('resize', onResize);
-    return () => window.removeEventListener('resize', onResize);
+  // Altura do contêiner e do home indicator, medidas depois de montar e a cada mudança de tamanho
+  // (no primeiro render a folha ainda não está no DOM).
+  const [box, setBox] = useState<{ h: number; safeB: number }>({ h: 0, safeB: 0 });
+  useLayoutEffect(() => {
+    const parent = root.current?.parentElement;
+    if (!parent) return;
+    const measure = () => setBox({ h: parent.clientHeight, safeB: probe.current?.offsetHeight ?? 0 });
+    measure();
+    const ro = new ResizeObserver(measure);
+    ro.observe(parent);
+    window.addEventListener('resize', measure);
+    return () => {
+      ro.disconnect();
+      window.removeEventListener('resize', measure);
+    };
   }, []);
+  const offsets = () => {
+    const h = box.h || root.current?.parentElement?.clientHeight || window.innerHeight;
+    // Recolhida, as abas ficam acima do home indicator (--safe-b, medido pela sonda).
+    return { full: 0, half: Math.round(h * 0.5), peek: Math.max(0, h - PEEK_PX - box.safeB) } as Record<SheetSnap, number>;
+  };
 
   const off = dragOff ?? offsets()[snap];
 
@@ -105,15 +114,15 @@ export function BottomSheet({
   return (
     <div
       ref={root}
-      className={`sheet snap-${snap}${dragOff !== null ? ' dragging' : ''}`}
-      style={{ transform: `translateY(${off}px)` }}
+      className={`gsheet snap-${snap}${dragOff !== null ? ' dragging' : ''}`}
+      style={{ transform: `translateY(${off}px)`, ['--sheet-off' as string]: `${off}px` }}
       data-snap={snap}
     >
       <span ref={probe} className="safe-probe" aria-hidden />
-      <div className="sheet-head" onPointerDown={start} onPointerMove={move} onPointerUp={end} onPointerCancel={end}>
+      <div className="gsheet-head" onPointerDown={start} onPointerMove={move} onPointerUp={end} onPointerCancel={end}>
         <button
           type="button"
-          className="sheet-grip"
+          className="gsheet-grip"
           aria-label={tabs.find((x) => x.id === tab)?.label}
           aria-expanded={snap !== 'peek'}
           onClick={() => {
@@ -126,7 +135,7 @@ export function BottomSheet({
         >
           <span aria-hidden />
         </button>
-        <div className="sheet-tabs" role="tablist">
+        <div className="gsheet-tabs" role="tablist">
           {tabs.map((x) => (
             <button
               key={x.id}
@@ -134,7 +143,7 @@ export function BottomSheet({
               role="tab"
               data-tour={x.tour}
               aria-selected={tab === x.id}
-              className={`sheet-tab${x.hot ? ' hot' : ''}`}
+              className={`gsheet-tab${x.hot ? ' hot' : ''}`}
               onClick={() => {
                 if (justDragged.current) {
                   justDragged.current = false;
@@ -146,13 +155,13 @@ export function BottomSheet({
             >
               {x.icon}
               <span>{x.label}</span>
-              {x.badge ? <span className="sheet-badge">{x.badge}</span> : null}
+              {x.badge ? <span className="gsheet-badge">{x.badge}</span> : null}
             </button>
           ))}
         </div>
       </div>
-      {/* O corpo tem a altura toda; o padding compensa a parte que está abaixo da tela. */}
-      <div className="sheet-body" aria-hidden={snap === 'peek'} style={{ ['--sheet-off' as string]: `${off}px` }}>
+      {/* A folha é deslocada para baixo; o padding dela faz a área visível terminar acima do home indicator. */}
+      <div className="gsheet-body" aria-hidden={snap === 'peek'}>
         {children}
       </div>
     </div>
