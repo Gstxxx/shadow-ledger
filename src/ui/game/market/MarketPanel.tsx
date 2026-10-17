@@ -22,6 +22,7 @@ import {
 } from './model';
 import type { BlockMsg, MarketRow, Opportunity, Segment } from './model';
 import { useStage } from '../stage/context';
+import { ShortList } from '../stage/Verdict';
 import './market.css';
 
 type Fmt = I18n['fmt'];
@@ -109,7 +110,7 @@ export function MarketPanel({ countryId }: { countryId: string }) {
                 : t('game.market.unknown')}
           </span>
         </div>
-        <p className="mkt-guide">{t('game.market.guide')}</p>
+        {!stage && <p className="mkt-guide">{t('game.market.guide')}</p>}
         <div className="mkt-cap" aria-label={t('game.market.cap.aria', { used: fmt.tons(used), max: fmt.tons(max) })}>
           <span className="mkt-cap-k">
             <Help term="cargo">{t('game.market.cap.label')}</Help>
@@ -152,7 +153,7 @@ export function MarketPanel({ countryId }: { countryId: string }) {
               </button>
             ))}
           </div>
-          <p className="mkt-seg-hint">{t(meta.hintKey)}</p>
+          {!stage && <p className="mkt-seg-hint">{t(meta.hintKey)}</p>}
 
           {active === 'opps' && <OppList opps={opps} countryId={countryId} onFocus={focusItem} hasStations={a.stations.length > 0} />}
 
@@ -160,9 +161,12 @@ export function MarketPanel({ countryId }: { countryId: string }) {
 
           {active !== 'opps' && active !== 'hire' && (
             <ul className="mkt-rows" data-tour="market">
-              {rows
-                .filter((r) => r.segment === active)
-                .map((r) => (
+              <ShortList
+                inList
+                key={active}
+                max={stage ? 5 : 99}
+                items={rows.filter((r) => r.segment === active)}
+                render={(r) => (
                   <MarketItem
                     key={r.itemId}
                     row={r}
@@ -170,7 +174,8 @@ export function MarketPanel({ countryId }: { countryId: string }) {
                     open={!stage && open === r.itemId}
                     onToggle={() => (stage ? focusItem(r.itemId) : setOpen(open === r.itemId ? null : r.itemId))}
                   />
-                ))}
+                )}
+              />
             </ul>
           )}
         </>
@@ -197,6 +202,7 @@ function OppList({
   const select = useGameStore((st) => st.select);
   const here = directorAt(a, countryId);
   const name = (id: string) => (s.countries[id] ? countryName(id) : '?');
+  const staged = !!useStage();
 
   if (!opps.length)
     return (
@@ -208,7 +214,7 @@ function OppList({
 
   return (
     <ul className="opps-list">
-      {opps.map((o) => {
+      <ShortList inList max={staged ? 3 : 99} items={opps} render={(o) => {
         const item = shortName(o.itemId);
         const travelBlocked = !directorAt(a, a.location) || o.to === a.location;
         return (
@@ -270,7 +276,7 @@ function OppList({
             </GCard>
           </li>
         );
-      })}
+      }} />
     </ul>
   );
 }

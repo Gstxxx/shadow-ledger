@@ -1,4 +1,4 @@
-import { Building2, Crown, Gavel, Landmark, PlaneTakeoff, ShieldAlert, Cpu, UserX } from 'lucide-react';
+import { AlertTriangle, Building2, Crown, Gavel, Landmark, PlaneTakeoff, ShieldAlert, Cpu, UserX } from 'lucide-react';
 import * as A from '../../game/actions';
 import { cargoQty } from '../../game/cargo';
 import { POLITICS_COLOR, STATIONS } from '../../game/data/rules';
@@ -8,7 +8,10 @@ import type { OperationKind, StationLevel } from '../../game/types';
 import { def } from '../../game/units';
 import { useGame, useGameStore } from '../../store/game';
 import { useT } from '../../i18n';
-import { continentName, countryName, itemName, operationBlurb, operationLabel, politicsLabel, stationName } from '../../i18n/lookup';
+import { continentName, countryName, itemName, operationBlurb, operationLabel, politicsLabel, stationName, threatLabel } from '../../i18n/lookup';
+import { Details, Verdict } from './stage/Verdict';
+import { useStage } from './stage/context';
+import { opportunities } from './market/model';
 import { Empty, ExpBar, PostureChip, RepBar, Section } from './bits';
 import { UnitCard } from './unit/UnitCard';
 import { useOpenUnit } from './unit/DossierHost';
@@ -63,12 +66,111 @@ export function CountryOverview({ countryId }: { countryId: string }) {
   const here = directorAt(a, countryId);
   return (
     <div className="cty-overview">
+      <CountryVerdict countryId={countryId} />
       <CountryStanding countryId={countryId} />
-      {!here && <TravelBox countryId={countryId} />}
       {here && <ContractsHere countryId={countryId} />}
-      <RivalsHere countryId={countryId} />
+      <Details>
+        <RivalsHere countryId={countryId} />
+        <p className="hint-sm">{t0(s, countryId)}</p>
+      </Details>
     </div>
   );
+}
+
+/** Linha de contexto do país para os detalhes (continente · nível · política). */
+const t0 = (s: ReturnType<typeof useGame>, id: string) => `${continentName(s.countries[id].continent)} · ${politicsLabel(s.countries[id].politics)}`;
+
+/**
+ * "O que faço neste país?" (docs/UX-RULES.md): ameaça aqui > voar até lá > o melhor negócio > abrir Célula.
+ * Uma frase e uma ação principal.
+ */
+function CountryVerdict({ countryId, focus }: { countryId: string; focus?: 'station' }) {
+  const { t, fmt } = useT();
+  const s = useGame();
+  const a = player(s);
+  const act = useGameStore((st) => st.act);
+  const stage = useStage();
+  const here = directorAt(a, countryId);
+  const threat = a.threats.find((x) => x.countryId === countryId && !x.cancelled);
+  if (threat) {
+    return (
+      <Verdict
+        tone="bad"
+        action={
+          <button className="btn primary" onClick={() => stage?.open({ kind: 'agency', tab: 'threats' })}>
+            <AlertTriangle size={16} /> {t('game.agency.tab.threats')}
+          </button>
+        }
+      >
+        <b>{threatLabel(threat.kind)}</b> · {t('game.map.hours', { n: Math.max(0, Math.ceil(threat.strikesAt - s.time)) })} ·{' '}
+        {t('game.agency.threats.target', { target: threat.target === 'station' ? t('game.country.station.title') : a.director.name, n: threat.strength })}
+      </Verdict>
+    );
+  }
+  if (!here) {
+    const hours = A.flightHours(a, countryId);
+    const reason =
+      a.director.status !== 'free'
+        ? t('game.country.travel.notFree')
+        : a.flight
+          ? t('game.country.travel.inFlight')
+          : !Number.isFinite(hours)
+            ? t('game.country.travel.noFreighter')
+            : null;
+    return (
+      <Verdict
+        tone={reason ? 'warn' : 'neutral'}
+        icon={<PlaneTakeoff size={22} />}
+        action={
+          <button className="btn primary" data-tour="fly" disabled={!!reason} onClick={() => act((g, ag) => A.travel(g, ag, countryId), 'depart')}>
+            <PlaneTakeoff size={16} /> {t('game.country.travel.fly')}
+          </button>
+        }
+      >
+        {reason ?? t('game.country.travel.info', { time: formatDuration(hours), speed: fleetSpeed(a) })}
+      </Verdict>
+    );
+  }
+  const best = focus === 'station' ? undefined : opportunities(s, a, countryId).find((o) => !o.block);
+  if (best) {
+    const sellThere = best.kind === 'sell-there';
+    return (
+      <Verdict
+        tone="good"
+        action={
+          sellThere ? (
+            <button className="btn primary" onClick={() => act((g, ag) => A.travel(g, ag, best.to), 'depart')}>
+              <PlaneTakeoff size={16} /> {t('game.market.opp.fly')} · {countryName(best.to)}
+            </button>
+          ) : (
+            <button className="btn primary" onClick={() => stage?.push({ kind: 'item', countryId, itemId: best.itemId })}>
+              {best.kind === 'buy-here' ? t('game.market.opp.buy') : t('game.market.opp.sell')}
+            </button>
+          )
+        }
+      >
+        <b>{itemName(best.itemId).replace(/\s*\(.*\)$/, '')}</b>{' '}
+        {best.kind === 'buy-here' ? t('game.market.opp.buyHere.b', { country: countryName(best.to) }) : best.kind === 'sell-here' ? t('game.market.opp.herePays') : t('game.market.opp.countryPays', { country: countryName(best.to) })}{' '}
+        · <b className="num">+{fmt.money(best.profit)}</b>
+      </Verdict>
+    );
+  }
+  if (!stationIn(a, countryId)) {
+    return (
+      <Verdict
+        tone="neutral"
+        icon={<Building2 size={22} />}
+        action={
+          <button className="btn primary" data-tour="open-station" onClick={() => act((g, ag) => A.openStation(g, ag), 'buy')}>
+            {t('game.country.station.open', { cost: fmt.money(A.stationCost(a, countryId, 1)) })}
+          </button>
+        }
+      >
+        {t('game.country.station.openCell')}
+      </Verdict>
+    );
+  }
+  return <Verdict tone="neutral">{t('game.market.guide')}</Verdict>;
 }
 
 /** Aba "Operações Especiais": só com o Diretor no país; fora dele, o caminho é voar até lá. */
@@ -79,14 +181,17 @@ export function CountryOps({ countryId }: { countryId: string }) {
   const act = useGameStore((st) => st.act);
   const c = s.countries[countryId];
   const here = directorAt(a, countryId);
-  if (!here)
-    return (
-      <div className="cty-ops-away">
-        <p className="hint-sm">{t('game.country.ops.hint')}</p>
-        <TravelBox countryId={countryId} />
-      </div>
-    );
+  const stage = useStage();
+  if (!here) return <CountryVerdict countryId={countryId} />;
   return (
+    <>
+    {a.escort.length ? (
+      <Verdict tone="warn">{t('game.country.ops.hint')}</Verdict>
+    ) : (
+      <Verdict tone="warn" action={<button className="btn primary" onClick={() => stage?.open({ kind: 'agency', tab: 'force' })}>{t('game.topbar.agency')}</button>}>
+        {t('game.agency.escort.empty')}
+      </Verdict>
+    )}
     <div className="ops">
       {(['bank', 'tech', 'neutralize'] as OperationKind[]).map((op) => {
         const Icon = OP_ICON[op];
@@ -101,7 +206,7 @@ export function CountryOps({ countryId }: { countryId: string }) {
             <Icon size={18} />
             <span className="op-name">{operationLabel(op)}</span>
             <span className="op-meta mono">{t('game.country.ops.hostileForce', { n: A.operationStrength(s, a, countryId, op) })}</span>
-            <span className="op-blurb">{blocked ?? operationBlurb(op)}</span>
+            {blocked ? <span className="op-blurb">{blocked}</span> : <span className="sr-only">{operationBlurb(op)}</span>}
           </button>
         );
       })}
@@ -109,19 +214,28 @@ export function CountryOps({ countryId }: { countryId: string }) {
         <Crown size={18} />
         <span className="op-name">{t('game.country.ops.coup')}</span>
         <span className="op-meta mono">{t('game.country.ops.hostileForce', { n: A.operationStrength(s, a, countryId, 'coup') })}</span>
-        <span className="op-blurb">{t('game.country.ops.coupBlurb')}</span>
+        <span className="sr-only">{t('game.country.ops.coupBlurb')}</span>
       </button>
-      <p className="hint-sm">{t('game.country.ops.hint')}</p>
     </div>
+    <Details>
+      {(['bank', 'tech', 'neutralize'] as OperationKind[]).map((op) => (
+        <p key={op} className="hint-sm">
+          <b>{operationLabel(op)}</b> · {operationBlurb(op)}
+        </p>
+      ))}
+      <p className="hint-sm">
+        <b>{t('game.country.ops.coup')}</b> · {t('game.country.ops.coupBlurb')}
+      </p>
+    </Details>
+    </>
   );
 }
 
 /** Aba "Estação": a do jogador no país, ou o convite para abrir uma Célula. */
 export function CountryStation({ countryId }: { countryId: string }) {
-  const { t } = useT();
   const s = useGame();
   const a = player(s);
-  if (!stationIn(a, countryId) && !directorAt(a, countryId)) return <Empty>{t('game.agency.stations.empty')}</Empty>;
+  if (!stationIn(a, countryId)) return <CountryVerdict countryId={countryId} focus="station" />;
   return <StationSection countryId={countryId} />;
 }
 
@@ -185,30 +299,6 @@ function RivalsHere({ countryId }: { countryId: string }) {
       })}
       <p className="hint-sm">{t('game.country.rivals.hint')}</p>
     </Section>
-  );
-}
-
-function TravelBox({ countryId }: { countryId: string }) {
-  const { t } = useT();
-  const s = useGame();
-  const a = player(s);
-  const act = useGameStore((st) => st.act);
-  const hours = A.flightHours(a, countryId);
-  const reason =
-    a.director.status !== 'free'
-      ? t('game.country.travel.notFree')
-      : a.flight
-        ? t('game.country.travel.inFlight')
-        : !Number.isFinite(hours)
-          ? t('game.country.travel.noFreighter')
-          : null;
-  return (
-    <div className="travel">
-      <button className="btn primary" data-tour="fly" disabled={!!reason} onClick={() => act((g, ag) => A.travel(g, ag, countryId), 'depart')}>
-        <PlaneTakeoff size={16} /> {t('game.country.travel.fly')}
-      </button>
-      <span className="mono hint-sm">{reason ?? t('game.country.travel.info', { time: formatDuration(hours), speed: fleetSpeed(a) })}</span>
-    </div>
   );
 }
 

@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import type { ReactNode } from 'react';
-import { AlertTriangle, CheckCircle2, ChevronDown, Info, PlaneTakeoff } from 'lucide-react';
+import { PlaneTakeoff } from 'lucide-react';
 import { GameIcon, GRange, GSegmented, GStepper } from '../../../art';
 import * as A from '../../../game/actions';
 import { maxCargo, quoteBuy, quoteSell, usedCargo } from '../../../game/market';
@@ -11,9 +11,11 @@ import { classLabel, countryName, itemBlurb } from '../../../i18n/lookup';
 import { Help } from '../help/Glossary';
 import { marketRows, maxAffordable, priceRange, saturationAfter, sellUntilBreakEven, whyCantBuy, whyCantSell } from './model';
 import { PriceRange, dealOf } from './MarketPanel';
+import { BigNumber, Details, Verdict } from '../stage/Verdict';
+import type { VerdictTone } from '../stage/Verdict';
 
 type Side = 'buy' | 'sell';
-type Tone = 'good' | 'bad' | 'warn' | 'neutral';
+type Tone = VerdictTone;
 
 /**
  * Modal de compra e venda (ADR 0006, 2ª versão): abas Comprar | Vender, cada uma com UMA quantidade,
@@ -159,7 +161,6 @@ export function ItemTrade({ countryId, itemId }: { countryId: string; itemId: st
       if (elsewhere(cheapest) && cheapest!.buy < r.buy * 0.9) action = fly(cheapest!.countryId);
     }
   }
-  const Icon = tone === 'good' ? CheckCircle2 : tone === 'bad' || tone === 'warn' ? AlertTriangle : Info;
   const disabled = !here || !!block || (side === 'sell' && !owned);
   const tonsDelta = (side === 'buy' ? 1 : -1) * r.it.weight * (side === 'buy' ? q : Math.min(q, owned));
   const cashDelta = side === 'buy' ? -buyQ.total : sellQ.total;
@@ -187,22 +188,22 @@ export function ItemTrade({ countryId, itemId }: { countryId: string; itemId: st
         onChange={(v) => setSide(v as Side)}
       />
 
-      <div className={`trade2-verdict tone-${tone}`} role="status">
-        <Icon size={20} aria-hidden />
-        <p>{text}</p>
-        {action}
-      </div>
+      <Verdict tone={tone} action={action}>
+        {text}
+      </Verdict>
 
       {here && !(side === 'sell' && !owned) && (side === 'sell' ? r.sell > 0 : r.buy > 0) && (
         <>
-          <div className="trade2-big">
-            <span className="k">{side === 'buy' ? t('game.market.youPay') : t('game.market.youGet')}</span>
-            <span className="v num">{fmt.money(total)}</span>
-            <span className="note mono">
-              {t('game.market.trade.valueText', { n: q })} · {t('game.help.saturation.title')} {['−', '', '+'][Math.sign(sat) + 1]}
-              {fmt.pct(Math.abs(sat))} <Help term="saturation" />
-            </span>
-          </div>
+          <BigNumber
+            label={side === 'buy' ? t('game.market.youPay') : t('game.market.youGet')}
+            value={fmt.money(total)}
+            note={
+              <>
+                {t('game.market.trade.valueText', { n: q })} · {t('game.help.saturation.title')} {['−', '', '+'][Math.sign(sat) + 1]}
+                {fmt.pct(Math.abs(sat))} <Help term="saturation" />
+              </>
+            }
+          />
 
           <div className="trade2-qty">
             <div className="mkt-stepper">
@@ -239,10 +240,7 @@ export function ItemTrade({ countryId, itemId }: { countryId: string; itemId: st
         </>
       )}
 
-      <details className="trade2-more">
-        <summary>
-          {t('menu.new.details')} <ChevronDown size={14} aria-hidden />
-        </summary>
+      <Details>
         <dl className="trade2-dl">
           <dt>{t('game.market.youPay')}</dt>
           <dd className="num">{r.buy ? fmt.money(r.buy) : t('game.market.notSold')}</dd>
@@ -277,7 +275,7 @@ export function ItemTrade({ countryId, itemId }: { countryId: string; itemId: st
         </dl>
         <PriceRange itemId={itemId} countryId={countryId} />
         <p className="mkt-blurb">{itemBlurb(itemId)}</p>
-      </details>
+      </Details>
     </div>
   );
 }

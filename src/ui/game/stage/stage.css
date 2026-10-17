@@ -314,74 +314,6 @@ html .game.stage.upright .topbar {
   flex: 1 1 0;
   min-height: 44px;
 }
-.trade2-verdict {
-  display: grid;
-  grid-template-columns: auto minmax(0, 1fr);
-  align-items: start;
-  gap: 8px 10px;
-  padding: 12px 14px;
-  background: rgba(214, 222, 232, 0.05);
-  box-shadow: inset 3px 0 0 var(--paper-3);
-  color: var(--paper);
-}
-.trade2-verdict > svg {
-  margin-top: 1px;
-  color: var(--paper-3);
-}
-.trade2-verdict p {
-  margin: 0;
-  font-size: 15px;
-  line-height: 1.4;
-}
-.trade2-verdict .trade-fly {
-  grid-column: 2;
-  justify-self: start;
-  min-height: 44px;
-}
-.trade2-verdict.tone-good {
-  background: rgba(70, 190, 120, 0.1);
-  box-shadow: inset 3px 0 0 var(--green, #46be78);
-}
-.trade2-verdict.tone-good > svg,
-.trade2-verdict.tone-good b {
-  color: var(--green, #46be78);
-}
-.trade2-verdict.tone-bad {
-  background: rgba(229, 72, 77, 0.1);
-  box-shadow: inset 3px 0 0 var(--red);
-}
-.trade2-verdict.tone-bad > svg,
-.trade2-verdict.tone-bad b:first-of-type {
-  color: var(--red);
-}
-.trade2-verdict.tone-warn {
-  background: rgba(242, 169, 59, 0.08);
-  box-shadow: inset 3px 0 0 var(--amber);
-}
-.trade2-verdict.tone-warn > svg {
-  color: var(--amber);
-}
-.trade2-big {
-  display: grid;
-  gap: 2px;
-}
-.trade2-big .k {
-  font-size: 11px;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
-  color: var(--paper-3);
-}
-.trade2-big .v {
-  font: 600 34px/1.1 var(--mono);
-  color: var(--paper);
-}
-.trade2-big .note {
-  display: flex;
-  align-items: center;
-  gap: 4px;
-  font-size: 11px;
-  color: var(--paper-3);
-}
 .trade2-qty {
   display: grid;
   gap: 8px;
@@ -390,26 +322,6 @@ html .game.stage.upright .topbar {
   width: 100%;
   min-height: 54px;
   font-size: 16px;
-}
-.trade2-more {
-  border-top: 1px solid var(--line);
-  padding-top: 8px;
-}
-.trade2-more > summary {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  min-height: 44px;
-  cursor: pointer;
-  list-style: none;
-  font-size: 13px;
-  color: var(--paper-2);
-}
-.trade2-more > summary::-webkit-details-marker {
-  display: none;
-}
-.trade2-more[open] > summary svg {
-  transform: rotate(180deg);
 }
 .trade2-dl {
   display: grid;
@@ -436,16 +348,16 @@ html .game.stage.upright .topbar {
   }
   .trade2-id,
   .trade2-tabs,
-  .trade2-verdict,
-  .trade2-more {
+  .trade2 > .verdict,
+  .trade2 > .details-g {
     grid-column: 1;
   }
-  .trade2-big,
+  .trade2 > .big-number,
   .trade2-qty,
   .trade2-go {
     grid-column: 2;
   }
-  .trade2-big {
+  .trade2 > .big-number {
     grid-row: 1 / span 2;
   }
   .trade2-qty {
@@ -454,4 +366,139 @@ html .game.stage.upright .topbar {
   .trade2-go {
     grid-row: 4;
   }
+}
+
+/* ── Peças das regras de UI (docs/UX-RULES.md) ───────────────────────── */
+.verdict {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  align-items: start;
+  gap: 10px 12px;
+  padding: 14px 16px;
+  background: linear-gradient(90deg, rgba(214, 222, 232, 0.07), rgba(214, 222, 232, 0.02));
+  box-shadow:
+    inset 4px 0 0 var(--paper-3),
+    inset 0 0 0 1px rgba(214, 222, 232, 0.06);
+  clip-path: polygon(0 0, calc(100% - 10px) 0, 100% 10px, 100% 100%, 0 100%);
+}
+.verdict-icon {
+  display: grid;
+  place-items: center;
+  width: 30px;
+  height: 30px;
+  color: var(--paper-3);
+}
+.verdict-text {
+  margin: 4px 0 0;
+  font-size: 16px;
+  line-height: 1.4;
+  color: var(--paper);
+}
+.verdict-action {
+  grid-column: 2;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+.verdict-action .btn {
+  min-height: 44px;
+}
+.verdict.tone-good {
+  background: linear-gradient(90deg, rgba(70, 185, 141, 0.16), rgba(70, 185, 141, 0.03));
+  box-shadow:
+    inset 4px 0 0 var(--green),
+    inset 0 0 0 1px rgba(70, 185, 141, 0.18);
+}
+.verdict.tone-good .verdict-icon,
+.verdict.tone-good b {
+  color: var(--green);
+}
+.verdict.tone-bad {
+  background: linear-gradient(90deg, rgba(229, 72, 77, 0.17), rgba(229, 72, 77, 0.03));
+  box-shadow:
+    inset 4px 0 0 var(--red),
+    inset 0 0 0 1px rgba(229, 72, 77, 0.2);
+}
+.verdict.tone-bad .verdict-icon,
+.verdict.tone-bad b:first-of-type {
+  color: var(--red);
+}
+.verdict.tone-warn {
+  background: linear-gradient(90deg, rgba(242, 169, 59, 0.14), rgba(242, 169, 59, 0.03));
+  box-shadow:
+    inset 4px 0 0 var(--amber),
+    inset 0 0 0 1px rgba(242, 169, 59, 0.16);
+}
+.verdict.tone-warn .verdict-icon {
+  color: var(--amber);
+}
+.big-number {
+  display: grid;
+  gap: 2px;
+}
+.big-number .k {
+  font-size: 11px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--paper-3);
+}
+.big-number .v {
+  font: 600 34px/1.1 var(--mono);
+  color: var(--paper);
+}
+.big-number .note {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 11px;
+  color: var(--paper-3);
+}
+.details-g {
+  border-top: 1px solid var(--line);
+}
+.details-g > summary {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  min-height: 48px;
+  cursor: pointer;
+  list-style: none;
+  font-family: var(--display);
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--paper-2);
+}
+.details-g > summary::-webkit-details-marker {
+  display: none;
+}
+.details-g > summary svg {
+  transition: transform 0.18s;
+}
+.details-g[open] > summary svg {
+  transform: rotate(180deg);
+}
+.details-g-body {
+  display: grid;
+  gap: 12px;
+  padding-bottom: 8px;
+}
+.short-more {
+  justify-self: start;
+  min-height: 44px;
+}
+.short-more-li {
+  list-style: none;
+}
+.cty-overview {
+  display: grid;
+  gap: 14px;
+}
+.cty-overview .cty-standing {
+  margin: 0;
+}
+.stage-body > .verdict + .ops,
+.stage-body .ops {
+  margin-top: 14px;
 }
