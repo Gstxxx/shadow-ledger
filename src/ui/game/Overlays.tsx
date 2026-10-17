@@ -1,4 +1,4 @@
-import { useEffect, useRef } from 'react';
+import { useCallback } from 'react';
 import { AlertTriangle, CheckCircle2, Info, Radio, XCircle } from 'lucide-react';
 import * as A from '../../game/actions';
 import { formatClock, formatDate, formatDuration, player } from '../../game/state';
@@ -8,7 +8,11 @@ import { audio } from '../../audio/engine';
 import { useT } from '../../i18n';
 import { countryName, presetTitle } from '../../i18n/lookup';
 import { msgText } from './msgText';
+import { GModal } from '../../art';
 import { profitGoal } from '../../game/objective';
+
+/** Tom do Evento → tom do modal de comando. */
+const TONE_MODAL: Record<Tone, 'action' | 'good' | 'bad' | 'intel'> = { good: 'good', bad: 'bad', warn: 'action', info: 'intel', intel: 'intel' };
 
 const TONE_ICON: Record<Tone, typeof Info> = {
   info: Info,
@@ -24,26 +28,33 @@ export function EventModal() {
   const s = useGame();
   const ack = useGameStore((st) => st.ackEvent);
   const select = useGameStore((st) => st.select);
-  const btn = useRef<HTMLButtonElement>(null);
   const ev = s.events.find((e) => e.kind !== 'engage');
-  useEffect(() => {
-    btn.current?.focus();
-  }, [ev?.id]);
+  const evId = ev?.id;
+  // Estável entre renders: o GModal refaz o efeito (e o som de abrir) quando onClose muda.
+  const onAck = useCallback(() => {
+    if (!evId) return;
+    audio.sfx('click');
+    ack(evId);
+  }, [evId, ack]);
   if (!ev || s.pendingCombat || s.combat) return null;
   const Icon = TONE_ICON[ev.tone];
   const more = s.events.filter((e) => e.kind !== 'engage').length - 1;
   return (
-    <div className="scrim">
-      <div className={`event-card tone-${ev.tone}`} role="dialog" aria-modal aria-labelledby="ev-title" key={ev.id}>
-        <span className="event-stamp mono">
-          {formatDate(ev.at)} · {formatClock(ev.at)}
-        </span>
-        <h2 id="ev-title">
+    <GModal
+      key={ev.id}
+      open
+      onClose={onAck}
+      closeLabel={t('common.close')}
+      tone={TONE_MODAL[ev.tone]}
+      kicker={`${formatDate(ev.at)} · ${formatClock(ev.at)}`}
+      title={
+        <>
           <Icon size={20} /> {msgText(ev.titleMsg, ev.title, lang)}
-        </h2>
-        <p>{msgText(ev.bodyMsg, ev.body, lang)}</p>
-        <div className="event-actions">
-          {more > 0 && <span className="mono hint-sm">{t('game.overlay.queued', { n: more })}</span>}
+        </>
+      }
+      actions={
+        <>
+          {more > 0 && <span className="mono hint-sm ev-queued">{t('game.overlay.queued', { n: more })}</span>}
           {ev.countryId && (
             <button
               className="btn"
@@ -55,19 +66,14 @@ export function EventModal() {
               {t('game.overlay.viewOnMap')}
             </button>
           )}
-          <button
-            ref={btn}
-            className="btn primary"
-            onClick={() => {
-              audio.sfx('click');
-              ack(ev.id);
-            }}
-          >
+          <button className="btn primary" onClick={onAck}>
             {t('game.overlay.ack')}
           </button>
-        </div>
-      </div>
-    </div>
+        </>
+      }
+    >
+      <p>{msgText(ev.bodyMsg, ev.body, lang)}</p>
+    </GModal>
   );
 }
 
@@ -101,42 +107,42 @@ export function GameOver({ onQuit }: { onQuit: () => void }) {
   const a = player(s);
   if (!s.over || s.events.length) return null;
   return (
-    <div className="scrim">
-      <div className={`event-card big tone-${s.over.won ? 'good' : 'bad'}`} role="dialog" aria-modal>
-        <span className="event-stamp mono">{presetTitle(s.options.preset.id)}</span>
-        <h2>{s.over.won ? t('game.overlay.over.won') : t('game.overlay.over.lost')}</h2>
-        <p>{msgText(s.over.reasonMsg, s.over.reason, lang)}</p>
-        <div className="kv-grid mono">
-          <span>{t('game.overlay.over.days')}</span>
-          <b>{Math.floor(s.time / 24)}</b>
-          <span>{t('game.overlay.over.score')}</span>
-          <b>{fmt.num(s.over.score)}</b>
-          <span>{t('game.overlay.over.combats')}</span>
-          <b>
-            {t('game.overlay.over.combatsValue', { won: a.stats.combatsWon, lost: a.stats.combatsLost })}
-          </b>
-          <span>{t('game.overlay.over.opsCoups')}</span>
-          <b>
-            {a.stats.operations} / {a.stats.coups}
-          </b>
-          <span>{t('game.overlay.over.contracts')}</span>
-          <b>{a.stats.contractsDone}</b>
-          <span>{t('game.overlay.over.bestProfit')}</span>
-          <b>{fmt.money(a.stats.peakProfit)}</b>
-          {s.options.preset.objective === 'profit' && profitGoal(s) > 1 && (
-            <>
-              <span>{t('game.overlay.over.profitGoal')}</span>
-              <b>{fmt.money(profitGoal(s))}</b>
-            </>
-          )}
-        </div>
-        <div className="event-actions">
-          <button className="btn primary" onClick={onQuit}>
-            {t('game.overlay.backToMenu')}
-          </button>
-        </div>
+    <GModal
+      open
+      width={560}
+      tone={s.over.won ? 'good' : 'bad'}
+      kicker={presetTitle(s.options.preset.id)}
+      title={s.over.won ? t('game.overlay.over.won') : t('game.overlay.over.lost')}
+      actions={
+        <button className="btn primary" onClick={onQuit}>
+          {t('game.overlay.backToMenu')}
+        </button>
+      }
+    >
+      <p>{msgText(s.over.reasonMsg, s.over.reason, lang)}</p>
+      <div className="kv-grid mono">
+        <span>{t('game.overlay.over.days')}</span>
+        <b>{Math.floor(s.time / 24)}</b>
+        <span>{t('game.overlay.over.score')}</span>
+        <b>{fmt.num(s.over.score)}</b>
+        <span>{t('game.overlay.over.combats')}</span>
+        <b>{t('game.overlay.over.combatsValue', { won: a.stats.combatsWon, lost: a.stats.combatsLost })}</b>
+        <span>{t('game.overlay.over.opsCoups')}</span>
+        <b>
+          {a.stats.operations} / {a.stats.coups}
+        </b>
+        <span>{t('game.overlay.over.contracts')}</span>
+        <b>{a.stats.contractsDone}</b>
+        <span>{t('game.overlay.over.bestProfit')}</span>
+        <b>{fmt.money(a.stats.peakProfit)}</b>
+        {s.options.preset.objective === 'profit' && profitGoal(s) > 1 && (
+          <>
+            <span>{t('game.overlay.over.profitGoal')}</span>
+            <b>{fmt.money(profitGoal(s))}</b>
+          </>
+        )}
       </div>
-    </div>
+    </GModal>
   );
 }
 

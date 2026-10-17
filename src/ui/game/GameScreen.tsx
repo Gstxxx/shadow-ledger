@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { Briefcase, MapPin, X } from 'lucide-react';
 import { player, standing } from '../../game/state';
 import { useGame, useGameStore } from '../../store/game';
@@ -21,7 +21,7 @@ import './portrait/safe.css';
 
 installSafeAreaDebug();
 import { countryName } from '../../i18n/lookup';
-import { GSegmented } from '../../art';
+import { GModal, GSegmented } from '../../art';
 import '../../art/game-ui.css';
 import type { MapMode } from './WorldMap';
 import './game.css';
@@ -115,12 +115,14 @@ export function GameScreen() {
       else if (e.key === '2') setSpeed(2);
       else if (e.key === '3' || e.key === '4') setSpeed(4);
       else if (e.key === '8') setSpeed(8);
-      else if (e.key === 'Escape') setMenu((m) => !m);
+      // Esc abre a pausa só sem outro diálogo aberto (cada modal fecha com o próprio Esc).
+      else if (e.key === 'Escape' && !document.querySelector('[role="dialog"]')) setMenu(true);
     };
     window.addEventListener('keydown', onKey);
     return () => window.removeEventListener('keydown', onKey);
   }, [togglePause, setSpeed]);
 
+  const closeMenu = useCallback(() => setMenu(false), []);
   const openMenu = () => {
     audio.sfx('open');
     setMenu(true);
@@ -189,22 +191,24 @@ export function GameScreen() {
       <EventModal />
       <CombatOverlay />
       <GameOver onQuit={quit} />
-      {menu && (
-        <div className="scrim" onClick={() => setMenu(false)}>
-          <div className="event-card" role="dialog" aria-modal onClick={(e) => e.stopPropagation()}>
-            <h2>{t('game.screen.pauseTitle')}</h2>
-            <SettingsPanel embedded />
-            <div className="event-actions">
-              <button className="btn" onClick={() => (audio.sfx('close'), quit())}>
-                {t('game.screen.saveQuit')}
-              </button>
-              <button className="btn primary" onClick={() => (audio.sfx('click'), setMenu(false))}>
-                {t('game.screen.backToGame')}
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
+      <GModal
+        open={menu}
+        onClose={closeMenu}
+        closeLabel={t('common.close')}
+        title={t('game.screen.pauseTitle')}
+        actions={
+          <>
+            <button className="btn" onClick={() => (audio.sfx('close'), quit())}>
+              {t('game.screen.saveQuit')}
+            </button>
+            <button className="btn primary" onClick={closeMenu}>
+              {t('game.screen.backToGame')}
+            </button>
+          </>
+        }
+      >
+        <SettingsPanel embedded />
+      </GModal>
     </div>
     </DossierHost>
   );

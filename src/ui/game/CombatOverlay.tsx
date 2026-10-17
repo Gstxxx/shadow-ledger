@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { FastForward, Pause, Play, SkipForward, Swords } from 'lucide-react';
 import { canPlace, place, stepCombat, succeeded, TACTICS, unplace, autoDeploy } from '../../game/combat';
 import { cancelPending, negotiateCost } from '../../game/actions';
@@ -14,6 +14,7 @@ import { Portrait } from './Portrait';
 import { msgText } from './msgText';
 import { usePortrait } from './portrait/usePortrait';
 import { RedactedTitle, RollingNumber, useCombatFx } from '../combat-fx';
+import { GModal } from '../../art';
 
 export function CombatOverlay() {
   const s = useGame();
@@ -44,6 +45,10 @@ function PendingView() {
   const hopeless = bestP < 0.15 && !setup.playerDefends;
   const [armed, setArmed] = useState(false);
 
+  const onAbort = useCallback(() => {
+    act((g) => cancelPending(g));
+  }, [act]);
+
   const go = (manual: boolean) => {
     if (hopeless && !armed) {
       setArmed(true);
@@ -56,13 +61,32 @@ function PendingView() {
   };
 
   return (
-    <div className="combat-screen">
-      <div className="combat-card">
-        <header className="cb-head">
-          <span className="chip type">{combatLabel(setup.type)}</span>
-          <h2>{msgText(setup.titleMsg, setup.title, lang)}</h2>
-          <span className="mono hint-sm">{setup.playerDefends ? t('game.combat.defendHint') : t('game.combat.attackHint')}</span>
-        </header>
+    <GModal
+      open
+      width={760}
+      tone="bad"
+      onClose={abortable ? onAbort : undefined}
+      closeLabel={t('game.combat.abort')}
+      kicker={`${combatLabel(setup.type)} · ${setup.playerDefends ? t('game.combat.defendHint') : t('game.combat.attackHint')}`}
+      title={msgText(setup.titleMsg, setup.title, lang)}
+      actions={
+        <div className="cb-actions">
+          {abortable && (
+            <button className="btn ghost" onClick={onAbort}>
+              {t('game.combat.abort')}
+            </button>
+          )}
+          <span className="tb-spacer" />
+          <button className={`btn${hopeless && armed ? ' danger' : ''}`} onClick={() => go(true)} disabled={!ours.length}>
+            {hopeless && armed ? t('game.combat.commandAnyway') : t('game.combat.command')}
+          </button>
+          <button className={`btn ${hopeless ? (armed ? 'danger' : '') : 'primary'}`} onClick={() => go(false)}>
+            {hopeless && armed ? t('game.combat.fightAnyway') : t('game.combat.auto')}
+          </button>
+        </div>
+      }
+    >
+      <div className="cb-preview">
         <div className="forces">
           <div className="force ours">
             <span className="mono hint-sm">{t('game.combat.ours', { n: ourStr })}</span>
@@ -117,22 +141,8 @@ function PendingView() {
             </span>
           </div>
         )}
-        <footer className="cb-actions">
-          {abortable && (
-            <button className="btn ghost" onClick={() => act((g) => cancelPending(g))}>
-              {t('game.combat.abort')}
-            </button>
-          )}
-          <span className="tb-spacer" />
-          <button className={`btn${hopeless && armed ? ' danger' : ''}`} onClick={() => go(true)} disabled={!ours.length}>
-            {hopeless && armed ? t('game.combat.commandAnyway') : t('game.combat.command')}
-          </button>
-          <button className={`btn ${hopeless ? (armed ? 'danger' : '') : 'primary'}`} onClick={() => go(false)}>
-            {hopeless && armed ? t('game.combat.fightAnyway') : t('game.combat.auto')}
-          </button>
-        </footer>
       </div>
-    </div>
+    </GModal>
   );
 }
 
