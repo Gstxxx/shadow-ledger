@@ -4,7 +4,7 @@
   align-items: center;
   gap: 2px;
 }
-/* 18 px visíveis dentro de uma área de toque de 44 px. */
+/* 20 px visíveis (.g-help do kit) dentro de uma área de toque de 44 px. */
 .help-btn {
   position: relative;
   width: 22px;
@@ -23,23 +23,17 @@
   position: absolute;
   inset: -11px;
 }
-.help-btn > span {
-  width: 16px;
-  height: 16px;
-  border-radius: 50%;
-  border: 1px solid currentColor;
-  display: grid;
-  place-items: center;
-  font: 600 10px/1 var(--mono);
+.help-btn > .g-help {
+  pointer-events: none;
 }
-.help-btn:hover,
-.help-btn[aria-expanded='true'] {
-  color: var(--amber);
+.help-btn:hover > .g-help,
+.help-btn[aria-expanded='true'] > .g-help,
+.help-btn:focus-visible > .g-help {
+  color: var(--g-on-action, #111);
+  background: var(--g-action, var(--amber));
 }
 .help-btn:focus-visible {
-  outline: 2px solid var(--amber);
-  outline-offset: 2px;
-  border-radius: 50%;
+  outline: none;
 }
 .help-pop {
   position: absolute;

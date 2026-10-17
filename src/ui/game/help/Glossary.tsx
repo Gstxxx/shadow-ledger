@@ -70,7 +70,9 @@ export function Help({ term, children }: { term: TermId; children?: ReactNode })
           setOpen(!open);
         }}
       >
-        <span aria-hidden>?</span>
+        <span className="g-help" aria-hidden>
+          ?
+        </span>
       </button>
       {open && (
         <span id={id} role="tooltip" className="help-pop">
