@@ -1,20 +1,13 @@
 // Textos da tela Nova partida: camada fina sobre src/i18n (chaves menu.new.*, menu.difficulty.*, common.*).
 
 import { useMemo } from 'react';
-import { dictionaries, useT, type Key, type Lang, type Params } from '../../../i18n';
+import { useT, type Key, type Params } from '../../../i18n';
 import type { ObjectiveKind } from '../../../game/types';
 
 /** "1" → número (plural singular); "3–4" e afins seguem como texto (plural "other"). */
 const plural = (n: string): number | string => (/^\d+$/.test(n) ? Number(n) : n);
 
-/** Reserva da meta de lucro dos Presets até a chave entrar no i18n (pedida à sessão de i18n). */
-const PROFIT_GOAL: [string, string] = ['Lucre {target} em {days} dias', 'Make {target} in profit within {days} days'];
-
-function build(t: (key: Key, params?: Params) => string, money: (v: number) => string, lang: Lang) {
-  const profitGoal = (target: number, days: number) =>
-    (dictionaries[lang] as Record<string, string>)['menu.new.outcome.profitGoal']
-      ? t('menu.new.outcome.profitGoal' as Key, { target: money(target), days })
-      : PROFIT_GOAL[lang === 'en' ? 1 : 0].replace('{target}', money(target)).replace('{days}', String(days));
+function build(t: (key: Key, params?: Params) => string, money: (v: number) => string) {
   return {
     stepScenario: t('menu.new.step.scenario'),
     stepConfigure: t('menu.new.step.configure'),
@@ -32,7 +25,7 @@ function build(t: (key: Key, params?: Params) => string, money: (v: number) => s
       switch (kind) {
         case 'profit':
           // Com meta (Presets "Lucro no prazo"), a frase diz quanto; sem meta, basta terminar no azul.
-          if (days && target) return profitGoal(target, days);
+          if (days && target) return t('menu.new.outcome.profitGoal', { target: money(target), days });
           return days ? t('menu.new.outcome.profit', { days }) : t('menu.new.outcome.profitOpen');
         case 'quick':
           return t('menu.new.outcome.quick', { target: money(target ?? 0) });
@@ -88,5 +81,5 @@ export type NewGameStrings = ReturnType<typeof build>;
 export function useNewGameStrings(): NewGameStrings {
   const { t, fmt, lang } = useT();
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  return useMemo(() => build(t, fmt.money, lang), [lang]);
+  return useMemo(() => build(t, fmt.money), [lang]);
 }

@@ -43,7 +43,7 @@ Ordem dos passos: **Cenário → Diretor → Configurar**.
 - **Teclado:** setas, Home e End movem a seleção; escolher de novo a Origem já escolhida avança para Configurar.
 - **Partida:** a Origem vai em `StartConfig.origin`, que vira `GameOptions.origin`, e aparece no resumo. No Tutorial, o padrão é a do motor (`TUTORIAL_ORIGIN`, Contrabandista) até a pessoa escolher outra.
 - **Ids:** o motor usa `exagent`/`analyst` e a arte usa `field-agent`/`sigint`. `artOrigin(id)`, exportado de `src/ui/menu`, faz a tradução para quem precisar do retrato.
-- **Textos:** as chaves `origin.<id>.name/.desc/.advantage/.disadvantage` e `menu.new.origin.*`, `menu.new.step.director`, `menu.new.nextDirector`, `menu.new.backToDirector`. Enquanto elas não existem no i18n, vale a reserva em `screens/originStrings.ts`.
+- **Textos:** as chaves `origin.<id>.name/.desc/.advantage/.disadvantage` e `menu.new.origin.*`, `menu.new.step.director`, `menu.new.nextDirector`, `menu.new.backToDirector`.
 
 ## Celular em pé (ADR 0005)
 
