@@ -199,3 +199,39 @@ html .combat-card > .cb-actions {
   padding-bottom: 16px;
   background: var(--ink-1);
 }
+
+/* Seletor compacto de velocidade (em pé/estreito). */
+.speed-pick {
+  position: relative;
+  display: inline-flex;
+}
+html .topbar .speed-cur {
+  width: 44px;
+  min-width: 44px;
+  padding: 0;
+}
+.speed-pop {
+  position: absolute;
+  top: calc(100% + 6px);
+  right: 0;
+  z-index: 40;
+  padding: 6px;
+  background: var(--ink-2);
+  border: 1px solid var(--line-2);
+  box-shadow: 0 14px 34px rgba(0, 0, 0, 0.6);
+}
+html .speed-pop .g-seg__opt {
+  min-width: 44px;
+  min-height: 44px;
+}
+
+/* Em pé, o mapa vai até a borda da folha (por baixo dos cantos arredondados) e o Relatório encosta nela. */
+html .game.upright .map-area {
+  bottom: calc(50% - 14px);
+}
+html .game.upright.sheet-peek .map-area {
+  bottom: calc(76px + var(--safe-b) - 14px);
+}
+html .game.upright .log {
+  bottom: 20px;
+}

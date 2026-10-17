@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { ChevronDown, FastForward, Menu, PanelLeft, PanelRight, Pause, Play } from 'lucide-react';
 import { daysLeft, profitGoal } from '../../game/objective';
 import { formatClock, formatDate, formatDuration, player, profit } from '../../game/state';
@@ -34,6 +34,20 @@ export function TopBar({ onMenu, onLeft, onRight }: { onMenu: () => void; onLeft
   // Em pé, as âncoras do guia ficam nas abas da folha; os botões de gaveta somem.
   const portrait = usePortrait();
   const narrow = useMedia('(max-width: 700px)');
+  const [speedOpen, setSpeedOpen] = useState(false);
+  // Fecha o seletor de velocidade ao tocar fora dele ou com Esc.
+  useEffect(() => {
+    if (!speedOpen) return;
+    const close = (e: Event) => {
+      if (e instanceof KeyboardEvent ? e.key === 'Escape' : !(e.target as HTMLElement).closest?.('.speed-pick')) setSpeedOpen(false);
+    };
+    document.addEventListener('pointerdown', close);
+    document.addEventListener('keydown', close);
+    return () => {
+      document.removeEventListener('pointerdown', close);
+      document.removeEventListener('keydown', close);
+    };
+  }, [speedOpen]);
   const halted = paused || s.events.length > 0 || !!s.combat || !!s.pendingCombat;
 
   // Meta de lucro do Objetivo "Lucro no prazo" (1 = basta terminar no azul).
@@ -131,13 +145,42 @@ export function TopBar({ onMenu, onLeft, onRight }: { onMenu: () => void; onLeft
         >
           {paused ? <Play size={16} /> : <Pause size={16} />}
         </button>
-        <GSegmented
-          label={t('game.topbar.speed')}
-          options={(narrow ? [1, 2, 4] : [1, 2, 4, 8]).map((v) => ({ value: String(v), label: `${v}×`, aria: t('game.topbar.speedN', { n: v }) }))}
-          value={paused ? '' : String(speed)}
-          onChange={(v) => setSpeed(Number(v) as Speed)}
-        />
-        {skipButton('hide-xs')}
+        {portrait || narrow ? (
+          // Em pé/estreito: um botão com a velocidade atual abre 1×–8×; pausa, avançar e menu ficam sempre na barra.
+          <span className="speed-pick">
+            <button
+              type="button"
+              className="btn sm speed-cur"
+              aria-haspopup="true"
+              aria-expanded={speedOpen}
+              aria-label={t('game.topbar.speedN', { n: speed })}
+              onClick={() => setSpeedOpen(!speedOpen)}
+            >
+              {speed}×
+            </button>
+            {speedOpen && (
+              <span className="speed-pop">
+                <GSegmented
+                  label={t('game.topbar.speed')}
+                  options={[1, 2, 4, 8].map((v) => ({ value: String(v), label: `${v}×`, aria: t('game.topbar.speedN', { n: v }) }))}
+                  value={paused ? '' : String(speed)}
+                  onChange={(v) => {
+                    setSpeed(Number(v) as Speed);
+                    setSpeedOpen(false);
+                  }}
+                />
+              </span>
+            )}
+          </span>
+        ) : (
+          <GSegmented
+            label={t('game.topbar.speed')}
+            options={[1, 2, 4, 8].map((v) => ({ value: String(v), label: `${v}×`, aria: t('game.topbar.speedN', { n: v }) }))}
+            value={paused ? '' : String(speed)}
+            onChange={(v) => setSpeed(Number(v) as Speed)}
+          />
+        )}
+        {skipButton('')}
       </div>
       <button className="btn icon ghost only-mid" data-tour={portrait ? undefined : 'drawer-right'} aria-label={t('game.topbar.agency')} onClick={onRight}>
         <PanelRight size={18} />
@@ -153,10 +196,6 @@ export function TopBar({ onMenu, onLeft, onRight }: { onMenu: () => void; onLeft
           </div>
           {profitStat}
           {tensionStat}
-          <div className="tb-stat">
-            <span className="tb-k mono">{t('game.topbar.skipToEvent')}</span>
-            {skipButton('')}
-          </div>
         </div>
       )}
     </header>
