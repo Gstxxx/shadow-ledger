@@ -150,3 +150,14 @@ O que ainda dá para melhorar:
 - Na passagem (4,1–4,5 s), o nome encolhendo passa por cima das linhas ainda legíveis. Um desfoque leve nas linhas durante a passagem limparia o quadro.
 - A abertura não tem som próprio. O navegador só libera áudio depois de um gesto, então ela começa muda; os efeitos `type` e `redact` só tocam se o áudio já estiver liberado.
 - Trocar a marca tipográfica pelo `Logo` de `src/art` se o art-kit criar uma versão que caiba na linha do livro. Hoje o nome é texto em Barlow Condensed, com os tokens do art-kit.
+
+## Menos complexidade à vista (2026-10-17)
+
+Regra: o que a maioria precisa fica à vista; o resto abre no toque (`Disclosure` em `controls.tsx`, botão com `aria-expanded` + região; ponte até o `GDetails` da art-kit).
+
+- **Nova partida › Cenário**: só o recomendado (Tutorial, com selo "Comece aqui") em destaque, mais o escolhido se for outro; "Ver todos (N)" abre a lista inteira.
+- **Nova partida › Diretor**: 6 cartões com retrato, nome, 1 vantagem e 1 desvantagem curtas (`menu.new.origin.<id>.pro/con`); o dossiê completo fica em "Detalhes: <Origem>".
+- **Nova partida › Configurar**: nomes e Dificuldade (nome + rivais) à vista; Mundo do Sandbox e Modo Hardcore em "Avançado" (aberto por padrão no Sandbox). O resumo saiu: os passos já mostram as escolhas.
+- **Continuar**: cada save mostra só Jogar; Exportar e Apagar abrem no "⋯". Importar arquivo vai para "Avançado" (fica à vista quando não há saves).
+- **Configurações**: grupos Jogo (Idioma, Velocidade) e Som (Música, Efeitos); Reduzir movimento, Silenciar a Analista e Instalar o app em "Avançado".
+- **Como jogar**: o roteiro dos primeiros 10 minutos vira 5 passos curtos com ícone; o guia inteiro (com a navegação por seções) fica em "Tudo sobre o jogo".

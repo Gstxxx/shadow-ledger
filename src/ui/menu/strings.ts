@@ -56,6 +56,10 @@ function build(t: (key: Key, params?: Params) => string, money: (v: number) => s
 
     settingsTitle: t('menu.settings.title'),
     language: t('menu.settings.language'),
+    groupGame: t('menu.settings.group.game'),
+    groupSound: t('menu.settings.group.sound'),
+    advanced: t('menu.advanced'),
+    moreActions: (name: string) => t('menu.continue.more', { name }),
     music: t('menu.settings.music'),
     sfx: t('menu.settings.sfx'),
     defaultSpeed: t('menu.settings.speed'),

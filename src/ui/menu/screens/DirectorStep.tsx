@@ -4,6 +4,7 @@ import { Check, ShieldCheck, TriangleAlert } from 'lucide-react';
 import { DirectorPortrait } from '../../../art/directors';
 import { GameIcon } from '../../../art/icons/GameIcon';
 import type { OriginId } from '../../../game/types';
+import { Disclosure } from '../controls';
 import { ease, f } from '../ease';
 import { sfx } from '../settings';
 import type { OriginStrings, OriginText } from './originStrings';
@@ -44,8 +45,7 @@ export function DirectorStep({ o, value, onChange, onConfirm, reduced }: Props) 
   };
 
   return (
-    <div className="slm-dir">
-      <Dossier key={current.id} item={current} o={o} reduced={reduced} />
+    <div className="slm-dir is-simple">
       <div className="slm-dir-pick">
         <h4 className="slm-dir-q">{o.choose}</h4>
         <div className="slm-dir-grid" role="radiogroup" aria-label={o.title} onKeyDown={onKey}>
@@ -74,9 +74,13 @@ export function DirectorStep({ o, value, onChange, onConfirm, reduced }: Props) 
                   <DirectorPortrait origin={x.art} size={64} crop="head" blink={false} />
                 </span>
                 <span className="slm-dir-name">{x.name}</span>
-                <span className="slm-dir-code">
-                  <GameIcon id={`origin-${x.art}`} size={14} accent="var(--sl-stamp-red)" />
-                  {x.code}
+                <span className="slm-dir-pc slm-dir-pc--pro">
+                  <ShieldCheck size={14} aria-hidden="true" />
+                  <span className="slm-sr">{o.advantage}:</span> {x.pro}
+                </span>
+                <span className="slm-dir-pc slm-dir-pc--con">
+                  <TriangleAlert size={14} aria-hidden="true" />
+                  <span className="slm-sr">{o.disadvantage}:</span> {x.con}
                 </span>
                 <span className="slm-card-check" aria-hidden="true">
                   <Check size={14} strokeWidth={3} />
@@ -85,6 +89,9 @@ export function DirectorStep({ o, value, onChange, onConfirm, reduced }: Props) 
             );
           })}
         </div>
+        <Disclosure label={`${o.more}: ${current.name}`} reduced={reduced} className="slm-dir-more">
+          <Dossier key={current.id} item={current} o={o} reduced={reduced} />
+        </Disclosure>
       </div>
     </div>
   );

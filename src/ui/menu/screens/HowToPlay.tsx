@@ -2,7 +2,8 @@ import { Fragment, useEffect, useRef, useState, type ReactNode } from 'react';
 import { Lightbulb } from 'lucide-react';
 import { GameIcon } from '../../../art/icons/GameIcon';
 import { sfx } from '../settings';
-import { useLang } from '../../../i18n';
+import { useLang, useT, type Key } from '../../../i18n';
+import { Disclosure } from '../controls';
 import { TERM_ICON, useGuide, type Block } from './guideContent';
 import './howto.css';
 
@@ -58,8 +59,12 @@ function renderBlock(b: Block, i: number): ReactNode {
   );
 }
 
+/** Ícone de cada passo do roteiro rápido: comprar, voar, vender, abrir Célula, repetir. */
+const QUICK_ICONS = ['crate', 'cargo1', 'money', 'station-cell', 'forecast'];
+
 export function HowToPlay({ reduced }: { reduced: boolean }) {
   const g = useGuide();
+  const { t } = useT();
   const lang = useLang();
   const [active, setActive] = useState(g.sections[0].id);
   const root = useRef<HTMLDivElement>(null);
@@ -106,41 +111,68 @@ export function HowToPlay({ reduced }: { reduced: boolean }) {
     el?.querySelector<HTMLElement>('h3')?.focus({ preventScroll: true });
   };
 
-  return (
-    <div className="slm-howto" ref={root}>
-      <nav className="slm-howto-nav" aria-label={g.sectionsLabel} ref={chips}>
-        <ul>
-          {g.sections.map((sec) => (
-            <li key={sec.id}>
-              <button
-                type="button"
-                data-target={sec.id}
-                className={`slm-howto-link${sec.highlight ? ' is-quick' : ''}`}
-                aria-current={active === sec.id ? 'location' : undefined}
-                onClick={() => go(sec.id)}
-              >
-                <GameIcon id={sec.icon} size={18} accent={sec.highlight ? 'var(--sl-stamp-blue)' : 'var(--sl-stamp-red)'} />
-                <span>{sec.nav}</span>
-              </button>
-            </li>
-          ))}
-        </ul>
-      </nav>
+  // O roteiro rápido vira passos curtos com ícone; o guia completo fica recolhido em "Tudo sobre o jogo".
+  const quick = g.sections.find((x) => x.highlight);
+  const steps = quick ? ((quick.blocks.find((b) => 'ol' in b) as { ol: string[] } | undefined)?.ol ?? []) : [];
+  const rest = g.sections.filter((x) => x !== quick);
 
-      <div className="slm-howto-doc">
-        <p className="slm-howto-intro" data-enter>
-          {rich(g.intro)}
-        </p>
-        {g.sections.map((sec) => (
-          <section key={sec.id} data-section={sec.id} className={`slm-howto-sec${sec.highlight ? ' is-quick' : ''}`} aria-labelledby={`howto-${sec.id}`}>
-            {sec.highlight && <span className="slm-card-badge">{g.quickLabel}</span>}
-            <h3 id={`howto-${sec.id}`} tabIndex={-1}>
-              <GameIcon id={sec.icon} size={22} accent={sec.highlight ? 'var(--sl-stamp-blue)' : 'var(--sl-stamp-red)'} />
-              {sec.title}
-            </h3>
-            {sec.blocks.map(renderBlock)}
-          </section>
-        ))}
+  return (
+    <div className="slm-howto is-simple" ref={root}>
+      {quick && (
+        <section className="slm-howto-quick" aria-labelledby="howto-quick" data-enter>
+          <span className="slm-card-badge">{g.quickLabel}</span>
+          <h3 id="howto-quick">{quick.title}</h3>
+          <ol className="slm-howto-steps">
+            {steps.map((x, i) => (
+              <li key={i} className="slm-howto-step">
+                <span className="slm-howto-step-icon" aria-hidden="true">
+                  <GameIcon id={QUICK_ICONS[i] ?? 'clock'} size={30} accent="var(--sl-stamp-blue)" />
+                  <span className="slm-howto-step-n">{i + 1}</span>
+                </span>
+                <span className="slm-howto-step-text">
+                  <strong>{t(`menu.guide.quick.step.${i + 1}` as Key)}</strong>
+                  <span>{rich(x)}</span>
+                </span>
+              </li>
+            ))}
+          </ol>
+        </section>
+      )}
+      <div data-enter>
+        <Disclosure label={t('menu.guide.more')} reduced={reduced} className="slm-howto-all">
+          <div className="slm-howto-full">
+            <nav className="slm-howto-nav" aria-label={g.sectionsLabel} ref={chips}>
+              <ul>
+                {rest.map((sec) => (
+                  <li key={sec.id}>
+                    <button
+                      type="button"
+                      data-target={sec.id}
+                      className="slm-howto-link"
+                      aria-current={active === sec.id ? 'location' : undefined}
+                      onClick={() => go(sec.id)}
+                    >
+                      <GameIcon id={sec.icon} size={18} accent="var(--sl-stamp-red)" />
+                      <span>{sec.nav}</span>
+                    </button>
+                  </li>
+                ))}
+              </ul>
+            </nav>
+            <div className="slm-howto-doc">
+              <p className="slm-howto-intro">{rich(g.intro)}</p>
+              {rest.map((sec) => (
+                <section key={sec.id} data-section={sec.id} className="slm-howto-sec" aria-labelledby={`howto-${sec.id}`}>
+                  <h3 id={`howto-${sec.id}`} tabIndex={-1}>
+                    <GameIcon id={sec.icon} size={22} accent="var(--sl-stamp-red)" />
+                    {sec.title}
+                  </h3>
+                  {sec.blocks.map(renderBlock)}
+                </section>
+              ))}
+            </div>
+          </div>
+        </Disclosure>
       </div>
     </div>
   );

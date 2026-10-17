@@ -1,5 +1,6 @@
 import { useRef, useState } from 'react';
-import { Download, FileUp, Play, Skull, Trash2 } from 'lucide-react';
+import { Download, Ellipsis, FileUp, Play, Skull, Trash2 } from 'lucide-react';
+import { Disclosure } from '../controls';
 import { GModal, GToast } from '../../../art/game-ui-2';
 import type { Strings } from '../strings';
 import type { SaveSlot } from '../types';
@@ -18,6 +19,8 @@ export function Continue({ s, saves, onContinue, onDelete, onExport, onImport }:
   const file = useRef<HTMLInputElement>(null);
   // Save à espera de confirmação para apagar (abre o modal de dossiê).
   const [confirm, setConfirm] = useState<SaveSlot | null>(null);
+  // Save com as ações extras (Exportar/Apagar) abertas; o padrão é só Jogar.
+  const [more, setMore] = useState<string | null>(null);
   const [status, setStatus] = useState<{ tone: 'busy' | 'ok' | 'bad'; text: string } | null>(null);
 
   const sorted = [...saves].sort((a, b) => b.savedAt - a.savedAt);
@@ -72,7 +75,21 @@ export function Continue({ s, saves, onContinue, onDelete, onExport, onImport }:
                 <Play className="slm-save-play" size={18} aria-hidden="true" />
                 <span className="slm-sr">{s.load}</span>
               </button>
-              <div className="slm-save-actions">
+              {(onExport || onDelete) && (
+                <button
+                  type="button"
+                  className="g-btn g-btn--ghost slm-icon-btn slm-save-more"
+                  aria-expanded={more === sv.id}
+                  aria-label={s.moreActions(sv.label)}
+                  onClick={() => {
+                    sfx('click');
+                    setMore(more === sv.id ? null : sv.id);
+                  }}
+                >
+                  <Ellipsis size={20} aria-hidden="true" />
+                </button>
+              )}
+              <div className="slm-save-actions" hidden={more !== sv.id}>
                 {onExport && (
                   <button type="button" className="g-btn g-btn--ghost slm-icon-btn" onClick={() => onExport(sv.id)} aria-label={s.exportAria(sv.label)}>
                     <Download size={18} aria-hidden="true" />
@@ -99,27 +116,52 @@ export function Continue({ s, saves, onContinue, onDelete, onExport, onImport }:
         </ul>
       )}
 
-      {onImport && (
-        <div className="slm-import" data-enter>
-          <input
-            ref={file}
-            type="file"
-            accept=".json,.slsave,application/json"
-            className="slm-sr"
-            tabIndex={-1}
-            onChange={(e) => pick(e.target.files?.[0])}
-          />
-          <button type="button" className="g-btn g-btn--ghost" onClick={() => file.current?.click()}>
-            <FileUp size={18} aria-hidden="true" />
-            {s.importFile}
-          </button>
-          {status && (
-            <div className="slm-status">
-              <GToast tone={status.tone === 'bad' ? 'bad' : status.tone === 'ok' ? 'good' : 'neutral'}>{status.text}</GToast>
-            </div>
-          )}
-        </div>
-      )}
+      {onImport &&
+        (sorted.length === 0 ? (
+          <div className="slm-import" data-enter>
+            <input
+              ref={file}
+              type="file"
+              accept=".json,.slsave,application/json"
+              className="slm-sr"
+              tabIndex={-1}
+              onChange={(e) => pick(e.target.files?.[0])}
+            />
+            <button type="button" className="g-btn g-btn--ghost" onClick={() => file.current?.click()}>
+              <FileUp size={18} aria-hidden="true" />
+              {s.importFile}
+            </button>
+            {status && (
+              <div className="slm-status">
+                <GToast tone={status.tone === 'bad' ? 'bad' : status.tone === 'ok' ? 'good' : 'neutral'}>{status.text}</GToast>
+              </div>
+            )}
+          </div>
+        ) : (
+          <div data-enter>
+            <Disclosure label={s.advanced}>
+              <div className="slm-import">
+                <input
+                  ref={file}
+                  type="file"
+                  accept=".json,.slsave,application/json"
+                  className="slm-sr"
+                  tabIndex={-1}
+                  onChange={(e) => pick(e.target.files?.[0])}
+                />
+                <button type="button" className="g-btn g-btn--ghost" onClick={() => file.current?.click()}>
+                  <FileUp size={18} aria-hidden="true" />
+                  {s.importFile}
+                </button>
+                {status && (
+                  <div className="slm-status">
+                    <GToast tone={status.tone === 'bad' ? 'bad' : status.tone === 'ok' ? 'good' : 'neutral'}>{status.text}</GToast>
+                  </div>
+                )}
+              </div>
+            </Disclosure>
+          </div>
+        ))}
 
       <GModal
         open={!!confirm}

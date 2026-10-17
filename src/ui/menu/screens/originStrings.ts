@@ -28,6 +28,9 @@ export interface OriginText {
   desc: string;
   advantage: string;
   disadvantage: string;
+  /** Vantagem e desvantagem em poucas palavras (cartão). */
+  pro: string;
+  con: string;
 }
 
 function build(t: (key: Key, params?: Params) => string) {
@@ -41,6 +44,8 @@ function build(t: (key: Key, params?: Params) => string) {
       desc: t(`origin.${id}.desc` as Key),
       advantage: t(`origin.${id}.advantage` as Key),
       disadvantage: t(`origin.${id}.disadvantage` as Key),
+      pro: t(`menu.new.origin.${id}.pro` as Key),
+      con: t(`menu.new.origin.${id}.con` as Key),
     };
   });
   return {
@@ -51,6 +56,7 @@ function build(t: (key: Key, params?: Params) => string) {
     choose: t('menu.new.origin.choose'),
     advantage: t('menu.new.origin.advantage'),
     disadvantage: t('menu.new.origin.disadvantage'),
+    more: t('menu.new.origin.more'),
     origins,
   };
 }

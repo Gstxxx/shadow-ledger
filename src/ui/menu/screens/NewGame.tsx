@@ -1,13 +1,13 @@
 import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState, type KeyboardEvent as ReactKeyboardEvent } from 'react';
 import { gsap } from 'gsap';
-import { ArrowLeft, ArrowRight, Check, Dices, Skull } from 'lucide-react';
+import { ArrowLeft, ArrowRight, Check, ChevronDown, Dices, Skull } from 'lucide-react';
 import { GameIcon } from '../../../art/icons/GameIcon';
 import { COUNTRY_SEEDS } from '../../../game/data/countries';
 import { ITEMS } from '../../../game/data/items';
 import { FIRST_NAMES, LAST_NAMES, PLAYER_AGENCY_NAMES } from '../../../game/data/names';
 import { DIFFICULTY_AI } from '../../../game/ai/profiles';
 import type { Continent, Difficulty, ObjectiveKind, OriginId, PresetDef } from '../../../game/types';
-import { Segmented, Stepper } from '../controls';
+import { Disclosure, Segmented, Stepper } from '../controls';
 import { ease, f } from '../ease';
 import { sfx } from '../settings';
 import { presetText, type Strings } from '../strings';
@@ -141,6 +141,7 @@ export function NewGame({ s, lang, presets, tutorial, reduced, onStart }: Props)
   const [origin, setOrigin] = useState<Origin>(() => (entries[0]?.kind === 'tutorial' ? (TUTORIAL_ORIGIN as Origin) : 'exagent'));
   const [touchedOrigin, setTouchedOrigin] = useState(false);
   const [phoneDetails, setPhoneDetails] = useState(false);
+  const [showAll, setShowAll] = useState(false);
   const [difficulty, setDifficulty] = useState<Difficulty>(() => (entries[0]?.kind === 'tutorial' ? 1 : 2));
   const [touchedDiff, setTouchedDiff] = useState(false);
   const [hardcore, setHardcore] = useState(false);
@@ -199,16 +200,18 @@ export function NewGame({ s, lang, presets, tutorial, reduced, onStart }: Props)
   }, [step, phoneDetails, reduced]);
 
   const onCardsKey = (e: ReactKeyboardEvent) => {
-    const i = entries.findIndex((x) => x.key === selected);
+    if (!(e.target as HTMLElement).matches('[role=radio]')) return;
+    const list = visible;
+    const i = list.findIndex((x) => x.key === selected);
     let j = -1;
-    if (e.key === 'ArrowDown' || e.key === 'ArrowRight') j = Math.min(entries.length - 1, i + 1);
+    if (e.key === 'ArrowDown' || e.key === 'ArrowRight') j = Math.min(list.length - 1, i + 1);
     if (e.key === 'ArrowUp' || e.key === 'ArrowLeft') j = Math.max(0, i - 1);
     if (e.key === 'Home') j = 0;
-    if (e.key === 'End') j = entries.length - 1;
+    if (e.key === 'End') j = list.length - 1;
     if (j < 0) return;
     e.preventDefault();
-    choose(entries[j].key);
-    cardRefs.current[entries[j].key]?.focus();
+    choose(list[j].key);
+    cardRefs.current[list[j].key]?.focus();
   };
 
   const start = () => {
@@ -241,6 +244,9 @@ export function NewGame({ s, lang, presets, tutorial, reduced, onStart }: Props)
   const regionLabel = (p: PresetDef) => regionOf(p).map((c) => s.continents[c]).join(' · ');
 
   const showList = step === 1 && (!compact || !phoneDetails);
+  // Menos escolhas à vista: o recomendado (e o escolhido, se for outro); o resto em "Ver todos".
+  const visible = showAll ? entries : entries.filter((e, i) => i === 0 || e.key === entry.key);
+  const hiddenCount = entries.length - visible.length;
   const showDetails = step === 1 && (!compact || phoneDetails);
 
   return (
@@ -267,7 +273,7 @@ export function NewGame({ s, lang, presets, tutorial, reduced, onStart }: Props)
           <div className={`slm-ng-scenario${showList && showDetails ? ' is-split' : ''}`}>
             {showList && (
               <div className="slm-cards" role="radiogroup" aria-label={t.stepScenario} onKeyDown={onCardsKey}>
-                {entries.map((e) => {
+                {visible.map((e, i) => {
                   const on = e.key === entry.key;
                   const p = e.preset;
                   const level = e.kind === 'tutorial' ? 1 : p.challenge;
@@ -281,7 +287,7 @@ export function NewGame({ s, lang, presets, tutorial, reduced, onStart }: Props)
                       role="radio"
                       aria-checked={on}
                       tabIndex={on ? 0 : -1}
-                      className={`slm-card${e.kind === 'tutorial' ? ' slm-card--tutorial' : ''}`}
+                      className={`slm-card${e.kind === 'tutorial' ? ' slm-card--tutorial' : ''}${i === 0 && !showAll ? ' slm-card--hero' : ''}`}
                       onClick={() => {
                         if (compact) {
                           choose(e.key);
@@ -298,7 +304,7 @@ export function NewGame({ s, lang, presets, tutorial, reduced, onStart }: Props)
                         />
                       </span>
                       <span className="slm-card-main">
-                        {e.kind === 'tutorial' && <span className="slm-card-badge">{t.startHere}</span>}
+                        {i === 0 && e.key === entries[0].key && <span className="slm-card-badge">{e.kind === 'tutorial' ? t.startHere : t.recommended}</span>}
                         <span className="slm-card-title">{titleOf(e)}</span>
                         <span className="slm-card-outcome">{outcomeOf(e)}</span>
                         {e.kind !== 'sandbox' && (
@@ -316,6 +322,20 @@ export function NewGame({ s, lang, presets, tutorial, reduced, onStart }: Props)
                     </button>
                   );
                 })}
+                {(hiddenCount > 0 || showAll) && (
+                  <button
+                    type="button"
+                    className="slm-see-all"
+                    aria-expanded={showAll}
+                    onClick={() => {
+                      sfx(showAll ? 'close' : 'open');
+                      setShowAll(!showAll);
+                    }}
+                  >
+                    {showAll ? t.seeLess : t.seeAll(entries.length)}
+                    <ChevronDown size={18} aria-hidden="true" className={showAll ? 'is-up' : undefined} />
+                  </button>
+                )}
               </div>
             )}
 
@@ -384,38 +404,6 @@ export function NewGame({ s, lang, presets, tutorial, reduced, onStart }: Props)
               )}
             </fieldset>
 
-            {entry.kind === 'sandbox' && (
-              <fieldset className="slm-group">
-                <legend>{t.world}</legend>
-                <Segmented<Continent>
-                  label={s.startRegion}
-                  value={region}
-                  onChange={setRegion}
-                  options={CONTINENTS.map((c) => ({ value: c, label: s.continents[c] }))}
-                />
-                <div className="slm-two">
-                  <Segmented<number> label={s.capital} value={cash} onChange={setCash} options={CAPITALS.map((v) => ({ value: v, label: t.money(v) }))} />
-                  <Segmented<ObjectiveKind>
-                    label={s.objective}
-                    value={objective}
-                    onChange={setObjective}
-                    options={(['profit', 'quick', 'destroy', 'rescue'] as ObjectiveKind[]).map((o) => ({ value: o, label: s.objectiveNames[o] }))}
-                  />
-                </div>
-                {objective === 'quick' ? (
-                  <Segmented<number> label={s.target} value={target} onChange={setTarget} options={TARGETS.map((v) => ({ value: v, label: t.money(v) }))} />
-                ) : (
-                  <Segmented<number>
-                    label={s.deadline}
-                    value={days}
-                    onChange={setDays}
-                    options={DEADLINES.map((d) => ({ value: d, label: d ? t.days(d) : t.noDeadline }))}
-                  />
-                )}
-                <Stepper label={t.rivals} value={sandboxRivals} min={0} max={4} onChange={setRivals} format={(v) => (v === 0 ? s.rivalsNone : String(v))} />
-              </fieldset>
-            )}
-
             <fieldset className="slm-group">
               <legend>{t.difficulty}</legend>
               <div className="slm-diffs" role="radiogroup" aria-label={t.difficulty}>
@@ -442,7 +430,6 @@ export function NewGame({ s, lang, presets, tutorial, reduced, onStart }: Props)
                           <Check size={14} strokeWidth={3} />
                         </span>
                       </span>
-                      <span className="slm-diff-text">{c.text}</span>
                       <span className="slm-diff-rivals">{t.rivalsLine(rivalCount(d))}</span>
                     </button>
                   );
@@ -450,59 +437,57 @@ export function NewGame({ s, lang, presets, tutorial, reduced, onStart }: Props)
               </div>
             </fieldset>
 
-            <button
-              type="button"
-              role="switch"
-              aria-checked={hardcore}
-              className="slm-hardcore"
-              onClick={() => {
-                sfx(hardcore ? 'click' : 'alert');
-                setHardcore(!hardcore);
-              }}
-            >
-              <Skull className="slm-hardcore-icon" size={30} strokeWidth={1.75} aria-hidden="true" />
-              <span className="slm-hardcore-text">
-                <strong>{t.hardcore}</strong>
-                <span>{hardcore ? t.hardcoreOn : t.hardcoreOff}</span>
-              </span>
-              <span className="g-toggle slm-hardcore-switch" aria-checked={hardcore} aria-hidden="true" />
-            </button>
+            <Disclosure label={t.advanced} hint={t.advancedHint} defaultOpen={entry.kind === 'sandbox'} reduced={reduced}>
+              {entry.kind === 'sandbox' && (
+                <fieldset className="slm-group">
+                  <legend>{t.world}</legend>
+                  <Segmented<Continent>
+                    label={s.startRegion}
+                    value={region}
+                    onChange={setRegion}
+                    options={CONTINENTS.map((c) => ({ value: c, label: s.continents[c] }))}
+                  />
+                  <div className="slm-two">
+                    <Segmented<number> label={s.capital} value={cash} onChange={setCash} options={CAPITALS.map((v) => ({ value: v, label: t.money(v) }))} />
+                    <Segmented<ObjectiveKind>
+                      label={s.objective}
+                      value={objective}
+                      onChange={setObjective}
+                      options={(['profit', 'quick', 'destroy', 'rescue'] as ObjectiveKind[]).map((o) => ({ value: o, label: s.objectiveNames[o] }))}
+                    />
+                  </div>
+                  {objective === 'quick' ? (
+                    <Segmented<number> label={s.target} value={target} onChange={setTarget} options={TARGETS.map((v) => ({ value: v, label: t.money(v) }))} />
+                  ) : (
+                    <Segmented<number>
+                      label={s.deadline}
+                      value={days}
+                      onChange={setDays}
+                      options={DEADLINES.map((d) => ({ value: d, label: d ? t.days(d) : t.noDeadline }))}
+                    />
+                  )}
+                  <Stepper label={t.rivals} value={sandboxRivals} min={0} max={4} onChange={setRivals} format={(v) => (v === 0 ? s.rivalsNone : String(v))} />
+                </fieldset>
+              )}
+              <button
+                type="button"
+                role="switch"
+                aria-checked={hardcore}
+                className="slm-hardcore"
+                onClick={() => {
+                  sfx(hardcore ? 'click' : 'alert');
+                  setHardcore(!hardcore);
+                }}
+              >
+                <Skull className="slm-hardcore-icon" size={30} strokeWidth={1.75} aria-hidden="true" />
+                <span className="slm-hardcore-text">
+                  <strong>{t.hardcore}</strong>
+                  <span>{hardcore ? t.hardcoreOn : t.hardcoreOff}</span>
+                </span>
+                <span className="g-toggle slm-hardcore-switch" aria-checked={hardcore} aria-hidden="true" />
+              </button>
+            </Disclosure>
 
-            <section className="slm-summary-box" aria-label={t.summary}>
-              <h4>{t.summary}</h4>
-              <dl>
-                <div>
-                  <dt>{t.scenario}</dt>
-                  <dd>{titleOf(entry)}</dd>
-                </div>
-                <div>
-                  <dt>{o.title}</dt>
-                  <dd>{o.origins.find((x) => x.id === origin)?.name}</dd>
-                </div>
-                <div>
-                  <dt>{t.objective}</dt>
-                  <dd>{t.outcome(entry.preset.objective, entry.preset.days, goalOf(entry.preset))}</dd>
-                </div>
-                <div>
-                  <dt>{t.difficulty}</dt>
-                  <dd>
-                    {t.difficultyCards[difficulty - 1].name} · {t.rivalsLine(rivalsShown(difficulty))}
-                  </dd>
-                </div>
-                <div>
-                  <dt>{t.hardcore}</dt>
-                  <dd className={hardcore ? 'slm-danger' : undefined}>{hardcore ? t.on : t.off}</dd>
-                </div>
-                <div>
-                  <dt>{t.director}</dt>
-                  <dd>{director || '—'}</dd>
-                </div>
-                <div>
-                  <dt>{t.agency}</dt>
-                  <dd>{agency || '—'}</dd>
-                </div>
-              </dl>
-            </section>
             {/* Enter num campo de nome envia o formulário. */}
             <button type="submit" hidden tabIndex={-1} />
           </form>

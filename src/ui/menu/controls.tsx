@@ -1,4 +1,7 @@
-import { useId, type ReactNode } from 'react';
+import { useId, useLayoutEffect, useRef, useState, type ReactNode } from 'react';
+import { gsap } from 'gsap';
+import { ChevronDown } from 'lucide-react';
+import { ease, f } from './ease';
 import { GRange, GStepper } from '../../art/game-ui-2';
 import { sfx } from './settings';
 
@@ -152,5 +155,64 @@ export function ActionButton({
     <button type={type} className={`g-btn g-btn--${variant}`} disabled={disabled} onClick={onClick}>
       {children}
     </button>
+  );
+}
+
+/**
+ * Bloco recolhível ("Avançado", "Ver todos"): só o rótulo fica visível; o resto aparece no toque.
+ * Ponte até o GDetails da art-kit: mesma ideia (botão com aria-expanded + região), troca direta depois.
+ */
+export function Disclosure({
+  label,
+  hint,
+  children,
+  defaultOpen = false,
+  reduced,
+  className,
+}: {
+  label: ReactNode;
+  hint?: ReactNode;
+  children: ReactNode;
+  defaultOpen?: boolean;
+  reduced?: boolean;
+  className?: string;
+}) {
+  const id = useId();
+  const [open, setOpen] = useState(defaultOpen);
+  const body = useRef<HTMLDivElement>(null);
+  const first = useRef(true);
+  useLayoutEffect(() => {
+    if (first.current) {
+      first.current = false;
+      return;
+    }
+    if (!open || reduced || !body.current) return;
+    const tw = gsap.fromTo(body.current, { y: -8, autoAlpha: 0 }, { y: 0, autoAlpha: 1, duration: f(9), ease: ease.softLand });
+    return () => {
+      tw.progress(1).kill();
+    };
+  }, [open, reduced]);
+  return (
+    <div className={`slm-disc${open ? ' is-open' : ''}${className ? ` ${className}` : ''}`}>
+      <button
+        type="button"
+        className="slm-disc-toggle"
+        aria-expanded={open}
+        aria-controls={id}
+        onClick={() => {
+          sfx(open ? 'close' : 'open');
+          setOpen(!open);
+        }}
+      >
+        <span className="slm-disc-text">
+          <span className="slm-disc-label">{label}</span>
+          {hint && !open && <span className="slm-disc-hint">{hint}</span>}
+        </span>
+        <ChevronDown className="slm-disc-chev" size={20} aria-hidden="true" />
+      </button>
+      <div id={id} ref={body} className="slm-disc-body" hidden={!open}>
+        {children}
+      </div>
+    </div>
   );
 }

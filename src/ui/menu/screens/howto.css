@@ -211,3 +211,83 @@
     font-size: var(--sl-fs-sm);
   }
 }
+
+/* Versão simples: roteiro em passos curtos com ícone; o guia inteiro recolhido. */
+.slm-howto.is-simple {
+  display: block;
+}
+.slm-howto-quick h3 {
+  margin: 6px 0 12px;
+  font-family: var(--sl-font-display);
+  font-size: var(--sl-fs-xl);
+  text-transform: uppercase;
+}
+.slm-howto-steps {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(190px, 1fr));
+  gap: 10px;
+  margin: 0 0 16px;
+  padding: 0;
+  list-style: none;
+}
+.slm-howto-step {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  gap: 10px;
+  align-items: start;
+  padding: 12px;
+  border: 1.5px solid rgba(36, 28, 17, 0.22);
+  border-radius: var(--sl-radius-2);
+  background: rgba(255, 255, 255, 0.28);
+}
+.slm-howto-step-icon {
+  position: relative;
+  display: grid;
+  place-items: center;
+  width: 46px;
+  height: 46px;
+  border-radius: 50%;
+  background: rgba(31, 78, 140, 0.1);
+}
+.slm-howto-step-n {
+  position: absolute;
+  right: -4px;
+  bottom: -4px;
+  display: grid;
+  place-items: center;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  background: var(--sl-stamp-blue);
+  color: #fff;
+  font-family: var(--sl-font-mono);
+  font-size: 12px;
+  font-weight: 700;
+}
+.slm-howto-step-text {
+  display: grid;
+  gap: 3px;
+  font-size: var(--sl-fs-sm);
+  line-height: 1.35;
+}
+.slm-howto-step-text strong {
+  font-family: var(--sl-font-display);
+  font-size: var(--sl-fs-md);
+  text-transform: uppercase;
+  letter-spacing: 0.02em;
+}
+.slm-howto-full {
+  display: grid;
+  grid-template-columns: minmax(170px, 0.32fr) minmax(0, 1fr);
+  gap: clamp(14px, 3vw, 32px);
+  align-items: start;
+}
+@media (max-width: 819px) {
+  .slm-howto-full {
+    display: block;
+  }
+  .slm-howto-full .slm-howto-nav {
+    top: calc(clamp(12px, 3vh, 24px) * -1);
+    margin-top: 0;
+  }
+}

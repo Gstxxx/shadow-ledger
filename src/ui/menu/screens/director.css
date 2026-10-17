@@ -270,3 +270,42 @@
     transition: none;
   }
 }
+
+/* Versão simples: só os cartões (1 vantagem e 1 desvantagem curtas); o dossiê completo em "Detalhes". */
+.slm-dir.is-simple {
+  grid-template-columns: minmax(0, 1fr);
+}
+.slm-dir.is-simple .slm-dir-card {
+  justify-content: flex-start;
+  padding: 10px 8px;
+}
+.slm-dir-pc {
+  display: flex;
+  align-items: flex-start;
+  gap: 5px;
+  width: 100%;
+  font-size: var(--sl-fs-sm);
+  line-height: 1.25;
+  text-align: left;
+}
+.slm-dir-pc svg {
+  flex: none;
+  margin-top: 1px;
+}
+.slm-dir-pc--pro svg {
+  color: var(--sl-stamp-blue);
+}
+.slm-dir-pc--con svg {
+  color: var(--sl-stamp-red);
+}
+.slm-dir-more {
+  margin-top: 12px;
+}
+.slm-dir-more .slm-dir-dossier {
+  max-width: 720px;
+}
+@media (max-width: 560px) and (orientation: portrait) {
+  .slm-dir.is-simple .slm-dir-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
