@@ -3,7 +3,7 @@ import { X } from 'lucide-react';
 import { GameIcon, OperativePortrait, Stamp } from '../../../art';
 import * as A from '../../../game/actions';
 import { STATIONS } from '../../../game/data/rules';
-import { directorAt, player, stationIn } from '../../../game/state';
+import { directorAt, formatDuration, player, stationIn } from '../../../game/state';
 import type { Agency, GameState, Strength, Unit } from '../../../game/types';
 import { REPAIR_MIN_LEVEL, def, isPersonnel, rankOf, repairCost, unitValue, upkeepOf } from '../../../game/units';
 import { useGame, useGameStore } from '../../../store/game';
@@ -305,6 +305,25 @@ export function UnitDossier({ uid, onClose }: { uid: string; onClose: () => void
             )}
           </section>
         )}
+
+        <section className="ud-sec">
+          <h3>{t('game.unit.record.title')}</h3>
+          {u.record && u.record.combats > 0 ? (
+            <ul className="ud-record">
+              <li>{t('game.unit.record.combats', { n: u.record.combats })}</li>
+              <li>{t('game.unit.record.wins', { n: u.record.wins })}</li>
+              {u.record.kos > 0 && <li>{t('game.unit.record.kos', { n: u.record.kos })}</li>}
+              {u.record.converts > 0 && <li>{t('game.unit.record.converts', { n: u.record.converts })}</li>}
+            </ul>
+          ) : (
+            <p className="ud-empty">{t('game.unit.record.none')}</p>
+          )}
+          {u.record && (
+            <p className="ud-empty">
+              {u.record.joinedAt > 0 ? t('game.unit.record.since', { time: formatDuration(s.time - u.record.joinedAt) }) : t('game.unit.record.founding')}
+            </p>
+          )}
+        </section>
 
         <section className="ud-sec ud-money">
           <div>

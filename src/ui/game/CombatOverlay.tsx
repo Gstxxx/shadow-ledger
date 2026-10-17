@@ -271,6 +271,7 @@ function LiveView() {
           </div>
         </div>
 
+        {c.turn === 0 && !running && canAbortLive(s) && <p className="hint-sm">{t('game.combat.abortHint')}</p>}
         {manual && (
           <div className="reserve">
             <span className="mono hint-sm">{t('game.combat.reserve')}</span>

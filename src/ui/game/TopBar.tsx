@@ -1,6 +1,6 @@
 import { useState } from 'react';
-import { ChevronDown, Menu, PanelLeft, PanelRight, Pause, Play } from 'lucide-react';
-import { daysLeft } from '../../game/objective';
+import { ChevronDown, FastForward, Menu, PanelLeft, PanelRight, Pause, Play } from 'lucide-react';
+import { daysLeft, profitGoal } from '../../game/objective';
 import { formatClock, formatDate, formatDuration, player, profit } from '../../game/state';
 import { crisisHoursLeft, tensionBand } from '../../game/tension';
 import { WMD_TENSION } from '../../game/market';
@@ -34,10 +34,23 @@ export function TopBar({ onMenu, onLeft, onRight }: { onMenu: () => void; onLeft
   const portrait = usePortrait();
   const halted = paused || s.events.length > 0 || !!s.combat || !!s.pendingCombat;
 
+  // Meta de lucro do Objetivo "Lucro no prazo" (1 = basta terminar no azul).
+  const target = pr.objective === 'profit' ? profitGoal(s) : 0;
+  const goalPct = target > 1 ? Math.max(0, Math.min(100, Math.round((p / target) * 100))) : 0;
   const profitStat = (
-      <div className="tb-stat hide-xs">
-        <span className="tb-k mono">{t('game.topbar.profit')}</span>
-        <span className={`tb-v num ${p >= 0 ? 'pos' : 'neg'}`}>{fmt.money(p)}</span>
+      <div
+        className="tb-stat hide-xs"
+        aria-label={target > 1 ? t('game.topbar.profitGoalAria', { profit: fmt.money(p), goal: fmt.money(target), pct: goalPct }) : undefined}
+      >
+        <span className="tb-k mono">{target === 1 ? `${t('game.topbar.profit')} · ${t('game.topbar.stayInBlack')}` : t('game.topbar.profit')}</span>
+        <span className={`tb-v num ${p >= 0 ? 'pos' : 'neg'}`}>
+          {target > 1 ? t('game.topbar.profitOfGoal', { profit: fmt.money(p), goal: fmt.money(target) }) : fmt.money(p)}
+        </span>
+        {target > 1 && (
+          <span className="goal-bar" aria-hidden>
+            <span style={{ width: `${goalPct}%` }} className={goalPct >= 100 ? 'done' : ''} />
+          </span>
+        )}
       </div>
   );
   const tensionStat = (
@@ -51,6 +64,22 @@ export function TopBar({ onMenu, onLeft, onRight }: { onMenu: () => void; onLeft
           <span className="tension-mark" style={{ left: `${WMD_TENSION}%` }} />
         </span>
       </div>
+  );
+
+  const skipToNextEvent = useGameStore((st) => st.skipToNextEvent);
+  /** Avança o relógio até o próximo Evento (ou 30 dias), sem esperar em tempo real. */
+  const skipButton = (cls: string) => (
+    <button
+      className={`btn icon sm ${cls}`}
+      aria-label={t('game.topbar.skipToEvent')}
+      disabled={!!s.combat || !!s.pendingCombat || s.events.length > 0 || !!s.over}
+      onClick={() => {
+        audio.sfx('click');
+        skipToNextEvent();
+      }}
+    >
+      <FastForward size={16} />
+    </button>
   );
 
   return (
@@ -109,6 +138,7 @@ export function TopBar({ onMenu, onLeft, onRight }: { onMenu: () => void; onLeft
           <button
             key={v}
             className={`btn sm${v === 8 ? ' hide-xs' : ''}`}
+            aria-label={t('game.topbar.speedN', { n: v })}
             aria-pressed={!paused && speed === v}
             onClick={() => {
               audio.sfx('click');
@@ -118,6 +148,7 @@ export function TopBar({ onMenu, onLeft, onRight }: { onMenu: () => void; onLeft
             {v}×
           </button>
         ))}
+        {skipButton('hide-xs')}
       </div>
       <button className="btn icon ghost only-mid" data-tour={portrait ? undefined : 'drawer-right'} aria-label={t('game.topbar.agency')} onClick={onRight}>
         <PanelRight size={18} />
@@ -133,6 +164,10 @@ export function TopBar({ onMenu, onLeft, onRight }: { onMenu: () => void; onLeft
           </div>
           {profitStat}
           {tensionStat}
+          <div className="tb-stat">
+            <span className="tb-k mono">{t('game.topbar.skipToEvent')}</span>
+            {skipButton('')}
+          </div>
         </div>
       )}
     </header>

@@ -8,6 +8,7 @@ import { audio } from '../../audio/engine';
 import { useT } from '../../i18n';
 import { countryName, presetTitle } from '../../i18n/lookup';
 import { msgText } from './msgText';
+import { profitGoal } from '../../game/objective';
 
 const TONE_ICON: Record<Tone, typeof Info> = {
   info: Info,
@@ -122,6 +123,12 @@ export function GameOver({ onQuit }: { onQuit: () => void }) {
           <b>{a.stats.contractsDone}</b>
           <span>{t('game.overlay.over.bestProfit')}</span>
           <b>{fmt.money(a.stats.peakProfit)}</b>
+          {s.options.preset.objective === 'profit' && profitGoal(s) > 1 && (
+            <>
+              <span>{t('game.overlay.over.profitGoal')}</span>
+              <b>{fmt.money(profitGoal(s))}</b>
+            </>
+          )}
         </div>
         <div className="event-actions">
           <button className="btn primary" onClick={onQuit}>
