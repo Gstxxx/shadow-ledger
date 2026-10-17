@@ -1,27 +1,24 @@
-import { useCallback, useEffect, useState } from 'react';
-import { Briefcase, MapPin, X } from 'lucide-react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import { player, standing } from '../../game/state';
 import { useGame, useGameStore } from '../../store/game';
 import { audio } from '../../audio/engine';
 import { useT } from '../../i18n';
 import type { Key } from '../../i18n';
 import { SettingsPanel } from '../title/Settings';
-import { AgencyPanel } from './AgencyPanel';
 import { CombatOverlay } from './CombatOverlay';
-import { CountryPanel } from './CountryPanel';
 import { DirectorBanner, EventModal, GameOver, LogPanel } from './Overlays';
 import { TopBar } from './TopBar';
 import { WorldMap } from './WorldMap';
 import { DossierHost } from './unit/DossierHost';
-import { BottomSheet } from './portrait/BottomSheet';
-import type { SheetSnap } from './portrait/BottomSheet';
-import { PORTRAIT_QUERY, usePortrait } from './portrait/usePortrait';
+import { useMedia, usePortrait } from './portrait/usePortrait';
+import { StageDock, StageModals } from './stage/Stage';
+import { StageCtx } from './stage/context';
+import type { StageApi, StageModal } from './stage/context';
 import { installSafeAreaDebug } from './portrait/safeArea';
 import './portrait/safe.css';
 
 installSafeAreaDebug();
-import { countryName } from '../../i18n/lookup';
-import { GModal, GSegmented } from '../../art';
+import { GModal, GSegmented, useModalStack } from '../../art';
 import '../../art/game-ui.css';
 import type { MapMode } from './WorldMap';
 import './game.css';
@@ -56,47 +53,28 @@ export function GameScreen() {
   const togglePause = useGameStore((st) => st.togglePause);
   const setSpeed = useGameStore((st) => st.setSpeed);
   const [mode, setMode] = useState<MapMode>('posture');
-  const [drawer, setDrawer] = useState<'left' | 'right' | null>(null);
   const portrait = usePortrait();
-  const [sheetTab, setSheetTab] = useState<'country' | 'agency'>('country');
-  const [snap, setSnap] = useState<SheetSnap>('half');
+  const tiny = useMedia('(max-width: 380px)');
   const [menu, setMenu] = useState(false);
   const [logOpen, setLogOpen] = useState(false);
   const a = player(s);
-  const selected = useGameStore((st) => st.selected);
 
-  // Ao pousar (ou sair de Detido/Sequestrado), o painel do país segue o Diretor.
+  // ADR 0006: o mapa é o palco; País, Agência e Item abrem um modal central por vez, com voltar.
+  const stack = useModalStack<StageModal>();
+  const stage: StageApi = useMemo(
+    () => ({ current: stack.current, canBack: stack.canBack, open: stack.open, push: stack.push, replace: stack.replace, back: stack.back, close: stack.close }),
+    [stack.current, stack.canBack], // eslint-disable-line react-hooks/exhaustive-deps
+  );
+
+  // Ao pousar (ou sair de Detido/Sequestrado), o país escolhido segue o Diretor.
   const select = useGameStore((st) => st.select);
   const landedAt = a.flight ? null : a.location;
   useEffect(() => {
     if (landedAt) select(landedAt);
   }, [landedAt, select]);
 
-  // On phones the country drawer (or, standing up, the sheet's country tab) opens when a country is picked.
-  useEffect(() => {
-    if (!selected) return;
-    if (window.matchMedia(PORTRAIT_QUERY).matches) {
-      setSheetTab('country');
-      setSnap((v) => (v === 'peek' ? 'half' : v));
-    } else if (window.matchMedia('(max-width: 900px), (max-height: 520px)').matches) setDrawer('left');
-  }, [selected]);
-
-  // Depuração (só em dev): window.__slSheet('peek'|'half'|'full', 'country'|'agency') para screenshots.
-  useEffect(() => {
-    if (!import.meta.env.DEV) return;
-    (window as unknown as { __slSheet?: unknown }).__slSheet = (s: SheetSnap, tab?: 'country' | 'agency') => {
-      setSnap(s);
-      if (tab) setSheetTab(tab);
-    };
-  }, []);
-
-  /** Abre o painel pedido no layout atual (gaveta deitado, aba da folha em pé). */
-  const openPanel = (side: 'left' | 'right') => {
-    if (portrait) {
-      setSheetTab(side === 'left' ? 'country' : 'agency');
-      setSnap((v) => (v === 'peek' ? 'half' : v));
-    } else setDrawer(side);
-  };
+  // Tocar num país do mapa abre o modal dele.
+  const onPickCountry = useCallback((id: string) => stack.open({ kind: 'country', id, tab: 'overview' }), []); // eslint-disable-line react-hooks/exhaustive-deps
 
   // Map tension follows the worst announced Ameaça and the local Exposição.
   const soon = a.threats.reduce((m, t) => Math.max(m, 1 - Math.min(1, (t.strikesAt - s.time) / 72)), 0);
@@ -129,65 +107,29 @@ export function GameScreen() {
     useGameStore.setState({ paused: true });
   };
 
-  const mapArea = (
-    <main className="map-area" data-tour="map">
-      <WorldMap mode={mode} />
-      <GSegmented
-        className="map-modes"
-        label={t('game.screen.mapLayer')}
-        options={MODES.map((m) => ({ value: m.id, label: t(m.labelKey) }))}
-        value={mode}
-        onChange={setMode}
-      />
-      <LogPanel open={logOpen} onToggle={() => setLogOpen(!logOpen)} />
-    </main>
-  );
-
   return (
+    <StageCtx.Provider value={stage}>
     <DossierHost>
-    <div className={`game g-skin${portrait ? ` upright sheet-${snap}` : ''}`}>
-      <TopBar onMenu={openMenu} onLeft={() => (drawer === 'left' ? setDrawer(null) : openPanel('left'))} onRight={() => (drawer === 'right' ? setDrawer(null) : openPanel('right'))} />
+    <div className={`game g-skin stage${portrait ? ' upright' : ''}${stage.current ? ' stage-open' : ''}`}>
+      <TopBar onMenu={openMenu} />
       <DirectorBanner />
-      {portrait ? (
-        <div className="game-body">
-          {mapArea}
-          <BottomSheet
-            tabs={[
-              { id: 'country', label: countryName(selected ?? a.location), icon: <MapPin size={16} />, tour: 'drawer-left' },
-              {
-                id: 'agency',
-                label: t('game.topbar.agency'),
-                icon: <Briefcase size={16} />,
-                badge: a.threats.length || undefined,
-                hot: a.threats.length > 0,
-                tour: 'drawer-right',
-              },
-            ]}
-            tab={sheetTab}
-            onTab={(id) => setSheetTab(id as 'country' | 'agency')}
-            snap={snap}
-            onSnap={setSnap}
-          >
-            {sheetTab === 'country' ? <CountryPanel /> : <AgencyPanel />}
-          </BottomSheet>
-        </div>
-      ) : (
       <div className="game-body">
-        <aside className={`side left g-drawer${drawer === 'left' ? ' open' : ''}`}>
-          <button className="btn icon ghost drawer-close only-narrow" aria-label={t('common.close')} onClick={() => setDrawer(null)}>
-            <X size={18} />
-          </button>
-          <CountryPanel />
-        </aside>
-        {mapArea}
-        <aside className={`side right g-drawer g-drawer--right${drawer === 'right' ? ' open' : ''}`}>
-          <button className="btn icon ghost drawer-close only-narrow" aria-label={t('common.close')} onClick={() => setDrawer(null)}>
-            <X size={18} />
-          </button>
-          <AgencyPanel />
-        </aside>
+        <main className="map-area" data-tour="map">
+          <WorldMap mode={mode} onPickCountry={onPickCountry} />
+          <GSegmented
+            className="map-modes"
+            label={t('game.screen.mapLayer')}
+            options={MODES.map((m) => ({ value: m.id, label: t(m.labelKey) }))}
+            value={mode}
+            onChange={setMode}
+          />
+          <div className="stage-foot">
+            <LogPanel open={logOpen} onToggle={() => setLogOpen(!logOpen)} />
+            <StageDock stage={stage} compact={tiny} />
+          </div>
+        </main>
       </div>
-      )}
+      <StageModals stage={stage} />
       <EventModal />
       <CombatOverlay />
       <GameOver onQuit={quit} />
@@ -211,5 +153,6 @@ export function GameScreen() {
       </GModal>
     </div>
     </DossierHost>
+    </StageCtx.Provider>
   );
 }

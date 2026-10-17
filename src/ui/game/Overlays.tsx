@@ -157,7 +157,10 @@ export function LogPanel({ open, onToggle }: { open: boolean; onToggle: () => vo
         <span className="g-telex__k">
           {t('game.overlay.log')} {open ? '▾' : '▴'}
         </span>
-        {!open && list[0] && <span className="g-telex__t log-peek">{msgText(list[0].msg, list[0].text, lang)}</span>}
+        {!open && (
+          // Nunca vazio: a última linha do Relatório, ou a data e a hora enquanto nada aconteceu.
+          <span className="g-telex__t log-peek">{list[0] ? msgText(list[0].msg, list[0].text, lang) : `${formatDate(s.time)} · ${formatClock(s.time)}`}</span>
+        )}
       </button>
       {open && (
         <ol className="log-list">

@@ -144,7 +144,7 @@ interface View {
   y: number;
 }
 
-export function WorldMap({ mode }: { mode: MapMode }) {
+export function WorldMap({ mode, onPickCountry }: { mode: MapMode; onPickCountry?: (id: string) => void }) {
   const { t } = useT();
   const s = useGame();
   const a = player(s);
@@ -162,6 +162,7 @@ export function WorldMap({ mode }: { mode: MapMode }) {
   }, [a.location, a.flight]); // eslint-disable-line react-hooks/exhaustive-deps
   const svg = useRef<SVGSVGElement>(null);
   const [vb, setVb] = useState<Box>(box);
+  const fitted = useRef(false);
   // Pixels de tela por unidade do mapa: no celular o SVG encolhe e os marcadores sumiriam.
   const [pxPerUnit, setPxPerUnit] = useState(1);
   useEffect(() => {
@@ -169,10 +170,16 @@ export function WorldMap({ mode }: { mode: MapMode }) {
     if (!el) return;
     const ro = new ResizeObserver(() => {
       const r = el.getBoundingClientRect();
+      const firstFit = !fitted.current;
       box = boxFor(r.width, r.height);
       setVb(box);
       if (r.width > 0) setPxPerUnit(r.width / box.w);
-      setView((v) => clampView(v));
+      // Primeira medida real, ou um tamanho que força mais zoom (o palco muda depois da montagem): centra no Diretor.
+      if (r.width > 0) fitted.current = true;
+      const g = useGameStore.getState().game;
+      const me = g?.agencies.find((x) => x.isPlayer);
+      const loc = me && g?.countries[me.location];
+      setView((v) => (loc && (firstFit || v.k < minK()) ? focusView(loc.lon, loc.lat, Math.max(v.k, 1.8)) : clampView(v)));
     });
     ro.observe(el);
     return () => ro.disconnect();
@@ -192,8 +199,9 @@ export function WorldMap({ mode }: { mode: MapMode }) {
       if (drag.current && drag.current.moved > 6) return;
       audio.sfx('click');
       select(id);
+      onPickCountry?.(id);
     },
-    [select],
+    [select, onPickCountry],
   );
 
   const toSvg = (cx: number, cy: number) => {
@@ -435,8 +443,10 @@ export function WorldMap({ mode }: { mode: MapMode }) {
 
 const minK = () => Math.max(box.w / W, box.h / H);
 
-function focusView(lon: number, lat: number, k: number): View {
+function focusView(lon: number, lat: number, want: number): View {
   const [px, py] = project(lon, lat);
+  // Centra com o zoom efetivo (no celular em pé o mínimo para cobrir a tela passa do pedido).
+  const k = Math.max(minK(), want);
   return clampView({ k, x: box.x + box.w / 2 - px * k, y: box.y + box.h / 2 - py * k });
 }
 

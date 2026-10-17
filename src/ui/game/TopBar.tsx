@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { ChevronDown, FastForward, Menu, PanelLeft, PanelRight, Pause, Play } from 'lucide-react';
+import { FastForward, Menu, Pause, Play } from 'lucide-react';
 import { daysLeft, profitGoal } from '../../game/objective';
 import { formatClock, formatDate, formatDuration, player, profit } from '../../game/state';
 import { crisisHoursLeft, tensionBand } from '../../game/tension';
@@ -13,7 +13,7 @@ import { useMedia, usePortrait } from './portrait/usePortrait';
 import { GMeter, GSegmented } from '../../art';
 import { DirectorAvatar } from './DirectorAvatar';
 
-export function TopBar({ onMenu, onLeft, onRight }: { onMenu: () => void; onLeft: () => void; onRight: () => void }) {
+export function TopBar({ onMenu }: { onMenu: () => void }) {
   const { t, fmt } = useT();
   const s = useGame();
   const a = player(s);
@@ -30,8 +30,6 @@ export function TopBar({ onMenu, onLeft, onRight }: { onMenu: () => void; onLeft
       : Number.isFinite(left)
         ? t('game.topbar.daysLeft', { n: Math.max(0, Math.ceil(left)) })
         : t('game.topbar.noDeadline');
-  const [details, setDetails] = useState(false);
-  // Em pé, as âncoras do guia ficam nas abas da folha; os botões de gaveta somem.
   const portrait = usePortrait();
   const narrow = useMedia('(max-width: 700px)');
   // Deitado e baixo (celular): também usa o seletor compacto, para sobrar lugar para os mostradores.
@@ -56,19 +54,33 @@ export function TopBar({ onMenu, onLeft, onRight }: { onMenu: () => void; onLeft
   // Meta de lucro do Objetivo "Lucro no prazo" (1 = basta terminar no azul).
   const target = pr.objective === 'profit' ? profitGoal(s) : 0;
   const goalPct = target > 1 ? Math.max(0, Math.min(100, Math.round((p / target) * 100))) : 0;
+  const signedMoney = p > 0 ? `+${fmt.money(p)}` : fmt.money(p);
+  // Caixa e Lucro: dois mostradores do mesmo tamanho (rótulo, valor, legenda de uma linha).
+  const cashStat = (
+    <div className="tb-stat tb-money g-dial g-dial--lg" aria-label={`${t('game.topbar.cash')} ${fmt.money(a.cash)} · ${objectiveLabel(pr.objective)} · ${goal}`}>
+      <span className="tb-k mono g-dial__k">{t('game.topbar.cash')}</span>
+      <span className="tb-v num g-dial__v">{fmt.money(a.cash)}</span>
+      <span className="tb-cap mono">{target > 1 ? goal : `${objectiveLabel(pr.objective)} · ${goal}`}</span>
+    </div>
+  );
   const profitStat = (
-      <div
-        className={`tb-stat hide-xs g-dial ${p >= 0 ? 'g-dial--ok' : 'g-dial--danger'}`}
-        aria-label={target > 1 ? t('game.topbar.profitGoalAria', { profit: fmt.money(p), goal: fmt.money(target), pct: goalPct }) : undefined}
-      >
-        <span className="tb-k mono g-dial__k">{target === 1 ? `${t('game.topbar.profit')} · ${t('game.topbar.stayInBlack')}` : t('game.topbar.profit')}</span>
-        <span className="tb-v num g-dial__v">
-          {target > 1 ? t('game.topbar.profitOfGoal', { profit: fmt.money(p), goal: fmt.money(target) }) : fmt.money(p)}
-        </span>
-        {target > 1 && (
+    <div
+      className={`tb-stat tb-money g-dial g-dial--lg ${p >= 0 ? 'g-dial--ok' : 'g-dial--danger'}`}
+      aria-label={target > 1 ? t('game.topbar.profitGoalAria', { profit: fmt.money(p), goal: fmt.money(target), pct: goalPct }) : undefined}
+    >
+      <span className="tb-k mono g-dial__k">{t('game.topbar.profit')}</span>
+      <span className="tb-v num g-dial__v">{signedMoney}</span>
+      {target > 1 ? (
+        <span className="tb-cap tb-goal mono">
           <GMeter className="goal-bar" value={goalPct} max={100} tone={goalPct >= 100 ? 'ok' : 'action'} thin />
-        )}
-      </div>
+          <span>
+            {t('game.overlay.over.profitGoal')} {fmt.money(target)}
+          </span>
+        </span>
+      ) : (
+        <span className="tb-cap mono">{target === 1 ? t('game.topbar.stayInBlack') : objectiveLabel(pr.objective)}</span>
+      )}
+    </div>
   );
   const tensionStat = (
       <div className="tb-stat hide-xs tb-tension g-dial">
@@ -98,9 +110,6 @@ export function TopBar({ onMenu, onLeft, onRight }: { onMenu: () => void; onLeft
 
   return (
     <header className="topbar g-hud">
-      <button className="btn icon ghost only-narrow" data-tour={portrait ? undefined : 'drawer-left'} aria-label={t('game.topbar.country')} onClick={onLeft}>
-        <PanelLeft size={18} />
-      </button>
       <span className="tb-avatar">
         <DirectorAvatar origin={a.origin} size={32} title={a.director.name} />
       </span>
@@ -110,25 +119,7 @@ export function TopBar({ onMenu, onLeft, onRight }: { onMenu: () => void; onLeft
           {objectiveLabel(pr.objective)} · {goal}
         </span>
       </div>
-      {portrait ? (
-        <button
-          type="button"
-          className="tb-stat tb-more g-dial g-dial--lg"
-          aria-expanded={details}
-          aria-label={`${t('game.topbar.cash')} ${fmt.money(a.cash)} · ${objectiveLabel(pr.objective)} · ${goal}`}
-          onClick={() => setDetails(!details)}
-        >
-          <span className="tb-k mono g-dial__k">
-            {t('game.topbar.cash')} <ChevronDown size={12} style={{ transform: details ? 'rotate(180deg)' : undefined }} />
-          </span>
-          <span className="tb-v num g-dial__v">{fmt.money(a.cash)}</span>
-        </button>
-      ) : (
-        <div className="tb-stat g-dial g-dial--lg">
-          <span className="tb-k mono g-dial__k">{t('game.topbar.cash')}</span>
-          <span className="tb-v num g-dial__v">{fmt.money(a.cash)}</span>
-        </div>
-      )}
+      {cashStat}
       {profitStat}
       {tensionStat}
 
@@ -185,22 +176,10 @@ export function TopBar({ onMenu, onLeft, onRight }: { onMenu: () => void; onLeft
         )}
         {skipButton('')}
       </div>
-      <button className="btn icon ghost only-mid" data-tour={portrait ? undefined : 'drawer-right'} aria-label={t('game.topbar.agency')} onClick={onRight}>
-        <PanelRight size={18} />
-      </button>
-      <button className="btn icon ghost" aria-label={t('game.topbar.menu')} onClick={onMenu}>
+      <button className="btn icon ghost tb-menu" aria-label={t('game.topbar.menu')} onClick={onMenu}>
         <Menu size={18} />
       </button>
-      {details && (
-        <div className="tb-details" role="region" aria-label={objectiveLabel(pr.objective)}>
-          <div className="tb-stat">
-            <span className="tb-k mono">{objectiveLabel(pr.objective)}</span>
-            <span className="tb-v">{goal}</span>
-          </div>
-          {profitStat}
-          {tensionStat}
-        </div>
-      )}
+      <span className="tb-break" aria-hidden />
     </header>
   );
 }

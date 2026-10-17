@@ -21,6 +21,7 @@ import {
   whyCantSell,
 } from './model';
 import type { BlockMsg, MarketRow, Opportunity, Segment } from './model';
+import { useStage } from '../stage/context';
 import './market.css';
 
 type Fmt = I18n['fmt'];
@@ -85,9 +86,12 @@ export function MarketPanel({ countryId }: { countryId: string }) {
   const used = usedCargo(a);
   const max = maxCargo(a);
 
+  const stage = useStage();
+  // No palco (ADR 0006) o item abre o modal de compra e venda; fora dele (protótipo), expande na lista.
   const focusItem = (itemId: string) => {
     const r = rows.find((x) => x.itemId === itemId);
     if (!r) return;
+    if (stage) return stage.push({ kind: 'item', countryId, itemId });
     setSeg(r.segment);
     setOpen(itemId);
   };
@@ -163,8 +167,8 @@ export function MarketPanel({ countryId }: { countryId: string }) {
                     key={r.itemId}
                     row={r}
                     countryId={countryId}
-                    open={open === r.itemId}
-                    onToggle={() => setOpen(open === r.itemId ? null : r.itemId)}
+                    open={!stage && open === r.itemId}
+                    onToggle={() => (stage ? focusItem(r.itemId) : setOpen(open === r.itemId ? null : r.itemId))}
                   />
                 ))}
             </ul>
@@ -274,27 +278,34 @@ function OppList({
 // Nome curto do item: sem o "(cx. 100)" que já aparece no detalhe.
 const shortName = (itemId: string) => itemName(itemId).replace(/\s*\(.*\)$/, '');
 
+/** Barato/caro frente à média: quem compra quer abaixo; se o país só compra o item, acima é bom para vender. */
+function dealOf(r: MarketRow, t: I18n['t']) {
+  const sellSide = !r.buy && r.sell > 0;
+  const pctAbs = Math.round(Math.abs(r.dealPct) * 100);
+  const good = r.deal === 'fair' ? null : sellSide ? r.deal === 'pricey' : r.deal === 'cheap';
+  const text =
+    r.deal === 'fair'
+      ? t('game.market.deal.fair')
+      : r.deal === 'cheap'
+        ? t('game.market.deal.below', { pct: pctAbs })
+        : t('game.market.deal.above', { pct: pctAbs });
+  return { good, text };
+}
+
 function MarketItem({ row, countryId, open, onToggle }: { row: MarketRow; countryId: string; open: boolean; onToggle: () => void }) {
   const r = row;
   const { t, fmt } = useT();
   const s = useGame();
   const a = player(s);
   const here = directorAt(a, countryId);
-  // Quem compra aqui quer preço abaixo da média; se o país só compra o item, acima da média é bom para vender.
-  const sellSide = !r.buy && r.sell > 0;
-  const pctAbs = Math.round(Math.abs(r.dealPct) * 100);
-  const good = r.deal === 'fair' ? null : sellSide ? r.deal === 'pricey' : r.deal === 'cheap';
-  const dealText =
-    r.deal === 'fair'
-      ? t('game.market.deal.fair')
-      : r.deal === 'cheap'
-        ? t('game.market.deal.below', { pct: pctAbs })
-        : t('game.market.deal.above', { pct: pctAbs });
+  const staged = !!useStage();
+  const { good, text: dealText } = dealOf(r, t);
   return (
     <li className={`mkt-item${open ? ' open' : ''}${r.it.wmd ? ' wmd' : ''}${r.owned ? ' owned' : ''}`}>
       <button
         className={`mkt-row g-card${r.owned ? ' g-card--hot' : ''}${r.it.wmd ? ' g-card--danger' : ''}${!r.buy && !r.sell ? ' g-card--off' : ''}`}
-        aria-expanded={open}
+        aria-expanded={staged ? undefined : open}
+        aria-haspopup={staged ? 'dialog' : undefined}
         onClick={onToggle}
       >
         <span className="g-well">
@@ -344,7 +355,7 @@ function MarketItem({ row, countryId, open, onToggle }: { row: MarketRow; countr
   );
 }
 
-function TradeBox({ row, countryId }: { row: MarketRow; countryId: string }) {
+function TradeBox({ row, countryId, info = true }: { row: MarketRow; countryId: string; info?: boolean }) {
   const { t, fmt } = useT();
   const s = useGame();
   const a = player(s);
@@ -367,6 +378,18 @@ function TradeBox({ row, countryId }: { row: MarketRow; countryId: string }) {
   const breakEven = r.owned && r.sell ? sellUntilBreakEven(c, r.itemId, r.owned, r.paidEach) : 0;
   const satBuy = saturationAfter(c, r.itemId, q, 'buy');
   const satSell = saturationAfter(c, r.itemId, q, 'sell');
+  const used = usedCargo(a);
+  const max = maxCargo(a);
+  const sellQty = Math.min(q, r.owned);
+  /** Caixa (e espaço no avião) antes → depois da operação. */
+  const after = (cashDelta: number, tonsDelta: number) => (
+    <span className="mkt-after mono">
+      {t('game.topbar.cash')} <span className="num">{fmt.money(a.cash)}</span> → <span className="num">{fmt.money(a.cash + cashDelta)}</span>
+      {' · '}
+      {t('game.market.cap.label')} <span className="num">{fmt.tons(used)}</span> →{' '}
+      <span className={`num${used + tonsDelta > max ? ' neg' : ''}`}>{fmt.tons(Math.max(0, used + tonsDelta))}</span>
+    </span>
+  );
 
   return (
     <div className="mkt-trade">
@@ -427,6 +450,7 @@ function TradeBox({ row, countryId }: { row: MarketRow; countryId: string }) {
                 ? blockText(t, buyBlock)
                 : t('game.market.trade.buyNote', { weight: fmt.tons(r.it.weight * q), pct: pctTxt(fmt, satBuy) })}
             </span>
+            {!info && !buyBlock && after(-buyQ.total, r.it.weight * q)}
           </div>
         )}
         {r.owned > 0 ? (
@@ -451,6 +475,7 @@ function TradeBox({ row, countryId }: { row: MarketRow; countryId: string }) {
                 </>
               )}
             </span>
+            {!info && !sellBlock && after(sellQ.total, -r.it.weight * sellQty)}
           </div>
         ) : (
           <p className="mkt-why">
@@ -458,8 +483,66 @@ function TradeBox({ row, countryId }: { row: MarketRow; countryId: string }) {
           </p>
         )}
       </div>
-      <PriceRange itemId={r.itemId} countryId={countryId} />
-      <p className="mkt-blurb">{itemBlurb(r.itemId)}</p>
+      {info && <PriceRange itemId={r.itemId} countryId={countryId} />}
+      {info && <p className="mkt-blurb">{itemBlurb(r.itemId)}</p>}
+    </div>
+  );
+}
+
+/** Modal de compra e venda (ADR 0006): informação à esquerda, ação à direita; em pé, uma coluna. */
+export function ItemTrade({ countryId, itemId }: { countryId: string; itemId: string }) {
+  const { t, fmt } = useT();
+  const s = useGame();
+  const a = player(s);
+  const here = directorAt(a, countryId);
+  const r = marketRows(s, a, countryId).find((x) => x.itemId === itemId);
+  if (!r) return <p className="mkt-why">{t('game.market.unknown')}</p>;
+  const { good, text } = dealOf(r, t);
+  return (
+    <div className="trade">
+      <div className="trade-info">
+        <div className="trade-hero">
+          <span className="g-well trade-icon">
+            <GameIcon id={r.itemId} size={56} accent={r.it.wmd ? 'signal' : 'warm'} />
+          </span>
+          <div className="trade-hero-t">
+            <span className="mono trade-sub">
+              {r.it.wmd ? t('game.market.wmd') : classLabel(r.it.cls)} · {t('game.market.perUnit', { weight: fmt.tons(r.it.weight) })}
+            </span>
+            {(r.buy > 0 || r.sell > 0) && (
+              <span className={`mkt-deal ${good === null ? 'fair' : good ? 'good' : 'bad'}`}>
+                {text}
+                {!r.dealKnown && <span className="mkt-deal-src"> · {t('game.market.deal.fewData')}</span>}
+              </span>
+            )}
+          </div>
+        </div>
+        <div className="trade-prices">
+          <div className="trade-p">
+            <span className="k">{t('game.market.youPay')}</span>
+            <span className="v num">{r.buy ? fmt.money(r.buy) : t('game.market.notSold')}</span>
+          </div>
+          <div className="trade-p">
+            <span className="k">{t('game.market.youGet')}</span>
+            <span className="v num">{r.sell ? fmt.money(r.sell) : t('game.market.notBought')}</span>
+          </div>
+        </div>
+        {r.owned > 0 && (
+          <p className="mkt-own">
+            <span className="num">{t('game.market.owned', { n: r.owned })}</span>{' '}
+            {r.sell > 0 && <span className={r.plEach >= 0 ? 'pos' : 'neg'}>{t('game.market.plSellingHere', { pl: signed(fmt, r.plEach) })}</span>}
+          </p>
+        )}
+        <PriceRange itemId={r.itemId} countryId={countryId} />
+        <p className="mkt-blurb">{itemBlurb(r.itemId)}</p>
+      </div>
+      <div className="trade-act">
+        {here ? (
+          <TradeBox row={r} countryId={countryId} info={false} />
+        ) : (
+          <p className="mkt-away">{t('game.market.away', { country: countryName(countryId), blurb: itemBlurb(r.itemId) })}</p>
+        )}
+      </div>
     </div>
   );
 }

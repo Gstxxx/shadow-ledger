@@ -17,29 +17,29 @@ import { Help } from './help/Glossary';
 
 const OP_ICON: Record<OperationKind, typeof Landmark> = { bank: Landmark, tech: Cpu, neutralize: UserX };
 
-export function CountryPanel() {
+/** Continente · nível · política (vira o "kicker" do modal do país). */
+export function CountrySub({ countryId }: { countryId: string }) {
+  const { t } = useT();
+  const s = useGame();
+  const c = s.countries[countryId];
+  return (
+    <>
+      {continentName(c.continent)} · {t('game.country.level', { n: c.level })} ·{' '}
+      <span style={{ color: POLITICS_COLOR[c.politics] }}>{politicsLabel(c.politics)}</span>
+      {c.couped && ` · ${t('game.country.couped')}`}
+    </>
+  );
+}
+
+/** Postura, Reputação e Exposição do jogador no país. */
+function CountryStanding({ countryId }: { countryId: string }) {
   const { t } = useT();
   const s = useGame();
   const a = player(s);
-  const id = useGameStore((st) => st.selected) ?? a.location;
-  const act = useGameStore((st) => st.act);
-  const c = s.countries[id];
-  const here = directorAt(a, id);
-  const sd = standing(a, id);
-
+  const sd = standing(a, countryId);
   return (
-    <div className="panel-scroll">
-      <header className="cty-head">
-        <div className="cty-title">
-          <h2>{countryName(c.id)}</h2>
-          <span className="mono cty-sub">
-            {continentName(c.continent)} · {t('game.country.level', { n: c.level })} ·{' '}
-            <span style={{ color: POLITICS_COLOR[c.politics] }}>{politicsLabel(c.politics)}</span>
-            {c.couped && ` · ${t('game.country.couped')}`}
-          </span>
-        </div>
-        <PostureChip posture={postureIn(a, id)} />
-      </header>
+    <div className="cty-standing">
+      <PostureChip posture={postureIn(a, countryId)} />
       <div className="kv">
         <span className="k">
           <Help term="reputation">{t('game.country.reputation')}</Help>
@@ -52,47 +52,102 @@ export function CountryPanel() {
         <ExpBar value={sd.exposure} />
         <span className="v num">{Math.round(sd.exposure)}</span>
       </div>
+    </div>
+  );
+}
 
-      {!here && (
-        <TravelBox countryId={id} />
-      )}
+/** Aba "Visão geral" do país: relação, viagem, entregas e Rivais. */
+export function CountryOverview({ countryId }: { countryId: string }) {
+  const s = useGame();
+  const a = player(s);
+  const here = directorAt(a, countryId);
+  return (
+    <div className="cty-overview">
+      <CountryStanding countryId={countryId} />
+      {!here && <TravelBox countryId={countryId} />}
+      {here && <ContractsHere countryId={countryId} />}
+      <RivalsHere countryId={countryId} />
+    </div>
+  );
+}
 
+/** Aba "Operações Especiais": só com o Diretor no país; fora dele, o caminho é voar até lá. */
+export function CountryOps({ countryId }: { countryId: string }) {
+  const { t } = useT();
+  const s = useGame();
+  const a = player(s);
+  const act = useGameStore((st) => st.act);
+  const c = s.countries[countryId];
+  const here = directorAt(a, countryId);
+  if (!here)
+    return (
+      <div className="cty-ops-away">
+        <p className="hint-sm">{t('game.country.ops.hint')}</p>
+        <TravelBox countryId={countryId} />
+      </div>
+    );
+  return (
+    <div className="ops">
+      {(['bank', 'tech', 'neutralize'] as OperationKind[]).map((op) => {
+        const Icon = OP_ICON[op];
+        const blocked = A.operationBlocked(s, countryId, op);
+        return (
+          <button
+            key={op}
+            className="op"
+            disabled={!!blocked || !a.escort.length}
+            onClick={() => act((g, ag) => A.startOperation(g, ag, op), 'open')}
+          >
+            <Icon size={18} />
+            <span className="op-name">{operationLabel(op)}</span>
+            <span className="op-meta mono">{t('game.country.ops.hostileForce', { n: A.operationStrength(s, a, countryId, op) })}</span>
+            <span className="op-blurb">{blocked ?? operationBlurb(op)}</span>
+          </button>
+        );
+      })}
+      <button className="op coup" disabled={!a.escort.length || !!c.couped} onClick={() => act((g, ag) => A.startCoup(g, ag), 'open')}>
+        <Crown size={18} />
+        <span className="op-name">{t('game.country.ops.coup')}</span>
+        <span className="op-meta mono">{t('game.country.ops.hostileForce', { n: A.operationStrength(s, a, countryId, 'coup') })}</span>
+        <span className="op-blurb">{t('game.country.ops.coupBlurb')}</span>
+      </button>
+      <p className="hint-sm">{t('game.country.ops.hint')}</p>
+    </div>
+  );
+}
+
+/** Aba "Estação": a do jogador no país, ou o convite para abrir uma Célula. */
+export function CountryStation({ countryId }: { countryId: string }) {
+  const { t } = useT();
+  const s = useGame();
+  const a = player(s);
+  if (!stationIn(a, countryId) && !directorAt(a, countryId)) return <Empty>{t('game.agency.stations.empty')}</Empty>;
+  return <StationSection countryId={countryId} />;
+}
+
+/** Painel antigo (gaveta/folha), mantido até a etapa 4 do ADR 0006. */
+export function CountryPanel() {
+  const { t } = useT();
+  const s = useGame();
+  const a = player(s);
+  const id = useGameStore((st) => st.selected) ?? a.location;
+  const c = s.countries[id];
+  return (
+    <div className="panel-scroll">
+      <header className="cty-head">
+        <div className="cty-title">
+          <h2>{countryName(c.id)}</h2>
+          <span className="mono cty-sub">
+            <CountrySub countryId={id} />
+          </span>
+        </div>
+      </header>
+      <CountryOverview countryId={id} />
       <MarketPanel countryId={id} />
-
       <StationSection countryId={id} />
-
-      {here && <ContractsHere countryId={id} />}
-
-      <RivalsHere countryId={id} />
-
-      {here && (
+      {directorAt(a, id) && (
         <Section title={t('game.country.ops.title')}>
-          <div className="ops">
-            {(['bank', 'tech', 'neutralize'] as OperationKind[]).map((op) => {
-              const Icon = OP_ICON[op];
-              const blocked = A.operationBlocked(s, id, op);
-              return (
-                <button
-                  key={op}
-                  className="op"
-                  disabled={!!blocked || !a.escort.length}
-                  onClick={() => act((g, ag) => A.startOperation(g, ag, op), 'open')}
-                >
-                  <Icon size={18} />
-                  <span className="op-name">{operationLabel(op)}</span>
-                  <span className="op-meta mono">{t('game.country.ops.hostileForce', { n: A.operationStrength(s, a, id, op) })}</span>
-                  <span className="op-blurb">{blocked ?? operationBlurb(op)}</span>
-                </button>
-              );
-            })}
-            <button className="op coup" disabled={!a.escort.length || !!c.couped} onClick={() => act((g, ag) => A.startCoup(g, ag), 'open')}>
-              <Crown size={18} />
-              <span className="op-name">{t('game.country.ops.coup')}</span>
-              <span className="op-meta mono">{t('game.country.ops.hostileForce', { n: A.operationStrength(s, a, id, 'coup') })}</span>
-              <span className="op-blurb">{t('game.country.ops.coupBlurb')}</span>
-            </button>
-          </div>
-          <p className="hint-sm">{t('game.country.ops.hint')}</p>
+          <CountryOps countryId={id} />
         </Section>
       )}
     </div>

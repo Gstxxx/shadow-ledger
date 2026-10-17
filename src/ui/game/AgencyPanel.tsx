@@ -19,7 +19,39 @@ import { useOpenUnit } from './unit/DossierHost';
 import './agency.css';
 import { DirectorAvatar } from './DirectorAvatar';
 
-type Tab = 'force' | 'cargo' | 'stations' | 'teams' | 'contracts' | 'threats';
+export type AgencyTab = 'force' | 'cargo' | 'stations' | 'teams' | 'contracts' | 'threats';
+type Tab = AgencyTab;
+
+/** Abas da Agência com contadores (para o fichário do modal). */
+export function useAgencyTabs() {
+  const s = useGame();
+  const a = player(s);
+  const { t } = useT();
+  const offers = s.contracts.filter((k) => k.status === 'offered').length;
+  const cargoUnits = a.cargo.reduce((x, l) => x + l.qty, 0);
+  return [
+    { id: 'force' as Tab, label: t('game.agency.tab.force'), icon: <Plane size={16} />, count: a.escort.length || undefined },
+    { id: 'cargo' as Tab, label: t('game.agency.tab.cargo'), icon: <Boxes size={16} />, count: cargoUnits || undefined },
+    { id: 'stations' as Tab, label: t('game.agency.tab.stations'), icon: <Building2 size={16} />, count: a.stations.length || undefined },
+    { id: 'teams' as Tab, label: t('game.agency.tab.teams'), icon: <Users size={16} />, count: a.teams.length || undefined },
+    { id: 'contracts' as Tab, label: t('game.agency.tab.contracts'), icon: <FileSignature size={16} />, count: offers || undefined },
+    { id: 'threats' as Tab, label: t('game.agency.tab.threats'), icon: <AlertTriangle size={16} />, count: a.threats.length || undefined, alert: a.threats.length > 0 },
+  ];
+}
+
+/** Conteúdo de uma aba da Agência (o fichário fica com quem usa). */
+export function AgencyTabBody({ tab }: { tab: AgencyTab }) {
+  return (
+    <div className="agency agency--bare">
+      {tab === 'force' && <ForceTab />}
+      {tab === 'cargo' && <CargoTab />}
+      {tab === 'stations' && <StationsTab />}
+      {tab === 'teams' && <TeamsTab />}
+      {tab === 'contracts' && <ContractsTab />}
+      {tab === 'threats' && <ThreatsTab />}
+    </div>
+  );
+}
 
 export function AgencyPanel() {
   const s = useGame();
