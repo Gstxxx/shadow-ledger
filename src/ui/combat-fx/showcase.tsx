@@ -85,7 +85,7 @@ function Showcase() {
     const camera = el.querySelector<HTMLElement>('.sc-camera')!;
     const layer = el.querySelector<HTMLElement>('.cfx-layer')!;
     const st: Stage = { layer, camera, reduced: REDUCED, fwd: portrait ? { x: 0, y: -1 } : { x: 1, y: 0 } };
-    const tok = (id: string) => el.querySelector<HTMLElement>(`[data-u="${id}"]`)!;
+    const tok = (id: string): HTMLElement => el.querySelector(`[data-u="${id}"]`)!;
     const pos = new Map(CAST.map((u) => [u.id, { col: u.col, row: u.row }]));
     // (col,row) do motor → centro em px dentro do tabuleiro, no eixo da tela.
     const center = (col: number, row: number) =>
