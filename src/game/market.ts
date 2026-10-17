@@ -15,8 +15,8 @@ const POLITICS_MULT: Record<Politics, Partial<Record<UnitClass, number>> & { all
 };
 
 /** Spread between buying and selling at the mid price. */
-const BUY_SPREAD = 1.07;
-const SELL_SPREAD = 0.91;
+export const BUY_SPREAD = 1.07;
+export const SELL_SPREAD = 0.91;
 /** Saturação is clamped to ±60% of the price. */
 export const SATURATION_LIMIT = 0.6;
 /** Hours for Saturação to fall to ~37% of its value. */

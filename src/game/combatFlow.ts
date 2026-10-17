@@ -5,6 +5,7 @@ import type { CombatSetup } from './combat';
 import { ITEMS, STEAL_TABLE } from './data/items';
 import { STATIONS, THREAT_BY_STATE } from './data/rules';
 import { originMods } from './data/origins';
+import { recordPriceEvent } from './history';
 import { checkObjective } from './objective';
 import { pick, randInt, randRange } from './rng';
 import {
@@ -371,6 +372,7 @@ export function resolveCombat(s: GameState, c: CombatState) {
         standing(a, r.countryId).reputation = 75;
         cty.politics = 'disorder';
         cty.couped = true;
+        recordPriceEvent(s, { countryId: r.countryId, kind: 'coup' });
         addExposure(s, a, r.countryId, 50);
         const bonus = cty.level * 400_000;
         a.cash += bonus;

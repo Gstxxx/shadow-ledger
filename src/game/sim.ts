@@ -1,5 +1,6 @@
 // Continuous clock (ADR 0001): advance in small steps, stop at the first Evento.
 import { tickRivals } from './ai/brain';
+import { recordPriceEvent, samplePrices } from './history';
 import { contractScale, politicsChurn, tickTension } from './tension';
 import { beginCombat } from './combatFlow';
 import { COUNTRY_SEEDS, neighbors } from './data/countries';
@@ -188,6 +189,7 @@ function dailyWorld(s: GameState) {
       if (c.politics !== before) {
         c.couped = false;
         if (c.politics === 'war' || c.politics === 'civilwar') addTension(s, 2);
+        recordPriceEvent(s, { countryId: c.id, kind: c.politics });
         log(s, M('msg.sim.politicalShift', { country: ref.country(c.id) }), 'intel', c.id);
       }
     }
@@ -201,6 +203,7 @@ function dailyWorld(s: GameState) {
     s.group.seenAt = { countryId: s.group.countryId, at: s.time };
   }
   rollContracts(s);
+  samplePrices(s);
 }
 
 function dailyAgency(s: GameState, a: Agency) {

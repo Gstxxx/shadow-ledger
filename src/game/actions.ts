@@ -15,6 +15,7 @@ import {
 } from './data/rules';
 import { recordAggression } from './ai/memory';
 import { recordWmdSale } from './tension';
+import { recordPriceEvent } from './history';
 import { isLocked } from './tutorial/locks';
 import { originMods } from './data/origins';
 import { buildForce } from './forces';
@@ -114,6 +115,7 @@ export function buy(s: GameState, a: Agency, itemId: string, qty: number): Resul
   a.cash -= q.total;
   c.saturation[itemId] = q.after;
   addCargo(a, itemId, qty, q.avg);
+  if (a.isPlayer) recordPriceEvent(s, { countryId: c.id, itemId, kind: 'playerBuy' });
   tradeExposure(s, a, c.id, q.total, itemId);
   a.stats.trades++;
   seePrices(s, a, c.id);
@@ -129,6 +131,7 @@ export function sell(s: GameState, a: Agency, itemId: string, qty: number): Resu
   if (q.total <= 0) return no(M('msg.act.countryNoBuy', { country: ref.country(c.id) }));
   removeCargo(a, itemId, qty);
   a.cash += q.total;
+  if (a.isPlayer) recordPriceEvent(s, { countryId: c.id, itemId, kind: 'playerSell' });
   c.saturation[itemId] = q.after;
   const it = ITEMS[itemId];
   if (it.wmd) recordWmdSale(s, a, itemId, qty, c.id);

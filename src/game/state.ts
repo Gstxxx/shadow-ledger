@@ -2,6 +2,7 @@ import { COUNTRY_SEEDS, distanceKm, neighbors } from './data/countries';
 import { GROUP_NAMES, HOSTAGE_NAMES, PLAYER_AGENCY_NAMES } from './data/names';
 import { postureOf, PRESETS, STATIONS } from './data/rules';
 import { setupRivals } from './ai/setup';
+import { samplePrices } from './history';
 import { originMods, ORIGINS, TUTORIAL_ORIGIN } from './data/origins';
 import type { OriginMods } from './data/origins';
 import { TUTORIAL_ID } from './tutorial/preset';
@@ -281,6 +282,7 @@ export function newGame(opts: GameOptions): GameState {
   const s: GameState = {
     saveVersion: SAVE_VERSION,
     crisis: { hours: 0 },
+    priceHistory: { series: {}, events: [] },
     wmdLedger: [],
     seed,
     rng: seed,
@@ -347,6 +349,7 @@ export function newGame(opts: GameOptions): GameState {
     preset.startCountry,
   );
   setupRivals(s);
+  samplePrices(s);
   return s;
 }
 

@@ -2,7 +2,7 @@
 import type { GameState } from './types';
 
 /** Bump this and add a step to MIGRATIONS whenever the saved shape changes. */
-export const SAVE_VERSION = 5;
+export const SAVE_VERSION = 6;
 
 type RawSave = Record<string, unknown> & { saveVersion?: number; version?: number };
 
@@ -17,6 +17,10 @@ const MIGRATIONS: Record<number, (s: RawSave) => void> = {
   // v4 → v5: Origem do Diretor; saves antigos recebem a Origem neutra.
   4: (s) => {
     for (const a of (s.agencies as { origin?: string }[]) ?? []) a.origin ??= 'none';
+  },
+  // v5 → v6: histórico de preços (começa vazio).
+  5: (s) => {
+    s.priceHistory ??= { series: {}, events: [] };
   },
 };
 
