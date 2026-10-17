@@ -1,15 +1,15 @@
 import { useEffect, useState } from 'react';
 import type { ReactNode } from 'react';
-import { PlaneTakeoff } from 'lucide-react';
+import { ArrowDown, ArrowUp, PlaneTakeoff } from 'lucide-react';
 import { GameIcon, GModeSwitch, GRange, GStepper } from '../../../art';
 import * as A from '../../../game/actions';
-import { maxCargo, quoteBuy, quoteSell, usedCargo } from '../../../game/market';
+import { maxCargo, quoteBuyFor, quoteSellFor, usedCargo } from '../../../game/market';
 import { directorAt, player } from '../../../game/state';
 import { useGame, useGameStore } from '../../../store/game';
 import { useT } from '../../../i18n';
 import { classLabel, countryName, itemBlurb } from '../../../i18n/lookup';
 import { Help } from '../help/Glossary';
-import { marketRows, maxAffordable, priceRange, saturationAfter, sellUntilBreakEven, whyCantBuy, whyCantSell } from './model';
+import { marketRows, maxAffordable, priceRange, sellUntilBreakEven, whyCantBuy, whyCantSell } from './model';
 import { PriceRange, dealOf } from './MarketPanel';
 import { BigNumber, Details, Verdict } from '../stage/Verdict';
 import type { VerdictTone } from '../stage/Verdict';
@@ -58,11 +58,18 @@ export function ItemTrade({ countryId, itemId }: { countryId: string; itemId: st
   const elsewhere = (k: typeof best) => !!k && k.countryId !== countryId;
 
   // ── Números da aba ──
-  const buyQ = quoteBuy(c, itemId, q);
-  const sellQ = quoteSell(c, itemId, Math.min(q, Math.max(1, owned)));
+  // Mesmas cotações que a compra e a venda usam (com a Origem da agência).
+  const buyQ = quoteBuyFor(a, c, itemId, q);
+  const sellQ = quoteSellFor(a, c, itemId, Math.min(q, Math.max(1, owned)));
+  const nQ = side === 'buy' ? q : Math.min(q, Math.max(1, owned));
+  const quote = (n: number) => (side === 'buy' ? quoteBuyFor(a, c, itemId, n) : quoteSellFor(a, c, itemId, n)).total;
+  // Preço de cada unidade, na ordem: sobe a cada compra, cai a cada venda.
+  const unitPrices = Array.from({ length: Math.min(nQ, 60) }, (_, i) => quote(i + 1) - (i ? quote(i) : 0));
+  const first = unitPrices[0] ?? 0;
+  const avg = nQ ? Math.round((side === 'buy' ? buyQ.total : sellQ.total) / nQ) : 0;
+  const diff = Math.abs(avg - first);
   const total = side === 'buy' ? buyQ.total : sellQ.total;
   const pl = side === 'sell' && owned ? sellQ.total - r.paidEach * Math.min(q, owned) : 0;
-  const sat = saturationAfter(c, itemId, q, side);
   const block = side === 'buy' ? (r.buy ? whyCantBuy(s, a, countryId, itemId, q) : { key: 'game.market.block.notSold' as const }) : r.sell ? whyCantSell(s, a, countryId, itemId, q) : { key: 'game.market.block.nobodyBuys' as const };
   const breakEven = side === 'sell' && owned && r.sell ? sellUntilBreakEven(c, itemId, owned, r.paidEach) : 0;
 
@@ -172,22 +179,28 @@ export function ItemTrade({ countryId, itemId }: { countryId: string; itemId: st
             label={side === 'buy' ? t('game.market.youPay') : t('game.market.youGet')}
             value={fmt.money(total)}
             note={
-              <>
-                {t('game.market.trade.valueText', { n: q })} ·{' '}
-                {side === 'sell' ? (
-                  t('game.market.trade.priceDrops')
-                ) : (
-                  <>
-                    {t('game.help.saturation.title')} {['−', '', '+'][Math.sign(sat) + 1]}
-                    {fmt.pct(Math.abs(sat))}
-                  </>
-                )}{' '}
-                <Help term="saturation" />
-              </>
+              <span className="trade2-unit">
+                <span>
+                  {nQ > 1 ? t('game.market.trade.avgEach', { price: fmt.money(avg) }) : t('game.market.trade.unitPrice', { price: fmt.money(first) })}
+                  {nQ > 1 && diff > 0 && (
+                    <>
+                      {' · '}
+                      <b className={side === 'buy' ? 'up' : 'down'}>
+                        {side === 'buy' ? t('game.market.trade.moreEach', { diff: fmt.money(diff) }) : t('game.market.trade.lessEach', { diff: fmt.money(diff) })}
+                      </b>
+                    </>
+                  )}
+                </span>
+                <span className="trade2-push">
+                  {side === 'buy' ? <ArrowUp size={14} aria-hidden /> : <ArrowDown size={14} aria-hidden />}
+                  {side === 'buy' ? t('game.market.trade.buyPush') : t('game.market.trade.sellPush')} <Help term="saturation" />
+                </span>
+              </span>
             }
           />
 
           <div className="trade2-qty">
+            <PriceBars prices={unitPrices} side={side} />
             <div className="mkt-stepper">
               <GStepper value={q} min={1} max={limit} onChange={setQ} decLabel={t('game.market.trade.less')} incLabel={t('game.market.trade.more')} />
               <GRange min={1} max={limit} value={q} onChange={setQ} aria-label={t('game.market.trade.quantity')} aria-valuetext={t('game.market.trade.valueText', { n: q })} />
@@ -258,6 +271,21 @@ export function ItemTrade({ countryId, itemId }: { countryId: string; itemId: st
         <PriceRange itemId={itemId} countryId={countryId} />
         <p className="mkt-blurb">{itemBlurb(itemId)}</p>
       </Details>
+    </div>
+  );
+}
+
+/** Uma barra por unidade (até 60): mais altas a cada compra, mais baixas a cada venda. Anima quando a quantidade muda. */
+function PriceBars({ prices, side }: { prices: number[]; side: Side }) {
+  if (prices.length < 2) return null;
+  const lo = Math.min(...prices);
+  const hi = Math.max(...prices);
+  const span = hi - lo || 1;
+  return (
+    <div className={`price-bars ${side}`} aria-hidden>
+      {prices.map((p, i) => (
+        <i key={i} style={{ height: `${35 + ((p - lo) / span) * 65}%` }} />
+      ))}
     </div>
   );
 }

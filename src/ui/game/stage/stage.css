@@ -432,3 +432,64 @@ html .game.stage.upright .topbar {
 .cb-preview > .big-number {
   margin-bottom: 12px;
 }
+/* Preço por unidade sem jargão: média, quanto a mais/menos que a 1ª e por quê. */
+.trade2-unit {
+  display: grid;
+  gap: 4px;
+}
+.trade2-unit b.up {
+  color: var(--amber);
+}
+.trade2-unit b.down {
+  color: var(--paper-2);
+}
+.trade2-push {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  color: var(--paper-3);
+}
+/* Uma barra por unidade ao lado da quantidade. */
+.price-bars {
+  display: flex;
+  align-items: flex-end;
+  gap: 2px;
+  height: 34px;
+  padding: 2px 0;
+}
+.price-bars i {
+  flex: 1 1 0;
+  min-width: 2px;
+  max-width: 14px;
+  background: rgba(214, 222, 232, 0.25);
+  transition: height 0.22s ease-out;
+}
+.price-bars i:first-child {
+  background: rgba(214, 222, 232, 0.5);
+}
+.price-bars.buy i:last-child {
+  background: var(--amber);
+}
+.price-bars.sell i:last-child {
+  background: var(--paper-2);
+}
+@media (prefers-reduced-motion: reduce) {
+  .price-bars i {
+    transition: none;
+  }
+}
+@media (orientation: landscape) and (max-height: 560px) {
+  .trade2 {
+    gap: 8px 18px;
+  }
+  .trade2 .price-bars {
+    height: 20px;
+  }
+  .trade2 .g-big__value,
+  .trade2 .g-big__v {
+    font-size: 30px;
+  }
+  .trade2-go {
+    min-height: 48px;
+  }
+}
