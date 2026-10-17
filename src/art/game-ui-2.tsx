@@ -86,6 +86,7 @@ export interface GUnitCardProps {
   rank?: number;
   stats?: ReactNode;
   side?: ReactNode;
+  /** só para cartas alternáveis (seleção de Equipe); omita quando o clique abre a ficha */
   selected?: boolean;
   /** fora de ação: Ferida, Detida, Danificada… (texto da tarja) */
   out?: string;
@@ -100,7 +101,7 @@ export function GUnitCard({ portrait, name, role, rank = 0, stats, side, selecte
     <Tag
       type={onClick ? 'button' : undefined}
       className={cx('g-unit', selected && 'is-selected', out && 'g-unit--out', className)}
-      aria-pressed={onClick ? !!selected : undefined}
+      aria-pressed={onClick && selected !== undefined ? selected : undefined}
       onClick={
         onClick
           ? () => {
