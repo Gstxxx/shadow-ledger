@@ -364,4 +364,6 @@ export default {
   'game.topbar.profitGoalAria': 'Profit {profit} of a {goal} goal ({pct}%)',
   'game.topbar.stayInBlack': 'Finish in the black',
   'game.overlay.over.profitGoal': 'Profit goal',
+  'game.stage.seeAll': 'See all',
+  'game.stage.details': 'Details',
 } as const;
