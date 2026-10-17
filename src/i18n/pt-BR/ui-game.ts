@@ -375,4 +375,11 @@ export default {
   'game.stage.seeAll': 'Ver todos',
   'game.stage.details': 'Detalhes',
   'game.overlay.openMarket': 'Abrir mercado',
+  'game.vault.free': 'Cofre: {free} livres de {total}',
+  'game.vault.store': 'Guardar Carga',
+  'game.vault.storeAll': 'Guardar tudo que cabe',
+  'game.vault.storeHere': 'Guardar no Cofre',
+  'game.vault.storeAt': 'Guardar no Cofre ({country})',
+  'game.vault.needStation': 'Abra uma Estação aqui para guardar Carga.',
+  'game.vault.noRoom': 'Não cabe: o Cofre tem {free} livres e cada unidade pesa {w}.',
 } as const;

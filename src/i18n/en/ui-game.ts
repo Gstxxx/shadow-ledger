@@ -374,4 +374,11 @@ export default {
   'game.stage.seeAll': 'See all',
   'game.stage.details': 'Details',
   'game.overlay.openMarket': 'Open market',
+  'game.vault.free': 'Vault: {free} free of {total}',
+  'game.vault.store': 'Store cargo',
+  'game.vault.storeAll': 'Store all that fits',
+  'game.vault.storeHere': 'Store in vault',
+  'game.vault.storeAt': 'Store in vault ({country})',
+  'game.vault.needStation': 'Open a Station here to store cargo.',
+  'game.vault.noRoom': 'Does not fit: the vault has {free} free and each unit weighs {w}.',
 } as const;
