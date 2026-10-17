@@ -678,3 +678,36 @@ html:root {
 .ud.ud--embedded .ud-name {
   display: none;
 }
+/* Lucro estimado no destino (Comprar): verde/vermelho, quantidade ótima e aviso de prejuízo. */
+.trade2-dest {
+  display: grid;
+  gap: 6px;
+  padding: 10px 12px;
+  border-left: 3px solid var(--green);
+  background: rgba(214, 222, 232, 0.04);
+}
+.trade2-dest.neg {
+  border-left-color: var(--red);
+}
+.trade2-dest > b {
+  font-size: 15px;
+  color: var(--green);
+}
+.trade2-dest.neg > b {
+  color: var(--red);
+}
+.trade2-best {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+  color: var(--paper-2);
+  font-size: 13px;
+}
+.trade2-best .btn {
+  min-height: 44px;
+}
+.trade2-loss {
+  color: var(--amber);
+  font-size: 13px;
+}

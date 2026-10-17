@@ -85,6 +85,39 @@ export function ItemTrade({ countryId, itemId, initialSide }: { countryId: strin
   const block = side === 'buy' ? (r.buy ? whyCantBuy(s, a, countryId, itemId, q) : { key: 'game.market.block.notSold' as const }) : r.sell ? whyCantSell(s, a, countryId, itemId, q) : { key: 'game.market.block.nobodyBuys' as const };
   const breakEven = side === 'sell' && owned && r.sell ? sellUntilBreakEven(c, itemId, owned, r.paidEach) : 0;
 
+
+  // ── Lucro no destino (Comprar): custo aqui (sobe a cada compra) contra a venda lá (cai a cada venda) ──
+  // O lucro é côncavo em N: cresce enquanto a próxima unidade ainda dá lucro e depois só cai.
+  const dest = side === 'buy' && here && r.buy > 0 && elsewhere(best) && best!.sell > 0 ? s.countries[best!.countryId] : undefined;
+  const profitAt = (n: number) => (dest ? quoteSellFor(a, dest, itemId, n).total - quoteBuyFor(a, c, itemId, n).total : 0);
+  let destPl = 0;
+  let bestN = 0;
+  let lossN = 0;
+  if (dest) {
+    destPl = profitAt(q);
+    // Ótimo: a última unidade cujo lucro marginal ainda é positivo.
+    let lo = 0;
+    let hi = limit;
+    while (lo < hi) {
+      const mid = Math.ceil((lo + hi) / 2);
+      if (profitAt(mid) - profitAt(mid - 1) > 0) lo = mid;
+      else hi = mid - 1;
+    }
+    bestN = lo;
+    // Prejuízo: a primeira quantidade depois do ótimo em que o lucro fica negativo.
+    if (profitAt(limit) < 0) {
+      let l = Math.max(1, bestN);
+      let h = limit;
+      while (l < h) {
+        const mid = Math.floor((l + h) / 2);
+        if (profitAt(mid) < 0) h = mid;
+        else l = mid + 1;
+      }
+      lossN = l;
+    }
+  }
+  const signed = (n: number, v: string) => `${n < 0 ? '−' : '+'}${v}`;
+
   // ── Veredito: uma frase com cor e ícone, e a ação que resolve ──
   let tone: Tone = 'neutral';
   let text: ReactNode;
@@ -140,7 +173,8 @@ export function ItemTrade({ countryId, itemId, initialSide }: { countryId: strin
       tone = 'warn';
       text = t(block.key, block.params);
     } else if (r.deal === 'cheap') {
-      tone = 'good';
+      // Barato aqui, mas com esta quantidade a venda no destino não paga a compra: aviso, não verde.
+      tone = dest && destPl < 0 ? 'warn' : 'good';
       text =
         elsewhere(best) && best!.sell > r.buy
           ? t('game.market.trade.verdict.buyCheap', { pct: Math.round(Math.abs(r.dealPct) * 100), country: countryName(best!.countryId) })
@@ -230,6 +264,27 @@ export function ItemTrade({ countryId, itemId, initialSide }: { countryId: strin
               </span>
             }
           />
+
+          {dest && (
+            <div className={`trade2-dest ${destPl >= 0 ? 'pos' : 'neg'}`} role="status">
+              <b className="num">
+                {t('game.market.trade.destProfit', {
+                  country: countryName(best!.countryId),
+                  pl: signed(destPl, money(destPl)),
+                  pct: signed(destPl, fmt.pct(buyQ.total ? Math.abs(destPl) / buyQ.total : 0)),
+                })}
+              </b>
+              {bestN > 0 && bestN !== q && (
+                <span className="trade2-best">
+                  {t('game.market.trade.bestQty', { n: bestN })}
+                  <button className="btn sm ghost" onClick={() => setQBuy(bestN)}>
+                    {t('game.market.trade.setQty', { n: bestN })}
+                  </button>
+                </span>
+              )}
+              {lossN > 0 && <span className="trade2-loss">{t('game.market.trade.lossFrom', { n: lossN })}</span>}
+            </div>
+          )}
 
           <div className="trade2-qty">
             <PriceBars prices={unitPrices} side={side} />
