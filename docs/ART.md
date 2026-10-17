@@ -243,6 +243,8 @@ Ponte da fase 2 no jogo real (build de `main` com `g-skin`):
 | Rota de voo (SVG) | `.g-route` (tracejado andando, brilho) | — |
 | Tabuleiro de Combate | `.g-board` (`--cols/--rows`) + `__cell--deploy/target/enemy` (cruzes de registro) | `<GBoard cells>` |
 | Carta no tabuleiro | `.g-token` (`--enemy`) + `__card` + `__hp > i.on` | `<GToken portrait hp hpMax enemy col row>` |
+
+Nota: quem aplica `.g-board` numa grade que já tem `aspect-ratio` próprio (ex.: `.grid` do jogo, que carrega depois do kit) passa o aspect-ratio inline, porque as duas classes empatam em especificidade.
 | Relatório como telex | `.g-telex` (`--dark`) + `__k/__t` | `<GTelex kicker dark>` |
 
 ### Ponte `.g-skin`, fase 2 (automática)
