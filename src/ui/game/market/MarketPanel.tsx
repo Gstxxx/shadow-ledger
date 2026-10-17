@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from 'react';
 import { GameIcon, GCard, GMeter, GModeSwitch, GRange, GStepper } from '../../../art';
 import * as A from '../../../game/actions';
 import { maxCargo, quoteBuy, quoteSell, usedCargo } from '../../../game/market';
-import { directorAt, formatDuration, intelCountries, player, standing } from '../../../game/state';
+import { directorAt, formatDuration, intelCountries, player, standing, stationIn } from '../../../game/state';
 import { useGame, useGameStore } from '../../../store/game';
 import { useT } from '../../../i18n';
 import type { I18n } from '../../../i18n';
@@ -23,6 +23,8 @@ import {
 import type { BlockMsg, MarketRow, Opportunity, Segment } from './model';
 import { useStage } from '../stage/context';
 import { ShortList, Verdict } from '../stage/Verdict';
+import { useCanStore } from '../VaultPanel';
+import { def } from '../../../game/units';
 
 type Mode = 'buy' | 'sell';
 import './market.css';
@@ -621,6 +623,10 @@ function SellList({ countryId, onBuy }: { countryId: string; onBuy: () => void }
   const s = useGame();
   const a = player(s);
   const stage = useStage();
+  const act = useGameStore((st) => st.act);
+  const canStore = useCanStore(countryId);
+  const st = stationIn(a, countryId);
+  const vaultFree = st ? A.vaultFree(st) : 0;
   const rows = marketRows(s, a, countryId);
   const held = new Map<string, { qty: number; paid: number }>();
   for (const l of a.cargo) {
@@ -686,9 +692,31 @@ function SellList({ countryId, onBuy }: { countryId: string; onBuy: () => void }
                 </span>
               </span>
             </button>
+            {canStore &&
+              (() => {
+                const w = def(it.itemId).weight;
+                const n = w <= 0 ? it.qty : Math.min(it.qty, Math.floor((vaultFree + 1e-6) / w));
+                return (
+                  <div className="mkt-store">
+                    <button className="btn sm ghost" disabled={n <= 0} onClick={() => act((g, ag) => A.deposit(g, ag, it.itemId, n), 'buy')}>
+                      {t('game.vault.storeHere')}
+                      {n > 0 && n < it.qty ? ` (${n})` : ''}
+                    </button>
+                    {n <= 0 && <small className="mono">{t('game.vault.noRoom', { free: fmt.tons(vaultFree), w: fmt.tons(w) })}</small>}
+                  </div>
+                );
+              })()}
           </li>
         )}
       />
+      {!st && directorAt(a, countryId) && (
+        <li className="mkt-store-need">
+          <span>{t('game.vault.needStation')}</span>
+          <button className="btn sm ghost" onClick={() => act((g, ag) => A.openStation(g, ag), 'buy')}>
+            {t('game.country.station.open', { cost: fmt.money(A.stationCost(a, countryId, 1)) })}
+          </button>
+        </li>
+      )}
     </ul>
   );
 }

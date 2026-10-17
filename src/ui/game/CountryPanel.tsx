@@ -10,6 +10,7 @@ import { useGame, useGameStore } from '../../store/game';
 import { useT } from '../../i18n';
 import { continentName, countryName, itemName, operationBlurb, operationLabel, politicsLabel, stationName, threatLabel } from '../../i18n/lookup';
 import { Details, Verdict } from './stage/Verdict';
+import { VaultPanel } from './VaultPanel';
 import { useStage } from './stage/context';
 import { opportunities } from './market/model';
 import { Empty, ExpBar, PostureChip, RepBar, Section } from './bits';
@@ -166,7 +167,7 @@ function CountryVerdict({ countryId, focus }: { countryId: string; focus?: 'stat
           </button>
         }
       >
-        {t('game.country.station.openCell')}
+        {focus === 'station' && a.cargo.length ? t('game.vault.needStation') : t('game.country.station.openCell')}
       </Verdict>
     );
   }
@@ -236,7 +237,13 @@ export function CountryStation({ countryId }: { countryId: string }) {
   const s = useGame();
   const a = player(s);
   if (!stationIn(a, countryId)) return <CountryVerdict countryId={countryId} focus="station" />;
-  return <StationSection countryId={countryId} />;
+  // O Cofre vem primeiro: guardar e retirar Carga é o que mais se procura aqui.
+  return (
+    <div className="cty-overview">
+      <VaultPanel countryId={countryId} />
+      <StationSection countryId={countryId} />
+    </div>
+  );
 }
 
 /** Painel antigo (gaveta/folha), mantido até a etapa 4 do ADR 0006. */
@@ -420,24 +427,6 @@ function StationSection({ countryId }: { countryId: string }) {
           </div>
         </details>
       )}
-      <div className="vault">
-        <span className="mono hint-sm">
-          {t('game.country.station.vault', { used: fmt.tons(A.vaultWeight(st)), total: fmt.tons(A.vaultWeight(st) + A.vaultFree(st)) })}
-        </span>
-        {st.vault.map((l) => (
-          <div key={l.lid} className="row-line">
-            <span>
-              {t('game.qtyItem', { qty: l.qty, item: itemName(l.itemId) })}
-            </span>
-            {here && !st.interdicted && (
-              <button className="btn sm" onClick={() => act((g, ag) => A.withdraw(g, ag, l.itemId, l.qty))}>
-                {t('game.country.station.withdraw')}
-              </button>
-            )}
-          </div>
-        ))}
-        {!st.vault.length && <span className="hint-sm">{t('game.country.station.vaultEmpty')}</span>}
-      </div>
     </Section>
   );
 }

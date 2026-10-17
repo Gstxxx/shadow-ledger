@@ -11,6 +11,7 @@ import { msgText } from './msgText';
 import { useStage } from './stage/context';
 import { focusCountryOnMap } from './WorldMap';
 import { Verdict } from './stage/Verdict';
+import { useCanStore } from './VaultPanel';
 import { marketRows, opportunities, priceRange } from './market/model';
 import { itemName } from '../../i18n/lookup';
 import { GModal } from '../../art';
@@ -36,6 +37,7 @@ export function EventModal() {
   const stage = useStage();
   const ev = s.events.find((e) => e.kind !== 'engage');
   const evId = ev?.id;
+  const arrivalStore = useCanStore(ev?.countryId ?? '');
   // Estável entre renders: o GModal refaz o efeito (e o som de abrir) quando onClose muda.
   const onAck = useCallback(() => {
     if (!evId) return;
@@ -45,6 +47,7 @@ export function EventModal() {
   if (!ev || s.pendingCombat || s.combat) return null;
   const Icon = TONE_ICON[ev.tone];
   const arrival = ev.kind === 'arrival' && !!ev.countryId && !!stage;
+  const canStore = arrivalStore;
   const more = s.events.filter((e) => e.kind !== 'engage').length - 1;
   return (
     <GModal
@@ -66,6 +69,17 @@ export function EventModal() {
             <button className="btn ghost" onClick={onAck}>
               {t('game.overlay.ack')}
             </button>
+            {canStore && (
+              <button
+                className="btn ghost"
+                onClick={() => {
+                  ack(ev.id);
+                  stage?.open({ kind: 'country', id: ev.countryId!, tab: 'station' });
+                }}
+              >
+                {t('game.vault.storeHere')}
+              </button>
+            )}
             <button
               className="btn primary"
               onClick={() => {

@@ -243,7 +243,7 @@ function FleetTab() {
                   )}
                   {here && st && !st.interdicted && (
                     <button className="btn sm ghost" onClick={() => act((g, ag) => A.deposit(g, ag, l.itemId, l.qty))}>
-                      {t('game.agency.cargo.vault')}
+                      {t('game.vault.storeAt', { country: countryName(a.location) })}
                     </button>
                   )}
                 </span>
