@@ -90,8 +90,8 @@ export function Help({ term, children }: { term: TermId; children?: ReactNode })
         </span>
       </button>
       {open && (
-        <span id={id} ref={pop} role="tooltip" className={`help-pop${align !== 'center' ? ` align-${align}` : ''}`}>
-          <b>{title}</b>
+        <span id={id} ref={pop} role="tooltip" className={`help-pop g-tip${align !== 'center' ? ` align-${align}` : ''}`}>
+          <b className="g-tip__k">{title}</b>
           {text}
         </span>
       )}
