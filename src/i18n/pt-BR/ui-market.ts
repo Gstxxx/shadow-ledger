@@ -118,4 +118,10 @@ export default {
   'game.market.trade.flyTo': 'Voar para {country}',
   'game.market.trade.details': 'Detalhes',
   'game.market.trade.priceDrops': 'o preço cai conforme você vende',
+  'game.market.trade.unitPrice': '{price} por unidade',
+  'game.market.trade.avgEach': '{price} por unidade em média',
+  'game.market.trade.moreEach': '+{diff} a mais por unidade do que a 1ª',
+  'game.market.trade.lessEach': '−{diff} a menos por unidade do que a 1ª',
+  'game.market.trade.buyPush': 'cada compra sua esvazia o estoque daqui e o preço sobe',
+  'game.market.trade.sellPush': 'cada venda sua enche o mercado daqui e o preço cai',
 } as const;
