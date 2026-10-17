@@ -22,7 +22,7 @@ import {
 } from './model';
 import type { BlockMsg, MarketRow, Opportunity, Segment } from './model';
 import { useStage } from '../stage/context';
-import { ShortList } from '../stage/Verdict';
+import { ShortList, Verdict } from '../stage/Verdict';
 import './market.css';
 
 type Fmt = I18n['fmt'];
@@ -212,9 +212,23 @@ function OppList({
       </div>
     );
 
+  // "Melhores para você agora" (docs/UX-RULES.md, regra 5): primeiro o que cabe no avião e no caixa;
+  // o resto fica atrás de "Mais", com o motivo. Se nada for viável, o veredito diz por quê.
+  const viable = opps.filter((o) => !o.block);
+  const ordered = [...viable, ...opps.filter((o) => o.block)];
+  const firstBlocked = opps.find((o) => o.block);
+  const used = usedCargo(a);
+  const cap = maxCargo(a);
   return (
+    <>
+    {staged && !viable.length && firstBlocked && (
+      <Verdict tone="warn">
+        <b>{shortName(firstBlocked.itemId)}</b>: {blockText(t, firstBlocked.block!)} · {t('game.market.cap.label')}{' '}
+        {t('game.market.cap.value', { used: fmt.tons(used), max: fmt.tons(cap) })}
+      </Verdict>
+    )}
     <ul className="opps-list">
-      <ShortList inList max={staged ? 3 : 99} items={opps} render={(o) => {
+      <ShortList inList max={staged ? Math.min(3, viable.length) : 99} items={staged ? ordered : opps} render={(o) => {
         const item = shortName(o.itemId);
         const travelBlocked = !directorAt(a, a.location) || o.to === a.location;
         return (
@@ -278,6 +292,7 @@ function OppList({
         );
       }} />
     </ul>
+    </>
   );
 }
 

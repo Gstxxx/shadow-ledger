@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import type { ReactNode } from 'react';
 import { PlaneTakeoff } from 'lucide-react';
-import { GameIcon, GRange, GSegmented, GStepper } from '../../../art';
+import { GameIcon, GModeSwitch, GRange, GStepper } from '../../../art';
 import * as A from '../../../game/actions';
 import { maxCargo, quoteBuy, quoteSell, usedCargo } from '../../../game/market';
 import { directorAt, player } from '../../../game/state';
@@ -52,7 +52,7 @@ export function ItemTrade({ countryId, itemId }: { countryId: string; itemId: st
   const canFly = (to: string) => to !== a.location && a.director.status === 'free' && !a.flight && Number.isFinite(A.flightHours(a, to));
   const fly = (to: string) => (
     <button className="btn sm trade-fly" disabled={!canFly(to)} onClick={() => act((g, ag) => A.travel(g, ag, to), 'depart')}>
-      <PlaneTakeoff size={15} /> {t('game.market.opp.fly')} · {countryName(to)}
+      <PlaneTakeoff size={15} /> {t('game.market.trade.flyTo', { country: countryName(to) })}
     </button>
   );
   const elsewhere = (k: typeof best) => !!k && k.countryId !== countryId;
@@ -91,31 +91,19 @@ export function ItemTrade({ countryId, itemId }: { countryId: string; itemId: st
       text = t(block.key, block.params);
     } else if (pl < 0) {
       tone = 'bad';
-      text = (
-        <>
-          {t('game.market.trade.loss')} <b className="num">{money(pl)}</b>
-          {elsewhere(best) && best!.sell > r.sell && (
-            <>
-              {' · '}
-              {t('game.market.range.best')} <b>{countryName(best!.countryId)}</b> <span className="num">{fmt.money(best!.sell)}</span>
-            </>
-          )}
-        </>
-      );
+      text =
+        elsewhere(best) && best!.sell > r.sell ? (
+          t('game.market.trade.verdict.sellLoss', { loss: money(pl), country: countryName(best!.countryId), price: fmt.money(best!.sell) })
+        ) : (
+          <>
+            {t('game.market.trade.loss')} <b className="num">{money(pl)}</b>
+          </>
+        );
       if (elsewhere(best) && best!.sell > r.sell) action = fly(best!.countryId);
     } else {
       tone = 'good';
-      text = (
-        <>
-          {t('game.market.trade.profit')} <b className="num">{money(pl)}</b>
-          {elsewhere(best) && best!.sell > r.sell * 1.1 && (
-            <>
-              {' · '}
-              {t('game.market.range.best')} {countryName(best!.countryId)} <span className="num">{fmt.money(best!.sell)}</span>
-            </>
-          )}
-        </>
-      );
+      text = t('game.market.trade.verdict.sellProfit', { profit: money(pl) });
+      if (elsewhere(best) && best!.sell > r.sell * 1.1) action = fly(best!.countryId);
     }
   } else {
     if (!r.buy) {
@@ -134,30 +122,16 @@ export function ItemTrade({ countryId, itemId }: { countryId: string; itemId: st
       text = t(block.key, block.params);
     } else if (r.deal === 'cheap') {
       tone = 'good';
-      text = (
-        <>
-          {deal.text}
-          {elsewhere(best) && best!.sell > r.buy && (
-            <>
-              {' '}
-              {t('game.market.opp.buyHere.b', { country: countryName(best!.countryId) })} <span className="num">{fmt.money(best!.sell)}</span>
-            </>
-          )}
-        </>
-      );
+      text =
+        elsewhere(best) && best!.sell > r.buy
+          ? t('game.market.trade.verdict.buyCheap', { pct: Math.round(Math.abs(r.dealPct) * 100), country: countryName(best!.countryId) })
+          : deal.text;
     } else {
       tone = r.deal === 'pricey' ? 'warn' : 'neutral';
-      text = (
-        <>
-          {deal.text}
-          {elsewhere(cheapest) && cheapest!.buy < r.buy && (
-            <>
-              {' · '}
-              {t('game.market.range.cheapest')} <b>{countryName(cheapest!.countryId)}</b> <span className="num">{fmt.money(cheapest!.buy)}</span>
-            </>
-          )}
-        </>
-      );
+      text =
+        elsewhere(cheapest) && cheapest!.buy < r.buy
+          ? t('game.market.trade.verdict.buyExpensive', { country: countryName(cheapest!.countryId), price: fmt.money(cheapest!.buy) })
+          : deal.text;
       if (elsewhere(cheapest) && cheapest!.buy < r.buy * 0.9) action = fly(cheapest!.countryId);
     }
   }
@@ -177,15 +151,15 @@ export function ItemTrade({ countryId, itemId }: { countryId: string; itemId: st
         {owned > 0 && <span className="g-chip trade2-own">{t('game.market.owned', { n: owned })}</span>}
       </div>
 
-      <GSegmented
+      <GModeSwitch
         className="trade2-tabs"
-        label={itemBlurb(itemId)}
+        label={t('game.market.trade.quantity')}
         options={[
-          { value: 'buy', label: t('game.market.opp.buy') },
-          { value: 'sell', label: t('game.market.opp.sell') },
+          { value: 'buy' as Side, label: t('game.market.opp.buy'), tone: 'action' },
+          { value: 'sell' as Side, label: t('game.market.opp.sell'), tone: 'action' },
         ]}
         value={side}
-        onChange={(v) => setSide(v as Side)}
+        onChange={setSide}
       />
 
       <Verdict tone={tone} action={action}>
@@ -199,8 +173,16 @@ export function ItemTrade({ countryId, itemId }: { countryId: string; itemId: st
             value={fmt.money(total)}
             note={
               <>
-                {t('game.market.trade.valueText', { n: q })} · {t('game.help.saturation.title')} {['−', '', '+'][Math.sign(sat) + 1]}
-                {fmt.pct(Math.abs(sat))} <Help term="saturation" />
+                {t('game.market.trade.valueText', { n: q })} ·{' '}
+                {side === 'sell' ? (
+                  t('game.market.trade.priceDrops')
+                ) : (
+                  <>
+                    {t('game.help.saturation.title')} {['−', '', '+'][Math.sign(sat) + 1]}
+                    {fmt.pct(Math.abs(sat))}
+                  </>
+                )}{' '}
+                <Help term="saturation" />
               </>
             }
           />
