@@ -1,0 +1,235 @@
+/* Exemplo de Combate: mesa escura, HUD de operação, tabuleiro do kit com câmera. */
+html,
+body {
+  margin: 0;
+  background: #07090b;
+  overflow: hidden;
+}
+.sc-root {
+  position: fixed;
+  inset: 0;
+  display: grid;
+  grid-template-rows: auto 1fr;
+  justify-items: center;
+  align-items: center;
+  gap: 2vh;
+  padding: 3.2vh 4vw 4vh;
+  box-sizing: border-box;
+  color: #e7eaee;
+  font-family: var(--g-font-display);
+  background:
+    radial-gradient(ellipse 70% 60% at 50% 55%, rgba(255, 214, 150, 0.07), transparent 60%),
+    radial-gradient(ellipse 120% 100% at 50% 50%, transparent 40%, rgba(0, 0, 0, 0.75)),
+    repeating-linear-gradient(180deg, transparent 0 46px, rgba(110, 160, 220, 0.035) 46px 47px),
+    #0b0e12;
+}
+.sc-root.is-portrait {
+  padding: 5vh 4vw 4vh;
+}
+
+/* HUD */
+.sc-hud {
+  display: flex;
+  align-items: center;
+  gap: 18px;
+  width: min(92vw, 1500px);
+  will-change: transform, opacity;
+}
+.is-portrait .sc-hud {
+  flex-wrap: wrap;
+  gap: 10px 16px;
+}
+.sc-type {
+  flex: none;
+  padding: 4px 10px;
+  border: 1px solid #f2a93b;
+  color: #ffcb6b;
+  background: rgba(242, 169, 59, 0.1);
+  font-family: var(--g-font-mono);
+  font-size: clamp(12px, 1.1vw, 16px);
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+.sc-title {
+  position: relative;
+  margin: 0;
+  font-stretch: 75%;
+  font-weight: 800;
+  font-size: clamp(30px, 3vw, 58px);
+  line-height: 1;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+}
+.sc-title-bar {
+  position: absolute;
+  inset: -0.06em -0.16em;
+  background: #050505;
+  box-shadow: 0 0 0 1px rgba(214, 222, 232, 0.2);
+}
+.sc-turn {
+  margin-left: auto;
+  font-family: var(--g-font-mono);
+  font-size: clamp(18px, 1.45vw, 28px);
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: #a7b0ba;
+}
+.sc-turn-n {
+  display: inline-block;
+}
+.sc-fc {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-family: var(--g-font-mono);
+  font-size: clamp(18px, 1.35vw, 26px);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: #a7b0ba;
+}
+.is-portrait .sc-turn {
+  margin-left: 0;
+}
+.sc-fc-track {
+  width: clamp(120px, 11vw, 240px);
+  height: 12px;
+  background: #06080a;
+  box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.9), inset 0 0 0 1px rgba(255, 255, 255, 0.08);
+}
+.sc-fc-fill {
+  display: block;
+  height: 100%;
+  background: linear-gradient(90deg, #c07a17, #f2a93b 60%, #ffcb6b);
+  transform-origin: 0 50%;
+}
+.sc-fc-n {
+  display: inline-block;
+  min-width: 3.2ch;
+  color: #e7eaee;
+  font-weight: 700;
+  transform-origin: 0 60%;
+}
+
+/* Câmera e tabuleiro */
+.sc-camera {
+  position: relative;
+  transform-origin: 50% 50%;
+  will-change: transform;
+}
+.sc-board {
+  position: relative;
+  display: grid;
+  aspect-ratio: auto;
+}
+.sc-token {
+  position: absolute;
+  display: grid;
+  place-items: center;
+  will-change: transform;
+}
+.sc-token .g-token__card {
+  transform-style: preserve-3d;
+  backface-visibility: hidden;
+}
+.sc-token.is-recruited {
+  --side: #f2a93b;
+}
+.sc-unit-seal {
+  position: absolute;
+  right: 14%;
+  top: 6%;
+  width: 18%;
+  aspect-ratio: 1;
+  border-radius: 50%;
+  border: 2px solid var(--side);
+  background: radial-gradient(circle, var(--side) 0 28%, transparent 30%);
+  box-shadow: 0 0 8px color-mix(in srgb, var(--side) 50%, transparent);
+  opacity: 0;
+}
+
+/* Golpe, número de dano, pulso de influência, selo, poeira */
+.cfx-layer .sc-slash {
+  height: 5px;
+  border-radius: 3px;
+  background: linear-gradient(90deg, transparent, var(--c) 18%, #fff7e0 50%, var(--c) 82%, transparent);
+  box-shadow: 0 0 14px var(--c), 0 0 3px #fff;
+  mix-blend-mode: screen;
+}
+.cfx-layer .sc-dmg {
+  font-family: var(--g-font-mono);
+  font-weight: 700;
+  font-size: clamp(18px, 2.2vw, 34px);
+  color: #ffcb6b;
+  text-shadow: 0 2px 0 #000, 0 0 10px rgba(0, 0, 0, 0.9);
+  white-space: nowrap;
+}
+.cfx-layer .sc-pulse {
+  border-radius: 50%;
+  border: 2px solid #f2a93b;
+  box-shadow: 0 0 18px rgba(242, 169, 59, 0.6), inset 0 0 12px rgba(242, 169, 59, 0.35);
+}
+.sc-seal {
+  position: absolute;
+  right: 4%;
+  top: -6%;
+  width: 42%;
+  aspect-ratio: 1;
+  color: var(--c);
+  filter: drop-shadow(0 1px 0 #000);
+  z-index: 3;
+}
+.sc-seal svg {
+  width: 100%;
+  height: 100%;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 3;
+  stroke-linecap: round;
+}
+.cfx-layer .sc-dust {
+  width: 10px;
+  height: 6px;
+  background: #e2d6bd;
+  box-shadow: 0 1px 0 rgba(0, 0, 0, 0.5);
+}
+.cfx-layer .cfx-stamp {
+  font-size: clamp(54px, 9vw, 150px);
+}
+.is-portrait .cfx-layer .cfx-stamp {
+  font-size: clamp(40px, 15vw, 130px);
+}
+
+.sc-play {
+  position: fixed;
+  left: 50%;
+  bottom: 6vh;
+  transform: translateX(-50%);
+  z-index: 10;
+}
+.sc-play.is-small {
+  left: auto;
+  right: 3vw;
+  bottom: 3vh;
+  transform: none;
+}
+
+.is-portrait .sc-title {
+  font-size: 6.4vw;
+}
+.is-portrait .sc-turn,
+.is-portrait .sc-fc,
+.is-portrait .sc-type {
+  font-size: 3.3vw;
+}
+.is-portrait .sc-fc-track {
+  width: 22vw;
+}
+/* Carta recrutada: o retrato passa à tinta da agência. */
+.sc-token.is-recruited .g-token__card > :first-child {
+  filter: hue-rotate(38deg) saturate(1.15) brightness(1.05);
+}
+.is-portrait .sc-hud {
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 1.2vh;
+}

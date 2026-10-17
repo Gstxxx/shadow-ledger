@@ -96,14 +96,15 @@ export function hit(stage: Stage, target: HTMLElement, pbox: Box, type: CombatTy
   const flash = el('cfx-flash', { x: pbox.x - 2, y: pbox.y - 2, w: pbox.w + 4, h: pbox.h + 4 }, stage.layer);
   flash.style.setProperty('--cfx-color', TYPE_COLOR[type]);
   if (stage.reduced) {
-    tl.fromTo(flash, { opacity: 0.45 }, { opacity: 0, duration: f(8), ease: ease.cruise }).call(() => flash.remove());
+    tl.fromTo(flash, { opacity: 0.45 }, { opacity: 0, duration: f(8), ease: ease.cruise, immediateRender: false }).call(() => flash.remove());
     return tl;
   }
   // O golpe vem do lado oposto: o alvo é empurrado para trás e volta em 4 passos.
   const k = side === 'e' ? 1 : -1;
   const { x: fx, y: fy } = stage.fwd;
   const step = (a: number) => ({ x: a * k * fx, y: a * k * fy });
-  tl.fromTo(flash, { opacity: 0.8 }, { opacity: 0, duration: f(6), ease: ease.glide }, 0)
+  // immediateRender:false: numa timeline montada de antemão (roteiro), o flash só acende na hora do golpe.
+  tl.fromTo(flash, { opacity: 0.8 }, { opacity: 0, duration: f(6), ease: ease.glide, immediateRender: false }, 0)
     .to(target, { keyframes: [step(5), step(-3), step(2), step(0)], duration: f(4), ease: 'steps(4)' }, 0)
     .set(target, { clearProps: 'transform' })
     .call(() => flash.remove());
@@ -248,7 +249,7 @@ export function breach(stage: Stage, box: Box, type: CombatType, forward: boolea
   );
   wash.style.setProperty('--cfx-color', TYPE_COLOR[type]);
   if (stage.reduced) {
-    tl.fromTo([sweep, wash], { opacity: 0.4 }, { opacity: 0, duration: f(12), ease: ease.cruise }).call(() => (sweep.remove(), wash.remove()));
+    tl.fromTo([sweep, wash], { opacity: 0.4 }, { opacity: 0, duration: f(12), ease: ease.cruise, immediateRender: false }).call(() => (sweep.remove(), wash.remove()));
     return tl;
   }
   const k = forward ? 1 : -1;
@@ -256,9 +257,10 @@ export function breach(stage: Stage, box: Box, type: CombatType, forward: boolea
   const end = k * (vertical ? stage.fwd.y : stage.fwd.x) > 0;
   const origin = vertical ? (end ? '50% 100%' : '50% 0%') : end ? '100% 50%' : '0% 50%';
   const grow = vertical ? 'scaleY' : 'scaleX';
-  tl.fromTo(sweep, { scaleY: 0.2, opacity: 0.9 }, { scaleY: 1, duration: f(5), ease: ease.whip, transformOrigin: '50% 50%' }, 0)
+  gsap.set([sweep, wash], { opacity: 0 });
+  tl.fromTo(sweep, { scaleY: 0.2, opacity: 0.9 }, { scaleY: 1, duration: f(5), ease: ease.whip, transformOrigin: '50% 50%', immediateRender: false }, 0)
     .to(sweep, { opacity: 0, duration: f(8), ease: ease.gentleIn }, f(5))
-    .fromTo(wash, { opacity: 0.22, [grow]: 0.3 }, { opacity: 0, [grow]: 1, duration: f(8), ease: ease.glide, transformOrigin: origin }, f(1))
+    .fromTo(wash, { opacity: 0.22, [grow]: 0.3 }, { opacity: 0, [grow]: 1, duration: f(8), ease: ease.glide, transformOrigin: origin, immediateRender: false }, f(1))
     .fromTo(stage.camera, { scale: 1, x: 0, y: 0 }, { scale: 1.035, x: 10 * k * stage.fwd.x, y: 10 * k * stage.fwd.y, duration: f(7), ease: ease.whip }, f(2))
     .to(stage.camera, { scale: 1, x: 0, y: 0, duration: f(14), ease: ease.softLand }, f(9))
     .set(stage.camera, { clearProps: 'transform' })
