@@ -1,0 +1,143 @@
+/* Gráfico de preço do item (dataviz). Cores validadas contra a superfície escura:
+   Compra #3987e5 / Venda #d55181 — CVD ΔE 15,9, visão normal 26,5, ≥ 3:1 de contraste. */
+.pchart {
+  width: 100%;
+  min-width: 0;
+  --pc-buy: #3987e5;
+  --pc-sell: #d55181;
+  --pc-ref: #8a929b;
+  --pc-paid: #c8ced6;
+  --pc-grid: rgba(214, 222, 232, 0.08);
+  position: relative;
+  display: grid;
+  gap: 4px;
+}
+.pchart-legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px 12px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  font-size: 11px;
+  color: var(--paper-3);
+}
+.pchart-legend li {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+}
+.pchart .sw {
+  display: inline-block;
+  width: 14px;
+  height: 2px;
+  background: var(--pc-ref);
+}
+.pchart .sw.buy {
+  background: var(--pc-buy);
+}
+.pchart .sw.sell {
+  background: var(--pc-sell);
+}
+.pchart .sw.world {
+  background: repeating-linear-gradient(90deg, var(--pc-ref) 0 4px, transparent 4px 7px);
+}
+.pchart .sw.paid {
+  background: repeating-linear-gradient(90deg, var(--pc-paid) 0 1px, transparent 1px 4px);
+}
+.pchart-svg {
+  display: block;
+  width: 100%;
+  touch-action: pan-y;
+  cursor: crosshair;
+}
+.pchart-svg .grid {
+  stroke: var(--pc-grid);
+  stroke-width: 1;
+}
+.pchart-svg .ln {
+  fill: none;
+  stroke-width: 2;
+  stroke-linejoin: round;
+  stroke-linecap: round;
+}
+.pchart-svg .ln.buy {
+  stroke: var(--pc-buy);
+}
+.pchart-svg .ln.sell {
+  stroke: var(--pc-sell);
+}
+.pchart-svg .ref {
+  stroke-width: 1.5;
+}
+.pchart-svg .ref.world {
+  stroke: var(--pc-ref);
+  stroke-dasharray: 4 3;
+}
+.pchart-svg .ref.paid {
+  stroke: var(--pc-paid);
+  stroke-dasharray: 1 3;
+}
+.pchart-svg .today {
+  stroke: rgba(214, 222, 232, 0.25);
+  stroke-width: 1;
+}
+.pchart-svg .axis {
+  fill: var(--paper-3);
+  font: 10px var(--mono);
+}
+.pchart-svg .lbl {
+  fill: var(--paper-2);
+  font: 600 10px var(--mono);
+}
+.pchart-svg .dot {
+  stroke: #14181d;
+  stroke-width: 2;
+}
+.pchart-svg .dot.buy {
+  fill: var(--pc-buy);
+}
+.pchart-svg .dot.sell {
+  fill: var(--pc-sell);
+}
+.pchart-svg .mk path {
+  fill: var(--paper-3);
+}
+.pchart-svg .mk-war path,
+.pchart-svg .mk-sanction path {
+  fill: var(--red);
+}
+.pchart-svg .mk-buy path,
+.pchart-svg .mk-sell path {
+  fill: var(--amber);
+}
+.pchart-svg .cross line {
+  stroke: rgba(214, 222, 232, 0.45);
+  stroke-width: 1;
+}
+.pchart-tip {
+  position: absolute;
+  top: 18px;
+  z-index: 2;
+  display: grid;
+  gap: 2px;
+  min-width: 140px;
+  padding: 6px 8px;
+  font-size: 11px;
+  color: var(--paper-2);
+  background: rgba(10, 13, 16, 0.94);
+  box-shadow: 0 0 0 1px rgba(214, 222, 232, 0.14), 0 8px 20px rgba(0, 0, 0, 0.5);
+  pointer-events: none;
+}
+.pchart-tip span {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+.pchart-tip .num {
+  margin-left: auto;
+  color: var(--paper);
+}
+.pchart-tip .tip-mk {
+  color: var(--paper-3);
+}
