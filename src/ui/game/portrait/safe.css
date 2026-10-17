@@ -311,6 +311,11 @@ html .ev-queued {
     width: 100% !important;
     height: 100%;
     max-height: none;
+    display: flex;
+    flex-direction: column;
+  }
+  html .g-modal__body {
+    flex: 1 0 auto;
   }
   html .g-modal__foot {
     padding-bottom: calc(16px + var(--safe-b));

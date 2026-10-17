@@ -153,9 +153,11 @@ export function LogPanel({ open, onToggle }: { open: boolean; onToggle: () => vo
   const list = s.log.slice(-60).reverse();
   return (
     <aside className={`log${open ? ' open' : ''}`}>
-      <button className="log-head mono" onClick={onToggle}>
-        {t('game.overlay.log')} {open ? '▾' : '▴'}
-        {!open && list[0] && <span className="log-peek">{msgText(list[0].msg, list[0].text, lang)}</span>}
+      <button className="log-head g-telex g-telex--dark" aria-expanded={open} onClick={onToggle}>
+        <span className="g-telex__k">
+          {t('game.overlay.log')} {open ? '▾' : '▴'}
+        </span>
+        {!open && list[0] && <span className="g-telex__t log-peek">{msgText(list[0].msg, list[0].text, lang)}</span>}
       </button>
       {open && (
         <ol className="log-list">

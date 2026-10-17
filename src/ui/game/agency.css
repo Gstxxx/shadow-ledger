@@ -108,3 +108,20 @@
   min-width: 0;
   width: 100%;
 }
+/* Kit fase 2: cabeça do Relatório como telex; avisos como teletipo. */
+.log-head.g-telex {
+  width: 100%;
+  text-align: left;
+  border: 0;
+  cursor: pointer;
+}
+.log-head.g-telex .log-peek {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.toasts .g-toast {
+  pointer-events: auto;
+}
