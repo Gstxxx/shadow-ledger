@@ -10,6 +10,9 @@ import { countryName, presetTitle } from '../../i18n/lookup';
 import { msgText } from './msgText';
 import { useStage } from './stage/context';
 import { focusCountryOnMap } from './WorldMap';
+import { Verdict } from './stage/Verdict';
+import { marketRows, opportunities, priceRange } from './market/model';
+import { itemName } from '../../i18n/lookup';
 import { GModal } from '../../art';
 import { profitGoal } from '../../game/objective';
 
@@ -41,6 +44,7 @@ export function EventModal() {
   }, [evId, ack]);
   if (!ev || s.pendingCombat || s.combat) return null;
   const Icon = TONE_ICON[ev.tone];
+  const arrival = ev.kind === 'arrival' && !!ev.countryId && !!stage;
   const more = s.events.filter((e) => e.kind !== 'engage').length - 1;
   return (
     <GModal
@@ -56,6 +60,25 @@ export function EventModal() {
         </>
       }
       actions={
+        arrival ? (
+          <>
+            {more > 0 && <span className="mono hint-sm ev-queued">{t('game.overlay.queued', { n: more })}</span>}
+            <button className="btn ghost" onClick={onAck}>
+              {t('game.overlay.ack')}
+            </button>
+            <button
+              className="btn primary"
+              onClick={() => {
+                // Chegada: o próximo passo é o Mercado (no modo Vender se a Carga vende aqui).
+                audio.sfx('open');
+                ack(ev.id);
+                stage?.open({ kind: 'country', id: ev.countryId!, tab: 'market' });
+              }}
+            >
+              {t('game.overlay.openMarket')}
+            </button>
+          </>
+        ) : (
         <>
           {more > 0 && <span className="mono hint-sm ev-queued">{t('game.overlay.queued', { n: more })}</span>}
           {ev.countryId && (
@@ -76,11 +99,61 @@ export function EventModal() {
             {t('game.overlay.ack')}
           </button>
         </>
+        )
       }
     >
-      <p>{msgText(ev.bodyMsg, ev.body, lang)}</p>
+      {/* Eventos são de uma ou duas frases: cartão compacto, não tela cheia (.ev-compact). */}
+      <div className="ev-compact">{arrival ? <ArrivalVerdict countryId={ev.countryId!} /> : <p>{msgText(ev.bodyMsg, ev.body, lang)}</p>}</div>
     </GModal>
   );
+}
+
+/**
+ * Chegada: o que fazer com o mercado daqui, numa linha (docs/UX-RULES.md).
+ * Carga que vende com lucro > Carga que dá prejuízo (e quem paga mais) > o melhor negócio de compra.
+ */
+function ArrivalVerdict({ countryId }: { countryId: string }) {
+  const { t, fmt } = useT();
+  const s = useGame();
+  const a = player(s);
+  const rows = marketRows(s, a, countryId);
+  const held = new Map<string, { qty: number; paid: number }>();
+  for (const l of a.cargo) {
+    const h = held.get(l.itemId) ?? { qty: 0, paid: 0 };
+    h.paid = (h.paid * h.qty + l.paidEach * l.qty) / (h.qty + l.qty);
+    h.qty += l.qty;
+    held.set(l.itemId, h);
+  }
+  const sell = [...held.entries()]
+    .map(([itemId, h]) => ({ itemId, ...h, price: rows.find((r) => r.itemId === itemId)?.sell ?? 0 }))
+    .filter((x) => x.price > 0)
+    .map((x) => ({ ...x, pl: x.price - x.paid }))
+    .sort((x, y) => y.pl - x.pl)[0];
+  const signed = (n: number) => `${n > 0 ? '+' : ''}${fmt.money(Math.round(n))}`;
+  if (sell) {
+    const { best } = priceRange(s, a, sell.itemId);
+    const better = best && best.countryId !== countryId && best.sell > sell.price ? best : null;
+    return (
+      <Verdict tone={sell.pl >= 0 ? 'good' : 'bad'}>
+        {t('game.qtyItem', { qty: sell.qty, item: itemName(sell.itemId) })} · {t('game.market.opp.herePays')} <b className="num">{fmt.money(sell.price)}</b> (
+        {t('game.market.plPerUnit', { pl: signed(sell.pl) })})
+        {sell.pl < 0 && better && (
+          <>
+            {' · '}
+            {t('game.market.range.best')} {countryName(better.countryId)} <span className="num">{fmt.money(better.sell)}</span>
+          </>
+        )}
+      </Verdict>
+    );
+  }
+  const buy = opportunities(s, a, countryId).find((o) => o.kind === 'buy-here' && !o.block);
+  if (buy)
+    return (
+      <Verdict tone="good">
+        <b>{itemName(buy.itemId)}</b> {t('game.market.opp.buyHere.b', { country: countryName(buy.to) })} · <b className="num">{signed(buy.profit)}</b>
+      </Verdict>
+    );
+  return <Verdict tone="neutral">{t('game.market.guide')}</Verdict>;
 }
 
 /** Diretor Detido ou Sequestrado: o que dá para fazer. */
