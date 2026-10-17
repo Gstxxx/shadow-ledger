@@ -269,3 +269,64 @@
 .gsheet-tab > svg {
   flex: none;
 }
+
+/* Combate em pé: o tabuleiro ocupa só o que sobra, a Reserva é uma faixa rolável logo abaixo e a barra fica no fundo. */
+@media (orientation: portrait) and (max-width: 820px) {
+  html .combat-card.wide {
+    gap: 8px;
+    padding-bottom: 0;
+  }
+  html .combat-card.wide > * {
+    flex-shrink: 0;
+  }
+  html .combat-card.wide > .grid-wrap {
+    flex: 1 1 0;
+    min-height: 200px;
+    container-type: size;
+  }
+  html .grid.vertical {
+    --board-h: min(100cqh, calc(100cqw * var(--ratio)));
+  }
+  html .combat-card .reserve-row {
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    overscroll-behavior-x: contain;
+    padding-bottom: 2px;
+  }
+  html .combat-card .reserve-row .res-unit {
+    flex: 0 0 auto;
+    min-width: 48px;
+  }
+  html .combat-card .cb-log--deploy {
+    display: none;
+  }
+  html .combat-card.wide > .cb-actions {
+    bottom: 0;
+    margin-top: auto;
+    margin-bottom: 0;
+  }
+  html .cb-actions.cb-deploy .btn {
+    flex: 1 1 0;
+    min-height: 44px;
+    justify-content: center;
+  }
+  html .cb-actions.cb-deploy .btn.primary {
+    flex: 1 0 100%;
+  }
+  html .cb-actions.cb-deploy .tb-spacer {
+    display: none;
+  }
+}
+@media (orientation: portrait) and (max-width: 820px) and (max-height: 760px) {
+  html .combat-card.wide > p.hint-sm {
+    display: none;
+  }
+  html .combat-card .reserve > .hint-sm {
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+  }
+  html .combat-card.wide > .grid-wrap {
+    min-height: 160px;
+  }
+}

@@ -286,8 +286,9 @@ function LiveView() {
                 ? {
                     '--cols': c.rows,
                     '--rows': c.cols,
+                    '--ratio': c.cols / c.rows,
                     aspectRatio: `${c.rows} / ${c.cols}`,
-                    height: `min(62vh, calc((100vw - 24px) * ${c.cols / c.rows}))`,
+                    height: `var(--board-h, min(62vh, calc((100vw - 24px) * ${c.cols / c.rows})))`,
                   }
                 : { '--cols': c.cols, '--rows': c.rows, aspectRatio: `${c.cols} / ${c.rows}` }) as unknown as CSSProperties
             }
@@ -328,7 +329,7 @@ function LiveView() {
           </div>
         )}
 
-        <div className="cb-log mono">
+        <div className={`cb-log mono${c.turn === 0 && !running ? ' cb-log--deploy' : ''}`}>
           {c.log.slice(-3).map((l, i) => (
             <div key={`${c.turn}-${i}`}>{msgText(c.logMsg?.[c.log.length - Math.min(3, c.log.length) + i], l, lang)}</div>
           ))}
@@ -344,7 +345,7 @@ function LiveView() {
             board={grid.current}
           />
         )}
-        <footer className="cb-actions" style={c.result ? { display: 'none' } : undefined}>
+        <footer className={`cb-actions${!c.result && c.turn === 0 && !running ? ' cb-deploy' : ''}`} style={c.result ? { display: 'none' } : undefined}>
           {c.result ? (
             <>
               <span className={`result ${ok ? 'pos' : 'neg'}`}>
