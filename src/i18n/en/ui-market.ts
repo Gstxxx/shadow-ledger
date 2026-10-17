@@ -124,4 +124,7 @@ export default {
   'game.market.trade.lessEach': '−{diff} less per unit than the 1st',
   'game.market.trade.buyPush': 'every purchase drains the local stock and the price goes up',
   'game.market.trade.sellPush': 'every sale floods the local market and the price goes down',
+  'game.market.chart.world': 'world average',
+  'game.market.chart.today': 'today',
+  'game.market.chart.aria': '{item} price over the last {n} days',
 } as const;

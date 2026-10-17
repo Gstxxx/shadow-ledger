@@ -124,4 +124,7 @@ export default {
   'game.market.trade.lessEach': '−{diff} a menos por unidade do que a 1ª',
   'game.market.trade.buyPush': 'cada compra sua esvazia o estoque daqui e o preço sobe',
   'game.market.trade.sellPush': 'cada venda sua enche o mercado daqui e o preço cai',
+  'game.market.chart.world': 'média mundial',
+  'game.market.chart.today': 'hoje',
+  'game.market.chart.aria': 'Preço de {item} nos últimos {n} dias',
 } as const;
