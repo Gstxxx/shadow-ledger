@@ -111,4 +111,11 @@ export default {
   'game.market.range.samples': 'Entre {n} mercados que você conhece.',
   'game.market.opp.block.noFit': 'não cabe no avião ({w} t)',
   'game.market.opp.block.noCashShort': 'caixa insuficiente',
+  'game.market.trade.verdict.sellLoss': 'Vender aqui dá prejuízo de {loss}. {country} paga até {price} por unidade.',
+  'game.market.trade.verdict.sellProfit': 'Bom lugar para vender: lucro de {profit}.',
+  'game.market.trade.verdict.buyCheap': '{pct}% abaixo da média: compre aqui e venda em {country}.',
+  'game.market.trade.verdict.buyExpensive': 'Caro aqui. Mais barato em {country} ({price}).',
+  'game.market.trade.flyTo': 'Voar para {country}',
+  'game.market.trade.details': 'Detalhes',
+  'game.market.trade.priceDrops': 'o preço cai conforme você vende',
 } as const;
