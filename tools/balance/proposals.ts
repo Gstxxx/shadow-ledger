@@ -21,13 +21,13 @@ export const PROPOSALS: Proposal[] = [
     to: 'addTension(s, -(0.3 + s.tension * 0.01) + wars * 0.01);',
     why: 'Decaimento proporcional à própria tensão (0,8/dia em 50, 1,3/dia em 100): um mundo calmo volta sozinho, e só uma escalada sustentada mantém o Topo.',
   },
-  // ── Lote 1: economia do Comércio ─────────────────────────
+  // ── Lote 1: economia do Comércio (lotes 1–4 aplicados pelo motor em 5658a74) ──
   {
     id: 'P1',
     batch: 'lote1',
     file: 'src/game/market.ts',
     from: 'const BUY_SPREAD = 1.04;\nconst SELL_SPREAD = 0.94;',
-    to: 'const BUY_SPREAD = 1.06;\nconst SELL_SPREAD = 0.92;',
+    to: 'const BUY_SPREAD = 1.07;\nconst SELL_SPREAD = 0.91;',
     why: 'Ida e volta custava 10% (agora 16%); com 50–150% de margem máxima por viagem o caixa dobrava em dias. 15% de spread corta as rotas marginais.',
   },
   {
@@ -116,10 +116,67 @@ export const PROPOSALS: Proposal[] = [
     to: 'const bonus = cty.level * 400_000;',
     why: 'O "agradecimento" do Golpe (até US$ 4 M) pagava o risco várias vezes; metade mantém o Golpe atraente pelo Aliado + Reputação 75.',
   },
+
+  // ── Lote 5: Roubo de Tecnologia ──────────────────────────
+  {
+    id: 'P11',
+    batch: 'lote5',
+    file: 'src/game/data/items.ts',
+    from: "export const STEAL_TABLE = ['intel', 'docs', 'secret', 'tech', 'space'];",
+    to: "export const STEAL_TABLE = ['intel', 'docs', 'docs', 'secret', 'tech'];",
+    why: 'Um Roubo de Tecnologia num país nível 5 entregava um Programa Espacial (US$ 24 M) contra uma força de ~31: era o grosso do lucro do Operador mesmo depois de P9.',
+  },
+
+  // ── Lote 6: metas do Objetivo "Lucro no prazo" ───────────
+  {
+    id: 'P12',
+    batch: 'lote6',
+    file: 'src/game/objective.ts',
+    from: "import type { GameState } from './types';",
+    to: `import type { GameState } from './types';
+
+/** Meta de "Lucro no prazo": o target do Preset ajustado pela Dificuldade (sem target, basta lucrar). */
+export const PROFIT_GOAL_MULT = [1, 0.8, 0.95, 1.1];
+export const profitGoal = (s: GameState) =>
+  Math.max(1, Math.round((s.options.preset.target ?? 0) * PROFIT_GOAL_MULT[s.options.difficulty]));`,
+    why: 'Com "lucro > 0" o Iniciante vencia ~100% em todas as Dificuldades e o Passivo às vezes vencia só com a renda da Célula inicial.',
+  },
+  {
+    id: 'P13',
+    batch: 'lote6',
+    file: 'src/game/objective.ts',
+    from: "if (p > 0) end(true, M('msg.obj.profitWon'",
+    to: "if (p >= profitGoal(s)) end(true, M('msg.obj.profitWon'",
+    why: 'Vitória exige atingir a meta (o texto de derrota "no vermelho" precisa virar "abaixo da meta de X").',
+  },
+  {
+    id: 'P14',
+    batch: 'lote6',
+    file: 'src/game/data/rules.ts',
+    from: '    days: 90,\n    cash: 4_000_000,',
+    to: '    days: 90,\n    target: 7_000_000,\n    cash: 4_000_000,',
+    why: 'Primeiro Contrato: meta US$ 7 M (5,6 / 6,65 / 7,7 M por Dificuldade), entre o 15º percentil do Iniciante no Recruta e o 85º no Diretor.',
+  },
+  {
+    id: 'P15',
+    batch: 'lote6',
+    file: 'src/game/data/rules.ts',
+    from: '    days: 120,\n    cash: 7_000_000,',
+    to: '    days: 120,\n    target: 110_000_000,\n    cash: 7_000_000,',
+    why: 'Corredor do Mediterrâneo: meta US$ 110 M.',
+  },
+  {
+    id: 'P16',
+    batch: 'lote6',
+    file: 'src/game/data/rules.ts',
+    from: '    days: 180,\n    cash: 20_000_000,',
+    to: '    days: 180,\n    target: 400_000_000,\n    cash: 20_000_000,',
+    why: 'Frio no Pacífico: meta US$ 400 M.',
+  },
 ];
 
 /** Lotes são cumulativos na ordem: o lote N inclui os anteriores. */
-export const BATCH_ORDER: string[] = ['lote0', 'lote1', 'lote2', 'lote3', 'lote4'];
+export const BATCH_ORDER: string[] = ['lote0', 'lote1', 'lote2', 'lote3', 'lote4', 'lote5', 'lote6'];
 
 export function variantPatches(name: string): Proposal[] {
   const upto = BATCH_ORDER.indexOf(name);

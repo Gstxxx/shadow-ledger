@@ -14,7 +14,7 @@ if (variant) buildVariant(root, variant);
 export default defineConfig({
   root,
   resolve: variant
-    ? { alias: [{ find: /^(\.\.\/)+src\/game\//, replacement: `${root}/tools/balance/.variant/${variant}/src/game/` }] }
+    ? { alias: [{ find: /^(\.\.\/)+src\/game\//, replacement: `${root}/node_modules/.cache/shadow-balance/${variant}/src/game/` }] }
     : undefined,
   test: {
     include: ['tools/balance/**/*.bench.test.ts'],
