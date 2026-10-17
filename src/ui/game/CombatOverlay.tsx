@@ -13,6 +13,7 @@ import { useT } from '../../i18n';
 import { combatLabel, itemName, tacticBlurb, tacticName } from '../../i18n/lookup';
 import { Portrait } from './Portrait';
 import { msgText } from './msgText';
+import { BigNumber, Details, Verdict } from './stage/Verdict';
 import { usePortrait } from './portrait/usePortrait';
 import { CombatResult, RedactedTitle, RollingNumber, combatSucceeded, useCombatFx } from '../combat-fx';
 import { GModal } from '../../art';
@@ -78,7 +79,7 @@ function PendingView() {
             </button>
           )}
           <span className="tb-spacer" />
-          <button className={`btn${hopeless && armed ? ' danger' : ''}`} onClick={() => go(true)} disabled={!ours.length}>
+          <button className={`btn ${hopeless && armed ? 'danger' : 'ghost'}`} onClick={() => go(true)} disabled={!ours.length}>
             {hopeless && armed ? t('game.combat.commandAnyway') : t('game.combat.command')}
           </button>
           <button className={`btn ${hopeless ? (armed ? 'danger' : '') : 'primary'}`} onClick={() => go(false)}>
@@ -88,6 +89,22 @@ function PendingView() {
       }
     >
       <div className="cb-preview">
+        {/* Veredito (docs/UX-RULES.md): a chance da tática escolhida e, se for perdida, o aviso. */}
+        {hopeless ? (
+          <Verdict tone="bad">
+            {t(setup.sources.some((src) => src.kind === 'escort') ? 'game.combat.hopelessDirector' : 'game.combat.hopeless', {
+              pct: fmt.pct(bestP),
+              a: ourStr,
+              b: theirStr,
+              abort: abortable ? t('game.combat.abortFree') : '',
+            })}
+          </Verdict>
+        ) : (
+          <Verdict tone={pend.preview[tactic] >= 0.6 ? 'good' : 'warn'}>
+            <b>{tacticName(tactic)}</b> · {t('game.combat.ours', { n: ourStr })} · {t('game.combat.theirs', { n: theirStr })}
+          </Verdict>
+        )}
+        <BigNumber label={tacticName(tactic)} value={fmt.pct(pend.preview[tactic])} note={tacticBlurb(tactic)} />
         <div className="forces">
           <div className="force ours">
             <span className="mono hint-sm">{t('game.combat.ours', { n: ourStr })}</span>
@@ -121,27 +138,19 @@ function PendingView() {
                 <span className="tac-bar">
                   <span style={{ width: `${p * 100}%` }} />
                 </span>
-                <span className="tac-blurb">
-                  {tacticBlurb(tc)}
-                  {tc === 'negotiate' && ` ${t('game.combat.negotiateCost', { cost: fmt.money(nego) })}`}
-                </span>
+                {tc === 'negotiate' && <span className="tac-blurb">{t('game.combat.negotiateCost', { cost: fmt.money(nego) })}</span>}
               </button>
             );
           })}
         </div>
-        <p className="hint-sm">{t('game.combat.forecastNote')}</p>
-        {hopeless && (
-          <div className="alert bad cb-risk" role="alert">
-            <span>
-              {t(setup.sources.some((src) => src.kind === 'escort') ? 'game.combat.hopelessDirector' : 'game.combat.hopeless', {
-                pct: fmt.pct(bestP),
-                a: ourStr,
-                b: theirStr,
-                abort: abortable ? t('game.combat.abortFree') : '',
-              })}
-            </span>
-          </div>
-        )}
+        <Details>
+          <p className="hint-sm">{t('game.combat.forecastNote')}</p>
+          {TACTICS.map((tc) => (
+            <p key={tc} className="hint-sm">
+              <b>{tacticName(tc)}</b> · {tacticBlurb(tc)}
+            </p>
+          ))}
+        </Details>
       </div>
     </GModal>
   );
