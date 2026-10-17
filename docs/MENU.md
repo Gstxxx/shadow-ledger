@@ -55,6 +55,19 @@ Referências de retrato: 360×640 e 390×844.
 - **Nova partida:** fica em coluna; no rodapé, o "Passo N de 2" some abaixo de 420 px de largura, porque o indicador de passos no topo já mostra isso.
 - **Paisagem:** continua igual.
 
+## Área segura (notch, Dynamic Island, home indicator)
+
+`.slm-root` usa `100dvh` e define `--slm-st/sr/sb/sl` como `var(--safe-*, env(safe-area-inset-*))`. Assim, o debug `?safe=top,right,bottom,left` da tela de jogo, que define `--safe-*`, simula os recortes, e no aparelho vale o `env()`.
+
+O que respeita os insets:
+- o padding do Título;
+- a dica de pular;
+- o dossiê, nos quatro lados (inclusive o notch à esquerda com o celular deitado).
+
+O que fica de fora: a página do livro-caixa e o mapa sangram por baixo do recorte, de propósito, porque são fundo.
+
+Verificado com os recortes simulados em 440×956, 393×852, 375×667 e 956×440.
+
 ## Prévia isolada
 
 Com `npm run dev`, abra `/src/ui/menu/preview.html` (fica fora do build). `?skip=1` pula a abertura, `?rm=1` liga reduzir movimento e `?rm=0` desliga. Em desenvolvimento, `window.__slIntro.pause().seek(2.6)` mostra qualquer quadro da abertura.

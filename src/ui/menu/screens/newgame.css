@@ -558,7 +558,7 @@
   justify-content: space-between;
   gap: 12px;
   margin: 12px calc(clamp(12px, 3vw, 28px) * -1) 0;
-  padding: 8px clamp(12px, 3vw, 28px) max(8px, env(safe-area-inset-bottom));
+  padding: 8px clamp(12px, 3vw, 28px);
   background: var(--sl-paper);
   border-top: 1px solid var(--ng-line);
 }
