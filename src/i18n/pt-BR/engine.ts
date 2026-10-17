@@ -286,4 +286,9 @@ export default {
   'msg.ai.paidRansom': '{agency} pagou {price} para libertar o próprio Diretor.',
   'msg.obj.profitBelowGoal': '{days} dias encerrados com lucro de {profit}, abaixo da meta de {goal}.',
   'msg.act.locked': 'Disponível depois do Tutorial.',
+  'msg.crisis.sale': '{qty}× {item} a {country}',
+  'msg.crisis.agencySold': '{agency}: {sales}.',
+  'msg.crisis.agencyNone': '{agency}: nada vendido.',
+  'msg.crisis.log': 'Crise Final. {lines}',
+  'msg.crisis.reason': 'A Tensão Global ficou no Topo tempo demais e uma arma foi usada. Ninguém vence. {lines}',
 } as const;

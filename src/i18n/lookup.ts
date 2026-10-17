@@ -74,6 +74,8 @@ export type Ref =
   | { num: number }
   | { tons: number }
   | { msg: Msg }
+  /** Lista de mensagens renderizadas e juntadas por `sep` (padrão ' '). */
+  | { msgs: Msg[]; sep?: string }
   /** Sufixo de baixas do Combate: '' se nenhuma; senão ' 2 fora de ação (…); 1 convertida(s)….' */
   | { casualty: { downed: number; turned: number } };
 
@@ -99,6 +101,7 @@ function resolve(v: string | number | Ref, lang: Lang): string | number {
   if ('num' in v) return F.num(lang, v.num);
   if ('tons' in v) return F.tons(lang, v.tons);
   if ('msg' in v) return renderMsg(v.msg, lang);
+  if ('msgs' in v) return v.msgs.map((m) => renderMsg(m, lang)).join(v.sep ?? ' ');
   const { downed, turned } = v.casualty;
   const parts: string[] = [];
   if (downed) parts.push(translate(lang, 'msg.combat.casualtyDowned' as Key, { n: downed }));
