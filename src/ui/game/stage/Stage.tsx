@@ -9,7 +9,8 @@ import { def } from '../../../game/units';
 import { AgencyTabBody, useAgencyTabs } from '../AgencyPanel';
 import type { AgencyTab } from '../AgencyPanel';
 import { CountryOps, CountryOverview, CountryStation, CountrySub } from '../CountryPanel';
-import { ItemTrade, MarketPanel } from '../market/MarketPanel';
+import { MarketPanel } from '../market/MarketPanel';
+import { ItemTrade } from '../market/ItemTrade';
 import type { CountryTab, StageApi, StageModal } from './context';
 import './stage.css';
 

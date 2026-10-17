@@ -279,7 +279,7 @@ function OppList({
 const shortName = (itemId: string) => itemName(itemId).replace(/\s*\(.*\)$/, '');
 
 /** Barato/caro frente à média: quem compra quer abaixo; se o país só compra o item, acima é bom para vender. */
-function dealOf(r: MarketRow, t: I18n['t']) {
+export function dealOf(r: MarketRow, t: I18n['t']) {
   const sellSide = !r.buy && r.sell > 0;
   const pctAbs = Math.round(Math.abs(r.dealPct) * 100);
   const good = r.deal === 'fair' ? null : sellSide ? r.deal === 'pricey' : r.deal === 'cheap';
@@ -489,66 +489,8 @@ function TradeBox({ row, countryId, info = true }: { row: MarketRow; countryId: 
   );
 }
 
-/** Modal de compra e venda (ADR 0006): informação à esquerda, ação à direita; em pé, uma coluna. */
-export function ItemTrade({ countryId, itemId }: { countryId: string; itemId: string }) {
-  const { t, fmt } = useT();
-  const s = useGame();
-  const a = player(s);
-  const here = directorAt(a, countryId);
-  const r = marketRows(s, a, countryId).find((x) => x.itemId === itemId);
-  if (!r) return <p className="mkt-why">{t('game.market.unknown')}</p>;
-  const { good, text } = dealOf(r, t);
-  return (
-    <div className="trade">
-      <div className="trade-info">
-        <div className="trade-hero">
-          <span className="g-well trade-icon">
-            <GameIcon id={r.itemId} size={56} accent={r.it.wmd ? 'signal' : 'warm'} />
-          </span>
-          <div className="trade-hero-t">
-            <span className="mono trade-sub">
-              {r.it.wmd ? t('game.market.wmd') : classLabel(r.it.cls)} · {t('game.market.perUnit', { weight: fmt.tons(r.it.weight) })}
-            </span>
-            {(r.buy > 0 || r.sell > 0) && (
-              <span className={`mkt-deal ${good === null ? 'fair' : good ? 'good' : 'bad'}`}>
-                {text}
-                {!r.dealKnown && <span className="mkt-deal-src"> · {t('game.market.deal.fewData')}</span>}
-              </span>
-            )}
-          </div>
-        </div>
-        <div className="trade-prices">
-          <div className="trade-p">
-            <span className="k">{t('game.market.youPay')}</span>
-            <span className="v num">{r.buy ? fmt.money(r.buy) : t('game.market.notSold')}</span>
-          </div>
-          <div className="trade-p">
-            <span className="k">{t('game.market.youGet')}</span>
-            <span className="v num">{r.sell ? fmt.money(r.sell) : t('game.market.notBought')}</span>
-          </div>
-        </div>
-        {r.owned > 0 && (
-          <p className="mkt-own">
-            <span className="num">{t('game.market.owned', { n: r.owned })}</span>{' '}
-            {r.sell > 0 && <span className={r.plEach >= 0 ? 'pos' : 'neg'}>{t('game.market.plSellingHere', { pl: signed(fmt, r.plEach) })}</span>}
-          </p>
-        )}
-        <PriceRange itemId={r.itemId} countryId={countryId} />
-        <p className="mkt-blurb">{itemBlurb(r.itemId)}</p>
-      </div>
-      <div className="trade-act">
-        {here ? (
-          <TradeBox row={r} countryId={countryId} info={false} />
-        ) : (
-          <p className="mkt-away">{t('game.market.away', { country: countryName(countryId), blurb: itemBlurb(r.itemId) })}</p>
-        )}
-      </div>
-    </div>
-  );
-}
-
 /** Onde o item está mais barato e onde pagam mais, entre os preços que o jogador conhece. */
-function PriceRange({ itemId, countryId }: { itemId: string; countryId: string }) {
+export function PriceRange({ itemId, countryId }: { itemId: string; countryId: string }) {
   const { t, fmt } = useT();
   const s = useGame();
   const a = player(s);
