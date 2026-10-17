@@ -100,7 +100,7 @@ function PendingView() {
             })}
           </Verdict>
         ) : (
-          <Verdict tone={pend.preview[tactic] >= 0.6 ? 'good' : 'warn'}>
+          <Verdict tone={pend.preview[tactic] >= 0.6 ? 'good' : pend.preview[tactic] < 0.35 ? 'bad' : 'warn'}>
             <b>{tacticName(tactic)}</b> · {t('game.combat.ours', { n: ourStr })} · {t('game.combat.theirs', { n: theirStr })}
           </Verdict>
         )}
