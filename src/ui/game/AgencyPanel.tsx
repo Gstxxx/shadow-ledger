@@ -410,7 +410,7 @@ function TeamsTab() {
       </Section>
       {stationsWithUnits.length > 0 && (
         <Section title={t('game.agency.teams.detachFrom')}>
-          <select className="input" value={formFrom ?? ''} onChange={(e) => (setFormFrom(e.target.value || null), setPicks([]))}>
+          <select className="input g-input" value={formFrom ?? ''} onChange={(e) => (setFormFrom(e.target.value || null), setPicks([]))}>
             <option value="">{t('game.agency.teams.chooseStation')}</option>
             {stationsWithUnits.map((x) => (
               <option key={x.countryId} value={x.countryId}>

@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
-import { GameIcon, GCard, GMeter } from '../../../art';
+import { GameIcon, GCard, GMeter, GRange, GStepper } from '../../../art';
 import * as A from '../../../game/actions';
 import { maxCargo, quoteBuy, quoteSell, usedCargo } from '../../../game/market';
 import { directorAt, formatDuration, intelCountries, player, standing } from '../../../game/state';
@@ -375,34 +375,22 @@ function TradeBox({ row, countryId }: { row: MarketRow; countryId: string }) {
           {t('game.market.trade.quantity')}
         </label>
         <div className="mkt-stepper">
-          <button
-            className="btn sm icon"
-            aria-label={t('game.market.trade.less')}
-            disabled={q <= 1}
-            onClick={() => setQty(Math.max(1, q - 1))}
-          >
-            −
-          </button>
-          <input
+          <GStepper
+            value={q}
+            min={1}
+            max={limit}
+            onChange={setQty}
+            decLabel={t('game.market.trade.less')}
+            incLabel={t('game.market.trade.more')}
+          />
+          <GRange
             id={`q-${r.itemId}`}
-            type="range"
             min={1}
             max={limit}
             value={q}
-            onChange={(e) => setQty(Number(e.target.value))}
+            onChange={setQty}
             aria-valuetext={t('game.market.trade.valueText', { n: q })}
           />
-          <button
-            className="btn sm icon"
-            aria-label={t('game.market.trade.more')}
-            disabled={q >= limit}
-            onClick={() => setQty(Math.min(limit, q + 1))}
-          >
-            +
-          </button>
-          <span className="mkt-q num" aria-live="polite">
-            {q}
-          </span>
         </div>
         <div className="mkt-quick">
           {canBuyMax > 0 && (

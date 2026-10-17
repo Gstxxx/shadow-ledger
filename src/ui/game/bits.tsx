@@ -1,5 +1,5 @@
 import type { ReactNode } from 'react';
-import { GMeter } from '../../art';
+import { GMeter, GStepper } from '../../art';
 import { POSTURE_COLOR } from '../../game/data/rules';
 import type { Posture } from '../../game/types';
 import { useT } from '../../i18n';
@@ -53,17 +53,11 @@ export function Empty({ children }: { children: ReactNode }) {
 
 export function Stepper({ value, max, onChange }: { value: number; max: number; onChange: (v: number) => void }) {
   const { t } = useT();
-  const clamp = (v: number) => Math.max(1, Math.min(Math.max(1, max), v));
+  const top = Math.max(1, max);
   return (
     <span className="stepper">
-      <button className="btn sm icon" aria-label={t('game.bits.less')} onClick={() => onChange(clamp(value - 1))}>
-        −
-      </button>
-      <span className="num stepper-v">{value}</span>
-      <button className="btn sm icon" aria-label={t('game.bits.more')} onClick={() => onChange(clamp(value + 1))}>
-        +
-      </button>
-      <button className="btn sm" onClick={() => onChange(clamp(max))}>
+      <GStepper value={value} min={1} max={top} onChange={onChange} decLabel={t('game.bits.less')} incLabel={t('game.bits.more')} />
+      <button className="btn sm" onClick={() => onChange(top)}>
         {t('game.bits.max')}
       </button>
     </span>

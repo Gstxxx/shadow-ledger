@@ -294,26 +294,19 @@
 }
 .mkt-stepper {
   display: grid;
-  grid-template-columns: 44px minmax(0, 1fr) 44px 44px;
+  grid-template-columns: auto minmax(0, 1fr);
   align-items: center;
-  gap: 8px;
+  gap: 12px;
 }
-.mkt-stepper .btn.icon {
+/* O kit usa botões sm de 34px; aqui o toque pede 44px (ADR 0003). */
+.mkt-stepper .g-stepper .g-btn {
   width: 44px;
+  min-width: 44px;
   min-height: 44px;
   font-size: 18px;
 }
-.mkt-stepper input[type='range'] {
-  width: 100%;
+.mkt-stepper .g-range {
   height: 44px;
-  margin: 0;
-  accent-color: var(--amber);
-  background: transparent;
-}
-.mkt-q {
-  font: 600 18px/1 var(--mono);
-  text-align: center;
-  color: var(--paper);
 }
 .mkt-quick {
   display: flex;
