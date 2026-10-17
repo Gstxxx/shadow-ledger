@@ -10,9 +10,10 @@ import { canFight, FORT_ID, maxStrOf, strOf } from '../../game/units';
 import { useGame, useGameStore } from '../../store/game';
 import { audio } from '../../audio/engine';
 import { useT } from '../../i18n';
-import { combatLabel, itemName, tacticBlurb, tacticName } from '../../i18n/lookup';
+import { combatLabel, countryName, itemName, tacticBlurb, tacticName } from '../../i18n/lookup';
 import { Portrait } from './Portrait';
 import { msgText } from './msgText';
+import { CoupCinematic } from '../cinematics';
 import { BigNumber, Details, Verdict } from './stage/Verdict';
 import { usePortrait } from './portrait/usePortrait';
 import { CombatResult, RedactedTitle, RollingNumber, combatSucceeded, useCombatFx } from '../combat-fx';
@@ -20,9 +21,27 @@ import { GModal } from '../../art';
 
 export function CombatOverlay() {
   const s = useGame();
+  const { lang } = useT();
+  // Golpe de Estado: a cena curta (menu-motion) toca uma vez por Combate, antes do tabuleiro.
+  // O tabuleiro (e a intro do combat-fx) só monta no corte, para a entrada das fichas tocar depois da cena.
+  const coupSeen = useRef(new Set<string>());
+  const [, rerender] = useState(0);
+  const c = s.combat;
   if (s.pendingCombat) return <PendingView />;
-  if (s.combat) return <LiveView key={s.combat.id} />;
-  return null;
+  if (!c) return null;
+  if (c.reason.kind === 'coup' && !coupSeen.current.has(c.id)) {
+    const id = c.id;
+    return (
+      <CoupCinematic
+        country={countryName(c.reason.countryId, lang)}
+        onDone={() => {
+          coupSeen.current.add(id);
+          rerender((n) => n + 1);
+        }}
+      />
+    );
+  }
+  return <LiveView key={c.id} />;
 }
 
 // ── Prévia e Tática ─────────────────────────────────────────

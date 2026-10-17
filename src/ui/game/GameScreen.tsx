@@ -96,7 +96,11 @@ export function GameScreen() {
       else if (e.key === '3' || e.key === '4') setSpeed(4);
       else if (e.key === '8') setSpeed(8);
       // Esc abre a pausa só sem outro diálogo aberto (cada modal fecha com o próprio Esc).
-      else if (e.key === 'Escape' && !document.querySelector('[role="dialog"]')) setMenu(true);
+      // …nem durante Prévia, Combate ou cena (o Esc ali pula a cena do Golpe).
+      else if (e.key === 'Escape') {
+        const g = useGameStore.getState().game;
+        if (!document.querySelector('[role="dialog"], .combat-screen, .cc-root') && !g?.combat && !g?.pendingCombat) setMenu(true);
+      }
     };
     window.addEventListener('keydown', onKey);
     return () => window.removeEventListener('keydown', onKey);
