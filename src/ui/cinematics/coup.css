@@ -1,0 +1,262 @@
+/* Cena do Golpe: palco 1600×900 em "cover", camadas absolutas; só transform/opacity animam. */
+.cc-root {
+  position: fixed;
+  inset: 0;
+  z-index: 260;
+  overflow: hidden;
+  background: #05080d;
+  color: #e7eaee;
+  cursor: pointer;
+  user-select: none;
+  touch-action: manipulation;
+}
+.cc-viewport {
+  position: absolute;
+  inset: 0;
+}
+.cc-stage {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 1600px;
+  height: 900px;
+  margin: -450px 0 0 -800px;
+  scale: var(--cc-fit, 1);
+}
+.cc-camera,
+.cc-layer {
+  position: absolute;
+  inset: 0;
+  transform-origin: 50% 62%;
+}
+.cc-layer svg,
+.cc-img {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+/* Janelas e lampiões acesos em âmbar; a bandeira em vermelho-sinal. */
+.cc-win {
+  fill: #f2a93b;
+  opacity: 0.7;
+}
+.cc-lamp {
+  fill: #ffd58a;
+}
+.cc-head {
+  fill: #fff1c9;
+  filter: drop-shadow(0 0 6px #ffd58a);
+}
+.cc-search {
+  position: absolute;
+  width: 120px;
+  height: 760px;
+  margin-left: -60px;
+  margin-top: -760px;
+  transform-origin: 50% 100%;
+  background: linear-gradient(0deg, rgba(220, 236, 255, 0.4), rgba(220, 236, 255, 0) 92%);
+  clip-path: polygon(46% 100%, 54% 100%, 100% 0, 0 0);
+  mix-blend-mode: screen;
+}
+.cc-smoke {
+  position: absolute;
+  width: 420px;
+  height: 220px;
+  margin: -110px 0 0 -210px;
+  border-radius: 50%;
+  background: radial-gradient(closest-side, rgba(150, 165, 180, 0.55), rgba(150, 165, 180, 0));
+  filter: blur(14px);
+}
+.cc-tank,
+.cc-soldier,
+.cc-runner {
+  position: absolute;
+  left: 0;
+  top: 0;
+  transform-origin: 50% 100%;
+}
+.cc-tank {
+  width: 420px;
+  height: 262px;
+}
+.cc-soldier {
+  width: 60px;
+  height: 130px;
+}
+.cc-runner {
+  left: 0;
+  width: 60px;
+  height: 130px;
+  filter: blur(3px);
+}
+.cc-soldier svg,
+.cc-tank svg,
+.cc-runner svg {
+  position: static;
+  width: 100%;
+  height: 100%;
+  overflow: visible;
+}
+.cc-siren {
+  position: absolute;
+  inset: 0;
+  opacity: 0;
+  mix-blend-mode: screen;
+  pointer-events: none;
+}
+.cc-siren--r {
+  background: radial-gradient(ellipse 60% 80% at 0% 70%, rgba(229, 55, 47, 0.75), transparent 70%);
+}
+.cc-siren--b {
+  background: radial-gradient(ellipse 60% 80% at 100% 70%, rgba(70, 130, 255, 0.7), transparent 70%);
+}
+.cc-grain {
+  position: absolute;
+  inset: -40px;
+  opacity: 0.14;
+  pointer-events: none;
+  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='180' height='180'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='2' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 1  0 0 0 0 1  0 0 0 0 1  0 0 0 1.4 -0.2'/></filter><rect width='100%' height='100%' filter='url(%23n)'/></svg>");
+  mix-blend-mode: overlay;
+}
+.cc-vignette {
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(ellipse 80% 75% at 50% 52%, transparent 45%, rgba(0, 0, 0, 0.78) 100%);
+  pointer-events: none;
+}
+
+/* ── Sobreposições (na tela real, respeitando a área segura) ── */
+.cc-hud {
+  position: absolute;
+  inset: 0;
+  padding: max(18px, var(--safe-t, env(safe-area-inset-top, 0px))) max(18px, var(--safe-r, env(safe-area-inset-right, 0px)))
+    max(18px, var(--safe-b, env(safe-area-inset-bottom, 0px))) max(18px, var(--safe-l, env(safe-area-inset-left, 0px)));
+  pointer-events: none;
+}
+.cc-telex {
+  position: absolute;
+  left: max(18px, var(--safe-l, env(safe-area-inset-left, 0px)));
+  bottom: max(22px, var(--safe-b, env(safe-area-inset-bottom, 0px)));
+  display: grid;
+  gap: 4px;
+  max-width: min(560px, 86vw);
+  font-family: var(--sl-font-mono, ui-monospace, monospace);
+  font-size: clamp(12px, 1.5vw, 17px);
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+.cc-telex__line {
+  min-height: 1.4em;
+  padding: 2px 8px;
+  background: rgba(232, 220, 194, 0.92);
+  color: #241c11;
+  justify-self: start;
+}
+.cc-telex__line:empty {
+  visibility: hidden;
+}
+.cc-map {
+  position: absolute;
+  top: max(20px, var(--safe-t, env(safe-area-inset-top, 0px)));
+  right: max(20px, var(--safe-r, env(safe-area-inset-right, 0px)));
+  width: clamp(150px, 20vw, 300px);
+  aspect-ratio: 3 / 2;
+  box-shadow: 0 14px 30px rgba(0, 0, 0, 0.6);
+}
+.cc-map svg {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+.cc-map::before {
+  content: '';
+  position: absolute;
+  top: -10px;
+  left: 18%;
+  width: 26px;
+  height: 22px;
+  border: 3px solid #8b97a3;
+  border-radius: 10px 10px 4px 4px;
+}
+.cc-map__label {
+  position: absolute;
+  left: 8px;
+  bottom: 6px;
+  padding: 1px 6px;
+  background: #241c11;
+  color: #e8dcc2;
+  font-family: var(--sl-font-mono, ui-monospace, monospace);
+  font-size: clamp(9px, 0.9vw, 12px);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+.cc-title {
+  position: absolute;
+  left: 50%;
+  top: 46%;
+  translate: -50% -50%;
+  display: grid;
+  justify-items: center;
+  gap: 6px;
+  width: max-content;
+  max-width: 92vw;
+}
+.cc-title__kicker {
+  padding: 2px 10px;
+  background: #e5372f;
+  color: #fff;
+  font-family: var(--sl-font-mono, ui-monospace, monospace);
+  font-weight: 700;
+  font-size: clamp(11px, 1.2vw, 15px);
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+}
+.cc-title__text {
+  padding: 0.12em 0.4em 0.06em;
+  background: rgba(5, 8, 13, 0.82);
+  border-top: 3px solid #f2a93b;
+  border-bottom: 3px solid #f2a93b;
+  font-family: var(--sl-font-display, 'Barlow Condensed', sans-serif);
+  font-weight: 800;
+  font-size: clamp(30px, min(7vw, 11vh), 96px);
+  line-height: 1;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+  text-align: center;
+  color: #f2f4f6;
+}
+.cc-title__text {
+  position: relative;
+}
+.cc-title__bar {
+  position: absolute;
+  inset: -3px -4px;
+  background: #050505;
+}
+.cc-skip {
+  position: absolute;
+  right: max(18px, var(--safe-r, env(safe-area-inset-right, 0px)));
+  bottom: max(18px, var(--safe-b, env(safe-area-inset-bottom, 0px)));
+  font-family: var(--sl-font-mono, ui-monospace, monospace);
+  font-size: 12px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  opacity: 0.6;
+}
+.cc-cut {
+  position: absolute;
+  inset: 0;
+  background: #000;
+}
+@media (orientation: portrait) {
+  .cc-map {
+    top: auto;
+    bottom: calc(max(22px, var(--safe-b, env(safe-area-inset-bottom, 0px))) + 110px);
+    width: clamp(150px, 46vw, 230px);
+  }
+  .cc-title {
+    top: 30%;
+  }
+}
