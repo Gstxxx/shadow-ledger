@@ -398,3 +398,37 @@ html .game.stage.upright .topbar {
 .agency--bare .section:first-child {
   margin-top: 0;
 }
+/* Ficha de Unidade: veredito do estado, traços como etiquetas, o resto em Detalhes. */
+.ud-verdict {
+  padding: 0 18px;
+}
+.ud .ud-traits {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+.ud .ud-traits li {
+  padding: 4px 10px;
+  border: 1px solid var(--line-2);
+  font-size: 12px;
+}
+.ud .ud-traits li.neg {
+  border-color: rgba(229, 72, 77, 0.5);
+}
+.ud-traits-full {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  display: grid;
+  gap: 6px;
+  font-size: 13px;
+  color: var(--paper-2);
+}
+.ud-dismiss {
+  color: var(--paper-3);
+}
+/* Prévia: veredito e a chance grande; táticas só com nome e chance. */
+.cb-preview > .verdict,
+.cb-preview > .big-number {
+  margin-bottom: 12px;
+}

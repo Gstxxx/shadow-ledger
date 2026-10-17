@@ -11,6 +11,7 @@ import { useT } from '../../../i18n';
 import type { I18n, Key, Lang } from '../../../i18n';
 import { classLabel, countryName, itemBlurb, itemName, stationName, traitBlurb, traitName } from '../../../i18n/lookup';
 import { Help } from '../help/Glossary';
+import { Details, Verdict } from '../stage/Verdict';
 import './unit.css';
 
 /** Tipos de força, na ordem em que aparecem na ficha, com o ícone do kit. */
@@ -237,11 +238,6 @@ export function UnitDossier({ uid, onClose }: { uid: string; onClose: () => void
               />
               {placeLabel(s, a, place, t, lang)}
             </p>
-            {status && (
-              <p className="ud-status" role="status">
-                <b>{status.label}.</b> {status.detail}
-              </p>
-            )}
 
             {human && (
               <div className="ud-rank" aria-label={t('game.unit.rankOf', { n: rank })}>
@@ -257,6 +253,23 @@ export function UnitDossier({ uid, onClose }: { uid: string; onClose: () => void
           </div>
         </div>
 
+        {status && (
+          <div className="ud-verdict">
+            <Verdict
+              tone="bad"
+              action={
+                canRepair ? (
+                  <button className="btn primary" disabled={a.cash < repairCost(u)} onClick={() => act((g, ag) => A.repair(g, ag, u.uid), 'buy')}>
+                    {t('game.unit.repair')} <span className="num">{fmt.money(repairCost(u))}</span>
+                  </button>
+                ) : undefined
+              }
+            >
+              <b>{status.label}.</b> {status.detail}
+            </Verdict>
+          </div>
+        )}
+
         {strengths.length > 0 && (
           <section className="ud-sec">
             <h3>
@@ -269,9 +282,8 @@ export function UnitDossier({ uid, onClose }: { uid: string; onClose: () => void
                 return (
                   <li key={m.key}>
                     <GameIcon id={m.icon} size={20} accent={cur < max ? 'signal' : 'warm'} />
-                    <span className="ud-str-l">
+                    <span className="ud-str-l" title={t(m.blurbKey)}>
                       {t(m.labelKey)}
-                      <small>{t(m.blurbKey)}</small>
                     </span>
                     <span className="ud-meter" aria-hidden>
                       <GMeter value={cur} max={Math.max(1, max)} tone={cur < max ? 'danger' : 'action'} segmented={max <= 12} />
@@ -294,9 +306,8 @@ export function UnitDossier({ uid, onClose }: { uid: string; onClose: () => void
             {u.traits.length ? (
               <ul className="ud-traits">
                 {u.traits.map((tr) => (
-                  <li key={tr} className={tr === 'nervous' || tr === 'demanding' ? 'neg' : ''}>
+                  <li key={tr} className={tr === 'nervous' || tr === 'demanding' ? 'neg' : ''} title={traitBlurb(tr, lang)}>
                     <b>{traitName(tr, lang)}</b>
-                    <span>{traitBlurb(tr, lang)}</span>
                   </li>
                 ))}
               </ul>
@@ -306,7 +317,18 @@ export function UnitDossier({ uid, onClose }: { uid: string; onClose: () => void
           </section>
         )}
 
-        <section className="ud-sec">
+        <div className="ud-sec">
+        <Details>
+        {human && u.traits.length > 0 && (
+          <ul className="ud-traits-full">
+            {u.traits.map((tr) => (
+              <li key={tr}>
+                <b>{traitName(tr, lang)}</b> · {traitBlurb(tr, lang)}
+              </li>
+            ))}
+          </ul>
+        )}
+        <section>
           <h3>{t('game.unit.record.title')}</h3>
           {u.record && u.record.combats > 0 ? (
             <ul className="ud-record">
@@ -348,11 +370,13 @@ export function UnitDossier({ uid, onClose }: { uid: string; onClose: () => void
           )}
         </section>
         <p className="ud-blurb">{itemBlurb(u.itemId, lang)}</p>
+        </Details>
+        </div>
 
         <footer className="ud-actions">
           {canStation && (
             <button
-              className="btn"
+              className="btn ghost"
               disabled={!stationAllows}
               title={!stationAllows ? t('game.unit.stationDisallows') : undefined}
               onClick={() => act((g, ag) => A.transferUnit(g, ag, u.uid, 'station'))}
@@ -361,22 +385,17 @@ export function UnitDossier({ uid, onClose }: { uid: string; onClose: () => void
             </button>
           )}
           {atStationHere && (
-            <button className="btn" onClick={() => act((g, ag) => A.transferUnit(g, ag, u.uid, 'escort'))}>
+            <button className="btn ghost" onClick={() => act((g, ag) => A.transferUnit(g, ag, u.uid, 'escort'))}>
               <GameIcon id="director" size={16} accent="cold" /> {t('game.unit.takeInEscort')}
             </button>
           )}
           {place.kind === 'escort' && (
             <button
-              className="btn"
+              className="btn ghost"
               disabled={!directorAt(a, a.location)}
               onClick={() => act((g, ag) => A.formTeam(g, ag, 'escort', [u.uid]), 'open')}
             >
               <GameIcon id="team" size={16} accent="cold" /> {t('game.unit.detachTeam')}
-            </button>
-          )}
-          {canRepair && (
-            <button className="btn" disabled={a.cash < repairCost(u)} onClick={() => act((g, ag) => A.repair(g, ag, u.uid), 'buy')}>
-              {t('game.unit.repair')} <span className="num">{fmt.money(repairCost(u))}</span>
             </button>
           )}
           <span className="ud-spacer" />
@@ -402,7 +421,7 @@ export function UnitDossier({ uid, onClose }: { uid: string; onClose: () => void
                 </button>
               </span>
             ) : (
-              <button className="btn danger" onClick={() => setConfirm(true)}>
+              <button className="btn ghost ud-dismiss" onClick={() => setConfirm(true)}>
                 {t('game.unit.dismissEllipsis')}
               </button>
             ))}
