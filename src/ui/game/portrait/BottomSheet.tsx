@@ -114,7 +114,7 @@ export function BottomSheet({
   return (
     <div
       ref={root}
-      className={`gsheet snap-${snap}${dragOff !== null ? ' dragging' : ''}`}
+      className={`gsheet g-sheet snap-${snap}${dragOff !== null ? ' dragging' : ''}`}
       style={{ transform: `translateY(${off}px)`, ['--sheet-off' as string]: `${off}px` }}
       data-snap={snap}
     >
@@ -122,7 +122,7 @@ export function BottomSheet({
       <div className="gsheet-head" onPointerDown={start} onPointerMove={move} onPointerUp={end} onPointerCancel={end}>
         <button
           type="button"
-          className="gsheet-grip"
+          className="gsheet-grip g-grip"
           aria-label={tabs.find((x) => x.id === tab)?.label}
           aria-expanded={snap !== 'peek'}
           onClick={() => {
@@ -133,7 +133,6 @@ export function BottomSheet({
             toggle();
           }}
         >
-          <span aria-hidden />
         </button>
         <div className="gsheet-tabs" role="tablist">
           {tabs.map((x) => (

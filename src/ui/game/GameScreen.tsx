@@ -171,14 +171,14 @@ export function GameScreen() {
         </div>
       ) : (
       <div className="game-body">
-        <aside className={`side left${drawer === 'left' ? ' open' : ''}`}>
+        <aside className={`side left g-drawer${drawer === 'left' ? ' open' : ''}`}>
           <button className="btn icon ghost drawer-close only-narrow" aria-label={t('common.close')} onClick={() => setDrawer(null)}>
             <X size={18} />
           </button>
           <CountryPanel />
         </aside>
         {mapArea}
-        <aside className={`side right${drawer === 'right' ? ' open' : ''}`}>
+        <aside className={`side right g-drawer g-drawer--right${drawer === 'right' ? ' open' : ''}`}>
           <button className="btn icon ghost drawer-close only-narrow" aria-label={t('common.close')} onClick={() => setDrawer(null)}>
             <X size={18} />
           </button>

@@ -255,3 +255,16 @@ html .topbar .tb-more.g-dial {
     margin-right: 0;
   }
 }
+
+/* Kit fase 2: .g-sheet/.g-drawer trazem position: relative; a folha e as gavetas do celular são absolutas. */
+html .gsheet.g-sheet {
+  position: absolute;
+}
+@media (max-width: 900px), (max-height: 520px) {
+  html .side.g-drawer {
+    position: absolute;
+  }
+}
+html .gsheet-grip.g-grip {
+  height: 22px;
+}
