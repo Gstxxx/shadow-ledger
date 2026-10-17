@@ -16,12 +16,16 @@ import { audio, type Sfx } from '../../audio/engine';
 import { ease, f } from '../menu/ease';
 import { breach, down, hit, intro, verdict, TYPE_COLOR, AGENCY_COLOR, type Box, type Stage } from './effects';
 import { showcaseText } from './showcaseText';
+import { buildResult } from './result';
+import './result.css';
 import './combat-fx.css';
 import './showcase.css';
 
 const q = new URLSearchParams(location.search);
 const RENDER = q.get('render') === '1';
 const REDUCED = q.get('rm') === '1';
+/** ?ending=win|lose: final com a tela de resultado completa (sem valor: o carimbo simples aprovado). */
+const ENDING = q.get('ending') as 'win' | 'lose' | null;
 const COLS = 8;
 const ROWS = 3;
 const MAX_TURNS = 8;
@@ -59,7 +63,7 @@ function rng(seed: number) {
 }
 
 function Showcase() {
-  const { t } = useT();
+  const { t, lang } = useT();
   const txt = showcaseText();
   const root = useRef<HTMLDivElement>(null);
   const [portrait] = useState(() => innerHeight > innerWidth);
@@ -317,6 +321,53 @@ function Showcase() {
     hpTo('e1', 3, T + f(8));
     slash('e1', 'a1', 1, T + f(20));
     hpTo('a1', 4, T + f(22));
+    // Variante de derrota: no turno 3 o hostil derruba o agente da linha 1 e a operação cai.
+    const resultHost = el.querySelector<HTMLElement>('.sc-result')!;
+    const board = el.querySelector<HTMLElement>('.sc-board')!;
+    const usd = (n: number) => `US$ ${Math.round(n).toLocaleString(lang)}`;
+    const ending = (kind: 'win' | 'lose', at: number) => {
+      const h = buildResult(resultHost, {
+        kind,
+        title: kind === 'win' ? t('game.combat.result.win').toUpperCase() : t('combatfx.stamp.lose'),
+        items:
+          kind === 'win'
+            ? [
+                { label: txt.downed, value: 2, tone: 'good' },
+                { label: txt.turned, value: 1, tone: 'good' },
+                { label: txt.xp, value: 120, format: (n) => `+${Math.round(n)}`, tone: 'good' },
+                { label: txt.reward, value: 2400000, format: usd, tone: 'good' },
+              ]
+            : [
+                { label: txt.wounded, value: 2, tone: 'bad' },
+                { label: txt.detained, value: 1, tone: 'bad' },
+                { label: txt.dirDetained, value: 1, format: (n) => (n >= 1 ? txt.dirState : '—'), tone: 'bad' },
+              ],
+        doneLabel: t('game.combat.finish'),
+        onDone: () => undefined,
+        board,
+        reduced: REDUCED,
+        sound: (n) => play(n as Sfx)(),
+      });
+      h.tl.pause();
+      tl.add(h.tl.paused(false), at);
+      // Fim vivo: a câmera ainda se aproxima devagar enquanto o resumo assenta.
+      if (!REDUCED) tl.fromTo(camera, { scale: 1 }, { scale: 1.04, duration: 2.6, ease: ease.cruise, immediateRender: false }, at);
+      tl.to({}, { duration: 2.4 }, at + 0.3);
+      cleanup.push(() => h.destroy());
+    };
+    const cleanup: (() => void)[] = [];
+    if (ENDING === 'lose') {
+      T = 5.8;
+      turnAt(3, T);
+      camFocus('e2', 'a2', T, 1.25);
+      slash('e2', 'a2', 2, T + f(5));
+      hpTo('a2', 2, T + f(7));
+      slash('e2', 'a2', 2, T + f(14));
+      hpTo('a2', 0, T + f(16));
+      kill('a2', T + f(18));
+      forecastTo(58, 31, T + f(26));
+      ending('lose', T + 1.3);
+    } else {
     // Turno 3 (5,8 s): linha 1 — dois golpes, abate.
     T = 5.8;
     turnAt(3, T);
@@ -363,11 +414,15 @@ function Showcase() {
     }
     // Vitória (13,6 s): carimbo bate + poeira de papel.
     const V = 13.7;
-    tl.add(verdict(st, t('game.combat.result.win').toUpperCase(), true), V).call(play('win'), undefined, V + f(3));
-    dust(V + f(3));
-    // Fim vivo e curto: a câmera ainda se aproxima devagar enquanto a poeira assenta (sem quadro congelado).
-    if (!REDUCED) tl.fromTo(camera, { scale: 1 }, { scale: 1.035, duration: 1.0, ease: ease.cruise, immediateRender: false }, V + 0.35);
-    tl.to({}, { duration: 1.0 }, V + 0.35);
+    if (ENDING === 'win') ending('win', V - 0.1);
+    else {
+      tl.add(verdict(st, t('game.combat.result.win').toUpperCase(), true), V).call(play('win'), undefined, V + f(3));
+      dust(V + f(3));
+      // Fim vivo e curto: a câmera ainda se aproxima devagar enquanto a poeira assenta (sem quadro congelado).
+      if (!REDUCED) tl.fromTo(camera, { scale: 1 }, { scale: 1.035, duration: 1.0, ease: ease.cruise, immediateRender: false }, V + 0.35);
+      tl.to({}, { duration: 1.0 }, V + 0.35);
+    }
+    }
 
     master.current = tl;
     const w = window as unknown as { __seek?: (t: number) => void; __duration?: number; __timelines?: Record<string, gsap.core.Timeline> };
@@ -380,6 +435,7 @@ function Showcase() {
     }
     return () => {
       tl.kill();
+      cleanup.forEach((c) => c());
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [cell]);
@@ -446,6 +502,7 @@ function Showcase() {
           <div className="cfx-layer" aria-hidden="true" />
         </div>
       </div>
+      <div className="sc-result" />
       {!RENDER && (
         <button type="button" className={`g-btn g-btn--primary g-btn--lg sc-play${playing ? ' is-small' : ''}`} onClick={start}>
           {playing ? txt.replay : txt.play}

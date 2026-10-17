@@ -233,3 +233,14 @@ body {
   align-items: flex-start;
   gap: 1.2vh;
 }
+
+/* No protótipo a tela de resultado é só imagem: o toque fica com o botão Reproduzir. */
+.sc-root .cr-root {
+  pointer-events: none;
+}
+.sc-root .cr-root .cr-done {
+  pointer-events: none;
+}
+.sc-play {
+  z-index: 300;
+}

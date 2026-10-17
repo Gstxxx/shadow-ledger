@@ -30,6 +30,8 @@ export interface CombatFxOptions {
   axis?: 'x' | 'y';
   /** Texto do carimbo final; sem valor, usa i18n (combatfx.stamp.* ou game.combat.result.*). */
   verdictText?: (success: boolean, c: CombatState) => string;
+  /** Carimbo pequeno no fim (padrão: sim). Desligue quando a tela usa <CombatResult>. */
+  verdict?: boolean;
 }
 
 export interface CombatFxApi {
@@ -50,7 +52,7 @@ interface Snap {
 const TURN_BUDGET = 0.9;
 
 const boxOf = (n: HTMLElement): Box => ({ x: n.offsetLeft, y: n.offsetTop, w: n.offsetWidth, h: n.offsetHeight });
-const succeeded = (c: CombatState) => c.result === 'win' || (c.result === 'draw' && c.playerDefends);
+export const succeeded = (c: CombatState) => c.result === 'win' || (c.result === 'draw' && c.playerDefends);
 
 /**
  * Eixo "para a frente" da grade, lido das posições reais: duas Unidades em colunas diferentes dão o vetor
@@ -212,7 +214,7 @@ export function useCombatFx(opts: CombatFxOptions): CombatFxApi {
       current.current?.progress(1);
     }
 
-    if (combat.result && !shownResult.current) {
+    if (combat.result && !shownResult.current && optsRef.current.verdict !== false) {
       shownResult.current = true;
       const v = verdict(st, verdictLabel(succeeded(combat), combat), succeeded(combat));
       // O carimbo vem depois do turno decisivo (que pode nem ter começado a tocar ainda).

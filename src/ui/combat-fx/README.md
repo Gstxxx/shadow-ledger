@@ -73,6 +73,27 @@ Para girar, **reposicione os tokens por `left/top`** (por exemplo `left = row/ro
 4. "Pular para o fim" (vários turnos de uma vez) não anima turnos intermediários: só o carimbo.
 5. Os sons continuam na tela (`audio.sfx('hit'|'kill'|'win'|'lose')`). A camada não toca som.
 
+## Tela de resultado (`<CombatResult>`)
+
+Vitória: hit-stop de 120 ms com clarão âmbar, o tabuleiro recua e escurece, o carimbo VITÓRIA bate de 1,6→1 (tremida, poeira de papel e lascas de tinta), linhas de dossiê varrem a tela, cards de resumo entram em cascata com contador. Derrota: dessatura e treme, tarjas pretas fecham sobre o tabuleiro uma a uma, carimbo FRACASSO vermelho com tinta borrada, vinheta pulsando, resumo das perdas. Em ambas o botão Concluir só aparece depois do clímax (~1,2 s); tocar antes pula para o fim; reduzir movimento troca tudo por cortes.
+
+```tsx
+const grid = useRef<HTMLDivElement>(null);
+useCombatFx({ grid, combat: c, verdict: false }); // sem o carimbo pequeno
+{c.result && (
+  <CombatResult
+    kind={combatSucceeded(c) ? 'win' : 'lose'}
+    title={win ? t('game.combat.result.win').toUpperCase() : t('combatfx.stamp.lose')}
+    items={[{ label: '…', value: 2, tone: 'good' }, { label: '…', value: 2400000, format: usd, tone: 'good' }]}
+    doneLabel={t('game.combat.finish')}
+    onDone={finish}
+    board={grid.current}
+  />
+)}
+```
+
+`items` são montados pela tela (rótulos dela no i18n): vitória = baixas, convertidos, XP, recompensa US$; derrota = unidades feridas/detidas e o Diretor (detido/abduzido) se for o caso. Sem React: `buildResult(host, opts)` devolve `{ tl, skip(), destroy() }`. Protótipo: `showcase.html?ending=win|lose`.
+
 ## Prévia
 
 `/src/ui/combat-fx/preview.html` no `npm run dev` (fora do build). Roda um Combate de verdade (`createCombat` + `stepCombat`) com os mesmos tokens e retratos da tela.
