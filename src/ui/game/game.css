@@ -1397,3 +1397,35 @@ button.unit-row:hover {
 .g-token--enemy .tk-bar span {
   background: var(--red);
 }
+
+/* Combate deitado e baixo (≤ 560px): tabuleiro à esquerda; Reserva e registro numa coluna ao lado,
+   para a Reserva não ficar escondida atrás do rodapé (Abortar / Posicionar o resto / Iniciar). */
+@media (orientation: landscape) and (max-height: 560px) {
+  .combat-card.wide {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(170px, 240px);
+    align-content: start;
+    gap: 8px 14px;
+  }
+  .combat-card.wide > * {
+    grid-column: 2;
+    min-width: 0;
+  }
+  .combat-card.wide > .cb-head,
+  .combat-card.wide > .cb-actions {
+    grid-column: 1 / -1;
+  }
+  .combat-card.wide > .grid-wrap {
+    grid-column: 1;
+    grid-row: 2 / span 4;
+    align-self: start;
+  }
+  .combat-card.wide .reserve-row .res-unit {
+    min-width: 44px;
+  }
+}
+/* Em pé: rótulo e turno em cima, título com a largura toda embaixo. */
+.game.upright .cb-head h2 {
+  order: 3;
+  flex: 1 0 100%;
+}

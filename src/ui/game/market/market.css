@@ -298,13 +298,6 @@
   align-items: center;
   gap: 12px;
 }
-/* O kit usa botões sm de 34px; aqui o toque pede 44px (ADR 0003). */
-.mkt-stepper .g-stepper .g-btn {
-  width: 44px;
-  min-width: 44px;
-  min-height: 44px;
-  font-size: 18px;
-}
 .mkt-stepper .g-range {
   height: 44px;
 }

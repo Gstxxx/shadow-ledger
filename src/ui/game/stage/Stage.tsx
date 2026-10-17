@@ -33,6 +33,12 @@ export function StageModals({ stage }: { stage: StageApi }) {
     else if (m.kind === 'item' && m.countryId !== selected) stage.push({ kind: 'country', id: selected, tab: 'market' });
   }, [selected]); // eslint-disable-line react-hooks/exhaustive-deps
 
+  // Prévia e Combate ocupam o centro: o modal do palco fecha quando um deles começa.
+  const fight = !!(s.pendingCombat || s.combat);
+  useEffect(() => {
+    if (fight) stage.close();
+  }, [fight]); // eslint-disable-line react-hooks/exhaustive-deps
+
   const close = useCallback(() => stage.close(), [stage]);
   const back = stage.canBack ? stage.back : undefined;
   if (!m) return null;
