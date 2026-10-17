@@ -80,6 +80,13 @@ Todos são camadas `position:absolute; inset:0` (exceto o radar) e `pointer-even
 - `<AnalystPortrait mood="neutral|concerned|alert|pleased" speaking blink size />` é a Analista, personagem fixa: ilustração noir com luz de monitor ciano de um lado e luz quente do outro. O LED do fone muda com o humor (âmbar, vermelho no alerta, ciano quando satisfeita). `speaking` anima a boca e `blink` pisca; os dois param com reduced-motion.
 - `<OperativePortrait seed tone="cold|warm|paper|signal" code name status frame />` usa o DiceBear `notionists`, com duotone, meio-tom, régua de altura, ficha de papel, clipe e tarja de código. `status` sobrepõe um carimbo (`DETIDO`, `FERIDA`…) e `frame={false}` deixa só a foto quadrada, para listas. O avatar fica em cache por seed.
 
+### Diretor por Origem (`directors.tsx`)
+
+- `<DirectorPortrait origin="field-agent|banker|colonel|diplomat|smuggler|sigint" mood="neutral|concerned|alert|pleased" size crop="head|bust" background blink />` é a ilustração vetorial de cada Origem de `docs/ORIGENS.md`. Usa o mesmo rig de rosto da Analista, mas cada Origem tem cabelo, roupa, acessórios (cicatriz, caneta-tinteiro, quepe sem insígnia, óculos e lenço, cigarro apagado, fones e tela refletida), luz rasante e fundo próprios.
+- Até 72px o enquadramento fecha na cabeça e fica quadrado, para o ícone de 48px no topo da tela de jogo. Acima disso mostra o busto em 5:6.
+- `<DirectorCard origin selected width={320} />` é o cartão de seleção com moldura de dossiê, número e nome da Origem. O texto de Vantagem e Desvantagem fica com quem usa.
+- `ORIGIN_INFO[origin]` traz `label` (pt-BR), `labelEn` e `emblem`, o ID do `<GameIcon>` da Origem (`origin-field-agent` … `origin-sigint`), para marcar Vantagem e Desvantagem. `DIRECTOR_ORIGINS` lista as 6 na ordem do documento.
+
 ## Moldura (`frame.tsx`)
 
 - `<DossierFrame label code tone surface="solid|glass|none">` é o painel de HUD com cantos de dossiê e cabeçalho rotulado. `<CornerBrackets />` dá os cantos avulsos.

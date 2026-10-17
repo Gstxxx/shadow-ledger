@@ -1,7 +1,7 @@
 import { StrictMode, type ReactNode } from 'react';
 import { createRoot } from 'react-dom/client';
 import Gallery from './Gallery';
-import { AnalystPortrait, GameIcon, ICONS, Logo, OperativePortrait, type AnalystMood } from './index';
+import { DIRECTOR_ORIGINS, DirectorPortrait, AnalystPortrait, GameIcon, ICONS, Logo, OperativePortrait, type AnalystMood } from './index';
 
 // Montagem temporária para revisão. `?solo=...` mostra um asset grande para inspeção:
 //   ?solo=analyst&mood=alert · ?solo=icons&size=48&from=0 · ?solo=logo · ?solo=ops
@@ -30,6 +30,12 @@ function Solo(): ReactNode {
           </div>
         )),
     );
+  }
+  if (solo === 'directors') {
+    const size = Number(q.get('size') ?? 300);
+    const mood = (q.get('mood') ?? 'neutral') as AnalystMood;
+    const list = q.get('o') ? [q.get('o') as (typeof DIRECTOR_ORIGINS)[number]] : DIRECTOR_ORIGINS;
+    return wrap(list.map((o) => <DirectorPortrait key={o} origin={o} mood={mood} size={size} blink={false} />));
   }
   if (solo === 'logo') return wrap(<Logo variant="full" height={140} />);
   if (solo === 'ops') return wrap(['raven-07', 'mbeki', 'ito-kenji'].map((s, i) => <OperativePortrait key={s} seed={s} size={300} status={i === 2 ? 'DETIDO' : undefined} code={i === 1 ? undefined : 'OP-0417'} name={i ? undefined : 'Raven'} />));

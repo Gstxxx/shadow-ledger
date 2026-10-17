@@ -5,6 +5,9 @@ import {
   CornerBrackets,
   Divider,
   DossierFrame,
+  DirectorCard,
+  DirectorPortrait,
+  DIRECTOR_ORIGINS,
   DossierPaper,
   GameIcon,
   GROUP_LABEL,
@@ -12,6 +15,7 @@ import {
   Logo,
   Monogram,
   NoiseBackdrop,
+  ORIGIN_INFO,
   OperativePortrait,
   RadarSweep,
   Redacted,
@@ -121,6 +125,7 @@ export default function Gallery() {
         <a href="#icones">Ícones</a>
         <a href="#fundos">Fundos</a>
         <a href="#retratos">Retratos</a>
+        <a href="#diretor">Diretor</a>
         <a href="#moldura">Moldura</a>
       </nav>
 
@@ -401,6 +406,44 @@ export default function Gallery() {
         <div className="slg-row" style={{ gap: 8 }}>
           {['a1', 'b2', 'c3', 'd4', 'e5', 'f6', 'g7', 'h8'].map((s, i) => (
             <OperativePortrait key={s} seed={s} size={48} frame={false} tone={(['cold', 'warm', 'paper'] as const)[i % 3]} />
+          ))}
+        </div>
+      </Section>
+
+      {/* ── Diretor ── */}
+      <Section id="diretor" n="05b" title="Diretor · Origens">
+        <h3>Cartões de seleção (320px)</h3>
+        <div className="slg-row" style={{ gap: 16, alignItems: 'flex-start' }}>
+          {DIRECTOR_ORIGINS.map((o, i) => (
+            <DirectorCard key={o} origin={o} width={300} selected={i === 0} />
+          ))}
+        </div>
+        <h3>Expressões</h3>
+        <div className="slg-row" style={{ gap: 10 }}>
+          {MOODS.map((m) => (
+            <div key={m}>
+              <DirectorPortrait origin="colonel" mood={m} size={120} />
+              <div className="slg-cap">{MOOD_PT[m]}</div>
+            </div>
+          ))}
+          {MOODS.map((m) => (
+            <div key={'d' + m}>
+              <DirectorPortrait origin="smuggler" mood={m} size={120} />
+              <div className="slg-cap">{MOOD_PT[m]}</div>
+            </div>
+          ))}
+        </div>
+        <h3>Ícone de topo (48px) e emblemas de Vantagem/Desvantagem</h3>
+        <div className="slg-row" style={{ gap: 20 }}>
+          {DIRECTOR_ORIGINS.map((o) => (
+            <div key={o} style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+              <span style={{ border: '1px solid var(--sl-line-strong)', lineHeight: 0 }}>
+                <DirectorPortrait origin={o} size={48} />
+              </span>
+              <GameIcon id={ORIGIN_INFO[o].emblem} size={32} />
+              <GameIcon id={ORIGIN_INFO[o].emblem} size={20} />
+              <span style={{ fontSize: 12, maxWidth: 90, lineHeight: 1.2 }}>{ORIGIN_INFO[o].label}</span>
+            </div>
           ))}
         </div>
       </Section>

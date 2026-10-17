@@ -16,5 +16,7 @@ export { NoiseBackdrop, RadarSweep, DossierPaper, WorldGlow, grainTile } from '.
 export type { NoiseBackdropProps, RadarSweepProps, RadarBlip, DossierPaperProps, WorldGlowProps, WorldGlowSpot } from './backdrops';
 export { AnalystPortrait, OperativePortrait } from './portraits';
 export type { AnalystMood, AnalystPortraitProps, OperativePortraitProps, OperativeTone } from './portraits';
+export { DirectorPortrait, DirectorCard, DIRECTOR_ORIGINS, ORIGIN_INFO } from './directors';
+export type { DirectorOrigin, DirectorMood, DirectorPortraitProps, DirectorCardProps } from './directors';
 export { CornerBrackets, DossierFrame, Stamp, Redacted, RedactionBar, Divider, ClassificationBar, Tape } from './frame';
 export type { CornerBracketsProps, DossierFrameProps, StampProps, StampPreset, RedactedProps, RedactionBarProps, DividerProps, ClassificationBarProps, TapeProps } from './frame';

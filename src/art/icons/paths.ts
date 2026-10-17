@@ -26,7 +26,8 @@ export type IconGroup =
   | 'sistemas'
   | 'taticas'
   | 'combate'
-  | 'estados';
+  | 'estados'
+  | 'origens';
 
 // ── primitivas de markup ─────────────────────────────────────────────
 const ACC = 'style="stroke:var(--sl-icon-accent,currentColor)"';
@@ -719,6 +720,43 @@ export const ICONS: Record<string, IconDef> = {
     group: 'estados',
     base: S('M14.6 3.4a4.4 4.4 0 0 0-4.4 5.8L3.4 16a2 2 0 0 0 2.8 2.8l6.8-6.8a4.4 4.4 0 0 0 5.8-4.4l-2.6 2.6-2.4-.6-.6-2.4z') + A('M15.4 15.6l2 2.4-1 1.6 2.6 2.6'),
   },
+  // ═══ Origens do Diretor (emblemas de Vantagem/Desvantagem) ═════════
+  'origin-field-agent': {
+    label: 'Origem · Ex-Agente de Campo',
+    group: 'origens',
+    base: S('M3 6.5h18v12H3z') + S('M5.6 9.2h5v6.2h-5z') + P('M13 10h5.4M13 12.8h4M13 15.4h3') + A('M2.4 20.4 21.6 4.6'),
+    detail: H('M8.1 10.4a1.3 1.3 0 1 1 0 .01'),
+  },
+  'origin-banker': {
+    label: 'Origem · Banqueira de Genebra',
+    group: 'origens',
+    base: S('M12 2.4 17 9l-1.6 6.6h-6.8L7 9z') + P('M12 2.4v8.4') + CAF(12, 11.4, 1.3) + P('M8.6 15.6h6.8v2.8H8.6z') + A('M4 21.4c3.4-1.6 6-1.6 8 0s4.6 1.6 8 0'),
+  },
+  'origin-colonel': {
+    label: 'Origem · Coronel da Reserva',
+    group: 'origens',
+    base: S('M3.4 11.4C4.6 6.6 8 4 12 4s7.4 2.6 8.6 7.4z') + S('M3.4 11.4h17.2v3H3.4z') + P('M3 14.4c3 2.4 6 3.4 9 3.4s6-1 9-3.4') + `<rect x="10" y="6.4" width="4" height="3" rx=".4" stroke-dasharray="1 1" ${ACC}/>`,
+  },
+  'origin-diplomat': {
+    label: 'Origem · Diplomata Caída',
+    group: 'origens',
+    base:
+      P('M8.6 20.6C4.6 18.4 2.8 14.6 3.2 10.4M15.4 20.6c4-2.2 5.8-6 5.4-10.2') +
+      S('M4.4 15.4c1.4-.4 2.6.2 3 1.4-1.4.4-2.6-.2-3-1.4zM3.4 11.6c1.4-.6 2.6 0 3.2 1.2-1.4.6-2.6 0-3.2-1.2zM19.6 15.4c-1.4-.4-2.6.2-3 1.4 1.4.4 2.6-.2 3-1.4z') +
+      CT(12, 9, 4.4) +
+      C(12, 9, 4.4) +
+      A('M12.6 4.4 11 8.2l2 1.6-1.4 3.8'),
+  },
+  'origin-smuggler': {
+    label: 'Origem · Contrabandista',
+    group: 'origens',
+    base: S('M2.6 15.4h15.6v3H2.6z') + AF('M2.6 15.4h4.2v3H2.6z') + P('M20.4 15.4v3') + A('M17.4 12.4c-1.6-1.4-.4-2.8 1-3.6s1.6-2.6.4-3.8M20.6 11.6c-1-1 0-2 .8-2.6'),
+  },
+  'origin-sigint': {
+    label: 'Origem · Analista de Sinais',
+    group: 'origens',
+    base: P('M3.8 14.6V12a8.2 8.2 0 0 1 16.4 0v2.6') + S('M2.8 13.6h3.6v6.4H2.8zM17.6 13.6h3.6v6.4h-3.6z') + A('M8.4 15.4l1.4-3.4 1.6 6 1.6-8 1.6 6.6 1-2.4'),
+  },
 };
 
 export type GameIconId = keyof typeof ICONS;
@@ -759,4 +797,5 @@ export const GROUP_LABEL: Record<IconGroup, string> = {
   taticas: 'Táticas',
   combate: 'Tipos de Combate',
   estados: 'Estados',
+  origens: 'Origens do Diretor',
 };

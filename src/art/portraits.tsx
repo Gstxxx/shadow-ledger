@@ -30,7 +30,7 @@ const SKIN_SH = '#5a3a31';
 const HAIR = '#16110f';
 const HAIR_HI = '#3a2e2a';
 
-interface Face {
+export interface Face {
   browL: string;
   browR: string;
   lidL: string; // linha da pálpebra superior
@@ -43,7 +43,7 @@ interface Face {
   led: string;
 }
 
-const FACES: Record<AnalystMood, Face> = {
+export const FACES: Record<AnalystMood, Face> = {
   neutral: {
     browL: 'M78.5 85.2c4.6-2.6 11-2.9 17.2-.9',
     browR: 'M105.2 84.3c6.2-2 12.4-1.7 17 .9',
@@ -86,7 +86,7 @@ const FACES: Record<AnalystMood, Face> = {
   },
 };
 
-const FACE_PATH = 'M72.4 88c0-22 12-36.4 28-36.4s28.4 14.4 28.4 36.4c0 16-3.4 30.4-9 41.6-6.4 12.8-13 19.6-19.4 19.6s-13.2-6.8-19.6-19.6C75.4 118.4 72.4 104 72.4 88z';
+export const FACE_PATH = 'M72.4 88c0-22 12-36.4 28-36.4s28.4 14.4 28.4 36.4c0 16-3.4 30.4-9 41.6-6.4 12.8-13 19.6-19.4 19.6s-13.2-6.8-19.6-19.6C75.4 118.4 72.4 104 72.4 88z';
 
 /** A Analista, personagem fixa. Quatro expressões: neutral, concerned, alert, pleased. */
 export function AnalystPortrait({ mood = 'neutral', size = 200, speaking = false, blink = true, background = true, title, className, style }: AnalystPortraitProps) {
