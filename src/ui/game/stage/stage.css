@@ -644,3 +644,16 @@ html .mkt-row.g-card:has(.mkt-thumb) {
     max-height: 170px;
   }
 }
+
+/* Auditoria 2, item 1: em pé e baixo a imagem não empurra a decisão; o botão primário fica sempre à vista. */
+@media (orientation: portrait) and (max-height: 700px) {
+  .trade2-hero {
+    max-height: 140px;
+  }
+}
+.trade2-go {
+  position: sticky;
+  bottom: 0;
+  z-index: 3;
+  box-shadow: 0 -14px 18px 4px var(--ink-1);
+}
