@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { AlertTriangle, Boxes, Building2, FileSignature, Plane, Users } from 'lucide-react';
+import { AlertTriangle, Building2, FileSignature, Plane, Shield, UserRound, Users } from 'lucide-react';
 import * as A from '../../game/actions';
 import { ITEMS } from '../../game/data/items';
 import { STATIONS } from '../../game/data/rules';
@@ -18,8 +18,17 @@ import { FleetSpace, UnitCard, UpkeepBalance } from './unit/UnitCard';
 import { useOpenUnit } from './unit/DossierHost';
 import './agency.css';
 import { DirectorAvatar } from './DirectorAvatar';
+import { cargoQty } from '../../game/cargo';
+import { upkeepTotal } from '../../game/sim';
+import { BigNumber, Details, ShortList, Verdict } from './stage/Verdict';
+import { useStage } from './stage/context';
+import { opportunities } from './market/model';
+import type { Agency } from '../../game/types';
 
-export type AgencyTab = 'force' | 'cargo' | 'stations' | 'teams' | 'contracts' | 'threats';
+/** Diretor não pode voar (Detido, Sequestrado, morto). */
+const d0 = (a: Agency) => a.director.status !== 'free';
+
+export type AgencyTab = 'director' | 'fleet' | 'escort' | 'stations' | 'teams' | 'contracts' | 'threats';
 type Tab = AgencyTab;
 
 /** Abas da Agência com contadores (para o fichário do modal). */
@@ -30,8 +39,9 @@ export function useAgencyTabs() {
   const offers = s.contracts.filter((k) => k.status === 'offered').length;
   const cargoUnits = a.cargo.reduce((x, l) => x + l.qty, 0);
   return [
-    { id: 'force' as Tab, label: t('game.agency.tab.force'), icon: <Plane size={16} />, count: a.escort.length || undefined },
-    { id: 'cargo' as Tab, label: t('game.agency.tab.cargo'), icon: <Boxes size={16} />, count: cargoUnits || undefined },
+    { id: 'director' as Tab, label: t('game.agency.director.title'), icon: <UserRound size={16} />, alert: a.director.status !== 'free' || a.arrears > 0 },
+    { id: 'fleet' as Tab, label: t('game.agency.fleet.title'), icon: <Plane size={16} />, count: cargoUnits || undefined },
+    { id: 'escort' as Tab, label: t('game.agency.escort.title'), icon: <Shield size={16} />, count: a.escort.length || undefined },
     { id: 'stations' as Tab, label: t('game.agency.tab.stations'), icon: <Building2 size={16} />, count: a.stations.length || undefined },
     { id: 'teams' as Tab, label: t('game.agency.tab.teams'), icon: <Users size={16} />, count: a.teams.length || undefined },
     { id: 'contracts' as Tab, label: t('game.agency.tab.contracts'), icon: <FileSignature size={16} />, count: offers || undefined },
@@ -43,8 +53,9 @@ export function useAgencyTabs() {
 export function AgencyTabBody({ tab }: { tab: AgencyTab }) {
   return (
     <div className="agency agency--bare">
-      {tab === 'force' && <ForceTab />}
-      {tab === 'cargo' && <CargoTab />}
+      {tab === 'director' && <DirectorTab />}
+      {tab === 'fleet' && <FleetTab />}
+      {tab === 'escort' && <EscortTab />}
       {tab === 'stations' && <StationsTab />}
       {tab === 'teams' && <TeamsTab />}
       {tab === 'contracts' && <ContractsTab />}
@@ -54,27 +65,9 @@ export function AgencyTabBody({ tab }: { tab: AgencyTab }) {
 }
 
 export function AgencyPanel() {
-  const s = useGame();
-  const a = player(s);
   const { t } = useT();
-  const [tab, setTab] = useState<Tab>('force');
-  const offers = s.contracts.filter((k) => k.status === 'offered').length;
-  const cargoUnits = a.cargo.reduce((x, l) => x + l.qty, 0);
-  const tabs: { id: Tab; label: string; Icon: typeof Plane; badge?: number; badgeLabel?: string; hot?: boolean }[] = [
-    { id: 'force', label: t('game.agency.tab.force'), Icon: Plane, badge: a.escort.length || undefined, badgeLabel: t('game.agency.tab.badge.force', { n: a.escort.length }) },
-    { id: 'cargo', label: t('game.agency.tab.cargo'), Icon: Boxes, badge: cargoUnits || undefined, badgeLabel: t('game.agency.tab.badge.cargo', { n: cargoUnits }) },
-    { id: 'stations', label: t('game.agency.tab.stations'), Icon: Building2, badge: a.stations.length || undefined, badgeLabel: t('game.agency.tab.badge.stations', { n: a.stations.length }) },
-    { id: 'teams', label: t('game.agency.tab.teams'), Icon: Users, badge: a.teams.length || undefined, badgeLabel: t('game.agency.tab.badge.teams', { n: a.teams.length }) },
-    { id: 'contracts', label: t('game.agency.tab.contracts'), Icon: FileSignature, badge: offers || undefined, badgeLabel: t('game.agency.tab.badge.contracts', { n: offers }) },
-    {
-      id: 'threats',
-      label: t('game.agency.tab.threats'),
-      Icon: AlertTriangle,
-      badge: a.threats.length || undefined,
-      badgeLabel: t('game.agency.tab.badge.threats', { n: a.threats.length }),
-      hot: a.threats.length > 0,
-    },
-  ];
+  const [tab, setTab] = useState<Tab>('director');
+  const tabs = useAgencyTabs().map((x) => ({ id: x.id, label: x.label, icon: x.icon, badge: x.count, badgeLabel: String(x.count ?? ''), hot: !!x.alert }));
   const pick = (id: Tab) => {
     if (id === tab) return;
     audio.sfx('click');
@@ -97,7 +90,7 @@ export function AgencyPanel() {
             }}
             onClick={() => pick(tb.id)}
           >
-            <tb.Icon size={16} />
+            {tb.icon}
             <span className="tab-label">{tb.label}</span>
             {tb.badge !== undefined && (
               <span className={`g-badge${tb.hot ? ' g-badge--alert' : ''}`} aria-label={tb.badgeLabel}>
@@ -108,158 +101,252 @@ export function AgencyPanel() {
         ))}
       </nav>
       <div className="panel-scroll">
-        {tab === 'force' && <ForceTab />}
-        {tab === 'cargo' && <CargoTab />}
-        {tab === 'stations' && <StationsTab />}
-        {tab === 'teams' && <TeamsTab />}
-        {tab === 'contracts' && <ContractsTab />}
-        {tab === 'threats' && <ThreatsTab />}
+        <AgencyTabBody tab={tab} />
       </div>
     </div>
   );
 }
 
-function ForceTab() {
+/** Diretor: "minha agência está bem?" — situação do Diretor, atrasos e o saldo do mês. */
+function DirectorTab() {
   const s = useGame();
   const a = player(s);
   const act = useGameStore((st) => st.act);
-  const [picking, setPicking] = useState<string[] | null>(null);
-  const openUnit = useOpenUnit();
   const { t, fmt } = useT();
   const d = a.director;
+  const income = a.stations.reduce((x, st) => x + (st.interdicted ? 0 : STATIONS[st.level].income * 30), 0);
+  const net = income - upkeepTotal(a);
+  const signed = `${net > 0 ? '+' : ''}${fmt.money(net)}`;
+  const held = d.status === 'detained' || d.status === 'kidnapped';
   return (
-    <>
-      <Section title={t('game.agency.director.title')}>
-        <div className="row-line dir-line">
-          <DirectorAvatar origin={a.origin} size={40} title={d.name} />
-          <span>
-            <strong>{d.name}</strong>
-            <small className="mono">
-              {' '}
-              · {d.status === 'free' ? (a.flight ? t('game.agency.director.inFlight') : t('game.agency.director.inCountry', { country: countryName(a.location) })) : d.status === 'detained' ? t('game.agency.director.detained') : d.status === 'kidnapped' ? t('game.agency.director.kidnapped') : t('game.agency.director.dead')}
-            </small>
-          </span>
-        </div>
-      </Section>
-      <Section title={t('game.agency.fleet.title')} right={<span className="mono hint-sm">{t('game.agency.fleet.speed', { speed: fleetSpeed(a) })}</span>}>
-        <FleetSpace a={a} />
+    <div className="ag-screen">
+      {held ? (
+        <Verdict
+          tone="bad"
+          action={
+            <button className="btn primary" disabled={a.cash < (d.price ?? 0)} onClick={() => act((g, ag) => A.payRelease(g, ag), 'buy')}>
+              {t(d.status === 'detained' ? 'game.overlay.payBail' : 'game.overlay.payRansom', { price: fmt.money(d.price ?? 0) })}
+            </button>
+          }
+        >
+          <b>{t(d.status === 'detained' ? 'game.overlay.banner.detained' : 'game.overlay.banner.kidnapped')}</b>
+          {d.heldIn ? ` · ${countryName(d.heldIn)}` : ''}
+        </Verdict>
+      ) : a.arrears > 0 ? (
+        <Verdict
+          tone="bad"
+          action={
+            <button className="btn primary" onClick={() => act((g, ag) => A.payArrears(g, ag), 'buy')}>
+              {t('game.agency.upkeep.settle', { amount: fmt.money(a.arrears) })}
+            </button>
+          }
+        >
+          {t('game.agency.upkeep.arrears')}
+        </Verdict>
+      ) : (
+        <Verdict tone={net >= 0 ? 'good' : 'warn'} icon={<DirectorAvatar origin={a.origin} size={40} title={d.name} />}>
+          <b>{d.name}</b> · {a.flight ? t('game.agency.director.inFlight') : t('game.agency.director.inCountry', { country: countryName(a.location) })}
+        </Verdict>
+      )}
+      <BigNumber label={t('game.unit.balance.net')} value={signed} note={t('game.agency.upkeep.hint')} />
+      <Details>
+        <UpkeepBalance a={a} />
+      </Details>
+    </div>
+  );
+}
+
+/** Frota: o avião, o que está na Carga e onde vale vender. */
+function FleetTab() {
+  const s = useGame();
+  const a = player(s);
+  const act = useGameStore((st) => st.act);
+  const openUnit = useOpenUnit();
+  const stage = useStage();
+  const { t, fmt } = useT();
+  const here = directorAt(a, a.location);
+  const c = s.countries[a.location];
+  const st = stationIn(a, a.location);
+  const lines = a.cargo.map((l) => {
+    const sp = here ? sellPrice(c, l.itemId) : 0;
+    return { l, sp, margin: sp ? sp / l.paidEach - 1 : 0 };
+  });
+  const best = [...lines].filter((x) => x.sp && x.margin > 0).sort((x, y) => y.margin - x.margin)[0];
+  return (
+    <div className="ag-screen">
+      {best ? (
+        <Verdict
+          tone="good"
+          action={
+            <button className="btn primary" onClick={() => stage?.push({ kind: 'item', countryId: a.location, itemId: best.l.itemId })}>
+              {t('game.market.opp.sell')}
+            </button>
+          }
+        >
+          <b>{itemName(best.l.itemId)}</b> · {t('game.agency.cargo.here', { price: fmt.money(best.sp), margin: `+${fmt.pct(best.margin)}` })}
+        </Verdict>
+      ) : (
+        (() => {
+          // Sem lucro vendendo aqui: para onde levar a Carga (o melhor destino conhecido).
+          const go = opportunities(s, a, a.location).find((o) => o.kind === 'sell-there' && !o.block);
+          if (go)
+            return (
+              <Verdict
+                tone="good"
+                action={
+                  <button className="btn primary" disabled={!!a.flight || d0(a)} onClick={() => act((g, ag) => A.travel(g, ag, go.to), 'depart')}>
+                    <Plane size={16} /> {t('game.market.trade.flyTo', { country: countryName(go.to) })}
+                  </button>
+                }
+              >
+                <b>{itemName(go.itemId)}</b> · {t('game.market.opp.countryPays', { country: countryName(go.to) })} <b className="num">{fmt.money(go.sellEach)}</b>
+              </Verdict>
+            );
+          return (
+            <Verdict tone="neutral">
+              {a.cargo.length ? t('game.unit.fleetSpace.free', { w: fmt.tons(Math.max(0, maxCargo(a) - usedCargo(a))) }) : t('game.agency.cargo.empty')}
+            </Verdict>
+          );
+        })()
+      )}
+      <FleetSpace a={a} />
+      <div className="cargo-list">
+        <ShortList
+          max={5}
+          items={lines}
+          render={({ l, sp, margin }) => {
+            const it = ITEMS[l.itemId];
+            return (
+              <div key={l.lid} className="cargo-row">
+                <span className="cg-main">
+                  <span>{t('game.qtyItem', { qty: l.qty, item: itemName(l.itemId) })}</span>
+                  <small className="mono">
+                    {t('game.agency.cargo.paid', { price: fmt.money(l.paidEach), weight: fmt.tons(it.weight * l.qty) })}
+                    {sp ? (
+                      <span className={margin >= 0 ? 'pos' : 'neg'}>
+                        {' '}
+                        · {t('game.agency.cargo.here', { price: fmt.money(sp), margin: `${margin >= 0 ? '+' : ''}${fmt.pct(margin)}` })}
+                      </span>
+                    ) : null}
+                  </small>
+                </span>
+                <span className="row-actions">
+                  {here && sp > 0 && stage && (
+                    <button className="btn sm" onClick={() => stage.push({ kind: 'item', countryId: a.location, itemId: l.itemId })}>
+                      {t('game.market.opp.sell')}
+                    </button>
+                  )}
+                  {here && it.fieldable && (
+                    <button className="btn sm ghost" onClick={() => act((g, ag) => A.enlist(g, ag, l.itemId), 'open')}>
+                      {t('game.agency.cargo.enlist')}
+                    </button>
+                  )}
+                  {here && st && !st.interdicted && (
+                    <button className="btn sm ghost" onClick={() => act((g, ag) => A.deposit(g, ag, l.itemId, l.qty))}>
+                      {t('game.agency.cargo.vault')}
+                    </button>
+                  )}
+                </span>
+              </div>
+            );
+          }}
+        />
+      </div>
+      <Details>
+        <p className="hint-sm">
+          {t('game.agency.fleet.title')} · {t('game.agency.fleet.speed', { speed: fleetSpeed(a) })}
+        </p>
         <div className="unit-list">
           {a.fleet.map((u) => (
             <UnitCard key={u.uid} unit={u} onOpen={openUnit} />
           ))}
         </div>
-      </Section>
-      <Section
-        title={t('game.agency.escort.title')}
-        right={
-          a.escort.length > 0 && directorAt(a, a.location) ? (
-            picking ? (
-              <span className="row-actions">
-                <button className="btn sm ghost" onClick={() => setPicking(null)}>
-                  {t('game.agency.escort.cancel')}
-                </button>
-                <button
-                  className="btn sm primary"
-                  disabled={!picking.length}
-                  onClick={() => {
-                    const r = act((g, ag) => A.formTeam(g, ag, 'escort', picking), 'open');
-                    if (r.ok) setPicking(null);
-                  }}
-                >
-                  {t('game.agency.escort.formTeam', { n: picking.length })}
-                </button>
-              </span>
-            ) : (
-              <button className="btn sm" onClick={() => setPicking([])}>
-                {t('game.agency.escort.detachTeam')}
-              </button>
-            )
-          ) : undefined
-        }
-      >
-        <p className="hint-sm sec-hint">
-          {picking
-            ? t('game.agency.escort.pickHint')
-            : t('game.agency.escort.hint')}
-        </p>
-        <div className="unit-list">
-          {a.escort.map((u) =>
-            picking ? (
-              <UnitRow
-                key={u.uid}
-                unit={u}
-                selected={picking.includes(u.uid)}
-                onClick={() => setPicking(picking.includes(u.uid) ? picking.filter((x) => x !== u.uid) : [...picking, u.uid])}
-              />
-            ) : (
-              <UnitCard key={u.uid} unit={u} onOpen={openUnit} />
-            ),
-          )}
-          {!a.escort.length && <Empty>{t('game.agency.escort.empty')}</Empty>}
-        </div>
-      </Section>
-      <Section title={t('game.agency.month.title')}>
-        <UpkeepBalance a={a} />
-        {a.arrears > 0 && (
-          <div className="alert bad">
-            <span>{t('game.agency.upkeep.arrears')}</span>
-            <button className="btn sm" onClick={() => act((g, ag) => A.payArrears(g, ag), 'buy')}>
-              {t('game.agency.upkeep.settle', { amount: fmt.money(a.arrears) })}
-            </button>
-          </div>
-        )}
-      </Section>
-    </>
+      </Details>
+    </div>
   );
 }
 
-function CargoTab() {
+/** Escolta: quem viaja e luta com o Diretor; destacar uma Equipe. */
+function EscortTab() {
   const s = useGame();
   const a = player(s);
   const act = useGameStore((st) => st.act);
-  const { t, fmt } = useT();
-  const here = directorAt(a, a.location);
-  const c = s.countries[a.location];
-  const st = stationIn(a, a.location);
+  const openUnit = useOpenUnit();
+  const stage = useStage();
+  const [picking, setPicking] = useState<string[] | null>(null);
+  const { t } = useT();
+  const canDetach = a.escort.length > 0 && directorAt(a, a.location);
   return (
-    <Section title={t('game.agency.cargo.title')} right={<span className="mono hint-sm">{fmt.tons(usedCargo(a))} / {fmt.tons(maxCargo(a))}</span>}>
-      {!a.cargo.length && <Empty>{t('game.agency.cargo.empty')}</Empty>}
-      {a.cargo.map((l) => {
-        const it = ITEMS[l.itemId];
-        const sp = here ? sellPrice(c, l.itemId) : 0;
-        const margin = sp ? sp / l.paidEach - 1 : 0;
-        return (
-          <div key={l.lid} className="cargo-row">
-            <span className="cg-main">
-              <span>
-                {t('game.qtyItem', { qty: l.qty, item: itemName(l.itemId) })}
-              </span>
-              <small className="mono">
-                {t('game.agency.cargo.paid', { price: fmt.money(l.paidEach), weight: fmt.tons(it.weight * l.qty) })}
-                {sp ? (
-                  <span className={margin >= 0 ? 'pos' : 'neg'}>
-                    {' '}
-                    · {t('game.agency.cargo.here', { price: fmt.money(sp), margin: `${margin >= 0 ? '+' : ''}${fmt.pct(margin)}` })}
-                  </span>
-                ) : null}
-              </small>
-            </span>
-            <span className="row-actions">
-              {here && it.fieldable && (
-                <button className="btn sm" onClick={() => act((g, ag) => A.enlist(g, ag, l.itemId), 'open')}>
-                  {t('game.agency.cargo.enlist')}
-                </button>
-              )}
-              {here && st && !st.interdicted && (
-                <button className="btn sm ghost" onClick={() => act((g, ag) => A.deposit(g, ag, l.itemId, l.qty))}>
-                  {t('game.agency.cargo.vault')}
-                </button>
-              )}
-            </span>
-          </div>
-        );
-      })}
-    </Section>
+    <div className="ag-screen">
+      {!a.escort.length ? (
+        <Verdict
+          tone="warn"
+          action={
+            stage && directorAt(a, a.location) ? (
+              <button className="btn primary" onClick={() => stage.open({ kind: 'country', id: a.location, tab: 'market' })}>
+                {t('game.market.seg.hire')}
+              </button>
+            ) : undefined
+          }
+        >
+          {t('game.agency.escort.empty')}
+        </Verdict>
+      ) : picking ? (
+        <Verdict
+          tone="neutral"
+          action={
+            <>
+              <button
+                className="btn primary"
+                disabled={!picking.length}
+                onClick={() => {
+                  const r = act((g, ag) => A.formTeam(g, ag, 'escort', picking), 'open');
+                  if (r.ok) setPicking(null);
+                }}
+              >
+                {t('game.agency.escort.formTeam', { n: picking.length })}
+              </button>
+              <button className="btn ghost" onClick={() => setPicking(null)}>
+                {t('game.agency.escort.cancel')}
+              </button>
+            </>
+          }
+        >
+          {t('game.agency.escort.pickHint')}
+        </Verdict>
+      ) : (
+        <Verdict
+          tone="neutral"
+          icon={<Shield size={26} />}
+          action={
+            canDetach ? (
+              <button className="btn ghost" onClick={() => setPicking([])}>
+                {t('game.agency.escort.detachTeam')}
+              </button>
+            ) : undefined
+          }
+        >
+          {t('game.agency.tab.badge.force', { n: a.escort.length })}
+        </Verdict>
+      )}
+      <div className="unit-list">
+        {a.escort.map((u) =>
+          picking ? (
+            <UnitRow
+              key={u.uid}
+              unit={u}
+              selected={picking.includes(u.uid)}
+              onClick={() => setPicking(picking.includes(u.uid) ? picking.filter((x) => x !== u.uid) : [...picking, u.uid])}
+            />
+          ) : (
+            <UnitCard key={u.uid} unit={u} onOpen={openUnit} />
+          ),
+        )}
+      </div>
+      <Details>
+        <p className="hint-sm">{t('game.agency.escort.hint')}</p>
+      </Details>
+    </div>
   );
 }
 
@@ -269,14 +356,30 @@ function StationsTab() {
   const select = useGameStore((st) => st.select);
   const { t, fmt } = useT();
   const rivals = s.agencies.filter((r) => !r.isPlayer);
+  const stage = useStage();
+  const seized = a.stations.find((x) => x.interdicted);
+  const income = a.stations.reduce((x, st) => x + (st.interdicted ? 0 : STATIONS[st.level].income), 0);
+  const open = (id: string) => (stage ? stage.open({ kind: 'country', id, tab: 'station' }) : select(id));
   return (
-    <>
-    <Section title={t('game.agency.stations.title')}>
-      {!a.stations.length && <Empty>{t('game.agency.stations.empty')}</Empty>}
-      {a.stations.map((st) => {
+    <div className="ag-screen">
+    {seized ? (
+      <Verdict tone="bad" action={<button className="btn primary" onClick={() => open(seized.countryId)}>{countryName(seized.countryId)}</button>}>
+        <b>{countryName(seized.countryId)}</b> · {t('game.agency.stations.seizedFine', { fine: fmt.money(seized.interdicted!.fine) })}
+      </Verdict>
+    ) : a.stations.length ? (
+      <Verdict tone="good" icon={<Building2 size={26} />}>
+        {t('game.agency.tab.badge.stations', { n: a.stations.length })} · <b className="num">{t('game.agency.stations.incomeBase', { income: fmt.money(income) })}</b>
+      </Verdict>
+    ) : (
+      <Verdict tone="neutral" icon={<Building2 size={26} />}>
+        {t('game.agency.stations.empty')}
+      </Verdict>
+    )}
+    <div className="station-list">
+      <ShortList max={5} items={a.stations} render={(st) => {
         const spec = STATIONS[st.level];
         return (
-          <button key={st.countryId} className="station-row" onClick={() => select(st.countryId)}>
+          <button key={st.countryId} className="station-row" onClick={() => open(st.countryId)}>
             <span className="st-level" data-level={st.level}>
               {st.level}
             </span>
@@ -291,10 +394,10 @@ function StationsTab() {
             </span>
           </button>
         );
-      })}
-    </Section>
+      }} />
+    </div>
     {rivals.length > 0 && (
-      <Section title={t('game.agency.stations.rivals')}>
+      <Details label={t('game.agency.stations.rivals')}>
         {rivals.map((r) => (
           <div key={r.id} className="station-row">
             <span className="st-level rival-mark">◇</span>
@@ -311,9 +414,9 @@ function StationsTab() {
             </span>
           </div>
         ))}
-      </Section>
+      </Details>
     )}
-    </>
+    </div>
   );
 }
 
@@ -327,14 +430,25 @@ function TeamsTab() {
   const { t, fmt } = useT();
   const [formFrom, setFormFrom] = useState<string | null>(null);
   const [picks, setPicks] = useState<string[]>([]);
+  const stage = useStage();
   const stationsWithUnits = a.stations.filter((x) => !x.interdicted && x.units.length);
   return (
     <>
+      <Verdict
+        tone="neutral"
+        icon={<Users size={26} />}
+        action={
+          !a.teams.length && a.escort.length > 0 && stage ? (
+            <button className="btn ghost" onClick={() => stage.replace({ kind: 'agency', tab: 'escort' })}>
+              {t('game.agency.escort.detachTeam')}
+            </button>
+          ) : undefined
+        }
+      >
+        {a.teams.length ? t('game.agency.tab.badge.teams', { n: a.teams.length }) : t('game.agency.teams.empty')}
+      </Verdict>
+      {a.teams.length > 0 && (
       <Section title={t('game.agency.teams.title')}>
-        <p className="hint-sm">
-          {t('game.agency.teams.hint')}
-        </p>
-        {!a.teams.length && <Empty>{t('game.agency.teams.empty')}</Empty>}
         {a.teams.map((tm) => {
           const dest = selected && selected !== tm.location ? selected : null;
           const allPersonnel = tm.units.every(isPersonnel);
@@ -440,6 +554,10 @@ function TeamsTab() {
           );
         })}
       </Section>
+      )}
+      <Details>
+        <p className="hint-sm">{t('game.agency.teams.hint')}</p>
+      </Details>
       {stationsWithUnits.length > 0 && (
         <Section title={t('game.agency.teams.detachFrom')}>
           <select className="input g-input" value={formFrom ?? ''} onChange={(e) => (setFormFrom(e.target.value || null), setPicks([]))}>
@@ -511,24 +629,42 @@ function ContractsTab() {
       </div>
     );
   };
+  const ready = mine.find((k) => cargoQty(a, k.itemId) >= k.qty);
+  const stage = useStage();
   return (
-    <>
-      <Section title={t('game.agency.contracts.active')}>
-        {!mine.length && <Empty>{t('game.agency.contracts.emptyActive')}</Empty>}
-        {mine.map((k) => row(k, null))}
-      </Section>
+    <div className="ag-screen">
+      {ready ? (
+        <Verdict
+          tone="good"
+          action={
+            <button className="btn primary" onClick={() => (stage ? stage.open({ kind: 'country', id: ready.countryId, tab: 'overview' }) : select(ready.countryId))}>
+              {countryName(ready.countryId)}
+            </button>
+          }
+        >
+          {t('game.country.deliveries.line', { qty: ready.qty, item: itemName(ready.itemId), buyer: ready.buyer })} · <b className="num">{fmt.money(ready.reward)}</b>
+        </Verdict>
+      ) : (
+        <Verdict tone="neutral" icon={<FileSignature size={26} />}>
+          {offers.length ? t('game.agency.tab.badge.contracts', { n: offers.length }) : mine.length ? t('game.agency.contracts.active') : t('game.agency.contracts.emptyActive')}
+        </Verdict>
+      )}
+      {mine.length > 0 && (
+        <Section title={t('game.agency.contracts.active')}>
+          <ShortList max={3} items={mine} render={(k) => row(k, null)} />
+        </Section>
+      )}
       <Section title={t('game.agency.contracts.offers')}>
         {!offers.length && <Empty>{t('game.agency.contracts.emptyOffers')}</Empty>}
-        {offers.map((k) =>
+        <ShortList max={3} items={offers} render={(k) =>
           row(
             k,
             <button className="btn sm primary" disabled={postureIn(a, k.countryId) === 'enemy'} onClick={() => act((g, ag) => A.acceptContract(g, ag, k.id), 'click')}>
               {t('game.agency.contracts.accept')}
             </button>,
-          ),
-        )}
+          )} />
       </Section>
-    </>
+    </div>
   );
 }
 

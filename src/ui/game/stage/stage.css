@@ -387,3 +387,14 @@ html .game.stage.upright .topbar {
 .stage-body .ops {
   margin-top: 14px;
 }
+/* Agência: cada aba abre com o veredito e respira em grid. */
+.ag-screen {
+  display: grid;
+  gap: 14px;
+}
+.ag-screen .fs-note {
+  display: none;
+}
+.agency--bare .section:first-child {
+  margin-top: 0;
+}

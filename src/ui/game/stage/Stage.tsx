@@ -163,7 +163,7 @@ export function StageDock({ stage, compact }: { stage: StageApi; compact?: boole
         : id === 'market'
           ? { kind: 'country', id: selected, tab: 'market' }
           : id === 'agency'
-            ? { kind: 'agency', tab: 'force' }
+            ? { kind: 'agency', tab: 'director' }
             : { kind: 'agency', tab: 'threats' };
     if (active === id) stage.close();
     else stage.open(want);

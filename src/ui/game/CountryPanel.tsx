@@ -188,7 +188,7 @@ export function CountryOps({ countryId }: { countryId: string }) {
     {a.escort.length ? (
       <Verdict tone="warn">{t('game.country.ops.hint')}</Verdict>
     ) : (
-      <Verdict tone="warn" action={<button className="btn primary" onClick={() => stage?.open({ kind: 'agency', tab: 'force' })}>{t('game.topbar.agency')}</button>}>
+      <Verdict tone="warn" action={<button className="btn primary" onClick={() => stage?.open({ kind: 'agency', tab: 'escort' })}>{t('game.topbar.agency')}</button>}>
         {t('game.agency.escort.empty')}
       </Verdict>
     )}
