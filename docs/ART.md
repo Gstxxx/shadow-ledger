@@ -313,4 +313,6 @@ São as peças para as regras de `docs/UX-RULES.md`: veredito no topo, um númer
 | Detalhes | `<GDetails label summary open onToggle defaultOpen>` | Cabeçalho de 44px com seta, resumo e pega estriada. O corpo é rebaixado e abre em 180ms (grid 0fr → 1fr). Fechado, fica `inert` e `aria-hidden`; o botão tem `aria-expanded/aria-controls`. Toca o som de abrir e fechar. |
 | Alavanca de modo | `<GModeSwitch options={[{value,label,icon,tone}]} value onChange label>` | Segmentos de 46px com um cabo que desliza até o modo ativo em 160ms e muda de cor com o `tone` da opção (ex.: Comprar âmbar, Vender verde). É um radiogroup e as setas trocam o modo. |
 
+Compatibilidade com a API local da ui-polish (`stage/Verdict.tsx`): `GVerdict` aceita `tone="bad"` (igual a `danger`), a frase como `children`, `action` (igual a `primary`) e `actionsPlacement="below"` (a ação fica embaixo da frase, à direita do ícone). `GBigNumber` aceita `note` (igual a `sub`). O rótulo de `GDetails` já vem como "Detalhes", e o cabeçalho tem 48px.
+
 O rodapé do `GModal` agora gruda embaixo (`position: sticky`) quando o modal rola, então a ação primária fica sempre à vista, inclusive deitado e com pouca altura.

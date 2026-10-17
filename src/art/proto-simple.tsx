@@ -18,6 +18,9 @@ export function SimpleDemo({ screen = 'trade' }: { screen?: 'trade' | 'country' 
         <GVerdict tone="neutral" icon="forecast" kicker="Veredito" title="Margem pequena: +3%" detail="Só compensa se o avião já vai para lá" primary={<GButton>Ver opções</GButton>} />
         <GVerdict tone="warn" icon="exposure" kicker="Atenção" title="Exposição alta em Lagos" detail="Uma Ameaça policial pode vir em 3 dias" primary={<GButton variant="primary">Baixar perfil</GButton>} />
         <GVerdict tone="danger" icon="threat" kicker="Perigo" title="Chance quase nula (0%)" detail="Força 4 contra 26 · pode deixar o Diretor Detido" primary={<GButton variant="danger">Abortar</GButton>} secondary={<GButton variant="ghost">Lutar mesmo assim</GButton>} role="alert" />
+        <GVerdict tone="bad" icon="threat" action={<GButton variant="danger">Defender a Estação</GButton>} actionsPlacement="below">
+          Batida policial em Lagos daqui a 3 dias
+        </GVerdict>
         <div style={{ display: 'flex', gap: 28, flexWrap: 'wrap' }}>
           <GBigNumber label="Lucro estimado" unit="US$" value="920 mil" delta={23} deltaText="23%" tone="ok" sub="4 × Documentação Técnica" />
           <GBigNumber label="Caixa" unit="US$" value="5,0 mi" delta={-120} deltaText="120 mil" />

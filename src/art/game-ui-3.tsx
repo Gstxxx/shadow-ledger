@@ -9,13 +9,14 @@ const cx = (...c: (string | false | null | undefined)[]) => c.filter(Boolean).jo
 
 // ── Veredito ─────────────────────────────────────────────────────────
 
-export type GVerdictTone = 'good' | 'neutral' | 'warn' | 'danger' | 'live';
+export type GVerdictTone = 'good' | 'neutral' | 'warn' | 'danger' | 'bad' | 'live';
 
 const VERDICT_ACCENT: Record<GVerdictTone, 'ok' | 'warm' | 'signal' | 'cold'> = {
   good: 'ok',
   neutral: 'warm',
   warn: 'warm',
   danger: 'signal',
+  bad: 'signal',
   live: 'cold',
 };
 
@@ -25,14 +26,19 @@ export interface GVerdictProps {
   icon?: ReactNode | string;
   /** rótulo curto acima (ex.: 'Veredito', 'Mercado') */
   kicker?: ReactNode;
-  /** a frase do veredito: curta, uma linha */
-  title: ReactNode;
+  /** a frase do veredito: curta, uma linha (ou passe como children) */
+  title?: ReactNode;
+  children?: ReactNode;
   /** uma linha de apoio, opcional */
   detail?: ReactNode;
   /** ação primária (ex.: <GButton variant="primary">) */
   primary?: ReactNode;
   /** ação secundária (ex.: <GButton variant="ghost">) */
   secondary?: ReactNode;
+  /** atalho para `primary` */
+  action?: ReactNode;
+  /** 'side' (padrão): ações à direita, descem no estreito; 'below': sempre embaixo da frase, à direita do ícone */
+  actionsPlacement?: 'side' | 'below';
   /** papel ARIA: 'status' (padrão) anuncia mudanças; 'alert' para perigo urgente */
   role?: 'status' | 'alert' | 'none';
   className?: string;
@@ -40,22 +46,27 @@ export interface GVerdictProps {
 }
 
 /** Banner de veredito no topo da tela: ícone grande, frase curta, ação primária e secundária. Abaixo de 460px as ações descem. */
-export function GVerdict({ tone = 'neutral', icon, kicker, title, detail, primary, secondary, role = 'status', className, style }: GVerdictProps) {
+export function GVerdict({ tone = 'neutral', icon, kicker, title, children, detail, primary, secondary, action, actionsPlacement = 'side', role = 'status', className, style }: GVerdictProps) {
+  const t = tone === 'bad' ? 'danger' : tone;
+  const prim = primary ?? action;
+  const acts =
+    prim || secondary ? (
+      <div className="g-verdict__actions">
+        {/* ordem no DOM: secundária, primária (primária à direita); no estreito, row-reverse põe a primária primeiro */}
+        {secondary}
+        {prim}
+      </div>
+    ) : null;
   return (
-    <div role={role === 'none' ? undefined : role} className={cx('g-verdict', `g-verdict--${tone}`, className)} style={style}>
+    <div role={role === 'none' ? undefined : role} className={cx('g-verdict', `g-verdict--${t}`, actionsPlacement === 'below' && 'g-verdict--below', className)} style={style}>
       {icon ? <span className="g-verdict__icon">{typeof icon === 'string' ? <GameIcon id={icon} size={34} accent={VERDICT_ACCENT[tone]} /> : icon}</span> : null}
       <div className="g-verdict__text">
         {kicker != null ? <span className="g-verdict__kicker">{kicker}</span> : null}
-        <p className="g-verdict__title">{title}</p>
+        <p className="g-verdict__title">{title ?? children}</p>
         {detail != null ? <span className="g-verdict__detail">{detail}</span> : null}
+        {actionsPlacement === 'below' ? acts : null}
       </div>
-      {primary || secondary ? (
-        <div className="g-verdict__actions">
-          {/* ordem no DOM: secundária, primária (primária à direita); no estreito, row-reverse põe a primária primeiro */}
-          {secondary}
-          {primary}
-        </div>
-      ) : null}
+      {actionsPlacement === 'side' ? acts : null}
     </div>
   );
 }
@@ -74,6 +85,8 @@ export interface GBigNumberProps {
   deltaText?: ReactNode;
   /** linha de apoio abaixo */
   sub?: ReactNode;
+  /** atalho para `sub` */
+  note?: ReactNode;
   tone?: 'default' | 'ok' | 'danger' | 'action';
   size?: 'md' | 'sm';
   className?: string;
@@ -81,7 +94,8 @@ export interface GBigNumberProps {
 }
 
 /** O número que importa na tela, com rótulo, unidade e variação. Algarismos tabulares. */
-export function GBigNumber({ label, value, unit, delta, deltaText, sub, tone = 'default', size = 'md', className, style }: GBigNumberProps) {
+export function GBigNumber({ label, value, unit, delta, deltaText, sub, note, tone = 'default', size = 'md', className, style }: GBigNumberProps) {
+  const line = sub ?? note;
   const up = delta != null && delta > 0;
   const down = delta != null && delta < 0;
   return (
@@ -96,7 +110,7 @@ export function GBigNumber({ label, value, unit, delta, deltaText, sub, tone = '
           </span>
         ) : null}
       </span>
-      {sub != null ? <span className="g-big__sub">{sub}</span> : null}
+      {line != null ? <span className="g-big__sub">{line}</span> : null}
     </div>
   );
 }
@@ -104,7 +118,8 @@ export function GBigNumber({ label, value, unit, delta, deltaText, sub, tone = '
 // ── Detalhes recolhíveis ─────────────────────────────────────────────
 
 export interface GDetailsProps {
-  label: ReactNode;
+  /** padrão: 'Detalhes' */
+  label?: ReactNode;
   /** resumo à direita do cabeçalho quando fechado/aberto (ex.: '3 itens') */
   summary?: ReactNode;
   /** controlado */
@@ -118,7 +133,7 @@ export interface GDetailsProps {
 }
 
 /** "Detalhes" recolhível com cara de gaveta: cabeçalho de 44px, corpo rebaixado, abre em 180ms. */
-export function GDetails({ label, summary, open, onToggle, defaultOpen = false, children, className, style }: GDetailsProps) {
+export function GDetails({ label = 'Detalhes', summary, open, onToggle, defaultOpen = false, children, className, style }: GDetailsProps) {
   const [inner, setInner] = useState(defaultOpen);
   const isOpen = open ?? inner;
   const bid = useId();
