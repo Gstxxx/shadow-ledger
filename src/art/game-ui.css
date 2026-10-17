@@ -1176,7 +1176,10 @@
 }
 
 .g-help {
+  /* o elemento clicável não é recortado: o octógono fica no ::before e a área
+     de toque (44px) no ::after, ambos fora do clip */
   position: relative;
+  isolation: isolate;
   display: inline-grid;
   place-items: center;
   width: 20px;
@@ -1185,12 +1188,20 @@
   border: 0;
   vertical-align: -4px;
   color: var(--g-text-2);
-  background: #252c34;
+  background: none;
   font-family: var(--g-font-mono);
   font-weight: 600;
   font-size: 11px;
   cursor: help;
+}
+.g-help::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  background: #252c34;
   clip-path: polygon(30% 0, 70% 0, 100% 30%, 100% 70%, 70% 100%, 30% 100%, 0 70%, 0 30%);
+  transition: background var(--g-fade) var(--g-ease);
 }
 .g-help::after {
   content: '';
@@ -1198,10 +1209,19 @@
   inset: -12px;
 }
 .g-help:hover,
-.g-help:focus-visible {
+.g-help:focus-visible,
+.g-help[aria-expanded='true'] {
   color: var(--g-on-action);
-  background: var(--g-action);
   outline: none;
+}
+.g-help:hover::before,
+.g-help:focus-visible::before,
+.g-help[aria-expanded='true']::before {
+  background: var(--g-action);
+}
+.g-help:focus-visible::after {
+  inset: -4px;
+  outline: 2px solid var(--g-focus);
 }
 
 @media (prefers-reduced-motion: reduce) {
