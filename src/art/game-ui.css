@@ -1,3 +1,5 @@
+@import './game-ui-2.css';
+
 /*
  * Shadow Ledger — componentes de JOGO (.g-*).
  * Volume (bisel, borda dupla, sombra interna), corte chanfrado, estados físicos.
@@ -497,8 +499,9 @@
   --c: 5px;
   min-height: 34px;
   min-width: 34px;
-  padding: 0 12px;
-  font-size: 13px;
+  padding: 0 10px;
+  font-size: 12.5px;
+  letter-spacing: 0.04em;
 }
 .g-skin .btn.lg {
   --c: 10px;
@@ -938,8 +941,8 @@
   position: absolute;
   top: 1px;
   bottom: 1px;
-  left: 1px;
-  width: calc((100% - 2px) * var(--v));
+  left: calc(1px + (100% - 2px) * var(--from, 0));
+  width: calc((100% - 2px) * (var(--v) - var(--from, 0)));
   background: linear-gradient(90deg, var(--tone-lo), var(--tone));
   box-shadow: 0 0 8px var(--tone-glow);
   transition: width 150ms var(--g-ease);

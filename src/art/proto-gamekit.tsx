@@ -150,7 +150,7 @@ export function GameScreenMock({ width = 1180 }: { width?: number }) {
         <div style={{ display: 'grid', gap: 10, alignContent: 'start', minWidth: 0 }}>
           <GPanel label="País" code="Nível 5 · Paz">
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 10 }}>
-              <h3 className="g-title">Estados Unidos</h3>
+              <div className="g-title">Estados Unidos</div>
               <GChip>Neutro</GChip>
             </div>
             <div style={{ display: 'grid', gap: 8 }}>

@@ -307,6 +307,10 @@ export interface GMeterProps {
   thin?: boolean;
   /** marcador de limiar (mesma escala de value) */
   mark?: number;
+  /** início do preenchimento (mesma escala); com `bipolar`, o padrão é o meio */
+  from?: number;
+  /** escala com centro (Reputação −100..+100): passe min/max via value/max e use from */
+  bipolar?: boolean;
   /** rótulo à esquerda e valor à direita (vira uma linha de HUD) */
   label?: ReactNode;
   valueText?: ReactNode;
@@ -314,8 +318,12 @@ export interface GMeterProps {
   style?: CSSProperties;
 }
 
-export function GMeter({ value, max = 1, tone = 'action', segmented, thin, mark, label, valueText, className, style }: GMeterProps) {
-  const v = Math.max(0, Math.min(1, value / max));
+export function GMeter({ value, max = 1, tone = 'action', segmented, thin, mark, from, bipolar, label, valueText, className, style }: GMeterProps) {
+  const clamp = (n: number) => Math.max(0, Math.min(1, n));
+  const v = clamp(value / max);
+  const f = from != null ? clamp(from / max) : bipolar ? 0.5 : 0;
+  const lo = Math.min(f, v);
+  const hi = Math.max(f, v);
   const bar = (
     <div
       role="meter"
@@ -323,8 +331,8 @@ export function GMeter({ value, max = 1, tone = 'action', segmented, thin, mark,
       aria-valuemax={max}
       aria-valuenow={value}
       aria-label={typeof label === 'string' ? label : undefined}
-      className={cx('g-meter', tone !== 'action' && `g-meter--${tone}`, segmented && 'g-meter--segmented', thin && 'g-meter--thin', !label && className)}
-      style={{ ['--v' as string]: v, ...(label ? null : style) }}
+      className={cx('g-meter', tone !== 'action' && `g-meter--${tone}`, segmented && 'g-meter--segmented', thin && 'g-meter--thin', bipolar && 'g-meter--bipolar', !label && className)}
+      style={{ ['--v' as string]: hi, ['--from' as string]: lo, ...(label ? null : style) }}
     >
       <span className="g-meter__fill" />
       {mark != null ? <span className="g-meter__mark" style={{ ['--m' as string]: Math.max(0, Math.min(1, mark / max)) }} /> : null}

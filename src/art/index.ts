@@ -20,5 +20,7 @@ export { DirectorPortrait, DirectorCard, DIRECTOR_ORIGINS, ORIGIN_INFO } from '.
 export type { DirectorOrigin, DirectorMood, DirectorPortraitProps, DirectorCardProps } from './directors';
 export { GButton, GIconButton, GSegmented, GPanel, GTabs, GChip, GBadge, GMeter, GCounter, GMenuItem, GHelp, uiSound } from './game-ui';
 export type { GButtonProps, GButtonVariant, GIconButtonProps, GSegmentedProps, GSegOption, GPanelProps, GTabsProps, GTabItem, GChipProps, GMeterProps, GCounterProps, GMenuItemProps } from './game-ui';
+export { GDial, GCard, GSeal, GUnitCard, GModal, GToast, GTip, GRange, GStepper, GToggle, GTelex, GMapMarker, GBoard, GToken } from './game-ui-2';
+export type { GDialProps, GCardProps, GUnitCardProps, GModalProps, GRangeProps, GStepperProps, GMapMarkerProps, GMarkerKind, GBoardProps } from './game-ui-2';
 export { CornerBrackets, DossierFrame, Stamp, Redacted, RedactionBar, Divider, ClassificationBar, Tape } from './frame';
 export type { CornerBracketsProps, DossierFrameProps, StampProps, StampPreset, RedactedProps, RedactionBarProps, DividerProps, ClassificationBarProps, TapeProps } from './frame';

@@ -207,3 +207,66 @@ Motion: pressionar em 80ms e transições de cor/brilho em 140ms; com reduced-mo
 | menu: `.slm-btn--primary` / `.slm-btn--ghost` (no papel) | `.g-btn--primary` / `.g-btn--ghost` dentro de `.g-panel--paper`, ou só a ponte |
 | menu: `.slm-seg` / `.slm-seg-btn` | `.g-seg` / `.g-seg__opt` |
 | menu: `.slm-icon-btn` | `.g-btn--icon` |
+
+## Componentes de jogo, fase 2 (`game-ui-2.css`, `game-ui-2.tsx`)
+
+`game-ui.css` já carrega `game-ui-2.css` (via `@import`), então um único import cobre as duas fases. A ponte `.g-skin` também ganhou uma fase 2 que melhora as classes atuais **sem mexer em layout**: muda fundo, borda, sombra, tipografia e pseudo-elementos, mas não display, tamanho nem posição.
+
+![kit fase 2](art/fase2-kit-a.webp)
+![telex, mapa e tabuleiro](art/fase2-kit-b.webp)
+
+Ponte da fase 2 no jogo real (build de `main` com `g-skin`):
+
+![1440](art/fase2-jogo-1440.webp)
+![ficha 1440](art/fase2-ficha-1440.webp)
+![440 com safe](art/fase2-jogo-440-safe.webp)
+![956×440](art/fase2-jogo-956x440.webp)
+
+| Peça | Classe | Componente |
+|---|---|---|
+| Barra superior como HUD | `.g-hud` | — |
+| Mostrador (caixa, lucro, data) | `.g-dial` + `__k` / `__v`, `--ok/--danger/--action/--lg` | `<GDial label tone size>` |
+| Folha inferior | `.g-sheet` + `.g-grip` (pega de chapa estriada) | — |
+| Gaveta lateral | `.g-drawer` (`--right`) | — |
+| Ficha de Mercado/Oportunidade | `.g-card` (`--hot/--danger/--off`) + `.g-well` (poço do ícone) + `__title/__meta` | `<GCard icon title meta seal sealTone actions tone>` |
+| Selo carimbado | `.g-seal` (`--ok/--danger/--sm`) | `<GSeal>` |
+| Carta de Unidade | `.g-unit` (`.is-selected`, `--out` com `data-status`) + `__portrait` + `__rank > i.on` + `__name/__role/__stats` | `<GUnitCard portrait name role rank stats side selected out onClick>` |
+| Medidor bipolar (Reputação) | `.g-meter--bipolar` com `--from` | `<GMeter value={rep+100} max={200} bipolar>` |
+| Modal de comando / dossiê | `.g-modal-scrim` + `.g-modal` (`--good/--bad/--intel/--dossier`) + `__bar/__kicker/__title/__body/__foot` | `<GModal open onClose kicker title tone variant actions>` (Esc fecha, som de abrir e fechar) |
+| Teletipo | `.g-toast` (`--good/--ok/--bad/--intel`) + `__k` | `<GToast tone kicker>` |
+| Dica / glossário | `.g-tip` + `__k` | `<GTip kicker>` |
+| Campo | `.g-input` | — |
+| Fader | `.g-range` (`--p` = preenchimento) | `<GRange value min max onChange>` |
+| Stepper | `.g-stepper` + `__v` | `<GStepper value min max step onChange format>` |
+| Interruptor | `.g-toggle[aria-checked]` | `<GToggle checked onChange label>` |
+| Marcadores do mapa (SVG) | `.g-mapmark--station/rival/threat`, `.g-maplabel` | `<GMapMarker kind x y inv label tier>` |
+| Rota de voo (SVG) | `.g-route` (tracejado andando, brilho) | — |
+| Tabuleiro de Combate | `.g-board` (`--cols/--rows`) + `__cell--deploy/target/enemy` (cruzes de registro) | `<GBoard cells>` |
+| Carta no tabuleiro | `.g-token` (`--enemy`) + `__card` + `__hp > i.on` | `<GToken portrait hp hpMax enemy col row>` |
+| Relatório como telex | `.g-telex` (`--dark`) + `__k/__t` | `<GTelex kicker dark>` |
+
+### Ponte `.g-skin`, fase 2 (automática)
+
+Barra superior (`.topbar`, `.tb-k`, `.tb-name`, `.tb-time`; a partir de 900px `.tb-stat/.tb-clock` viram mostradores), `.cty-title`, `.sec`/`.sec-head h3`, todos os medidores antigos (`.meter`, `.cap-bar`, `.tension`, `.mkt-cap-bar`, `.fs-bar`, `.uc-s-bar`), `.unit-row` (carta; `.sel` com faixa âmbar), retratos em `.unit-row`/`.uc`, `.scrim`, `.event-card`, `.ud` e `.ud-scrim` (com `g-skin`), `.toast` (teletipo), `.help-btn`/`.help-pop`, `.gsheet` e `.gsheet-grip`, `.map-label`, os marcadores `.pin/.threat-pin/.rival` (brilho), a rota de voo tracejada (anda), `.log` (telex escuro), `.grid/.cell/.token` (tabuleiro), `.op` (ficha de missão) e o hover de `.mkt-row`.
+
+### Troca recomendada (fase 2)
+
+| Atual | Novo |
+|---|---|
+| `.tb-stat` / `.tb-clock` | `<GDial>` (no estreito, `.g-dial` sem rótulo ou só o valor) |
+| `.topbar` | `.g-hud` |
+| `.gsheet` / `.gsheet-grip` | `.g-sheet` / `.g-grip` |
+| gavetas laterais (`.side`, `.side-e`, `.agency`) | `.g-drawer` / `.g-drawer--right` |
+| `.mkt-row`, `.opp-item` / `.opp-body` | `<GCard icon seal actions>`; a margem vai no `seal`, e "não cabe" vira `tone="off"` |
+| `.op` (Operação Especial) | `<GCard tone="danger" icon="special-op" seal="~25" sealSub="hostil">` |
+| `.unit-row` / `.uc` | `<GUnitCard>` (patente nas barras, `out="DETIDO"`/`"FERIDA"`) |
+| Reputação (`.meter` + `.meter-mid`) | `<GMeter bipolar value={rep+100} max={200}>` |
+| `.event-card` + `.scrim` | `<GModal tone="good/bad/intel">`; "big" = `width={560}` |
+| `.ud` (ficha de Unidade) | `<GModal variant="dossier">` ou mantém `.ud` com a ponte |
+| `.toast.tone-*` | `<GToast tone kicker>` |
+| `.help-pop` | `.g-tip` (`.g-tip__k` = termo do glossário) |
+| `.stepper`, `.mkt-stepper`, `.mkt-range` | `<GStepper>`, `<GRange>` |
+| interruptores do menu (`.slm-toggle`) | `<GToggle>` |
+| marcadores no `WorldMap` (círculos e losangos inline) | `<GMapMarker kind inv>`; rota com `className="g-route"` |
+| `.grid` / `.cell` / `.token` | `<GBoard>` / `<GToken>` |
+| `.log` / `.log-peek` | `<GTelex kicker dark>` |
