@@ -543,3 +543,35 @@
     position: static;
   }
 }
+
+/* Kit fase 2: cartas de Unidade (GUnitCard). */
+.uc {
+  border-top: 0;
+  padding: 3px 10px;
+  align-items: center;
+  gap: 6px;
+}
+.uc > .uc-card,
+.unit-list > .ur-card {
+  flex: 1;
+  min-width: 0;
+  width: 100%;
+}
+.unit-list > .ur-card {
+  margin: 3px 10px;
+  width: calc(100% - 20px);
+}
+.uc-card .uc-traits,
+.ur-card .ur-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  margin-top: 3px;
+}
+.uc-card .uc-side {
+  display: grid;
+  justify-items: end;
+  font: 500 12px/1.3 var(--mono);
+  color: var(--paper-2);
+  white-space: nowrap;
+}

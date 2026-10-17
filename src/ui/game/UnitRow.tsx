@@ -5,6 +5,7 @@ import { useT } from '../../i18n';
 import type { Key } from '../../i18n';
 import { classLabel, itemName, traitBlurb, traitName } from '../../i18n/lookup';
 import { Portrait } from './Portrait';
+import { GUnitCard } from '../../art';
 
 const STR_KEYS: [CombatType | 'convert', Key][] = [
   ['legal', 'game.unitRow.pip.legal'],
@@ -40,33 +41,37 @@ export function UnitRow({ unit, action, selected, onClick }: { unit: Unit; actio
     : unit.idle
       ? t('game.unit.status.idle.label')
       : null;
-  const Tag = onClick ? 'button' : 'div';
   return (
-    <Tag className={`unit-row${selected ? ' sel' : ''}${status ? ' out' : ''}`} onClick={onClick}>
-      <Portrait unit={unit} size={34} />
-      <span className="ur-main">
-        <span className="ur-name">
-          {unit.name}
-          {rank > 0 && <span className="rank">{'▮'.repeat(rank)}</span>}
-        </span>
-        <span className="ur-sub">
+    <GUnitCard
+      className="ur-card"
+      portrait={<Portrait unit={unit} size={40} />}
+      name={unit.name}
+      role={
+        <>
           {itemName(unit.itemId, lang)}
           {d.cls === 'cargo' ? ` · ${t('game.unit.cargoSpecs', { weight: d.weight, speed: d.speed ?? 0 })}` : ` · ${classLabel(d.cls, lang)}`}
-        </span>
+        </>
+      }
+      rank={Math.min(3, rank)}
+      out={status ?? undefined}
+      selected={selected}
+      stats={
         <span className="ur-tags">
           {d.cls !== 'cargo' && <StrengthPips unit={unit} />}
           {unit.traits.map((tr) => (
-            <span key={tr} className={`trait${tr === 'nervous' || tr === 'demanding' ? ' neg' : ''}`} title={traitBlurb(tr, lang)}>
+            <span key={tr} className={`g-chip ${tr === 'nervous' || tr === 'demanding' ? 'g-chip--danger' : 'g-chip--ok'}`} title={traitBlurb(tr, lang)}>
               {traitName(tr, lang)}
             </span>
           ))}
-          {status && <span className="status">{status}</span>}
         </span>
-      </span>
-      <span className="ur-side">
-        <span className="mono hint-sm">{t('game.unitRow.perMonth', { price: fmt.money(upkeepOf(unit)) })}</span>
-        {action}
-      </span>
-    </Tag>
+      }
+      side={
+        <span className="ur-side">
+          <span className="mono hint-sm">{t('game.unitRow.perMonth', { price: fmt.money(upkeepOf(unit)) })}</span>
+          {!onClick && action}
+        </span>
+      }
+      onClick={onClick}
+    />
   );
 }

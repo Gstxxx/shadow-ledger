@@ -1,5 +1,5 @@
 import type { ReactNode } from 'react';
-import { GameIcon } from '../../../art';
+import { GameIcon, GUnitCard } from '../../../art';
 import { STATIONS } from '../../../game/data/rules';
 import { cargoWeight, maxCargo, unitsWeight, usedCargo } from '../../../game/market';
 import { upkeepTotal } from '../../../game/sim';
@@ -64,40 +64,42 @@ export function UnitCard({
   const status = statusOf(unit, t, detained);
   return (
     <div className={`uc${status ? ' out' : ''}`}>
-      <button className="uc-main" onClick={() => onOpen(unit.uid)} aria-label={t('game.unit.openDossier', { name: unit.name, role: name })}>
-        <Portrait unit={unit} size={40} />
-        <span className="uc-text">
-          <span className="uc-name">
-            {unit.name}
-            {rank > 0 && (
-              <span className="uc-rank" aria-label={t('game.unit.rankAria', { n: rank })}>
-                {'▮'.repeat(rank)}
-              </span>
-            )}
-            {status && <span className={`uc-status g-chip ${detained ? 'g-chip--danger' : 'g-chip--warn'}`}>{status.label}</span>}
-          </span>
-          <span className="uc-role">
+      <GUnitCard
+        className="uc-card"
+        portrait={<Portrait unit={unit} size={44} />}
+        name={unit.name}
+        role={
+          <>
             {name}
             {d.cls === 'cargo'
               ? ` · ${t('game.unit.cargoSpecs', { weight: d.weight, speed: d.speed ?? 0 })}`
               : ` · ${classLabel(d.cls, lang)}`}
+          </>
+        }
+        rank={Math.min(3, rank)}
+        out={status?.stamp}
+        stats={
+          <>
+            {d.cls !== 'cargo' && <StrengthBars unit={unit} />}
+            {unit.traits.length > 0 && (
+              <span className="uc-traits">
+                {unit.traits.map((tr) => (
+                  <span key={tr} className={`uc-trait g-chip ${tr === 'nervous' || tr === 'demanding' ? 'neg g-chip--danger' : 'g-chip--ok'}`}>
+                    {traitName(tr, lang)}
+                  </span>
+                ))}
+              </span>
+            )}
+          </>
+        }
+        side={
+          <span className="uc-side">
+            <span className="num">{fmt.money(upkeepOf(unit))}</span>
+            <span className="uc-side-k">{t('game.unit.card.perMonth')}</span>
           </span>
-          {d.cls !== 'cargo' && <StrengthBars unit={unit} />}
-          {unit.traits.length > 0 && (
-            <span className="uc-traits">
-              {unit.traits.map((tr) => (
-                <span key={tr} className={`uc-trait g-chip ${tr === 'nervous' || tr === 'demanding' ? 'neg g-chip--danger' : 'g-chip--ok'}`}>
-                  {traitName(tr, lang)}
-                </span>
-              ))}
-            </span>
-          )}
-        </span>
-        <span className="uc-side">
-          <span className="num">{fmt.money(upkeepOf(unit))}</span>
-          <span className="uc-side-k">{t('game.unit.card.perMonth')}</span>
-        </span>
-      </button>
+        }
+        onClick={() => onOpen(unit.uid)}
+      />
       {action && <span className="uc-action">{action}</span>}
     </div>
   );
