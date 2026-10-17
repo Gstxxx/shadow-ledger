@@ -1,4 +1,4 @@
-import { useEffect, useId, useRef, useState } from 'react';
+import { useEffect, useId, useLayoutEffect, useRef, useState } from 'react';
 import type { ReactNode } from 'react';
 import { useT } from '../../../i18n';
 import type { Key } from '../../../i18n';
@@ -56,6 +56,21 @@ export function Help({ term, children }: { term: TermId; children?: ReactNode })
     };
   }, [open]);
 
+  // Perto da borda do painel/tela, a dica alinha pela esquerda ou pela direita em vez de centralizar.
+  const pop = useRef<HTMLSpanElement>(null);
+  const [align, setAlign] = useState<'center' | 'start' | 'end'>('center');
+  useLayoutEffect(() => {
+    if (!open) return setAlign('center');
+    const el = pop.current;
+    if (!el) return;
+    const bound = (el.closest('.panel-scroll, .gsheet-body, .ud, .side') ?? document.body).getBoundingClientRect();
+    const r = el.getBoundingClientRect();
+    const minL = Math.max(8, bound.left + 8);
+    const maxR = Math.min(window.innerWidth - 8, bound.right - 8);
+    if (r.left < minL) setAlign('start');
+    else if (r.right > maxR) setAlign('end');
+  }, [open]);
+
   return (
     <span className="help" ref={ref}>
       {children}
@@ -75,7 +90,7 @@ export function Help({ term, children }: { term: TermId; children?: ReactNode })
         </span>
       </button>
       {open && (
-        <span id={id} role="tooltip" className="help-pop">
+        <span id={id} ref={pop} role="tooltip" className={`help-pop${align !== 'center' ? ` align-${align}` : ''}`}>
           <b>{title}</b>
           {text}
         </span>

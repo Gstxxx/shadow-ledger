@@ -88,3 +88,15 @@
 .goal-bar > span.done {
   background: var(--green);
 }
+/* Linhas "texto + botão" (Estação, Contratos): o botão desce em vez de espremer o rótulo. */
+.row-line {
+  flex-wrap: wrap;
+}
+.row-line > .btn {
+  flex: none;
+  white-space: nowrap;
+}
+.row-line > span:first-child {
+  flex: 1 1 160px;
+  min-width: 0;
+}
