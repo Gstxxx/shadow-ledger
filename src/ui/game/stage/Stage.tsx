@@ -132,7 +132,7 @@ export function StageModals({ stage }: { stage: StageApi }) {
       contentKey={`item-${m.countryId}-${m.itemId}`}
     >
       <div className="stage-body">
-        <ItemTrade countryId={m.countryId} itemId={m.itemId} />
+        <ItemTrade countryId={m.countryId} itemId={m.itemId} initialSide={m.side} />
       </div>
     </GModal>
   );

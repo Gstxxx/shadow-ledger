@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
-import { GameIcon, GCard, GMeter, GRange, GStepper } from '../../../art';
+import { GameIcon, GCard, GMeter, GModeSwitch, GRange, GStepper } from '../../../art';
 import * as A from '../../../game/actions';
 import { maxCargo, quoteBuy, quoteSell, usedCargo } from '../../../game/market';
 import { directorAt, formatDuration, intelCountries, player, standing } from '../../../game/state';
@@ -23,6 +23,8 @@ import {
 import type { BlockMsg, MarketRow, Opportunity, Segment } from './model';
 import { useStage } from '../stage/context';
 import { ShortList, Verdict } from '../stage/Verdict';
+
+type Mode = 'buy' | 'sell';
 import './market.css';
 
 type Fmt = I18n['fmt'];
@@ -56,7 +58,15 @@ export function MarketPanel({ countryId }: { countryId: string }) {
     people: 0,
     hire: recruits.length,
   };
-  for (const r of rows) counts[r.segment]++;
+  const stage = useStage();
+  // No palco, o Mercado tem dois modos (pedido do usuário): Comprar aqui | Vender minha Carga.
+  const cargoUnits = a.cargo.reduce((x, l) => x + l.qty, 0);
+  const sellableHere = a.cargo.some((l) => (rows.find((r) => r.itemId === l.itemId)?.sell ?? 0) > 0);
+  const [mode, setMode] = useState<Mode>(sellableHere && here ? 'sell' : 'buy');
+  const buyRows = stage ? rows.filter((r) => r.buy > 0) : rows;
+  const buyOpps = stage ? opps.filter((o) => o.kind === 'buy-here') : opps;
+  counts.opps = buyOpps.length;
+  for (const r of buyRows) counts[r.segment]++;
   const segs = SEGMENTS.filter((g) => g.id === 'opps' || counts[g.id] > 0);
 
   const [seg, setSeg] = useState<Segment>('opps');
@@ -65,7 +75,8 @@ export function MarketPanel({ countryId }: { countryId: string }) {
   useEffect(() => {
     setSeg('opps');
     setOpen(null);
-  }, [countryId]);
+    setMode(sellableHere && here ? 'sell' : 'buy');
+  }, [countryId]); // eslint-disable-line react-hooks/exhaustive-deps
   const active = segs.some((g) => g.id === seg) ? seg : 'opps';
   // Esmaece a borda das abas quando há mais para rolar (o "Veículos" cortado não parecia rolável).
   const segsRef = useRef<HTMLDivElement>(null);
@@ -87,12 +98,11 @@ export function MarketPanel({ countryId }: { countryId: string }) {
   const used = usedCargo(a);
   const max = maxCargo(a);
 
-  const stage = useStage();
   // No palco (ADR 0006) o item abre o modal de compra e venda; fora dele (protótipo), expande na lista.
   const focusItem = (itemId: string) => {
     const r = rows.find((x) => x.itemId === itemId);
     if (!r) return;
-    if (stage) return stage.push({ kind: 'item', countryId, itemId });
+    if (stage) return stage.push({ kind: 'item', countryId, itemId, side: 'buy' });
     setSeg(r.segment);
     setOpen(itemId);
   };
@@ -135,6 +145,22 @@ export function MarketPanel({ countryId }: { countryId: string }) {
         </div>
       ) : (
         <>
+          {stage && (
+            <GModeSwitch
+              className="mkt-mode"
+              label={t('game.market.title')}
+              options={[
+                { value: 'buy' as Mode, label: t('game.market.opp.buy'), tone: 'action' },
+                { value: 'sell' as Mode, label: cargoUnits ? `${t('game.market.opp.sell')} · ${cargoUnits}` : t('game.market.opp.sell'), tone: 'action' },
+              ]}
+              value={mode}
+              onChange={setMode}
+            />
+          )}
+          {stage && mode === 'sell' ? (
+            <SellList countryId={countryId} onBuy={() => setMode('buy')} />
+          ) : (
+          <>
           <div className={`mkt-segs g-tabs${segFade}`} ref={segsRef} onScroll={updateSegFade} role="tablist" aria-label={t('game.market.segmentsAria')}>
             {segs.map((g) => (
               <button
@@ -155,7 +181,7 @@ export function MarketPanel({ countryId }: { countryId: string }) {
           </div>
           {!stage && <p className="mkt-seg-hint">{t(meta.hintKey)}</p>}
 
-          {active === 'opps' && <OppList opps={opps} countryId={countryId} onFocus={focusItem} hasStations={a.stations.length > 0} />}
+          {active === 'opps' && <OppList opps={buyOpps} countryId={countryId} onFocus={focusItem} hasStations={a.stations.length > 0} />}
 
           {active === 'hire' && <HireList countryId={countryId} />}
 
@@ -165,7 +191,7 @@ export function MarketPanel({ countryId }: { countryId: string }) {
                 inList
                 key={active}
                 max={stage ? 5 : 99}
-                items={rows.filter((r) => r.segment === active)}
+                items={buyRows.filter((r) => r.segment === active)}
                 render={(r) => (
                   <MarketItem
                     key={r.itemId}
@@ -177,6 +203,8 @@ export function MarketPanel({ countryId }: { countryId: string }) {
                 )}
               />
             </ul>
+          )}
+          </>
           )}
         </>
       )}
@@ -352,12 +380,14 @@ function MarketItem({ row, countryId, open, onToggle }: { row: MarketRow; countr
             <span className="k">{t('game.market.youPay')}</span>
             <span className="v num">{r.buy ? fmt.money(r.buy) : t('game.market.notSold')}</span>
           </span>
-          <span className="mkt-p">
-            <span className="k">{t('game.market.youGet')}</span>
-            <span className="v num">{r.sell ? fmt.money(r.sell) : t('game.market.notBought')}</span>
-          </span>
+          {!staged && (
+            <span className="mkt-p">
+              <span className="k">{t('game.market.youGet')}</span>
+              <span className="v num">{r.sell ? fmt.money(r.sell) : t('game.market.notBought')}</span>
+            </span>
+          )}
         </span>
-        {r.owned > 0 && (
+        {!staged && r.owned > 0 && (
           <span className="mkt-own">
             <span className="num">{t('game.market.owned', { n: r.owned })}</span>
             {r.sell > 0 && (
@@ -581,6 +611,84 @@ function HireList({ countryId }: { countryId: string }) {
           </div>
         </li>
       ))}
+    </ul>
+  );
+}
+
+/** Modo Vender: só o que está na Carga — quanto recebe aqui, lucro por unidade e quem paga mais. */
+function SellList({ countryId, onBuy }: { countryId: string; onBuy: () => void }) {
+  const { t, fmt } = useT();
+  const s = useGame();
+  const a = player(s);
+  const stage = useStage();
+  const rows = marketRows(s, a, countryId);
+  const held = new Map<string, { qty: number; paid: number }>();
+  for (const l of a.cargo) {
+    const h = held.get(l.itemId) ?? { qty: 0, paid: 0 };
+    h.paid = (h.paid * h.qty + l.paidEach * l.qty) / (h.qty + l.qty);
+    h.qty += l.qty;
+    held.set(l.itemId, h);
+  }
+  if (!held.size)
+    return (
+      <Verdict
+        tone="neutral"
+        action={
+          <button className="btn primary" onClick={onBuy}>
+            {t('game.market.opp.buy')}
+          </button>
+        }
+      >
+        {t('game.agency.cargo.empty')}
+      </Verdict>
+    );
+  const items = [...held.entries()].map(([itemId, h]) => {
+    const r = rows.find((x) => x.itemId === itemId);
+    const sell = r?.sell ?? 0;
+    const { best } = priceRange(s, a, itemId);
+    const better = best && best.countryId !== countryId && best.sell > sell ? best : null;
+    return { itemId, ...h, sell, pl: sell ? sell - h.paid : 0, better };
+  });
+  // Primeiro o que dá lucro vendendo aqui; depois o resto.
+  items.sort((x, y) => (y.sell ? y.pl : -1e12) - (x.sell ? x.pl : -1e12));
+  return (
+    <ul className="mkt-rows mkt-sell">
+      <ShortList
+        inList
+        max={5}
+        items={items}
+        render={(it) => (
+          <li key={it.itemId} className="mkt-item">
+            <button
+              className={`mkt-row g-card${!it.sell ? ' g-card--off' : ''}`}
+              aria-haspopup="dialog"
+              onClick={() => stage?.push({ kind: 'item', countryId, itemId: it.itemId, side: 'sell' })}
+            >
+              <span className="g-well">
+                <GameIcon id={it.itemId} size={28} accent="warm" />
+              </span>
+              <span className="mkt-name">
+                <span className="mkt-name-t">{itemName(it.itemId)}</span>
+                <span className="mkt-name-s">{t('game.market.owned', { n: it.qty })}</span>
+                {it.sell > 0 && (
+                  <span className={`mkt-pl num ${it.pl >= 0 ? 'pos' : 'neg'}`}>{t('game.market.plPerUnit', { pl: signed(fmt, Math.round(it.pl)) })}</span>
+                )}
+                {it.better && (
+                  <span className="mkt-better">
+                    {t('game.market.range.best')} {countryName(it.better.countryId)} <span className="num">{fmt.money(it.better.sell)}</span>
+                  </span>
+                )}
+              </span>
+              <span className="mkt-prices">
+                <span className="mkt-p">
+                  <span className="k">{t('game.market.youGet')}</span>
+                  <span className="v num">{it.sell ? fmt.money(it.sell) : t('game.market.notBought')}</span>
+                </span>
+              </span>
+            </button>
+          </li>
+        )}
+      />
     </ul>
   );
 }

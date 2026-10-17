@@ -22,7 +22,7 @@ type Tone = VerdictTone;
  * UM botão e UM número grande; o veredito no topo diz se é bom negócio e para onde voar.
  * O resto (preço da 1ª unidade, Saturação, faixa de preços, caixa e espaço) fica em "Ver detalhes".
  */
-export function ItemTrade({ countryId, itemId }: { countryId: string; itemId: string }) {
+export function ItemTrade({ countryId, itemId, initialSide }: { countryId: string; itemId: string; initialSide?: Side }) {
   const { t, fmt } = useT();
   const s = useGame();
   const a = player(s);
@@ -30,7 +30,7 @@ export function ItemTrade({ countryId, itemId }: { countryId: string; itemId: st
   const here = directorAt(a, countryId);
   const c = s.countries[countryId];
   const r = marketRows(s, a, countryId).find((x) => x.itemId === itemId);
-  const [side, setSide] = useState<Side>(() => (r && r.owned > 0 && r.sell > 0 ? 'sell' : 'buy'));
+  const [side, setSide] = useState<Side>(() => initialSide ?? (r && r.owned > 0 && r.sell > 0 ? 'sell' : 'buy'));
   const canBuyMax = r?.buy ? maxAffordable(s, a, c, itemId) : 0;
   const owned = r?.owned ?? 0;
   const limit = side === 'buy' ? Math.max(1, canBuyMax) : Math.max(1, owned);

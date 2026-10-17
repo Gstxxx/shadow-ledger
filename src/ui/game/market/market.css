@@ -599,3 +599,58 @@ html .mkt-item.open > .mkt-row.g-card {
     grid-template-columns: 44px minmax(0, 1fr);
   }
 }
+
+/* Palco: alavanca Comprar | Vender no topo do Mercado. */
+.mkt-mode {
+  width: 100%;
+  margin: 4px 0 12px;
+}
+.mkt-mode .g-mode__opt,
+.mkt-mode button {
+  min-height: 44px;
+}
+/* A etiqueta barato/caro quebra linha em vez de passar por cima do preço (360–440). */
+.mkt-row .mkt-deal {
+  white-space: normal;
+  max-width: 100%;
+  overflow-wrap: anywhere;
+}
+.mkt-row .mkt-name {
+  overflow: hidden;
+}
+/* Modo Vender: lucro/prejuízo por unidade e quem paga mais. */
+.mkt-pl {
+  font: 600 12px/1.3 var(--mono);
+}
+.mkt-better {
+  font-size: 12px;
+  color: var(--paper-2);
+}
+.mkt-better .num {
+  color: var(--green);
+}
+
+/* Celular estreito (modal em 360 px): preço e Contratar abaixo do nome, para o nome não ser esmagado. */
+@container mkt (max-width: 360px) {
+  .mkt-row,
+  html .mkt-row.g-card {
+    grid-template-columns: 44px minmax(0, 1fr);
+    grid-template-areas:
+      'ico name'
+      'ico prices'
+      'ico own';
+  }
+  .mkt-prices {
+    justify-items: start;
+    grid-auto-flow: column;
+    justify-content: start;
+    gap: 12px;
+  }
+  .mkt-hire {
+    justify-items: start;
+    max-width: none;
+  }
+  .mkt-hire .mkt-why {
+    text-align: left;
+  }
+}
