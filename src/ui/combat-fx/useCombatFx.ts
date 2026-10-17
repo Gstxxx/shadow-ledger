@@ -23,6 +23,11 @@ export interface CombatFxOptions {
   reduced?: boolean;
   /** Anima a entrada das fichas na primeira montagem (padrão: sim). */
   intro?: boolean;
+  /**
+   * Eixo da grade: 'x' (deitada, o jogador avança para a direita) ou 'y' (em pé, o jogador avança para cima).
+   * Sem valor, a camada deduz o eixo das posições reais dos tokens.
+   */
+  axis?: 'x' | 'y';
   /** Texto do carimbo final; sem valor, usa i18n (combatfx.stamp.* ou game.combat.result.*). */
   verdictText?: (success: boolean, c: CombatState) => string;
 }
@@ -51,12 +56,14 @@ const succeeded = (c: CombatState) => c.result === 'win' || (c.result === 'draw'
  * Eixo "para a frente" da grade, lido das posições reais: duas Unidades em colunas diferentes dão o vetor
  * coluna → coluna. Assim os efeitos seguem a grade deitada (→) ou girada em pé (↑) sem configuração.
  */
-function forwardOf(grid: HTMLElement, combat: CombatState): Vec {
+function forwardOf(grid: HTMLElement, combat: CombatState, axis?: 'x' | 'y'): Vec {
+  if (axis === 'x') return { x: 1, y: 0 };
+  if (axis === 'y') return { x: 0, y: -1 };
   const colOf = new Map(combat.units.map((u) => [u.key, u.col]));
   const pts: { col: number; x: number; y: number }[] = [];
   for (const n of Array.from(grid.querySelectorAll<HTMLElement>('[data-fx-key]'))) {
-    const col = colOf.get(n.dataset.fxKey!);
-    if (col === undefined) continue;
+    const col = n.dataset.fxCol !== undefined ? Number(n.dataset.fxCol) : colOf.get(n.dataset.fxKey!);
+    if (col === undefined || Number.isNaN(col)) continue;
     pts.push({ col, x: n.offsetLeft + n.offsetWidth / 2, y: n.offsetTop + n.offsetHeight / 2 });
   }
   let best: Vec | null = null;
@@ -105,7 +112,7 @@ export function useCombatFx(opts: CombatFxOptions): CombatFxApi {
 
   const stage = useCallback((): Stage | null => {
     if (!grid.current || !layer.current) return null;
-    return { layer: layer.current, camera: grid.current, reduced: reduced(), fwd: forwardOf(grid.current, optsRef.current.combat) };
+    return { layer: layer.current, camera: grid.current, reduced: reduced(), fwd: forwardOf(grid.current, optsRef.current.combat, optsRef.current.axis) };
   }, [grid]);
 
   const snapshot = useCallback(() => {
@@ -163,7 +170,7 @@ export function useCombatFx(opts: CombatFxOptions): CombatFxApi {
         const list = tokens().map((node) => ({
           node,
           side: (node.dataset.fxSide as 'p' | 'e') ?? 'p',
-          col: colOf.get(node.dataset.fxKey!) ?? 0,
+          col: node.dataset.fxCol !== undefined ? Number(node.dataset.fxCol) : (colOf.get(node.dataset.fxKey!) ?? 0),
         }));
         run(intro(st, list));
       }

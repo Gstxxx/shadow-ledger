@@ -62,6 +62,8 @@ function Token({ r, c }: { r: CombatUnitRef; c: CombatState }) {
     <div
       data-fx-key={r.key}
       data-fx-side={r.side}
+      data-fx-col={r.col}
+      data-fx-row={r.row}
       className={`token side-${r.side}`}
       style={
         PORTRAIT
@@ -90,7 +92,14 @@ function Preview() {
   const c = holder.current;
 
   const noGrid = useRef<HTMLDivElement>(null);
-  const fx = useCombatFx({ grid: q.get('nofx') === '1' ? noGrid : grid, combat: c, speed, reduced: REDUCED, intro: q.get('nointro') !== '1' });
+  const fx = useCombatFx({
+    grid: q.get('nofx') === '1' ? noGrid : grid,
+    combat: c,
+    speed,
+    reduced: REDUCED,
+    intro: q.get('nointro') !== '1',
+    axis: q.get('axis') === 'x' || q.get('axis') === 'y' ? (q.get('axis') as 'x' | 'y') : undefined,
+  });
 
   const step = () => {
     if (c.result) return;

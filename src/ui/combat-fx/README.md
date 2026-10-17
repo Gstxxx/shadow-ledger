@@ -52,6 +52,7 @@ const fx = useCombatFx({ grid, combat: c, speed: fast ? 2 : 1 });
 - `speed`: 1, 2 ou 4.
 - `reduced`: força reduzir movimento; sem valor, segue `prefers-reduced-motion`.
 - `intro`: anima a entrada das fichas ao montar (padrão `true`).
+- `axis`: `'x'` (deitada, o jogador avança →) ou `'y'` (em pé, o jogador avança ↑). Sem valor, a camada deduz o eixo das posições reais dos tokens.
 - `verdictText(success, c)`: texto do carimbo. Sem ele, usa `combatfx.stamp.win|lose` do i18n; enquanto essas chaves não existirem, cai em `game.combat.result.*` em caixa alta.
 
 ### Grade deitada ou em pé (ADR 0005)
@@ -66,7 +67,7 @@ Para girar, **reposicione os tokens por `left/top`** (por exemplo `left = row/ro
 
 ### Contrato com a tela de Combate
 
-1. Cada token de Unidade tem `data-fx-key={ref.key}` e `data-fx-side={ref.side}`. A posição continua sendo `left/top` em %, como hoje.
+1. Cada token de Unidade tem `data-fx-key={ref.key}` e `data-fx-side={ref.side}`; `data-fx-col={ref.col}` e `data-fx-row={ref.row}` são opcionais (quando existem, a camada usa a coluna do token em vez de procurá-la no estado). A posição continua sendo `left/top` em %, como hoje.
 2. A tela **não** anima mais `hit`, fantasmas nem a `transition` de `left/top`. A camada desliga essa transição nos tokens e assume o movimento, ou o FLIP brigaria com o CSS.
 3. Quem saiu da grade no turno (abatido ou convertido) não precisa ser renderizado como fantasma. A camada guarda uma cópia visual de cada token a cada turno e a anima depois que o React o removeu.
 4. "Pular para o fim" (vários turnos de uma vez) não anima turnos intermediários: só o carimbo.
