@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
-import { GameIcon } from '../../../art';
+import { GameIcon, GCard } from '../../../art';
 import * as A from '../../../game/actions';
 import { maxCargo, quoteBuy, quoteSell, usedCargo } from '../../../game/market';
 import { directorAt, formatDuration, intelCountries, player, standing } from '../../../game/state';
@@ -214,53 +214,61 @@ function OppList({
         const travelBlocked = !directorAt(a, a.location) || o.to === a.location;
         return (
           <li key={`${o.kind}-${o.itemId}-${o.to}`} className={`opp kind-${o.kind}${o.block ? ' blocked' : ''}`}>
-            <GameIcon id={o.itemId} size={28} accent="warm" />
-            <div className="opp-body">
-              <span className="opp-item">
-                {item}
-                {o.kind !== 'buy-here' && <span className="opp-tag">{t('game.market.opp.inCargoTag')}</span>}
-              </span>
-              <span className="opp-route">
-                {o.kind === 'buy-here' ? t('game.market.opp.buyHereLabel') : t('game.market.opp.youPaid')}{' '}
-                <span className="num">{fmt.money(o.buyEach)}</span>
-                <span aria-hidden> → </span>
-                <span className="sr-only"> {t('game.market.opp.and')} </span>
-                {o.kind === 'sell-here' ? t('game.market.opp.herePays') : t('game.market.opp.countryPays', { country: name(o.to) })}{' '}
-                <span className="num">{fmt.money(o.sellEach)}</span>
-              </span>
+            <GCard
+              icon={<GameIcon id={o.itemId} size={28} accent="warm" />}
+              tone={o.block ? 'off' : o.kind !== 'buy-here' ? 'hot' : 'default'}
+              title={
+                <span className="opp-item">
+                  {item}
+                  {o.kind !== 'buy-here' && <span className="opp-tag">{t('game.market.opp.inCargoTag')}</span>}
+                </span>
+              }
+              meta={
+                <span className="opp-route">
+                  {o.kind === 'buy-here' ? t('game.market.opp.buyHereLabel') : t('game.market.opp.youPaid')}{' '}
+                  <span className="num">{fmt.money(o.buyEach)}</span>
+                  <span aria-hidden> → </span>
+                  <span className="sr-only"> {t('game.market.opp.and')} </span>
+                  {o.kind === 'sell-here' ? t('game.market.opp.herePays') : t('game.market.opp.countryPays', { country: name(o.to) })}{' '}
+                  <span className="num">{fmt.money(o.sellEach)}</span>
+                </span>
+              }
+              seal={pctTxt(fmt, o.pct)}
+              sealTone={o.block ? 'action' : 'ok'}
+              actions={
+                <>
+                  {o.kind !== 'sell-there' ? (
+                    <button className={`btn sm${o.block ? '' : ' primary'}`} disabled={!here || !!o.block} onClick={() => onFocus(o.itemId)}>
+                      {o.kind === 'buy-here' ? t('game.market.opp.buy') : t('game.market.opp.sell')}
+                    </button>
+                  ) : (
+                    <button
+                      className="btn sm primary"
+                      data-tour="fly"
+                      disabled={travelBlocked}
+                      onClick={() => act((g, ag) => A.travel(g, ag, o.to), 'depart')}
+                    >
+                      {t('game.market.opp.fly')}
+                    </button>
+                  )}
+                  <button className="btn sm ghost" onClick={() => select(o.to)}>
+                    {t('game.market.opp.view', { country: name(o.to) })}
+                  </button>
+                </>
+              }
+            >
               <span className="opp-meta mono">
-                <span className="pos num">{t('game.market.plPerUnit', { pl: pctTxt(fmt, o.pct) })}</span>
                 {o.qty > 0 && (
                   <>
-                    {' · '}
                     {o.kind === 'buy-here' ? t('game.market.opp.fitsN', { n: o.qty }) : t('game.market.opp.units', { n: o.qty })} ={' '}
                     <span className="pos num">{signed(fmt, o.profit)}</span>
                   </>
                 )}
-                {o.hours > 0 && ` · ${t('game.market.opp.flight', { time: formatDuration(o.hours) })}`}
+                {o.hours > 0 && `${o.qty > 0 ? ' · ' : ''}${t('game.market.opp.flight', { time: formatDuration(o.hours) })}`}
                 {!o.live && ` · ${t('game.market.opp.stale')}`}
                 {o.block && <span className="neg"> · {blockText(t, o.block)}</span>}
               </span>
-            </div>
-            <div className="opp-actions">
-              {o.kind !== 'sell-there' ? (
-                <button className={`btn sm${o.block ? '' : ' primary'}`} disabled={!here || !!o.block} onClick={() => onFocus(o.itemId)}>
-                  {o.kind === 'buy-here' ? t('game.market.opp.buy') : t('game.market.opp.sell')}
-                </button>
-              ) : (
-                <button
-                  className="btn sm primary"
-                  data-tour="fly"
-                  disabled={travelBlocked}
-                  onClick={() => act((g, ag) => A.travel(g, ag, o.to), 'depart')}
-                >
-                  {t('game.market.opp.fly')}
-                </button>
-              )}
-              <button className="btn sm ghost" onClick={() => select(o.to)}>
-                {t('game.market.opp.view', { country: name(o.to) })}
-              </button>
-            </div>
+            </GCard>
           </li>
         );
       })}
@@ -289,8 +297,14 @@ function MarketItem({ row, countryId, open, onToggle }: { row: MarketRow; countr
         : t('game.market.deal.above', { pct: pctAbs });
   return (
     <li className={`mkt-item${open ? ' open' : ''}${r.it.wmd ? ' wmd' : ''}${r.owned ? ' owned' : ''}`}>
-      <button className="mkt-row" aria-expanded={open} onClick={onToggle}>
-        <GameIcon id={r.itemId} size={28} accent={r.it.wmd ? 'signal' : 'warm'} />
+      <button
+        className={`mkt-row g-card${r.owned ? ' g-card--hot' : ''}${r.it.wmd ? ' g-card--danger' : ''}${!r.buy && !r.sell ? ' g-card--off' : ''}`}
+        aria-expanded={open}
+        onClick={onToggle}
+      >
+        <span className="g-well">
+          <GameIcon id={r.itemId} size={28} accent={r.it.wmd ? 'signal' : 'warm'} />
+        </span>
         <span className="mkt-name">
           <span className="mkt-name-t">{itemName(r.itemId)}</span>
           <span className="mkt-name-s">
@@ -517,8 +531,10 @@ function HireList({ countryId }: { countryId: string }) {
     <ul className="mkt-rows">
       {list.map((r) => (
         <li key={r.itemId} className="mkt-item hire">
-          <div className="mkt-row static">
-            <GameIcon id={r.itemId} size={28} accent="cold" />
+          <div className="mkt-row static g-card">
+            <span className="g-well">
+              <GameIcon id={r.itemId} size={28} accent="cold" />
+            </span>
             <span className="mkt-name">
               <span className="mkt-name-t">{itemName(r.itemId)}</span>
               <span className="mkt-name-s">

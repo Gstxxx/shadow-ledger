@@ -555,3 +555,61 @@
   -webkit-mask-image: linear-gradient(90deg, transparent, #000 44px, #000 calc(100% - 44px), transparent);
   mask-image: linear-gradient(90deg, transparent, #000 44px, #000 calc(100% - 44px), transparent);
 }
+
+/* Kit fase 2: cada Oportunidade é um GCard; o li só espaça as fichas. */
+.opps-list .opp {
+  display: block;
+  padding: 4px 10px;
+  border-top: 0;
+  background: none;
+}
+.opps-list .opp .g-card {
+  column-gap: 10px;
+}
+.opps-list .opp .g-card .btn {
+  white-space: nowrap;
+}
+.opps-list .opp .opp-meta {
+  font-size: 11.5px;
+}
+@container mkt (max-width: 460px) {
+  /* Coluna lateral/folha: ações descem para baixo do texto, que ganha a largura. */
+  .opps-list .opp .g-card {
+    grid-template-columns: auto 1fr auto !important;
+  }
+  .opps-list .opp .g-card > div:last-child {
+    grid-column: 2 / -1;
+    grid-auto-flow: column;
+    justify-content: start;
+  }
+}
+
+/* Kit fase 2: linhas de item e de contratação como .g-card (ícone no poço .g-well). */
+.mkt-rows .mkt-item {
+  border-top: 0;
+  padding: 3px 10px;
+}
+.mkt-rows .mkt-item.open,
+.mkt-rows .mkt-item.wmd {
+  box-shadow: none;
+  background: none;
+}
+html .mkt-row.g-card {
+  grid-template-columns: 44px minmax(0, 1fr) auto;
+  padding: 8px 10px 8px 12px;
+  border: 0;
+  background: none;
+  min-height: 60px;
+}
+html .mkt-row.g-card > .g-well {
+  grid-area: ico;
+  align-self: start;
+}
+html .mkt-item.open > .mkt-row.g-card {
+  --spine: var(--g-action);
+}
+@container mkt (max-width: 300px) {
+  html .mkt-row.g-card {
+    grid-template-columns: 44px minmax(0, 1fr);
+  }
+}
