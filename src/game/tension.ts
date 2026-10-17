@@ -72,19 +72,19 @@ export function tickTension(s: GameState, dt: number) {
 /** Crise Final: um país usa uma arma; todas as agências perdem. */
 function finalCrisis(s: GameState) {
   const ledger = s.wmdLedger ?? [];
-  const lines = s.agencies
-    .map((a) => {
+  const lines = {
+    msgs: s.agencies.map((a) => {
       const sold = ledger.filter((x) => x.agencyId === a.id);
-      if (!sold.length) return say(M('msg.tension.ledgerNone', { agency: a.name }));
-      const parts = sold.map((x) =>
-        say(M('msg.tension.ledgerSale', { qty: x.qty, item: ref.item(x.itemId), country: s.countries[x.countryId] ? ref.country(x.countryId) : '?' })),
+      if (!sold.length) return M('msg.crisis.agencyNone', { agency: a.name });
+      const sales = sold.map((x) =>
+        M('msg.crisis.sale', { qty: x.qty, item: ref.item(x.itemId), country: s.countries[x.countryId] ? ref.country(x.countryId) : '?' }),
       );
-      return say(M('msg.tension.ledgerLine', { agency: a.name, sales: parts.join('; ') }));
-    })
-    .join(' ');
-  // `lines` (lista por agência) vai como texto pt: não há Ref de lista (ver i18n-engine-missing.md).
-  log(s, M('msg.tension.finalCrisisLog', { lines }), 'bad');
-  const reason = M('msg.tension.finalCrisisReason', { lines });
+      return M('msg.crisis.agencySold', { agency: a.name, sales: { msgs: sales, sep: '; ' } });
+    }),
+    sep: ' ',
+  };
+  log(s, M('msg.crisis.log', { lines }), 'bad');
+  const reason = M('msg.crisis.reason', { lines });
   s.over = { won: false, reason: say(reason), reasonMsg: reason, score: 0 };
   notify(s, player(s), 'objective', M('msg.tension.finalCrisisTitle'), reason, 'bad');
   checkObjective(s);
