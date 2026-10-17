@@ -1429,3 +1429,25 @@ button.unit-row:hover {
   order: 3;
   flex: 1 0 100%;
 }
+/* Estação sob Ameaça: anel que pulsa (só opacidade e escala). */
+.stpin-pulse {
+  transform-box: fill-box;
+  transform-origin: center;
+  animation: stpin-pulse 1.6s ease-out infinite;
+}
+@keyframes stpin-pulse {
+  from {
+    opacity: 0.9;
+    transform: scale(0.8);
+  }
+  to {
+    opacity: 0;
+    transform: scale(1.7);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .stpin-pulse {
+    animation: none;
+    opacity: 0.8;
+  }
+}

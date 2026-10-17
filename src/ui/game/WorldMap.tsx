@@ -5,13 +5,15 @@ import { feature } from 'topojson-client';
 import type { Topology } from 'topojson-specification';
 import countriesTopo from 'world-atlas/countries-110m.json';
 import { POLITICS_COLOR } from '../../game/data/rules';
-import { intelCountries, player, postureIn, standing } from '../../game/state';
+import { EPOCH, intelCountries, player, postureIn, standing } from '../../game/state';
 import type { Flight, GameState } from '../../game/types';
 import { useGame, useGameStore } from '../../store/game';
 import { audio } from '../../audio/engine';
 import { useT } from '../../i18n';
 import { countryName } from '../../i18n/lookup';
 import { GMapMarker } from '../../art';
+import { StationPin, StationPinDefs } from './map/StationPin';
+import { localHour, reliefTexture } from './map/relief';
 
 const W = 1000;
 const H = 520;
@@ -44,6 +46,9 @@ function shapes(): Shape[] {
 }
 const SPHERE = pathGen({ type: 'Sphere' }) ?? '';
 const GRATICULE = pathGen(geoGraticule10()) ?? '';
+// Toda a terra num só caminho: base do relevo e do brilho da costa (gerado uma vez).
+let landCache: string | null = null;
+const land = () => (landCache ??= shapes().map((sh) => sh.d).join(''));
 
 const project = (lon: number, lat: number) => projection([lon, lat]) ?? [0, 0];
 
@@ -276,6 +281,7 @@ export function WorldMap({ mode, onPickCountry }: { mode: MapMode; onPickCountry
   const intel = intelCountries(a);
   const k = view.k;
   const line = 1 / k;
+  const utcHour = (((EPOCH / 3600_000 + s.time) % 24) + 24) % 24;
   // Marcadores e nomes: tamanho constante na tela (~0,9px por unidade), no máximo 2,4× no celular.
   const inv = Math.min(2.4, Math.max(1, 0.9 / pxPerUnit)) / k;
   const here = s.countries[a.location];
@@ -297,16 +303,61 @@ export function WorldMap({ mode, onPickCountry }: { mode: MapMode; onPickCountry
         onPointerLeave={onPointerUp}
       >
         <defs>
-          <radialGradient id="map-sea" cx="50%" cy="40%" r="70%">
-            <stop offset="0%" stopColor="#10141a" />
-            <stop offset="100%" stopColor="#090b0e" />
+          {/* Oceano: mais claro no raso do centro, fundo escuro nas bordas */}
+          <radialGradient id="map-sea" cx="50%" cy="42%" r="72%">
+            <stop offset="0%" stopColor="#132230" />
+            <stop offset="55%" stopColor="#0c1520" />
+            <stop offset="100%" stopColor="#05080c" />
           </radialGradient>
+          {/* Textura leve da água: ondulações finas */}
+          <pattern id="map-swell" width={14} height={6} patternUnits="userSpaceOnUse">
+            <path d="M0 3Q3.5 1.6 7 3T14 3" fill="none" stroke="rgba(150,190,220,0.05)" strokeWidth={0.5} />
+          </pattern>
+          {/* Relevo sugerido: textura sombreada gerada uma vez (luz rasante do noroeste) */}
+          <pattern id="map-relief" width={64} height={64} patternUnits="userSpaceOnUse">
+            <image href={reliefTexture()} width={64} height={64} />
+          </pattern>
+          {/* Luz rasante sobre a terra: noroeste claro, sudeste em sombra */}
+          <linearGradient id="map-light" x1="0" y1="0" x2="1" y2="1">
+            <stop offset="0%" stopColor="rgba(255,240,215,0.06)" />
+            <stop offset="100%" stopColor="rgba(0,0,0,0.22)" />
+          </linearGradient>
+          <radialGradient id="map-city">
+            <stop offset="0%" stopColor="rgba(255,214,140,0.55)" />
+            <stop offset="100%" stopColor="rgba(255,214,140,0)" />
+          </radialGradient>
+          <StationPinDefs />
         </defs>
         <g transform={`translate(${view.x} ${view.y}) scale(${k})`}>
           <path d={SPHERE} fill="url(#map-sea)" stroke="rgba(233,228,216,0.08)" strokeWidth={line} />
-          <path d={GRATICULE} fill="none" stroke="rgba(233,228,216,0.035)" strokeWidth={0.6 * line} />
+          <path d={SPHERE} fill="url(#map-swell)" pointerEvents="none" />
+          <path d={GRATICULE} fill="none" stroke="rgba(160,200,230,0.05)" strokeWidth={0.6 * line} pointerEvents="none" />
+          {/* Brilho tênue da costa: traço largo e transparente sob a terra (sem filtro) */}
+          <path d={land()} fill="none" stroke="rgba(120,190,230,0.07)" strokeWidth={5 * line} strokeLinejoin="round" pointerEvents="none" />
           <g style={{ strokeWidth: 0.5 * line }}>
             <Countries fills={fills} selected={selected} onPick={onPick} />
+          </g>
+          {/* Relevo e luz por cima dos preenchimentos (translúcidos: as camadas continuam legíveis) */}
+          <g pointerEvents="none">
+            <path d={land()} fill="url(#map-relief)" opacity={0.36} />
+            <path d={land()} fill="url(#map-light)" />
+            <path d={land()} fill="none" stroke="rgba(150,205,235,0.16)" strokeWidth={0.6 * line} />
+          </g>
+
+          {/* Luzes de cidade nas capitais onde é noite no relógio do jogo */}
+          <g pointerEvents="none">
+            {Object.values(s.countries).map((cc) => {
+              const h = localHour(utcHour, cc.lon);
+              if (h >= 6 && h < 19) return null;
+              const [x, y] = project(cc.lon, cc.lat);
+              const r = (1.4 + cc.level * 0.5) * inv;
+              return (
+                <g key={cc.id}>
+                  <circle cx={x} cy={y} r={r * 3.2} fill="url(#map-city)" />
+                  <circle cx={x} cy={y} r={r * 0.45} fill="#ffe2a8" opacity={0.85} />
+                </g>
+              );
+            })}
           </g>
 
           {/* Contratos aceitos: pontos de entrega */}
@@ -326,7 +377,7 @@ export function WorldMap({ mode, onPickCountry }: { mode: MapMode; onPickCountry
                 {r.stations.map((st) => {
                   const cc = s.countries[st.countryId];
                   const [x, y] = project(cc.lon, cc.lat);
-                  return <GMapMarker key={st.countryId} kind="rival" x={x + 9 * inv} y={y - 7 * inv} inv={inv} />;
+                  return <StationPin key={st.countryId} x={x + 14 * inv} y={y - 12 * inv} inv={inv} scale={0.95} level={st.level} color="var(--violet)" interdicted={!!st.interdicted} />;
                 })}
                 {!r.flight && intel.has(r.location) && (() => {
                   const cc = s.countries[r.location];
@@ -336,24 +387,23 @@ export function WorldMap({ mode, onPickCountry }: { mode: MapMode; onPickCountry
               </g>
             ))}
 
-          {/* Estações: hexágono do kit, com as marcas do nível; Interditada leva um X vermelho */}
+          {/* Estações: placa por Nível na cor da agência; Interditada com faixa e cadeado; sob Ameaça, pulso vermelho */}
           {a.stations.map((st) => {
             const cc = s.countries[st.countryId];
             const [x, y] = project(cc.lon, cc.lat);
-            const d = 5 * inv;
             return (
-              <g key={st.countryId} className="pin">
-                <GMapMarker kind="station" x={x} y={y} inv={inv} tier={Math.max(0, st.level - 1)} onClick={() => onPick(st.countryId)} />
-                {st.interdicted && (
-                  <path
-                    transform={`translate(${x} ${y})`}
-                    d={`M${-d} ${-d}L${d} ${d}M${d} ${-d}L${-d} ${d}`}
-                    stroke="var(--red)"
-                    strokeWidth={1.6 * inv}
-                    pointerEvents="none"
-                  />
-                )}
-              </g>
+              <StationPin
+                key={st.countryId}
+                x={x}
+                y={y - 9 * inv}
+                inv={inv}
+                level={st.level}
+                color="var(--amber)"
+                interdicted={!!st.interdicted}
+                threatened={a.threats.some((th) => th.countryId === st.countryId && th.target === 'station')}
+                label={countryName(st.countryId)}
+                onClick={() => onPick(st.countryId)}
+              />
             );
           })}
 
