@@ -100,3 +100,11 @@
   flex: 1 1 160px;
   min-width: 0;
 }
+/* Kit fase 2: medidores (GMeter) nos lugares das barras antigas. */
+.g-meter-wrap,
+.mkt-cap-meter,
+.ud-meter {
+  display: block;
+  min-width: 0;
+  width: 100%;
+}

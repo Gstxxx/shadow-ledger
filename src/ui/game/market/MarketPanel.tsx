@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
-import { GameIcon, GCard } from '../../../art';
+import { GameIcon, GCard, GMeter } from '../../../art';
 import * as A from '../../../game/actions';
 import { maxCargo, quoteBuy, quoteSell, usedCargo } from '../../../game/market';
 import { directorAt, formatDuration, intelCountries, player, standing } from '../../../game/state';
@@ -110,13 +110,8 @@ export function MarketPanel({ countryId }: { countryId: string }) {
           <span className="mkt-cap-k">
             <Help term="cargo">{t('game.market.cap.label')}</Help>
           </span>
-          <span className="mkt-cap-bar" aria-hidden>
-            <span
-              style={{
-                width: `${max ? Math.min(100, (used / max) * 100) : 100}%`,
-              }}
-              className={used / (max || 1) > 0.9 ? 'full' : ''}
-            />
+          <span className="mkt-cap-meter" aria-hidden>
+            <GMeter value={max ? Math.min(used, max) : 1} max={max || 1} tone={used / (max || 1) > 0.9 ? 'action' : 'neutral'} thin />
           </span>
           <span className="mkt-cap-v num">{t('game.market.cap.value', { used: fmt.tons(used), max: fmt.tons(max) })}</span>
         </div>

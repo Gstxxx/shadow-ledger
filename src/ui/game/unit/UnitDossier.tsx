@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import { X } from 'lucide-react';
-import { GameIcon, OperativePortrait, Stamp } from '../../../art';
+import { GameIcon, GMeter, OperativePortrait, Stamp } from '../../../art';
 import * as A from '../../../game/actions';
 import { STATIONS } from '../../../game/data/rules';
 import { directorAt, formatDuration, player, stationIn } from '../../../game/state';
@@ -246,8 +246,8 @@ export function UnitDossier({ uid, onClose }: { uid: string; onClose: () => void
             {human && (
               <div className="ud-rank" aria-label={t('game.unit.rankOf', { n: rank })}>
                 <span className="ud-k">{t('game.unit.rank', { n: rank })}</span>
-                <span className="ud-bar" aria-hidden>
-                  <span style={{ width: `${Math.round(xpInRank * 100)}%` }} />
+                <span className="ud-meter" aria-hidden>
+                  <GMeter value={xpInRank} max={1} thin />
                 </span>
                 <span className="ud-v mono">
                   {rank >= 5 ? t('game.unit.rankMax') : t('game.unit.rankProgress', { pct: Math.round(xpInRank * 100), next: rank + 1 })}
@@ -273,8 +273,8 @@ export function UnitDossier({ uid, onClose }: { uid: string; onClose: () => void
                       {t(m.labelKey)}
                       <small>{t(m.blurbKey)}</small>
                     </span>
-                    <span className="ud-bar" aria-hidden>
-                      <span style={{ width: `${(cur / Math.max(1, max)) * 100}%` }} className={cur < max ? 'low' : ''} />
+                    <span className="ud-meter" aria-hidden>
+                      <GMeter value={cur} max={Math.max(1, max)} tone={cur < max ? 'danger' : 'action'} segmented={max <= 12} />
                     </span>
                     <span className="ud-v mono" aria-label={t('game.unit.strengthValueAria', { cur, max })}>
                       {cur}/{max}

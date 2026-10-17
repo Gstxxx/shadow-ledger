@@ -1,4 +1,5 @@
 import type { ReactNode } from 'react';
+import { GMeter } from '../../art';
 import { POSTURE_COLOR } from '../../game/data/rules';
 import type { Posture } from '../../game/types';
 import { useT } from '../../i18n';
@@ -21,16 +22,8 @@ export function RepBar({ value }: { value: number }) {
   const { t } = useT();
   const v = Math.max(-100, Math.min(100, value));
   return (
-    <span className="meter rep" aria-label={t('game.bits.reputation', { n: Math.round(v) })}>
-      <span className="meter-mid" />
-      <span
-        className="meter-fill"
-        style={{
-          left: v >= 0 ? '50%' : `${50 + v / 2}%`,
-          width: `${Math.abs(v) / 2}%`,
-          background: v >= 30 ? 'var(--green)' : v <= -30 ? 'var(--red)' : 'var(--paper-3)',
-        }}
-      />
+    <span className="g-meter-wrap" aria-label={t('game.bits.reputation', { n: Math.round(v) })}>
+      <GMeter bipolar value={v + 100} max={200} tone={v >= 30 ? 'ok' : v <= -30 ? 'danger' : 'neutral'} thin />
     </span>
   );
 }
@@ -39,11 +32,8 @@ export function RepBar({ value }: { value: number }) {
 export function ExpBar({ value }: { value: number }) {
   const { t } = useT();
   return (
-    <span className="meter" aria-label={t('game.bits.exposure', { n: Math.round(value) })}>
-      <span
-        className="meter-fill"
-        style={{ left: 0, width: `${Math.min(100, value)}%`, background: value > 60 ? 'var(--red)' : 'var(--amber)' }}
-      />
+    <span className="g-meter-wrap" aria-label={t('game.bits.exposure', { n: Math.round(value) })}>
+      <GMeter value={Math.min(100, value)} max={100} tone={value > 60 ? 'danger' : 'action'} thin />
     </span>
   );
 }
