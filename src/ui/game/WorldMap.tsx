@@ -11,6 +11,7 @@ import { useGame, useGameStore } from '../../store/game';
 import { audio } from '../../audio/engine';
 import { useT } from '../../i18n';
 import { countryName } from '../../i18n/lookup';
+import { GMapMarker } from '../../art';
 
 const W = 1000;
 const H = 520;
@@ -161,6 +162,8 @@ export function WorldMap({ mode }: { mode: MapMode }) {
   }, [a.location, a.flight]); // eslint-disable-line react-hooks/exhaustive-deps
   const svg = useRef<SVGSVGElement>(null);
   const [vb, setVb] = useState<Box>(box);
+  // Pixels de tela por unidade do mapa: no celular o SVG encolhe e os marcadores sumiriam.
+  const [pxPerUnit, setPxPerUnit] = useState(1);
   useEffect(() => {
     const el = svg.current;
     if (!el) return;
@@ -168,6 +171,7 @@ export function WorldMap({ mode }: { mode: MapMode }) {
       const r = el.getBoundingClientRect();
       box = boxFor(r.width, r.height);
       setVb(box);
+      if (r.width > 0) setPxPerUnit(r.width / box.w);
       setView((v) => clampView(v));
     });
     ro.observe(el);
@@ -249,7 +253,9 @@ export function WorldMap({ mode }: { mode: MapMode }) {
 
   const intel = intelCountries(a);
   const k = view.k;
-  const inv = 1 / k;
+  const line = 1 / k;
+  // Marcadores e nomes: tamanho constante na tela (~0,9px por unidade), no máximo 2,4× no celular.
+  const inv = Math.min(2.4, Math.max(1, 0.9 / pxPerUnit)) / k;
   const here = s.countries[a.location];
   const [hx, hy] = project(here.lon, here.lat);
   const g = s.group;
@@ -275,9 +281,9 @@ export function WorldMap({ mode }: { mode: MapMode }) {
           </radialGradient>
         </defs>
         <g transform={`translate(${view.x} ${view.y}) scale(${k})`}>
-          <path d={SPHERE} fill="url(#map-sea)" stroke="rgba(233,228,216,0.08)" strokeWidth={inv} />
-          <path d={GRATICULE} fill="none" stroke="rgba(233,228,216,0.035)" strokeWidth={0.6 * inv} />
-          <g style={{ strokeWidth: 0.5 * inv }}>
+          <path d={SPHERE} fill="url(#map-sea)" stroke="rgba(233,228,216,0.08)" strokeWidth={line} />
+          <path d={GRATICULE} fill="none" stroke="rgba(233,228,216,0.035)" strokeWidth={0.6 * line} />
+          <g style={{ strokeWidth: 0.5 * line }}>
             <Countries fills={fills} selected={selected} onPick={onPick} />
           </g>
 
@@ -298,20 +304,7 @@ export function WorldMap({ mode }: { mode: MapMode }) {
                 {r.stations.map((st) => {
                   const cc = s.countries[st.countryId];
                   const [x, y] = project(cc.lon, cc.lat);
-                  const sz = (4 + st.level) * inv;
-                  return (
-                    <rect
-                      key={st.countryId}
-                      x={x - sz / 2 + 9 * inv}
-                      y={y - sz / 2 - 7 * inv}
-                      width={sz}
-                      height={sz}
-                      fill="none"
-                      stroke="var(--violet)"
-                      strokeWidth={1.2 * inv}
-                      transform={`rotate(45 ${x + 9 * inv} ${y - 7 * inv})`}
-                    />
-                  );
+                  return <GMapMarker key={st.countryId} kind="rival" x={x + 9 * inv} y={y - 7 * inv} inv={inv} />;
                 })}
                 {!r.flight && intel.has(r.location) && (() => {
                   const cc = s.countries[r.location];
@@ -321,23 +314,23 @@ export function WorldMap({ mode }: { mode: MapMode }) {
               </g>
             ))}
 
-          {/* Estações */}
+          {/* Estações: hexágono do kit, com as marcas do nível; Interditada leva um X vermelho */}
           {a.stations.map((st) => {
             const cc = s.countries[st.countryId];
             const [x, y] = project(cc.lon, cc.lat);
-            const sz = (5 + st.level) * inv;
+            const d = 5 * inv;
             return (
-              <g key={st.countryId} transform={`translate(${x} ${y})`} className="pin" onClick={() => onPick(st.countryId)}>
-                <rect
-                  x={-sz / 2}
-                  y={-sz / 2}
-                  width={sz}
-                  height={sz}
-                  fill={st.interdicted ? '#0b0d10' : 'var(--amber)'}
-                  stroke={st.interdicted ? 'var(--red)' : '#0b0d10'}
-                  strokeWidth={1.2 * inv}
-                />
-                {st.interdicted && <path d={`M${-sz / 2} ${-sz / 2}L${sz / 2} ${sz / 2}M${sz / 2} ${-sz / 2}L${-sz / 2} ${sz / 2}`} stroke="var(--red)" strokeWidth={1.2 * inv} />}
+              <g key={st.countryId} className="pin">
+                <GMapMarker kind="station" x={x} y={y} inv={inv} tier={Math.max(0, st.level - 1)} onClick={() => onPick(st.countryId)} />
+                {st.interdicted && (
+                  <path
+                    transform={`translate(${x} ${y})`}
+                    d={`M${-d} ${-d}L${d} ${d}M${d} ${-d}L${-d} ${d}`}
+                    stroke="var(--red)"
+                    strokeWidth={1.6 * inv}
+                    pointerEvents="none"
+                  />
+                )}
               </g>
             );
           })}
@@ -348,9 +341,9 @@ export function WorldMap({ mode }: { mode: MapMode }) {
             const [x, y] = project(cc.lon, cc.lat);
             const left = Math.max(0, th.strikesAt - s.time);
             return (
-              <g key={th.id} transform={`translate(${x} ${y})`} className="threat-pin">
-                <circle r={11 * inv} fill="none" stroke="var(--red)" strokeWidth={1.4 * inv} className="pulse" />
-                <text y={-14 * inv} fontSize={9 * inv} textAnchor="middle" className="map-label hostile">
+              <g key={th.id}>
+                <GMapMarker kind="threat" x={x} y={y} inv={inv} />
+                <text x={x} y={y - 14 * inv} fontSize={9 * inv} textAnchor="middle" className="map-label hostile" style={{ strokeWidth: 3 * inv }}>
                   {t('game.map.hours', { n: Math.ceil(left) })}
                 </text>
               </g>
@@ -363,9 +356,9 @@ export function WorldMap({ mode }: { mode: MapMode }) {
             const [x, y] = project(cc.lon, cc.lat);
             const d = 6 * inv;
             return (
-              <g transform={`translate(${x} ${y})`}>
+              <g transform={`translate(${x} ${y})`} className="g-mapmark g-mapmark--threat">
                 <path d={`M0 ${-d}L${d} 0L0 ${d}L${-d} 0Z`} fill="var(--red)" stroke="#0b0d10" strokeWidth={inv} />
-                <text y={-10 * inv} fontSize={9 * inv} textAnchor="middle" className="map-label hostile">
+                <text y={-10 * inv} fontSize={9 * inv} textAnchor="middle" className="map-label hostile" style={{ strokeWidth: 3 * inv }}>
                   {g.name}
                 </text>
               </g>
@@ -379,7 +372,7 @@ export function WorldMap({ mode }: { mode: MapMode }) {
             const d = 5 * inv;
             return (
               <g key={t.id}>
-                {t.travel && <path d={routePath(t.travel, s)} fill="none" stroke="var(--amber)" strokeOpacity={0.5} strokeDasharray={`${2 * inv} ${3 * inv}`} strokeWidth={inv} />}
+                {t.travel && <path className="g-route" d={routePath(t.travel, s)} fill="none" stroke="var(--amber)" strokeOpacity={0.5} strokeDasharray={`${2 * inv} ${3 * inv}`} strokeWidth={inv} />}
                 <path transform={`translate(${x + 7 * inv} ${y + 5 * inv})`} d={`M0 ${-d}L${d} ${d}L${-d} ${d}Z`} fill="none" stroke="var(--amber)" strokeWidth={1.4 * inv} />
               </g>
             );
@@ -392,7 +385,7 @@ export function WorldMap({ mode }: { mode: MapMode }) {
               const [x, y] = project(p[0], p[1]);
               return (
                 <g>
-                  <path d={routePath(a.flight, s)} fill="none" stroke="var(--amber)" strokeWidth={1.2 * inv} strokeDasharray={`${4 * inv} ${3 * inv}`} />
+                  <path className="g-route" d={routePath(a.flight, s)} fill="none" stroke="var(--amber)" strokeWidth={1.2 * inv} strokeDasharray={`${4 * inv} ${3 * inv}`} />
                   <g transform={`translate(${x} ${y}) rotate(${bearing(a.flight, s)}) scale(${inv})`}>
                     <path d="M9 0 L-6 -6 L-3 0 L-6 6 Z" fill="var(--amber)" stroke="#0b0d10" strokeWidth={1} />
                   </g>
@@ -401,12 +394,19 @@ export function WorldMap({ mode }: { mode: MapMode }) {
             })()
           ) : (
             a.director.status !== 'dead' && (
-              <g transform={`translate(${hx} ${hy})`}>
-                <circle r={9 * inv} fill="none" stroke="var(--amber)" strokeWidth={1.5 * inv} className="pulse slow" />
-                <circle r={2.4 * inv} fill={a.director.status === 'free' ? 'var(--amber)' : 'var(--red)'} />
+              <g>
+                <GMapMarker kind="director" x={hx} y={hy} inv={inv} />
+                {a.director.status !== 'free' && <circle cx={hx} cy={hy} r={2.4 * inv} fill="var(--red)" pointerEvents="none" />}
               </g>
             )
           )}
+
+          {/* País escolhido (fora de onde o Diretor está) */}
+          {selected && selected !== a.location && s.countries[selected] && (() => {
+            const cc = s.countries[selected];
+            const [x, y] = project(cc.lon, cc.lat);
+            return <GMapMarker kind="selected" x={x} y={y} inv={inv} />;
+          })()}
 
           {/* Nomes */}
           {Object.values(s.countries).map((c) => {
@@ -414,7 +414,7 @@ export function WorldMap({ mode }: { mode: MapMode }) {
             if (!show) return null;
             const [x, y] = project(c.lon, c.lat);
             return (
-              <text key={c.id} x={x} y={y + 14 * inv} fontSize={9.5 * inv} textAnchor="middle" className={`map-label${c.id === selected ? ' sel' : ''}`}>
+              <text key={c.id} x={x} y={y + 14 * inv} fontSize={9.5 * inv} textAnchor="middle" className={`map-label${c.id === selected ? ' sel' : ''}`} style={{ strokeWidth: 3 * inv }}>
                 {countryName(c.id)}
               </text>
             );
