@@ -609,3 +609,38 @@ html .g-modal--xl .g-modal__body {
   min-height: 0;
   overflow-y: auto;
 }
+/* Ilustrações dos itens (menu-motion): 3:2. No topo do modal ocupa a largura; nas linhas, miniatura 72×48. */
+.trade2-hero {
+  aspect-ratio: 3 / 2;
+  max-height: 300px;
+}
+.trade2-illo {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+.mkt-thumb {
+  display: block;
+  width: 72px;
+  height: 48px;
+  padding: 0;
+  overflow: hidden;
+}
+.mkt-thumb > svg {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+html .mkt-row.g-card:has(.mkt-thumb) {
+  grid-template-columns: 72px minmax(0, 1fr) auto;
+}
+@container mkt (max-width: 360px) {
+  html .mkt-row.g-card:has(.mkt-thumb) {
+    grid-template-columns: 72px minmax(0, 1fr);
+  }
+}
+@media (orientation: landscape) and (max-height: 560px) {
+  .trade2-hero {
+    max-height: 170px;
+  }
+}

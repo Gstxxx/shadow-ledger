@@ -22,6 +22,7 @@ import {
 } from './model';
 import type { BlockMsg, MarketRow, Opportunity, Segment } from './model';
 import { useStage } from '../stage/context';
+import { ILLUSTRATED_IDS, ItemIllustration } from '../../item-illustrations';
 import { ShortList, Verdict } from '../stage/Verdict';
 import { useCanStore } from '../VaultPanel';
 import { def } from '../../../game/units';
@@ -359,9 +360,7 @@ function MarketItem({ row, countryId, open, onToggle }: { row: MarketRow; countr
         aria-haspopup={staged ? 'dialog' : undefined}
         onClick={onToggle}
       >
-        <span className="g-well">
-          <GameIcon id={r.itemId} size={28} accent={r.it.wmd ? 'signal' : 'warm'} />
-        </span>
+        <ItemThumb id={r.itemId} accent={r.it.wmd ? 'signal' : 'warm'} />
         <span className="mkt-name">
           <span className="mkt-name-t">{itemName(r.itemId)}</span>
           <span className="mkt-name-s">
@@ -670,9 +669,7 @@ function SellList({ countryId, onBuy }: { countryId: string; onBuy: () => void }
               aria-haspopup="dialog"
               onClick={() => stage?.push({ kind: 'item', countryId, itemId: it.itemId, side: 'sell' })}
             >
-              <span className="g-well">
-                <GameIcon id={it.itemId} size={28} accent="warm" />
-              </span>
+              <ItemThumb id={it.itemId} accent="warm" />
               <span className="mkt-name">
                 <span className="mkt-name-t">{itemName(it.itemId)}</span>
                 <span className="mkt-name-s">{t('game.market.owned', { n: it.qty })}</span>
@@ -718,5 +715,20 @@ function SellList({ countryId, onBuy }: { countryId: string; onBuy: () => void }
         </li>
       )}
     </ul>
+  );
+}
+
+/** Miniatura do item nas linhas do Mercado: a ilustração (96×64) quando existe; senão o ícone do kit. */
+function ItemThumb({ id, accent }: { id: string; accent: 'warm' | 'signal' | 'cold' }) {
+  if (ILLUSTRATED_IDS.includes(id))
+    return (
+      <span className="g-well mkt-thumb">
+        <ItemIllustration id={id} size="sm" alt="" />
+      </span>
+    );
+  return (
+    <span className="g-well">
+      <GameIcon id={id} size={28} accent={accent} />
+    </span>
   );
 }
