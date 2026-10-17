@@ -197,26 +197,6 @@ select {
   }
 }
 
-/* ── Rotate notice (ADR 0003: celular em paisagem) ───── */
-.rotate-notice {
-  display: none;
-}
-@media (orientation: portrait) and (max-width: 760px) {
-  .rotate-notice {
-    position: fixed;
-    inset: 0;
-    z-index: 9999;
-    display: grid;
-    place-items: center;
-    gap: 16px;
-    padding: 32px;
-    text-align: center;
-    background: var(--ink-0);
-    color: var(--paper-2);
-    font-size: 15px;
-  }
-}
-
 @media (prefers-reduced-motion: reduce) {
   *,
   *::before,

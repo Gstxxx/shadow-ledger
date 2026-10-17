@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
-import { RotateCw, Volume2, VolumeX } from 'lucide-react';
+import { Volume2, VolumeX } from 'lucide-react';
 import { audio } from './audio/engine';
 import { useGameStore } from './store/game';
 import { useSettings } from './store/settings';
@@ -60,10 +60,6 @@ export default function App() {
         </button>
       )}
       <Toasts />
-      <div className="rotate-notice">
-        <RotateCw size={40} color="var(--amber)" />
-        <div>Gire o aparelho: Shadow Ledger é jogado na horizontal.</div>
-      </div>
     </>
   );
 }
