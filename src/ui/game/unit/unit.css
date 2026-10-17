@@ -369,13 +369,6 @@
   letter-spacing: 1px;
   color: var(--amber);
 }
-.uc-status {
-  padding: 0 6px;
-  font: 500 11px/18px var(--mono);
-  text-transform: uppercase;
-  color: #ffb1b3;
-  background: var(--red-glow);
-}
 .uc-role {
   font-size: 12px;
   color: var(--paper-3);
@@ -412,17 +405,6 @@
   display: flex;
   flex-wrap: wrap;
   gap: 4px;
-}
-.uc-trait {
-  padding: 0 6px;
-  font-size: 11px;
-  line-height: 18px;
-  color: #8fe0bd;
-  border: 1px solid rgba(70, 185, 141, 0.35);
-}
-.uc-trait.neg {
-  color: #ffb1b3;
-  border-color: rgba(229, 72, 77, 0.4);
 }
 .uc-side {
   display: grid;

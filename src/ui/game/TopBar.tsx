@@ -9,7 +9,8 @@ import type { Speed } from '../../store/settings';
 import { audio } from '../../audio/engine';
 import { useT } from '../../i18n';
 import { objectiveLabel, tensionBandLabel } from '../../i18n/lookup';
-import { usePortrait } from './portrait/usePortrait';
+import { useMedia, usePortrait } from './portrait/usePortrait';
+import { GMeter, GSegmented } from '../../art';
 import { DirectorAvatar } from './DirectorAvatar';
 
 export function TopBar({ onMenu, onLeft, onRight }: { onMenu: () => void; onLeft: () => void; onRight: () => void }) {
@@ -32,6 +33,7 @@ export function TopBar({ onMenu, onLeft, onRight }: { onMenu: () => void; onLeft
   const [details, setDetails] = useState(false);
   // Em pé, as âncoras do guia ficam nas abas da folha; os botões de gaveta somem.
   const portrait = usePortrait();
+  const narrow = useMedia('(max-width: 700px)');
   const halted = paused || s.events.length > 0 || !!s.combat || !!s.pendingCombat;
 
   // Meta de lucro do Objetivo "Lucro no prazo" (1 = basta terminar no azul).
@@ -43,13 +45,11 @@ export function TopBar({ onMenu, onLeft, onRight }: { onMenu: () => void; onLeft
         aria-label={target > 1 ? t('game.topbar.profitGoalAria', { profit: fmt.money(p), goal: fmt.money(target), pct: goalPct }) : undefined}
       >
         <span className="tb-k mono">{target === 1 ? `${t('game.topbar.profit')} · ${t('game.topbar.stayInBlack')}` : t('game.topbar.profit')}</span>
-        <span className={`tb-v num ${p >= 0 ? 'pos' : 'neg'}`}>
+        <span className={`tb-v num g-counter g-counter--lg ${p >= 0 ? 'pos' : 'neg'}`}>
           {target > 1 ? t('game.topbar.profitOfGoal', { profit: fmt.money(p), goal: fmt.money(target) }) : fmt.money(p)}
         </span>
         {target > 1 && (
-          <span className="goal-bar" aria-hidden>
-            <span style={{ width: `${goalPct}%` }} className={goalPct >= 100 ? 'done' : ''} />
-          </span>
+          <GMeter className="goal-bar" value={goalPct} max={100} tone={goalPct >= 100 ? 'ok' : 'action'} thin />
         )}
       </div>
   );
@@ -59,10 +59,7 @@ export function TopBar({ onMenu, onLeft, onRight }: { onMenu: () => void; onLeft
           {t('game.topbar.tension')} · {tensionBandLabel(tensionBand(s.tension))}
           {(s.crisis?.hours ?? 0) > 0 && <span className="crisis"> · {t('game.topbar.crisisIn', { time: formatDuration(crisisHoursLeft(s)) })}</span>}
         </span>
-        <span className="tension">
-          <span className="tension-fill" style={{ width: `${s.tension}%`, background: s.tension >= WMD_TENSION ? 'var(--red)' : 'var(--paper-2)' }} />
-          <span className="tension-mark" style={{ left: `${WMD_TENSION}%` }} />
-        </span>
+        <GMeter className="tension" value={s.tension} max={100} mark={WMD_TENSION} tone={s.tension >= WMD_TENSION ? 'danger' : 'neutral'} segmented />
       </div>
   );
 
@@ -107,12 +104,12 @@ export function TopBar({ onMenu, onLeft, onRight }: { onMenu: () => void; onLeft
           <span className="tb-k mono">
             {t('game.topbar.cash')} <ChevronDown size={12} style={{ transform: details ? 'rotate(180deg)' : undefined }} />
           </span>
-          <span className="tb-v num">{fmt.money(a.cash)}</span>
+          <span className="tb-v num g-counter g-counter--lg">{fmt.money(a.cash)}</span>
         </button>
       ) : (
         <div className="tb-stat">
           <span className="tb-k mono">{t('game.topbar.cash')}</span>
-          <span className="tb-v num">{fmt.money(a.cash)}</span>
+          <span className="tb-v num g-counter g-counter--lg">{fmt.money(a.cash)}</span>
         </div>
       )}
       {profitStat}
@@ -134,20 +131,12 @@ export function TopBar({ onMenu, onLeft, onRight }: { onMenu: () => void; onLeft
         >
           {paused ? <Play size={16} /> : <Pause size={16} />}
         </button>
-        {([1, 2, 4, 8] as Speed[]).map((v) => (
-          <button
-            key={v}
-            className={`btn sm${v === 8 ? ' hide-xs' : ''}`}
-            aria-label={t('game.topbar.speedN', { n: v })}
-            aria-pressed={!paused && speed === v}
-            onClick={() => {
-              audio.sfx('click');
-              setSpeed(v);
-            }}
-          >
-            {v}×
-          </button>
-        ))}
+        <GSegmented
+          label={t('game.topbar.speed')}
+          options={(narrow ? [1, 2, 4] : [1, 2, 4, 8]).map((v) => ({ value: String(v), label: `${v}×`, aria: t('game.topbar.speedN', { n: v }) }))}
+          value={paused ? '' : String(speed)}
+          onChange={(v) => setSpeed(Number(v) as Speed)}
+        />
         {skipButton('hide-xs')}
       </div>
       <button className="btn icon ghost only-mid" data-tour={portrait ? undefined : 'drawer-right'} aria-label={t('game.topbar.agency')} onClick={onRight}>

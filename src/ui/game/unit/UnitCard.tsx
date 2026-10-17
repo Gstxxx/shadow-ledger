@@ -74,7 +74,7 @@ export function UnitCard({
                 {'▮'.repeat(rank)}
               </span>
             )}
-            {status && <span className="uc-status">{status.label}</span>}
+            {status && <span className={`uc-status g-chip ${detained ? 'g-chip--danger' : 'g-chip--warn'}`}>{status.label}</span>}
           </span>
           <span className="uc-role">
             {name}
@@ -86,7 +86,7 @@ export function UnitCard({
           {unit.traits.length > 0 && (
             <span className="uc-traits">
               {unit.traits.map((tr) => (
-                <span key={tr} className={`uc-trait${tr === 'nervous' || tr === 'demanding' ? ' neg' : ''}`}>
+                <span key={tr} className={`uc-trait g-chip ${tr === 'nervous' || tr === 'demanding' ? 'neg g-chip--danger' : 'g-chip--ok'}`}>
                   {traitName(tr, lang)}
                 </span>
               ))}

@@ -167,7 +167,7 @@ export function UnitDossier({ uid, onClose }: { uid: string; onClose: () => void
   const titleId = `ud-${u.uid}`;
 
   return (
-    <div className="ud-scrim" onClick={onClose}>
+    <div className="ud-scrim g-skin" onClick={onClose}>
       <div
         ref={dialog}
         className="ud"

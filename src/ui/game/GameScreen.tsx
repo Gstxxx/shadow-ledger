@@ -21,6 +21,8 @@ import './portrait/safe.css';
 
 installSafeAreaDebug();
 import { countryName } from '../../i18n/lookup';
+import { GSegmented } from '../../art';
+import '../../art/game-ui.css';
 import type { MapMode } from './WorldMap';
 import './game.css';
 
@@ -128,20 +130,20 @@ export function GameScreen() {
   const mapArea = (
     <main className="map-area" data-tour="map">
       <WorldMap mode={mode} />
-      <div className="map-modes" role="group" aria-label={t('game.screen.mapLayer')}>
-        {MODES.map((m) => (
-          <button key={m.id} className="btn sm" aria-pressed={mode === m.id} onClick={() => setMode(m.id)}>
-            {t(m.labelKey)}
-          </button>
-        ))}
-      </div>
+      <GSegmented
+        className="map-modes"
+        label={t('game.screen.mapLayer')}
+        options={MODES.map((m) => ({ value: m.id, label: t(m.labelKey) }))}
+        value={mode}
+        onChange={setMode}
+      />
       <LogPanel open={logOpen} onToggle={() => setLogOpen(!logOpen)} />
     </main>
   );
 
   return (
     <DossierHost>
-    <div className={`game${portrait ? ` upright sheet-${snap}` : ''}`}>
+    <div className={`game g-skin${portrait ? ` upright sheet-${snap}` : ''}`}>
       <TopBar onMenu={openMenu} onLeft={() => (drawer === 'left' ? setDrawer(null) : openPanel('left'))} onRight={() => (drawer === 'right' ? setDrawer(null) : openPanel('right'))} />
       <DirectorBanner />
       {portrait ? (

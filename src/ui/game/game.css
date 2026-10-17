@@ -1308,6 +1308,7 @@ button.unit-row:hover {
     z-index: 2;
   }
   .side .tabs,
+  .side .ag-tabs,
   .side .cty-head {
     padding-right: 48px;
   }

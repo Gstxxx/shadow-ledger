@@ -422,10 +422,10 @@ export function WorldMap({ mode }: { mode: MapMode }) {
         </g>
       </svg>
       <div className="map-zoom">
-        <button className="btn icon sm" aria-label={t('game.map.zoomIn')} onClick={() => zoomAt(box.x + box.w / 2, box.y + box.h / 2, 1.4)}>
+        <button className="g-btn g-btn--icon g-btn--sm" aria-label={t('game.map.zoomIn')} onClick={() => zoomAt(box.x + box.w / 2, box.y + box.h / 2, 1.4)}>
           +
         </button>
-        <button className="btn icon sm" aria-label={t('game.map.zoomOut')} onClick={() => zoomAt(box.x + box.w / 2, box.y + box.h / 2, 1 / 1.4)}>
+        <button className="g-btn g-btn--icon g-btn--sm" aria-label={t('game.map.zoomOut')} onClick={() => zoomAt(box.x + box.w / 2, box.y + box.h / 2, 1 / 1.4)}>
           −
         </button>
       </div>

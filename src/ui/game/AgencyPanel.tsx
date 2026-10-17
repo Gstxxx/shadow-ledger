@@ -50,14 +50,14 @@ export function AgencyPanel() {
   };
   return (
     <div className="agency">
-      <nav className="tabs ag-tabs" role="tablist" aria-label={t('game.topbar.agency')}>
+      <nav className="g-tabs ag-tabs" role="tablist" aria-label={t('game.topbar.agency')}>
         {tabs.map((tb) => (
           <button
             key={tb.id}
             role="tab"
             data-tour={tb.id === 'contracts' ? 'tab-contracts' : tb.id === 'threats' ? 'tab-threats' : undefined}
             aria-selected={tab === tb.id}
-            className={`tab${tb.hot ? ' hot' : ''}`}
+            className={`g-tab${tb.hot ? ' g-tab--alert' : ''}`}
             title={tb.badge ? `${tb.label}: ${tb.badgeLabel}` : tb.label}
             // Troca já no toque/pressão; o clique cobre teclado e leitores de tela.
             onPointerDown={(e) => {
@@ -68,7 +68,7 @@ export function AgencyPanel() {
             <tb.Icon size={16} />
             <span className="tab-label">{tb.label}</span>
             {tb.badge !== undefined && (
-              <span className="badge" aria-label={tb.badgeLabel}>
+              <span className={`g-badge${tb.hot ? ' g-badge--alert' : ''}`} aria-label={tb.badgeLabel}>
                 {tb.badge}
               </span>
             )}

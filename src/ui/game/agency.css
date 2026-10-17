@@ -1,27 +1,38 @@
 /* Abas da Agência: rótulo sempre visível (nada só em ícone), contador com significado no aria/title. */
-.ag-tabs .tab {
+.ag-tabs {
+  padding: 4px 2px 0;
+  border-bottom: 0;
+}
+/* Seis abas lado a lado: ícone sobre o rótulo, contador no canto. */
+.ag-tabs .g-tab {
+  flex: 1 1 0;
+  min-width: 0;
   min-height: 48px;
+  flex-direction: column;
+  justify-content: center;
   gap: 2px;
-  font-size: 11px;
+  padding: 6px 2px 4px;
+  font-size: 10.5px;
+  letter-spacing: 0.04em;
   touch-action: manipulation;
 }
 .ag-tabs .tab-label {
   display: block !important;
-  white-space: nowrap;
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
-.ag-tabs .tab:focus-visible {
-  outline: 2px solid var(--amber);
-  outline-offset: -2px;
-}
-.ag-tabs .badge {
-  right: 4px;
+.ag-tabs .g-badge {
+  position: absolute;
+  top: 3px;
+  right: 3px;
 }
 .sec-hint {
   margin: -4px 14px 8px;
   line-height: 1.4;
 }
 @media (max-height: 520px) {
-  .ag-tabs .tab {
+  .ag-tabs .g-tab {
     min-height: 44px;
     padding: 5px 2px 4px;
   }

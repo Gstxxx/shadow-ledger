@@ -97,7 +97,7 @@ export function MarketPanel({ countryId }: { countryId: string }) {
       <header className="mkt-head">
         <div className="mkt-title">
           <h3>{t('game.market.title')}</h3>
-          <span className={`mkt-live mono${live ? ' on' : ''}`}>
+          <span className={`mkt-live mono${live ? ' on g-chip g-chip--live' : ''}`}>
             {live
               ? t('game.market.live')
               : seen
@@ -135,13 +135,13 @@ export function MarketPanel({ countryId }: { countryId: string }) {
         </div>
       ) : (
         <>
-          <div className={`mkt-segs${segFade}`} ref={segsRef} onScroll={updateSegFade} role="tablist" aria-label={t('game.market.segmentsAria')}>
+          <div className={`mkt-segs g-tabs${segFade}`} ref={segsRef} onScroll={updateSegFade} role="tablist" aria-label={t('game.market.segmentsAria')}>
             {segs.map((g) => (
               <button
                 key={g.id}
                 role="tab"
                 aria-selected={active === g.id}
-                className={`mkt-seg${g.id === 'hire' ? ' hire' : ''}`}
+                className={`mkt-seg g-tab${g.id === 'hire' ? ' hire' : ''}`}
                 onClick={() => {
                   setSeg(g.id);
                   setOpen(null);
@@ -149,7 +149,7 @@ export function MarketPanel({ countryId }: { countryId: string }) {
               >
                 <GameIcon id={g.icon} size={18} accent={active === g.id ? 'warm' : 'none'} />
                 <span>{t(g.labelKey)}</span>
-                {counts[g.id] > 0 && <span className="mkt-count num">{counts[g.id]}</span>}
+                {counts[g.id] > 0 && <span className="mkt-count g-badge">{counts[g.id]}</span>}
               </button>
             ))}
           </div>
