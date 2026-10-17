@@ -330,3 +330,10 @@ html .ev-queued {
     max-height: calc(100dvh - 16px - var(--safe-t) - var(--safe-b));
   }
 }
+
+/* Em pé, o rodapé do Combate (sticky) fica acima do home indicator. */
+@media (orientation: portrait) and (max-width: 820px) {
+  html .combat-card > .cb-actions {
+    padding-bottom: calc(16px + var(--safe-b));
+  }
+}

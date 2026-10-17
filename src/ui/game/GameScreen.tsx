@@ -15,6 +15,8 @@ import { StageDock, StageModals } from './stage/Stage';
 import { StageCtx } from './stage/context';
 import type { StageApi, StageModal } from './stage/context';
 import { installSafeAreaDebug } from './portrait/safeArea';
+// Regras de pé (modais e Combate em tela cheia, grade vertical); antes vinham junto com a folha inferior.
+import './portrait/portrait.css';
 import './portrait/safe.css';
 
 installSafeAreaDebug();
