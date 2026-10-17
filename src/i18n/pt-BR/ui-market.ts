@@ -127,4 +127,8 @@ export default {
   'game.market.chart.world': 'média mundial',
   'game.market.chart.today': 'hoje',
   'game.market.chart.aria': 'Preço de {item} nos últimos {n} dias',
+  'game.market.trade.destProfit': 'Lucro em {country}: {pl} ({pct})',
+  'game.market.trade.bestQty': 'Lucro máximo com {n} unidades',
+  'game.market.trade.setQty': 'Usar {n}',
+  'game.market.trade.lossFrom': 'A partir de {n} unidades dá prejuízo.',
 } as const;

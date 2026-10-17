@@ -127,4 +127,8 @@ export default {
   'game.market.chart.world': 'world average',
   'game.market.chart.today': 'today',
   'game.market.chart.aria': '{item} price over the last {n} days',
+  'game.market.trade.destProfit': 'Profit in {country}: {pl} ({pct})',
+  'game.market.trade.bestQty': 'Best profit with {n} units',
+  'game.market.trade.setQty': 'Use {n}',
+  'game.market.trade.lossFrom': 'From {n} units on it loses money.',
 } as const;
