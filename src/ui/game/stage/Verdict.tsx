@@ -23,7 +23,7 @@ export function Verdict({ tone, children, action, icon }: { tone: VerdictTone; c
 export function Details({ children, label }: { children: ReactNode; label?: ReactNode }) {
   const { t } = useT();
   return (
-    <GDetails label={label ?? t('game.market.trade.details')} className="details-g">
+    <GDetails label={label ?? t('game.stage.details')} className="details-g">
       {children}
     </GDetails>
   );
@@ -64,7 +64,7 @@ export function ShortList<T>({
             setAll(!all);
           }}
         >
-          {all ? t('common.back') : moreLabel ? moreLabel(items.length) : `${t('game.bits.more')} (${items.length - max})`}
+          {all ? t('common.back') : moreLabel ? moreLabel(items.length) : `${t('game.stage.seeAll')} (${items.length})`}
         </button>
         </MaybeLi>
       )}
