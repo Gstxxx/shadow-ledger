@@ -33,6 +33,16 @@ O jeito sem store: `<MainMenu {...props} />`. Todas as props são opcionais, ent
 - Continuar mostra um único slot (o autosave de `store/game`). Para apagar um save, o store precisa expor `deleteSave()`.
 - Não existe Preset de Tutorial próprio.
 
+## Celular em pé (ADR 0005)
+
+Referências de retrato: 360×640 e 390×844.
+- **Título:** sobe para o alto da tela, com o mapa de rotas na parte de baixo.
+- **Escala:** o nome e as linhas do livro-caixa escalam também pela largura (`min(vh, vw)`).
+- **Abertura:** no soco, o nome é limitado a 86% da largura.
+- **Dossiês:** já ocupam a tela inteira.
+- **Nova partida:** fica em coluna; no rodapé, o "Passo N de 2" some abaixo de 420 px de largura, porque o indicador de passos no topo já mostra isso.
+- **Paisagem:** continua igual.
+
 ## Prévia isolada
 
 Com `npm run dev`, abra `/src/ui/menu/preview.html` (fica fora do build). `?skip=1` pula a abertura, `?rm=1` liga reduzir movimento e `?rm=0` desliga. Em desenvolvimento, `window.__slIntro.pause().seek(2.6)` mostra qualquer quadro da abertura.

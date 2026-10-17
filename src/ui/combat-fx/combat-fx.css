@@ -100,6 +100,11 @@
 }
 .cfx-wash {
   background: linear-gradient(90deg, transparent, var(--cfx-color) 50%, transparent);
+}
+.cfx-wash.is-vertical {
+  background: linear-gradient(180deg, transparent, var(--cfx-color) 50%, transparent);
+}
+.cfx-wash {
   mix-blend-mode: screen;
   opacity: 0;
 }
@@ -113,7 +118,7 @@
   border-radius: 0.12em;
   font-family: var(--sl-font-display, 'Barlow Condensed', 'Arial Narrow', sans-serif);
   font-weight: 700;
-  font-size: clamp(30px, 11vh, 76px);
+  font-size: clamp(26px, min(11vh, 13vw), 76px);
   line-height: 1;
   letter-spacing: 0.04em;
   text-transform: uppercase;

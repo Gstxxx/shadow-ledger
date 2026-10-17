@@ -54,6 +54,16 @@ const fx = useCombatFx({ grid, combat: c, speed: fast ? 2 : 1 });
 - `intro`: anima a entrada das fichas ao montar (padrão `true`).
 - `verdictText(success, c)`: texto do carimbo. Sem ele, usa `combatfx.stamp.win|lose` do i18n; enquanto essas chaves não existirem, cai em `game.combat.result.*` em caixa alta.
 
+### Grade deitada ou em pé (ADR 0005)
+
+Os efeitos seguem o **eixo da própria grade**, não um eixo fixo. A camada deduz o vetor "para a frente" (do lado do jogador para o inimigo) das posições reais de duas Unidades em colunas diferentes. Assim, em paisagem é →, e com a grade girada em retrato (jogador embaixo, inimigo em cima) é ↑. Seguem esse eixo:
+- a antecipação do avanço;
+- o tremor do golpe;
+- o puxão de câmera e a faixa da ruptura;
+- o lado de onde cada força entra.
+
+Para girar, **reposicione os tokens por `left/top`** (por exemplo `left = row/rows`, `top = (cols-1-col)/cols`) e troque o template da grade. **Não** gire com `transform: rotate`: retratos, números e carimbo virariam de lado. A prévia tem `?portrait=1`.
+
 ### Contrato com a tela de Combate
 
 1. Cada token de Unidade tem `data-fx-key={ref.key}` e `data-fx-side={ref.side}`. A posição continua sendo `left/top` em %, como hoje.

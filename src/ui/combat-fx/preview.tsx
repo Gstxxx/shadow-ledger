@@ -18,6 +18,8 @@ import { RedactedTitle, RollingNumber, useCombatFx } from './index';
 const q = new URLSearchParams(location.search);
 const TYPE = (q.get('type') as CombatType) || 'urban';
 const SEED = Number(q.get('seed') ?? 7);
+// ?portrait=1: grade em pé (jogador embaixo, inimigo em cima), como a tela de Combate faz em retrato (ADR 0005).
+const PORTRAIT = q.get('portrait') === '1';
 const REDUCED = q.get('rm') === '1' ? true : q.get('rm') === '0' ? false : undefined;
 
 // Cenas para revisar efeitos raros: ?scene=convert (Agentes de Influência) e ?scene=breach (linha vazia).
@@ -61,7 +63,11 @@ function Token({ r, c }: { r: CombatUnitRef; c: CombatState }) {
       data-fx-key={r.key}
       data-fx-side={r.side}
       className={`token side-${r.side}`}
-      style={{ left: `${(r.col / c.cols) * 100}%`, top: `${(r.row / c.rows) * 100}%`, width: `${100 / c.cols}%`, height: `${100 / c.rows}%` }}
+      style={
+        PORTRAIT
+          ? { left: `${(r.row / c.rows) * 100}%`, top: `${((c.cols - 1 - r.col) / c.cols) * 100}%`, width: `${100 / c.rows}%`, height: `${100 / c.cols}%` }
+          : { left: `${(r.col / c.cols) * 100}%`, top: `${(r.row / c.rows) * 100}%`, width: `${100 / c.cols}%`, height: `${100 / c.rows}%` }
+      }
     >
       <Portrait unit={u} size={40} hostile={r.side === 'e'} />
       <span className="tk-bar">
@@ -121,10 +127,21 @@ function Preview() {
           </span>
         </header>
         <div className="grid-wrap">
-          <div ref={grid} className="grid" style={{ gridTemplateColumns: `repeat(${c.cols}, 1fr)`, gridTemplateRows: `repeat(${c.rows}, 1fr)` }}>
-            {cells.map((i) => (
-              <div key={i} className={`cell${i % c.cols < c.deployCols ? ' deploy' : ''}`} style={{ gridRow: Math.floor(i / c.cols) + 1, gridColumn: (i % c.cols) + 1 }} />
-            ))}
+          <div
+            ref={grid}
+            className="grid"
+            style={
+              PORTRAIT
+                ? { gridTemplateColumns: `repeat(${c.rows}, 1fr)`, gridTemplateRows: `repeat(${c.cols}, 1fr)`, aspectRatio: `${c.rows} / ${c.cols}`, maxHeight: '70vh', width: 'auto', height: '70vh' }
+                : { gridTemplateColumns: `repeat(${c.cols}, 1fr)`, gridTemplateRows: `repeat(${c.rows}, 1fr)` }
+            }
+          >
+            {cells.map((i) => {
+              const row = Math.floor(i / c.cols);
+              const col = i % c.cols;
+              const place = PORTRAIT ? { gridRow: c.cols - col, gridColumn: row + 1 } : { gridRow: row + 1, gridColumn: col + 1 };
+              return <div key={i} className={`cell${col < c.deployCols ? ' deploy' : ''}`} style={place} />;
+            })}
             {c.units.map((u) => (
               <Token key={u.key} r={u} c={c} />
             ))}

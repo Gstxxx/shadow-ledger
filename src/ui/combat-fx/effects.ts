@@ -27,9 +27,17 @@ export interface Box {
   h: number;
 }
 
+/** Vetor unitário "para a frente" da grade (do lado do jogador para o inimigo), em px de tela. */
+export interface Vec {
+  x: number;
+  y: number;
+}
+
 export interface Stage {
   /** Nó que recebe os efeitos (absoluto sobre a grade). */
   layer: HTMLElement;
+  /** Eixo da grade: (1,0) em paisagem; (0,-1) quando a tela gira a grade para o jogador avançar para cima. */
+  fwd: Vec;
   /** A grade inteira: é a "câmera" na ruptura e no carimbo. */
   camera: HTMLElement;
   reduced: boolean;
@@ -70,10 +78,11 @@ export function move(stage: Stage, token: HTMLElement, from: Box, to: Box): gsap
     tl.fromTo(token, { opacity: 0.4 }, { opacity: 1, duration: f(6), ease: ease.cruise, clearProps: 'opacity' });
     return tl;
   }
-  const dir = Math.sign(-dx) || 1;
-  const pull = Math.min(6, Math.abs(dx) * 0.08) * dir;
+  // Antecipação ao longo do próprio deslocamento (vale para grade deitada ou em pé).
+  const len = Math.hypot(dx, dy) || 1;
+  const pull = Math.min(6, len * 0.08);
   tl.set(token, { x: dx, y: dy })
-    .to(token, { x: dx - pull, duration: f(3), ease: ease.gentleIn })
+    .to(token, { x: dx + (dx / len) * pull, y: dy + (dy / len) * pull, duration: f(3), ease: ease.gentleIn })
     .to(token, { x: 0, y: 0, duration: f(9), ease: ease.softLand })
     .set(token, { clearProps: 'transform' });
   return tl;
@@ -92,8 +101,10 @@ export function hit(stage: Stage, target: HTMLElement, pbox: Box, type: CombatTy
   }
   // O golpe vem do lado oposto: o alvo é empurrado para trás e volta em 4 passos.
   const k = side === 'e' ? 1 : -1;
+  const { x: fx, y: fy } = stage.fwd;
+  const step = (a: number) => ({ x: a * k * fx, y: a * k * fy });
   tl.fromTo(flash, { opacity: 0.8 }, { opacity: 0, duration: f(6), ease: ease.glide }, 0)
-    .to(target, { keyframes: [{ x: 5 * k }, { x: -3 * k }, { x: 2 * k }, { x: 0 }], duration: f(4), ease: 'steps(4)' }, 0)
+    .to(target, { keyframes: [step(5), step(-3), step(2), step(0)], duration: f(4), ease: 'steps(4)' }, 0)
     .set(target, { clearProps: 'transform' })
     .call(() => flash.remove());
   return tl;
@@ -224,23 +235,32 @@ export function convert(stage: Stage, ghost: HTMLElement, toAgency: boolean, pbo
 // ── Ruptura da linha ────────────────────────────────────────────────────────
 
 /** Holofote varre a casa, um flash curto na grade e a câmera dá um puxão na direção da ruptura. */
-export function breach(stage: Stage, box: Box, type: CombatType, towardRight: boolean): gsap.core.Timeline {
+export function breach(stage: Stage, box: Box, type: CombatType, forward: boolean): gsap.core.Timeline {
   const tl = gsap.timeline();
   const sweep = el('cfx-sweep', box, stage.layer);
   sweep.style.setProperty('--cfx-color', TYPE_COLOR[type]);
   // Só a faixa da linha rompida acende (nada de inundar a grade inteira).
-  const wash = el('cfx-wash', { x: 0, y: box.y, w: stage.camera.clientWidth, h: box.h }, stage.layer);
+  const vertical = Math.abs(stage.fwd.y) > Math.abs(stage.fwd.x);
+  const wash = el(
+    `cfx-wash${vertical ? ' is-vertical' : ''}`,
+    vertical ? { x: box.x, y: 0, w: box.w, h: stage.camera.clientHeight } : { x: 0, y: box.y, w: stage.camera.clientWidth, h: box.h },
+    stage.layer,
+  );
   wash.style.setProperty('--cfx-color', TYPE_COLOR[type]);
   if (stage.reduced) {
     tl.fromTo([sweep, wash], { opacity: 0.4 }, { opacity: 0, duration: f(12), ease: ease.cruise }).call(() => (sweep.remove(), wash.remove()));
     return tl;
   }
-  const k = towardRight ? 1 : -1;
+  const k = forward ? 1 : -1;
+  // A faixa cresce a partir da borda que foi rompida.
+  const end = k * (vertical ? stage.fwd.y : stage.fwd.x) > 0;
+  const origin = vertical ? (end ? '50% 100%' : '50% 0%') : end ? '100% 50%' : '0% 50%';
+  const grow = vertical ? 'scaleY' : 'scaleX';
   tl.fromTo(sweep, { scaleY: 0.2, opacity: 0.9 }, { scaleY: 1, duration: f(5), ease: ease.whip, transformOrigin: '50% 50%' }, 0)
     .to(sweep, { opacity: 0, duration: f(8), ease: ease.gentleIn }, f(5))
-    .fromTo(wash, { opacity: 0.22, scaleX: 0.3 }, { opacity: 0, scaleX: 1, duration: f(8), ease: ease.glide, transformOrigin: towardRight ? '100% 50%' : '0% 50%' }, f(1))
-    .fromTo(stage.camera, { scale: 1, x: 0 }, { scale: 1.035, x: 10 * k, duration: f(7), ease: ease.whip }, f(2))
-    .to(stage.camera, { scale: 1, x: 0, duration: f(14), ease: ease.softLand }, f(9))
+    .fromTo(wash, { opacity: 0.22, [grow]: 0.3 }, { opacity: 0, [grow]: 1, duration: f(8), ease: ease.glide, transformOrigin: origin }, f(1))
+    .fromTo(stage.camera, { scale: 1, x: 0, y: 0 }, { scale: 1.035, x: 10 * k * stage.fwd.x, y: 10 * k * stage.fwd.y, duration: f(7), ease: ease.whip }, f(2))
+    .to(stage.camera, { scale: 1, x: 0, y: 0, duration: f(14), ease: ease.softLand }, f(9))
     .set(stage.camera, { clearProps: 'transform' })
     .call(() => (sweep.remove(), wash.remove()));
   return tl;
@@ -262,7 +282,13 @@ export function intro(stage: Stage, tokens: { node: HTMLElement; side: 'p' | 'e'
     }
     tl.fromTo(
       t.node,
-      { opacity: 0, y: 14, x: t.side === 'p' ? -18 : 18, rotation: t.side === 'p' ? -3 : 3 },
+      {
+        opacity: 0,
+        // Cada lado entra vindo da própria borda, ao longo do eixo da grade.
+        x: (t.side === 'p' ? -18 : 18) * stage.fwd.x,
+        y: (t.side === 'p' ? -18 : 18) * stage.fwd.y + 10,
+        rotation: t.side === 'p' ? -3 : 3,
+      },
       { opacity: 1, y: 0, x: 0, rotation: 0, duration: f(12), ease: ease.softLand, clearProps: 'transform,opacity' },
       at,
     );

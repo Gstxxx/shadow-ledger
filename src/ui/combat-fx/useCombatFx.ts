@@ -11,7 +11,7 @@ import { gsap } from 'gsap';
 import { dictionaries, useLang, type Key } from '../../i18n';
 import type { CombatFx, CombatState } from '../../game/types';
 import { f } from '../menu/ease';
-import { breach, convert, damageCounter, down, ghostOf, hit, intro, move, portraitBox, verdict, type Box, type Stage } from './effects';
+import { breach, convert, damageCounter, down, ghostOf, hit, intro, move, portraitBox, verdict, type Box, type Stage, type Vec } from './effects';
 import './combat-fx.css';
 
 export interface CombatFxOptions {
@@ -47,6 +47,35 @@ const TURN_BUDGET = 0.9;
 const boxOf = (n: HTMLElement): Box => ({ x: n.offsetLeft, y: n.offsetTop, w: n.offsetWidth, h: n.offsetHeight });
 const succeeded = (c: CombatState) => c.result === 'win' || (c.result === 'draw' && c.playerDefends);
 
+/**
+ * Eixo "para a frente" da grade, lido das posições reais: duas Unidades em colunas diferentes dão o vetor
+ * coluna → coluna. Assim os efeitos seguem a grade deitada (→) ou girada em pé (↑) sem configuração.
+ */
+function forwardOf(grid: HTMLElement, combat: CombatState): Vec {
+  const colOf = new Map(combat.units.map((u) => [u.key, u.col]));
+  const pts: { col: number; x: number; y: number }[] = [];
+  for (const n of Array.from(grid.querySelectorAll<HTMLElement>('[data-fx-key]'))) {
+    const col = colOf.get(n.dataset.fxKey!);
+    if (col === undefined) continue;
+    pts.push({ col, x: n.offsetLeft + n.offsetWidth / 2, y: n.offsetTop + n.offsetHeight / 2 });
+  }
+  let best: Vec | null = null;
+  let span = 0;
+  for (const a of pts)
+    for (const b of pts) {
+      const d = b.col - a.col;
+      if (d > span) {
+        span = d;
+        best = { x: (b.x - a.x) / d, y: (b.y - a.y) / d };
+      }
+    }
+  if (best) {
+    const len = Math.hypot(best.x, best.y) || 1;
+    return { x: best.x / len, y: best.y / len };
+  }
+  return grid.clientHeight > grid.clientWidth ? { x: 0, y: -1 } : { x: 1, y: 0 };
+}
+
 function systemReduced() {
   try {
     return window.matchMedia('(prefers-reduced-motion: reduce)').matches;
@@ -76,7 +105,7 @@ export function useCombatFx(opts: CombatFxOptions): CombatFxApi {
 
   const stage = useCallback((): Stage | null => {
     if (!grid.current || !layer.current) return null;
-    return { layer: layer.current, camera: grid.current, reduced: reduced() };
+    return { layer: layer.current, camera: grid.current, reduced: reduced(), fwd: forwardOf(grid.current, optsRef.current.combat) };
   }, [grid]);
 
   const snapshot = useCallback(() => {
@@ -130,10 +159,11 @@ export function useCombatFx(opts: CombatFxOptions): CombatFxApi {
     if (opts.intro !== false) {
       const st = stage();
       if (st) {
+        const colOf = new Map(combat.units.map((u) => [u.key, u.col]));
         const list = tokens().map((node) => ({
           node,
           side: (node.dataset.fxSide as 'p' | 'e') ?? 'p',
-          col: Math.round(node.offsetLeft / Math.max(1, node.offsetWidth)),
+          col: colOf.get(node.dataset.fxKey!) ?? 0,
         }));
         run(intro(st, list));
       }

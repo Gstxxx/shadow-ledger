@@ -63,8 +63,8 @@
   font-size: var(--row-fs);
 }
 .slm-root {
-  --row-h: clamp(22px, 4.3vh, 34px);
-  --row-fs: clamp(11px, 2.05vh, 16px);
+  --row-h: clamp(22px, min(4.3vh, 7.4vw), 34px);
+  --row-fs: clamp(10px, min(2.05vh, 2.9vw), 16px);
   --ledger-w: calc(var(--ledger-ch, 51) * 1ch);
 }
 .slm-rows {
@@ -216,7 +216,7 @@
   margin: 0;
   font-family: var(--sl-font-display);
   font-weight: 700;
-  font-size: clamp(42px, 12vh, 104px);
+  font-size: clamp(34px, min(12vh, 13vw), 104px);
   line-height: 0.92;
   letter-spacing: 0.015em;
   text-transform: uppercase;
@@ -947,5 +947,35 @@
 @media (max-width: 760px) {
   .slm-install-wrap {
     width: min(360px, 100%);
+  }
+}
+
+/* ── Celular em pé (ADR 0005): Título no alto, mapa de rotas embaixo ── */
+@media (orientation: portrait) and (max-width: 600px) {
+  .slm-title {
+    justify-content: flex-start;
+    padding-top: max(48px, 9vh, env(safe-area-inset-top));
+    background: linear-gradient(180deg, rgba(7, 9, 11, 0.85) 0%, rgba(7, 9, 11, 0.6) 55%, rgba(7, 9, 11, 0.1) 85%);
+  }
+  .slm-world-wrap {
+    top: auto;
+    bottom: 3%;
+    left: -12%;
+    right: -12%;
+    width: auto;
+    height: 40%;
+    opacity: 1;
+  }
+  .slm-nav,
+  .slm-install-wrap {
+    width: 100%;
+  }
+  .slm-install-ios {
+    width: 100%;
+  }
+}
+@media (max-width: 420px) {
+  .slm-ng-foot-info {
+    display: none;
   }
 }

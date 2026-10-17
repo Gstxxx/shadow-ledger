@@ -45,7 +45,8 @@ export function measure(els: IntroEls) {
   const tx = els.wmText.getBoundingClientRect();
   const cx = tx.left + tx.width / 2;
   const cy = tx.top + tx.height / 2;
-  const s = (rowH * PUNCH * 0.86) / tx.height;
+  // No celular em pé a linha ampliada passaria da largura: o nome fica em até 86% dela.
+  const s = Math.min((rowH * PUNCH * 0.86) / tx.height, (W * 0.86) / tx.width);
   return {
     W,
     H,
