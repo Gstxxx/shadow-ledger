@@ -78,7 +78,7 @@
   background: var(--amber);
 }
 .tb-sub {
-  font-size: 10.5px;
+  font-size: 11px;
   color: var(--paper-3);
   white-space: nowrap;
 }
@@ -88,7 +88,7 @@
   gap: 2px;
 }
 .tb-k {
-  font-size: 10px;
+  font-size: 11px;
   color: var(--paper-3);
 }
 .tb-v {
@@ -287,7 +287,7 @@
   color: var(--paper-2);
 }
 .log-t {
-  font-size: 10.5px;
+  font-size: 11px;
   color: var(--paper-4);
 }
 .log-list .tone-good {
@@ -491,7 +491,7 @@ button.mk-row:disabled {
   opacity: 1;
 }
 .mk-head {
-  font-size: 10px;
+  font-size: 11px;
   color: var(--paper-4);
   border-bottom: 1px solid var(--line-2);
 }
@@ -502,7 +502,7 @@ button.mk-row:disabled {
 }
 .mk-name small,
 .mk-row small {
-  font-size: 10.5px;
+  font-size: 11px;
   color: var(--paper-3);
   display: block;
 }
@@ -554,7 +554,7 @@ button.mk-row:disabled {
 }
 .recruit small {
   display: block;
-  font-size: 10.5px;
+  font-size: 11px;
   color: var(--paper-3);
 }
 .recruit:hover:not(:disabled) {
@@ -591,7 +591,7 @@ button.mk-row:disabled {
   font-size: 13px;
 }
 .op-meta {
-  font-size: 10.5px;
+  font-size: 11px;
   color: #ff9da0;
 }
 .op-blurb {
@@ -646,7 +646,7 @@ button.unit-row:hover {
 .rank {
   margin-left: 6px;
   color: var(--amber);
-  font-size: 9px;
+  font-size: 11px;
   letter-spacing: 1px;
 }
 .ur-sub {
@@ -668,7 +668,7 @@ button.unit-row:hover {
 .pips {
   display: inline-flex;
   gap: 6px;
-  font-size: 10.5px;
+  font-size: 11px;
   color: var(--paper-3);
 }
 .pip b {
@@ -680,7 +680,7 @@ button.unit-row:hover {
   color: #ff9da0;
 }
 .trait {
-  font-size: 10px;
+  font-size: 11px;
   padding: 1px 6px;
   border: 1px solid rgba(70, 185, 141, 0.4);
   color: #9fdcc1;
@@ -691,7 +691,7 @@ button.unit-row:hover {
   color: #ff9da0;
 }
 .status {
-  font-size: 10px;
+  font-size: 11px;
   font-family: var(--mono);
   color: #ff9da0;
 }
@@ -741,7 +741,7 @@ button.unit-row:hover {
   align-items: center;
   gap: 3px;
   padding: 9px 2px 7px;
-  font-size: 10.5px;
+  font-size: 11px;
   color: var(--paper-3);
   border-bottom: 2px solid transparent;
 }
@@ -762,7 +762,7 @@ button.unit-row:hover {
   border-radius: 8px;
   background: var(--ink-4);
   color: var(--paper);
-  font-size: 10px;
+  font-size: 11px;
   font-family: var(--mono);
   line-height: 16px;
 }
@@ -805,7 +805,7 @@ button.unit-row:hover {
 }
 .cg-main small {
   color: var(--paper-3);
-  font-size: 10.5px;
+  font-size: 11px;
 }
 .station-row:hover {
   background: var(--ink-3);
@@ -856,7 +856,7 @@ button.unit-row:hover {
   font-size: 13px;
 }
 .threat small {
-  font-size: 10.5px;
+  font-size: 11px;
   color: var(--paper-3);
 }
 .reactions {
@@ -935,7 +935,7 @@ button.unit-row:hover {
   font-size: 14px;
 }
 .event-stamp {
-  font-size: 10.5px;
+  font-size: 11px;
   color: var(--paper-4);
 }
 .event-actions {
@@ -1189,7 +1189,7 @@ button.unit-row:hover {
   background: var(--red);
 }
 .tk-name {
-  font-size: 10px;
+  font-size: 11px;
   font-family: var(--mono);
   color: var(--paper-2);
   max-width: 100%;

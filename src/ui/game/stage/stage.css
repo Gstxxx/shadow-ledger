@@ -94,7 +94,7 @@ html .game.stage .topbar {
   align-items: center;
   gap: 6px;
   min-width: 0;
-  font-size: 10px;
+  font-size: 11px;
   line-height: 1.3;
   letter-spacing: 0.02em;
   color: var(--paper-3);
@@ -272,7 +272,7 @@ html .game.stage.upright .topbar {
     font-size: 15px;
   }
   html .game.stage.upright .tb-cap {
-    font-size: 9px;
+    font-size: 11px;
     letter-spacing: 0;
   }
 }
@@ -656,4 +656,9 @@ html .mkt-row.g-card:has(.mkt-thumb) {
   bottom: 0;
   z-index: 3;
   box-shadow: 0 -14px 18px 4px var(--ink-1);
+}
+
+/* Auditoria 2, item 2: texto secundário com contraste ≥ 4,5:1 sobre o fundo escuro (#7f7a70 dava ~4,0:1). */
+html:root {
+  --paper-3: #99938a;
 }

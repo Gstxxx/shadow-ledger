@@ -88,7 +88,7 @@
 }
 .pchart-svg .lbl {
   fill: var(--paper-2);
-  font: 600 10px var(--mono);
+  font: 600 11px var(--mono);
 }
 .pchart-svg .dot {
   stroke: #14181d;
