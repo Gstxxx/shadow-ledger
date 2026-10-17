@@ -447,16 +447,18 @@ export interface GStepperProps {
   /** rótulos acessíveis dos botões */
   decLabel?: string;
   incLabel?: string;
+  /** 'md' (padrão) = botões de 44px para toque; 'sm' = 34px, só para listas densas com mouse */
+  size?: 'sm' | 'md';
 }
 
-export function GStepper({ value, min = -Infinity, max = Infinity, step = 1, onChange, format = (n) => n, decLabel = '−', incLabel = '+' }: GStepperProps) {
+export function GStepper({ value, min = -Infinity, max = Infinity, step = 1, onChange, format = (n) => n, decLabel = '−', incLabel = '+', size = 'md' }: GStepperProps) {
   return (
-    <div className="g-stepper">
-      <GButton size="sm" aria-label={decLabel} disabled={value <= min} onClick={() => onChange(Math.max(min, value - step))} icon={<span aria-hidden>−</span>} />
+    <div className={cx('g-stepper', size === 'sm' && 'g-stepper--sm')}>
+      <GButton size={size} aria-label={decLabel} disabled={value <= min} onClick={() => onChange(Math.max(min, value - step))} icon={<span aria-hidden>−</span>} />
       <output className="g-stepper__v" aria-live="polite">
         {format(value)}
       </output>
-      <GButton size="sm" aria-label={incLabel} disabled={value >= max} onClick={() => onChange(Math.min(max, value + step))} icon={<span aria-hidden>+</span>} />
+      <GButton size={size} aria-label={incLabel} disabled={value >= max} onClick={() => onChange(Math.min(max, value + step))} icon={<span aria-hidden>+</span>} />
     </div>
   );
 }
@@ -496,7 +498,7 @@ export interface GMapMarkerProps {
   kind: GMarkerKind;
   x: number;
   y: number;
-  /** escala inversa do zoom (1 / k), para manter o tamanho na tela */
+  /** escala inversa do zoom (1 / k), já com a compensação do SVG encolhido no celular; também afina o contorno do rótulo */
   inv?: number;
   label?: string;
   /** nível da Estação (0..4) — vira marcas sob o hexágono */
@@ -568,7 +570,7 @@ export function GMapMarker({ kind, x, y, inv = 1, label, tier = 0, onClick }: GM
     >
       {shape}
       {label ? (
-        <text className="g-maplabel" y={(kind === 'station' ? 18 : 14) * s} fontSize={9.5 * s} textAnchor="middle" style={kind === 'selected' ? { fill: c } : undefined}>
+        <text className="g-maplabel" y={(kind === 'station' ? 18 : 14) * s} fontSize={9.5 * s} textAnchor="middle" style={{ strokeWidth: 3 * s, ...(kind === 'selected' ? { fill: c } : null) }}>
           {label}
         </text>
       ) : null}
