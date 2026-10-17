@@ -654,3 +654,14 @@ html .mkt-item.open > .mkt-row.g-card {
     text-align: left;
   }
 }
+
+/* Auditoria 2, item 5: no palco, a linha é miniatura · nome · selo · preço. A categoria já está na aba; a
+   fonte do selo ("poucos dados") fica no title do próprio selo. */
+.stage-body .mkt-row .mkt-name-s,
+.stage-body .mkt-row .mkt-deal-src {
+  display: none;
+}
+.stage-body .mkt-row .mkt-deal {
+  white-space: nowrap;
+  justify-self: start;
+}
