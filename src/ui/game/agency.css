@@ -100,6 +100,10 @@
   flex: 1 1 160px;
   min-width: 0;
 }
+/* O retrato do Diretor é o primeiro filho da linha e não pode esticar. */
+.row-line.dir-line > span.dir-avatar {
+  flex: none;
+}
 /* Kit fase 2: medidores (GMeter) nos lugares das barras antigas. */
 .g-meter-wrap,
 .mkt-cap-meter,
