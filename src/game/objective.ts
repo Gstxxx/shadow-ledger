@@ -33,8 +33,8 @@ export function checkObjective(s: GameState) {
     case 'profit':
       if (pr.days && s.time >= pr.days * 24) {
         if (p >= profitGoal(s)) end(true, M('msg.obj.profitWon', { days: pr.days, profit: ref.money(p) }), p);
-        // TODO(i18n): chave própria "abaixo da meta de {goal}" pedida à sessão de i18n.
-        else if (p > 0) end(false, M('msg.obj.quickLost'), p);
+        else if (p > 0)
+          end(false, M('msg.obj.profitBelowGoal', { days: pr.days, profit: ref.money(p), goal: ref.money(profitGoal(s)) }), p);
         else end(false, M('msg.obj.profitLost', { days: pr.days, profit: ref.money(p) }), p);
       }
       return;

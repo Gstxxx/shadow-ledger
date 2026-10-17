@@ -15,7 +15,7 @@ import {
 } from './data/rules';
 import { recordAggression } from './ai/memory';
 import { recordWmdSale } from './tension';
-import { isLocked, LOCKED_MSG } from './tutorial/locks';
+import { isLocked } from './tutorial/locks';
 import { originMods } from './data/origins';
 import { buildForce } from './forces';
 import { fleetSpeed, freeCargo, maxCargo, quoteBuyFor, quoteSellFor, rollRecruits, unitsWeight, usedCargo } from './market';
@@ -525,7 +525,7 @@ function opSetup(s: GameState, a: Agency, countryId: string, op: OperationKind, 
 export function startOperation(s: GameState, a: Agency, op: OperationKind): Result {
   const r = directorReady(s, a);
   if (r) return r;
-  if (isLocked(s, 'operations')) return no(LOCKED_MSG);
+  if (isLocked(s, 'operations')) return no(M('msg.act.locked'));
   const blocked = operationBlockedMsg(s, a.location, op);
   if (blocked) return no(blocked);
   if (!a.escort.length) return no(M('msg.act.escortEmpty'));
@@ -537,7 +537,7 @@ export function startOperation(s: GameState, a: Agency, op: OperationKind): Resu
 export function startCoup(s: GameState, a: Agency): Result {
   const r = directorReady(s, a);
   if (r) return r;
-  if (isLocked(s, 'operations')) return no(LOCKED_MSG);
+  if (isLocked(s, 'operations')) return no(M('msg.act.locked'));
   if (!a.escort.length) return no(M('msg.act.escortEmpty'));
   const c = s.countries[a.location];
   if (c.couped) return no(M('msg.act.alreadyCouped'));
@@ -609,7 +609,7 @@ function createTeam(s: GameState, a: Agency, location: string, units: Unit[]): T
 /** Destacar Unidades da Escolta (Diretor presente) ou de uma Estação numa Equipe. */
 export function formTeam(s: GameState, a: Agency, from: 'escort' | { stationCountry: string }, uids: string[]): Result {
   if (s.over) return no(M('msg.act.gameOver'));
-  if (isLocked(s, 'teams')) return no(LOCKED_MSG);
+  if (isLocked(s, 'teams')) return no(M('msg.act.locked'));
   if (!uids.length) return no(M('msg.act.pickOneUnit'));
   if (from === 'escort') {
     const r = directorReady(s, a);
@@ -682,7 +682,7 @@ export function sendTeam(s: GameState, a: Agency, teamId: string, to: string, mo
 
 export function teamOperation(s: GameState, a: Agency, teamId: string, op: OperationKind): Result {
   if (s.over) return no(M('msg.act.gameOver'));
-  if (isLocked(s, 'operations')) return no(LOCKED_MSG);
+  if (isLocked(s, 'operations')) return no(M('msg.act.locked'));
   const t = a.teams.find((x) => x.id === teamId);
   if (!t || t.travel) return no(M('msg.act.teamUnavailable'));
   const blocked = operationBlockedMsg(s, t.location, op);
