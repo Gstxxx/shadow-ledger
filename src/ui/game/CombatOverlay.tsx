@@ -14,7 +14,7 @@ import { combatLabel, itemName, tacticBlurb, tacticName } from '../../i18n/looku
 import { Portrait } from './Portrait';
 import { msgText } from './msgText';
 import { usePortrait } from './portrait/usePortrait';
-import { RedactedTitle, RollingNumber, useCombatFx } from '../combat-fx';
+import { CombatResult, RedactedTitle, RollingNumber, combatSucceeded, useCombatFx } from '../combat-fx';
 import { GModal } from '../../art';
 
 export function CombatOverlay() {
@@ -160,7 +160,8 @@ function LiveView() {
   const grid = useRef<HTMLDivElement>(null);
   // Em pé (ADR 0005) a grade gira: o jogador embaixo, avançando para cima.
   const vertical = usePortrait();
-  const fx = useCombatFx({ grid, combat: c, speed: fast ? 2 : 1, axis: vertical ? 'y' : 'x' });
+  // O carimbo pequeno sai: o resultado vira a tela cheia de Vitória/Derrota (<CombatResult>).
+  const fx = useCombatFx({ grid, combat: c, speed: fast ? 2 : 1, axis: vertical ? 'y' : 'x', verdict: false });
   const manual = c.turn === 0 && c.reserve.length > 0;
 
   const step = () => {
@@ -305,7 +306,17 @@ function LiveView() {
           ))}
         </div>
 
-        <footer className="cb-actions">
+        {c.result && (
+          <CombatResult
+            kind={combatSucceeded(c) ? 'win' : 'lose'}
+            title={combatSucceeded(c) ? t('game.combat.result.win').toUpperCase() : t('combatfx.stamp.lose')}
+            items={[]}
+            doneLabel={t('game.combat.finish')}
+            onDone={finish}
+            board={grid.current}
+          />
+        )}
+        <footer className="cb-actions" style={c.result ? { display: 'none' } : undefined}>
           {c.result ? (
             <>
               <span className={`result ${ok ? 'pos' : 'neg'}`}>
