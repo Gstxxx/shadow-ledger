@@ -381,6 +381,8 @@
   --tone: var(--g-action);
   position: relative;
   isolation: isolate;
+  display: flex;
+  flex-direction: column;
   width: min(560px, 100%);
   max-height: calc(100dvh - 32px);
   overflow: auto;
@@ -440,6 +442,8 @@
   text-transform: uppercase;
 }
 .g-modal__body {
+  /* cresce para o rodapé encostar embaixo quando o modal ocupa a tela */
+  flex: 1 0 auto;
   padding: 14px 20px;
   font-size: 14px;
   line-height: 1.5;
