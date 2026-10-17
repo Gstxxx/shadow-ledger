@@ -235,3 +235,23 @@ html .game.upright.sheet-peek .map-area {
 html .game.upright .log {
   bottom: 20px;
 }
+
+/* Mostradores da barra (.g-dial) mais justos no celular. */
+html .game.upright .topbar .g-dial,
+html .topbar .tb-more.g-dial {
+  padding: 3px 6px 4px;
+}
+@media (max-height: 520px) and (max-width: 1100px) {
+  html .topbar .g-dial {
+    padding: 3px 7px 4px;
+  }
+}
+@media (max-width: 380px) {
+  html .game.upright .topbar .tb-more .g-dial__v,
+  html .game.upright .topbar .tb-clock .g-dial__v {
+    font-size: 14px;
+  }
+  html .game.upright .tb-clock {
+    margin-right: 0;
+  }
+}
