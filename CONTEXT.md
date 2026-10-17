@@ -148,6 +148,18 @@ Queda de preço em um mercado nacional causada pelas vendas da própria agência
 Pedido de um comprador em um país por uma quantidade de um item até um prazo, com prêmio acima do mercado e efeito na **Reputação**. É complemento do **Comércio**, não a fonte principal de lucro.
 _Avoid_: missão, encomenda, pedido
 
+**Contrato de Combate**:
+Pedido pago para usar força (Escolta, Extração ou Defesa), com recompensa e risco mostrados antes de aceitar. É fonte de renda por **Combate**, separada do **Contrato** de entrega.
+_Avoid_: missão de combate, bounty
+
+**Equipamento**:
+Item que uma **Unidade** do Pessoal carrega (arma principal, proteção ou acessório) e que altera sua força por tipo de **Combate**. Não é **Carga**: não se revende no Comércio.
+_Avoid_: item, gear, loot
+
+**Arsenal**:
+Loja de **Equipamento** de um país, separada do mercado de **Carga**, com preços próprios e oferta maior em países em guerra.
+_Avoid_: loja de armas, mercado de armas
+
 ### Combate
 
 **Combate**:
@@ -157,6 +169,10 @@ _Avoid_: batalha, luta (informal)
 **Tática**:
 Escolha feita antes de um **Combate** (Assalto, Defensiva, Infiltração ou Negociar) que modifica como ele se desenrola.
 _Avoid_: postura tática, estratégia, Postura (que é faixa de Reputação)
+
+**Grupo Hostil**:
+Força inimiga visível no mapa que a agência pode caçar com uma **Equipe** para obter recompensa, iniciando um **Combate**.
+_Avoid_: mob, inimigo genérico
 
 **Combate Automático**:
 **Combate** em que o jogo posiciona as **Unidades** por você. É como lutam as **Equipes** e as **Estações** quando o **Diretor** não está presente; com o **Diretor** presente, o jogador pode assumir a grade.
