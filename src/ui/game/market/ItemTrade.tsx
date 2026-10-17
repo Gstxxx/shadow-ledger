@@ -199,7 +199,7 @@ export function ItemTrade({ countryId, itemId }: { countryId: string; itemId: st
             <span className="k">{side === 'buy' ? t('game.market.youPay') : t('game.market.youGet')}</span>
             <span className="v num">{fmt.money(total)}</span>
             <span className="note mono">
-              {t('game.market.trade.valueText', { n: q })} · {t('game.help.saturation.title')} {sat > 0 ? '+' : sat < 0 ? '−' : ''}
+              {t('game.market.trade.valueText', { n: q })} · {t('game.help.saturation.title')} {['−', '', '+'][Math.sign(sat) + 1]}
               {fmt.pct(Math.abs(sat))} <Help term="saturation" />
             </span>
           </div>
@@ -220,7 +220,7 @@ export function ItemTrade({ countryId, itemId }: { countryId: string; itemId: st
                   {t('game.market.trade.allCargo', { n: owned })}
                 </button>
               )}
-              {side === 'sell' && breakEven > 0 && breakEven < owned && (
+              {side === 'sell' && breakEven > 0 && owned > breakEven && (
                 <button className="btn sm ghost" onClick={() => setQSell(breakEven)}>
                   {t('game.market.trade.breakEven', { n: breakEven })}
                 </button>
