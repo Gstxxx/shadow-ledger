@@ -29,7 +29,7 @@ import {
   type IconAccent,
   type IconGroup,
 } from './index';
-import { GameKitShowcase, GameScreenMock, MenuMock } from './GameKitDemo';
+import { GameKitShowcase, GameScreenMock, MenuMock } from './proto-gamekit';
 
 // ── utilidades da página ─────────────────────────────────────────────
 const lum = (hex: string) => {

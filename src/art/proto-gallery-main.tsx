@@ -3,8 +3,8 @@ import { createRoot } from 'react-dom/client';
 import '@fontsource-variable/archivo/wdth.css';
 import '@fontsource/ibm-plex-mono/400.css';
 import '@fontsource/ibm-plex-mono/600.css';
-import Gallery from './Gallery';
-import { GameScreenMock } from './GameKitDemo';
+import Gallery from './proto-gallery';
+import { GameScreenMock } from './proto-gamekit';
 import { DIRECTOR_ORIGINS, DirectorPortrait, AnalystPortrait, GameIcon, ICONS, Logo, OperativePortrait, type AnalystMood } from './index';
 
 // Montagem temporária para revisão. `?solo=...` mostra um asset grande para inspeção:

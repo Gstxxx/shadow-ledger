@@ -840,7 +840,7 @@
   align-items: center;
   gap: 5px;
   height: 22px;
-  padding: 0 9px 0 15px;
+  padding: 0 9px 0 8px;
   font-family: var(--g-font-mono);
   font-size: 11px;
   font-weight: 600;
@@ -852,15 +852,12 @@
   clip-path: polygon(7px 0, 100% 0, 100% 100%, 7px 100%, 0 50%);
   box-shadow: inset 0 1px 0 var(--chip-edge);
 }
-/* furo da etiqueta */
+/* furo da etiqueta: ocupa lugar no fluxo, então nenhum padding esconde o texto */
 .g-chip::before {
   content: '';
-  position: absolute;
-  left: 6px;
-  top: 50%;
+  flex: none;
   width: 4px;
   height: 4px;
-  margin-top: -2px;
   border-radius: 50%;
   background: var(--g-bg);
   box-shadow: inset 0 1px 1px rgba(0, 0, 0, 0.8);

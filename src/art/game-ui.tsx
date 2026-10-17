@@ -359,6 +359,7 @@ export interface GCounterProps {
 export function GCounter({ value, format = (n) => n.toLocaleString('pt-BR'), unit, suffix, signed, flash = true, size = 'md', className, style }: GCounterProps) {
   const prev = useRef(value);
   const [dir, setDir] = useState<'' | 'up' | 'down'>('');
+  const sign = Math.sign(value);
   useEffect(() => {
     if (!flash || value === prev.current) return;
     setDir(value > prev.current ? 'up' : 'down');
@@ -371,15 +372,15 @@ export function GCounter({ value, format = (n) => n.toLocaleString('pt-BR'), uni
       className={cx(
         'g-counter',
         size === 'lg' && 'g-counter--lg',
-        signed && value > 0 && 'g-counter--up',
-        signed && value < 0 && 'g-counter--down',
+        signed && sign === 1 && 'g-counter--up',
+        signed && sign === -1 && 'g-counter--down',
         dir && `is-${dir}`,
         className,
       )}
       style={style}
     >
       {unit ? <span className="g-counter__unit">{unit}</span> : null}
-      {signed && value > 0 ? '+' : ''}
+      {signed && sign === 1 ? '+' : ''}
       {format(value)}
       {suffix ? <span className="g-counter__suffix">{suffix}</span> : null}
     </span>
