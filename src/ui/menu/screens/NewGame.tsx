@@ -515,29 +515,29 @@ export function NewGame({ s, lang, presets, tutorial, reduced, onStart }: Props)
         {step === 1 ? (
           <>
             <span className="slm-ng-foot-info">{t.stepOf(1, 3)}</span>
-            <button type="button" className="slm-btn slm-btn--primary slm-btn--lg" onClick={() => goStep(2)}>
+            <button type="button" className="g-btn g-btn--primary g-btn--lg" onClick={() => goStep(2)}>
               {compact && phoneDetails ? t.chooseThis : o.next}
               <ArrowRight size={18} aria-hidden="true" />
             </button>
           </>
         ) : step === 2 ? (
           <>
-            <button type="button" className="slm-btn slm-btn--ghost" onClick={() => goStep(1)}>
+            <button type="button" className="g-btn g-btn--ghost" onClick={() => goStep(1)}>
               <ArrowLeft size={18} aria-hidden="true" />
               {t.backToScenarios}
             </button>
-            <button type="button" className="slm-btn slm-btn--primary slm-btn--lg" onClick={() => goStep(3)}>
+            <button type="button" className="g-btn g-btn--primary g-btn--lg" onClick={() => goStep(3)}>
               {t.next}
               <ArrowRight size={18} aria-hidden="true" />
             </button>
           </>
         ) : (
           <>
-            <button type="button" className="slm-btn slm-btn--ghost" onClick={() => goStep(2)}>
+            <button type="button" className="g-btn g-btn--ghost" onClick={() => goStep(2)}>
               <ArrowLeft size={18} aria-hidden="true" />
               {o.back}
             </button>
-            <button type="button" className={`slm-btn slm-btn--lg ${hardcore ? 'slm-btn--danger' : 'slm-btn--primary'}`} onClick={start}>
+            <button type="button" className={`g-btn g-btn--lg ${hardcore ? 'g-btn--danger' : 'g-btn--primary'}`} onClick={start}>
               {hardcore && <Skull size={18} aria-hidden="true" />}
               {t.start}
             </button>
@@ -582,7 +582,7 @@ function NameField({
         />
         <button
           type="button"
-          className="slm-icon-btn slm-roll"
+          className="g-btn g-btn--icon g-btn--ghost slm-roll"
           aria-label={rollAria}
           onClick={() => {
             sfx('type');
@@ -642,7 +642,7 @@ function Details({
   return (
     <article className="slm-details" aria-labelledby="slm-details-title">
       {compact && (
-        <button type="button" className="slm-back slm-details-back" onClick={onBack}>
+        <button type="button" className="g-btn g-btn--ghost slm-back slm-details-back" onClick={onBack}>
           <ArrowLeft size={18} aria-hidden="true" />
           {t.backToScenarios}
         </button>

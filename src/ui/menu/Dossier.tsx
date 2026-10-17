@@ -72,7 +72,7 @@ export function Dossier({ title, backLabel, closing, reduced, onRequestClose, on
     <section className="slm-dossier" ref={el} role="dialog" aria-modal="true" aria-label={title}>
       <div className="slm-dossier-tab" aria-hidden="true" />
       <header className="slm-dossier-head">
-        <button ref={back} type="button" className="slm-back" onClick={onRequestClose}>
+        <button ref={back} type="button" className="g-btn g-btn--ghost slm-back" onClick={onRequestClose}>
           <ArrowLeft size={18} strokeWidth={2} aria-hidden="true" />
           <span>{backLabel}</span>
         </button>

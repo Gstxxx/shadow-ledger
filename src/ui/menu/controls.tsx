@@ -20,14 +20,14 @@ export function Segmented<T extends string | number>({
       <span className="slm-field-label" id={id}>
         {label}
       </span>
-      <div className="slm-seg" role="radiogroup" aria-labelledby={id}>
+      <div className="g-seg slm-seg" role="radiogroup" aria-labelledby={id}>
         {options.map((o) => (
           <button
             key={String(o.value)}
             type="button"
             role="radio"
             aria-checked={o.value === value}
-            className="slm-seg-btn"
+            className="g-seg__opt slm-seg-btn"
             onClick={() => {
               if (o.value !== value) sfx('click');
               onChange(o.value);
@@ -146,13 +146,13 @@ export function Stepper({
         {label}
       </span>
       <div className="slm-stepper" role="group" aria-labelledby={id}>
-        <button type="button" className="slm-step-btn" aria-label="−" disabled={value <= min} onClick={() => set(value - 1)}>
+        <button type="button" className="g-btn g-btn--icon slm-step-btn" aria-label="−" disabled={value <= min} onClick={() => set(value - 1)}>
           −
         </button>
         <output className="slm-step-value" aria-live="polite">
           {format ? format(value) : value}
         </output>
-        <button type="button" className="slm-step-btn" aria-label="+" disabled={value >= max} onClick={() => set(value + 1)}>
+        <button type="button" className="g-btn g-btn--icon slm-step-btn" aria-label="+" disabled={value >= max} onClick={() => set(value + 1)}>
           +
         </button>
       </div>
@@ -174,7 +174,7 @@ export function ActionButton({
   type?: 'button' | 'submit';
 }) {
   return (
-    <button type={type} className={`slm-btn slm-btn--${variant}`} disabled={disabled} onClick={onClick}>
+    <button type={type} className={`g-btn g-btn--${variant}`} disabled={disabled} onClick={onClick}>
       {children}
     </button>
   );

@@ -2,6 +2,7 @@ import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } fr
 import { gsap } from 'gsap';
 import { Volume2 } from 'lucide-react';
 import '../../art/tokens.css';
+import '../../art/game-ui.css';
 import './menu.css';
 import { audio } from '../../audio/engine';
 import { PRESETS } from '../../game/data/rules';
@@ -295,12 +296,14 @@ export function MainMenu(props: MainMenuProps) {
                 navRefs.current[i] = b;
               }}
               type="button"
-              className="slm-nav-item"
+              className="g-menu-item slm-nav-item"
+              onPointerEnter={() => {
+                if (window.matchMedia?.('(hover: hover)').matches) sfx('hover');
+              }}
               onClick={(ev) => open(it.id, ev.currentTarget)}
             >
               <span className="slm-nav-label">{it.label}</span>
-              <span className="slm-nav-leader" aria-hidden="true" />
-              {it.meta && <span className="slm-nav-meta">{it.meta}</span>}
+              {it.meta && <span className="g-menu-item__meta">{it.meta}</span>}
               <span className="slm-nav-bar" aria-hidden="true" />
             </button>
           ))}

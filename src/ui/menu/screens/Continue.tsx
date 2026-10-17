@@ -72,7 +72,7 @@ export function Continue({ s, saves, onContinue, onDelete, onExport, onImport }:
               </button>
               <div className="slm-save-actions">
                 {onExport && (
-                  <button type="button" className="slm-icon-btn" onClick={() => onExport(sv.id)} aria-label={s.exportAria(sv.label)}>
+                  <button type="button" className="g-btn g-btn--ghost slm-icon-btn" onClick={() => onExport(sv.id)} aria-label={s.exportAria(sv.label)}>
                     <Download size={18} aria-hidden="true" />
                     <span className="slm-icon-btn-text">{s.export}</span>
                   </button>
@@ -80,7 +80,7 @@ export function Continue({ s, saves, onContinue, onDelete, onExport, onImport }:
                 {onDelete && (
                   <button
                     type="button"
-                    className={`slm-icon-btn slm-icon-btn--danger${armed === sv.id ? ' is-armed' : ''}`}
+                    className={`g-btn slm-icon-btn ${armed === sv.id ? 'g-btn--danger' : 'g-btn--ghost'}`}
                     onClick={() => {
                       if (armed === sv.id) {
                         sfx('redact');
@@ -114,7 +114,7 @@ export function Continue({ s, saves, onContinue, onDelete, onExport, onImport }:
             tabIndex={-1}
             onChange={(e) => pick(e.target.files?.[0])}
           />
-          <button type="button" className="slm-btn slm-btn--ghost" onClick={() => file.current?.click()}>
+          <button type="button" className="g-btn g-btn--ghost" onClick={() => file.current?.click()}>
             <FileUp size={18} aria-hidden="true" />
             {s.importFile}
           </button>

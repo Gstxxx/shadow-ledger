@@ -377,11 +377,6 @@
 .slm-input[aria-invalid='true'] {
   border-color: var(--sl-stamp-red);
 }
-.slm-roll {
-  border: 1.5px solid rgba(36, 28, 17, 0.45) !important;
-  width: 44px;
-  justify-content: center;
-}
 .slm-error {
   margin: 6px 0 0;
   color: var(--sl-stamp-red);
@@ -567,18 +562,6 @@
   font-size: var(--sl-fs-xs);
   color: var(--ng-muted);
 }
-.slm-btn--lg {
-  min-height: 48px;
-  padding: 0 22px;
-  font-size: var(--sl-fs-md) !important;
-}
-.slm-btn--danger {
-  background: var(--sl-stamp-red);
-  color: #fff !important;
-}
-.slm-btn--danger:hover {
-  background: #8e1d18;
-}
 
 /* ── Celular deitado ── */
 
@@ -643,11 +626,5 @@
   }
   .slm-ng-foot {
     gap: 8px;
-  }
-  .slm-ng-foot .slm-btn {
-    padding: 0 12px;
-  }
-  .slm-btn--lg {
-    font-size: var(--sl-fs-sm) !important;
   }
 }

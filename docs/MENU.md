@@ -55,6 +55,15 @@ Referências de retrato: 360×640 e 390×844.
 - **Nova partida:** fica em coluna; no rodapé, o "Passo N de 2" some abaixo de 420 px de largura, porque o indicador de passos no topo já mostra isso.
 - **Paisagem:** continua igual.
 
+## Componentes de jogo (.g-*)
+
+O menu importa `src/art/game-ui.css` e usa o kit da art-kit em vez de controles de página:
+- **Itens do Título:** são `.g-menu-item`, com marcador ▶, faixa âmbar e som de hover. Continuam com a tarja de "lançado" ao tocar.
+- **Botões dos dossiês:** são `.g-btn` (`--primary`, `--ghost`, `--danger`, `--lg`, `--icon`).
+- **Segmentados:** são `.g-seg` / `.g-seg__opt`, com quebra de linha quando há muitas opções e 44 px de toque.
+
+O reset de botões do menu usa `:where(.slm-root) button` (especificidade zero), para as classes `.g-*` vencerem.
+
 ## Área segura (notch, Dynamic Island, home indicator)
 
 `.slm-root` usa `100dvh` e define `--slm-st/sr/sb/sl` como `var(--safe-t|r|b|l, env(safe-area-inset-*))`. O MainMenu chama `installSafeAreaDebug()` da ui-polish (`src/ui/game/portrait/safeArea.ts`). Assim, `?safe=top,right,bottom,left` simula os recortes também no menu, e no aparelho vale o `env()`.

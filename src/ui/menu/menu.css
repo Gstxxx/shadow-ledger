@@ -27,7 +27,8 @@
 .slm-root *::after {
   box-sizing: border-box;
 }
-.slm-root button {
+/* :where() zera a especificidade: as classes .g-* do kit de jogo vencem este reset. */
+:where(.slm-root) button {
   font: inherit;
   color: inherit;
   cursor: pointer;
@@ -264,63 +265,6 @@
   flex-direction: column;
   width: min(420px, 100%);
 }
-.slm-nav-item {
-  position: relative;
-  display: flex;
-  align-items: baseline;
-  gap: 10px;
-  min-height: clamp(44px, 8.4vh, 56px);
-  padding: 0 4px 0 14px;
-  border: 0;
-  border-bottom: 1px solid var(--sl-line);
-  background: transparent;
-  text-align: left;
-  align-items: center;
-  transition: background-color var(--sl-dur-fast) var(--sl-ease-out);
-}
-.slm-nav-item:first-child {
-  border-top: 1px solid var(--sl-line);
-}
-.slm-nav-item::before {
-  content: '';
-  position: absolute;
-  left: 0;
-  top: 22%;
-  bottom: 22%;
-  width: 3px;
-  background: var(--sl-warm);
-  transform: scaleY(0);
-  transition: transform var(--sl-dur-base) var(--sl-ease-out);
-}
-.slm-nav-item:hover,
-.slm-nav-item:focus-visible {
-  background: rgba(245, 176, 74, 0.07);
-}
-.slm-nav-item:hover::before,
-.slm-nav-item:focus-visible::before {
-  transform: scaleY(1);
-}
-.slm-nav-item:active {
-  background: rgba(245, 176, 74, 0.14);
-}
-.slm-nav-label {
-  font-size: clamp(16px, 3.1vh, 20px);
-  font-weight: 500;
-  letter-spacing: 0.01em;
-}
-.slm-nav-leader {
-  flex: 1;
-  min-width: 12px;
-  align-self: center;
-  border-bottom: 1px dotted var(--sl-line-strong);
-  transform: translateY(5px);
-}
-.slm-nav-meta {
-  font-family: var(--sl-font-mono);
-  font-size: var(--sl-fs-xs);
-  color: var(--sl-text-muted);
-  font-variant-numeric: tabular-nums;
-}
 .slm-nav-bar {
   position: absolute;
   inset: 18% 0 18% 10px;
@@ -397,24 +341,6 @@
   border-bottom: 2px solid var(--sl-paper-ink);
   flex: none;
 }
-.slm-back {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  min-height: 44px;
-  min-width: 44px;
-  padding: 0 12px 0 10px;
-  border: 0;
-  background: transparent;
-  color: var(--sl-paper-ink) !important;
-  font-family: var(--sl-font-mono) !important;
-  font-size: var(--sl-fs-sm) !important;
-  border-radius: var(--sl-radius-1);
-}
-.slm-back:hover,
-.slm-back:focus-visible {
-  background: rgba(36, 28, 17, 0.08);
-}
 .slm-dossier .slm-back:focus-visible,
 .slm-dossier :focus-visible {
   outline-color: var(--sl-stamp-blue);
@@ -460,29 +386,6 @@
   font-size: var(--sl-fs-sm);
   color: var(--sl-paper-ink-muted);
   line-height: var(--sl-lh-snug);
-}
-.slm-seg {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 6px;
-}
-.slm-seg-btn {
-  min-height: 44px;
-  padding: 0 14px;
-  border: 1px solid rgba(36, 28, 17, 0.35);
-  background: transparent;
-  color: var(--sl-paper-ink) !important;
-  font-size: var(--sl-fs-sm) !important;
-  border-radius: var(--sl-radius-1);
-  transition: background-color var(--sl-dur-fast) var(--sl-ease-out), color var(--sl-dur-fast) var(--sl-ease-out);
-}
-.slm-seg-btn:hover {
-  background: rgba(36, 28, 17, 0.07);
-}
-.slm-seg-btn[aria-checked='true'] {
-  background: var(--sl-paper-ink);
-  color: var(--sl-paper) !important;
-  border-color: var(--sl-paper-ink);
 }
 .slm-toggle {
   display: flex;
@@ -570,67 +473,14 @@
   border: 1px solid rgba(36, 28, 17, 0.35);
   border-radius: var(--sl-radius-1);
 }
-.slm-step-btn {
-  width: 44px;
-  height: 44px;
-  border: 0;
-  background: transparent;
-  color: var(--sl-paper-ink) !important;
-  font-size: 20px !important;
-}
-.slm-step-btn:disabled {
-  opacity: 0.3;
-  cursor: default;
-}
 .slm-step-value {
   min-width: 9ch;
   text-align: center;
   font-family: var(--sl-font-mono);
   font-weight: 600;
 }
-.slm-btn {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  gap: 8px;
-  min-height: 44px;
-  padding: 0 20px;
-  border: 0;
-  border-radius: var(--sl-radius-1);
-  font-weight: 600 !important;
-  font-size: var(--sl-fs-sm) !important;
-  white-space: nowrap;
-  transition: transform var(--sl-dur-instant) var(--sl-ease-out), background-color var(--sl-dur-fast);
-}
-.slm-btn:active {
-  transform: scale(0.97);
-}
-.slm-btn--primary {
-  background: var(--sl-paper-ink);
-  color: var(--sl-paper) !important;
-}
-.slm-btn--primary:hover {
-  background: var(--sl-p-paper-800);
-}
-.slm-btn--ghost {
-  background: transparent;
-  color: var(--sl-paper-ink) !important;
-  border: 1px solid var(--sl-paper-ink);
-}
-.slm-btn:disabled {
-  opacity: 0.4;
-  cursor: default;
-}
-.slm-tutorial .slm-btn {
-  background: var(--sl-stamp-blue);
-}
 .slm-sandbox-grid > .slm-field:first-child {
   grid-column: 1 / -1;
-}
-.slm-newgame-foot .slm-btn {
-  min-height: 48px;
-  padding: 0 26px;
-  font-size: var(--sl-fs-md) !important;
 }
 
 /* ── Continuar ── */
@@ -692,27 +542,6 @@
 .slm-save-actions {
   display: flex;
   align-items: center;
-}
-.slm-icon-btn {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  min-width: 44px;
-  min-height: 44px;
-  padding: 0 10px;
-  border: 0;
-  background: transparent;
-  color: var(--sl-paper-ink) !important;
-  font-size: var(--sl-fs-xs) !important;
-  font-family: var(--sl-font-mono) !important;
-  border-radius: var(--sl-radius-1);
-}
-.slm-icon-btn:hover {
-  background: rgba(36, 28, 17, 0.08);
-}
-.slm-icon-btn--danger.is-armed {
-  background: var(--sl-stamp-red);
-  color: var(--sl-paper) !important;
 }
 .slm-empty {
   padding: 18px 0;
@@ -792,9 +621,6 @@
 @media (max-height: 420px) {
   .slm-title {
     gap: 12px;
-  }
-  .slm-nav-item {
-    min-height: 44px;
   }
   .slm-sound-hint {
     font-size: var(--sl-fs-2xs);
@@ -987,5 +813,64 @@
 @media (max-width: 420px) {
   .slm-ng-foot-info {
     display: none;
+  }
+}
+
+/* ── Componentes de jogo (.g-*, src/art/game-ui.css) adotados no menu ── */
+
+/* Itens do Título: g-menu-item, com a altura e o corpo ajustados à coluna e a tarja de "lançado". */
+.g-menu-item.slm-nav-item {
+  min-height: clamp(44px, 8.4vh, 54px);
+  padding-top: 0;
+  padding-bottom: 0;
+  align-items: center;
+  font-size: clamp(17px, 3.6vh, 24px);
+}
+.slm-nav-bar {
+  inset: 18% 0 18% 22px;
+}
+
+/* Segmentados: g-seg que quebra linha quando há muitas opções; 44 px de toque. */
+.g-seg.slm-seg {
+  display: flex;
+  flex-wrap: wrap;
+  max-width: 100%;
+  align-self: flex-start;
+}
+.slm-seg .g-seg__opt {
+  min-height: 44px;
+}
+
+/* Botões do dossiê */
+.slm-dossier .g-btn {
+  font-size: 14px;
+}
+.slm-dossier .g-btn--lg {
+  font-size: 16px;
+}
+.slm-stepper {
+  gap: 6px;
+  border: 0;
+}
+.slm-dossier-head .slm-back {
+  padding: 0 14px 0 10px;
+}
+.slm-save-actions {
+  gap: 6px;
+}
+
+@media (max-height: 420px) {
+  .slm-dossier .g-btn--lg {
+    min-height: 44px;
+    padding: 0 16px;
+  }
+}
+@media (max-width: 420px) {
+  .slm-ng-foot .g-btn {
+    padding: 0 12px;
+  }
+  .slm-dossier .g-btn--lg {
+    font-size: 14px;
+    padding: 0 14px;
   }
 }
