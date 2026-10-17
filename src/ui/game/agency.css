@@ -31,3 +31,28 @@
   padding-left: 0;
   padding-right: 0;
 }
+.dir-avatar {
+  flex: none;
+  display: inline-grid;
+  place-items: center;
+  overflow: hidden;
+  border-radius: 50%;
+  border: 1px solid var(--line-2);
+  background: var(--ink-3);
+  color: var(--paper-3);
+}
+.dir-avatar svg {
+  display: block;
+}
+.dir-line {
+  justify-content: flex-start;
+  gap: 10px;
+}
+.tb-avatar {
+  display: inline-flex;
+}
+@media (max-width: 700px) {
+  .tb-avatar {
+    display: none;
+  }
+}

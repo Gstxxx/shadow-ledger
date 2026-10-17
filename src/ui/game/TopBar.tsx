@@ -10,6 +10,7 @@ import { audio } from '../../audio/engine';
 import { useT } from '../../i18n';
 import { objectiveLabel, tensionBandLabel } from '../../i18n/lookup';
 import { usePortrait } from './portrait/usePortrait';
+import { DirectorAvatar } from './DirectorAvatar';
 
 export function TopBar({ onMenu, onLeft, onRight }: { onMenu: () => void; onLeft: () => void; onRight: () => void }) {
   const { t, fmt } = useT();
@@ -57,6 +58,9 @@ export function TopBar({ onMenu, onLeft, onRight }: { onMenu: () => void; onLeft
       <button className="btn icon ghost only-narrow" data-tour={portrait ? undefined : 'drawer-left'} aria-label={t('game.topbar.country')} onClick={onLeft}>
         <PanelLeft size={18} />
       </button>
+      <span className="tb-avatar">
+        <DirectorAvatar origin={a.origin} size={32} title={a.director.name} />
+      </span>
       <div className="tb-agency">
         <span className="tb-name">{a.name}</span>
         <span className="tb-sub mono">

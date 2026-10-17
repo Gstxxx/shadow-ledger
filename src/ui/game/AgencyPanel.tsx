@@ -17,6 +17,7 @@ import { UnitRow } from './UnitRow';
 import { FleetSpace, UnitCard, UpkeepBalance } from './unit/UnitCard';
 import { useOpenUnit } from './unit/DossierHost';
 import './agency.css';
+import { DirectorAvatar } from './DirectorAvatar';
 
 type Tab = 'force' | 'cargo' | 'stations' | 'teams' | 'contracts' | 'threats';
 
@@ -97,7 +98,8 @@ function ForceTab() {
   return (
     <>
       <Section title={t('game.agency.director.title')}>
-        <div className="row-line">
+        <div className="row-line dir-line">
+          <DirectorAvatar origin={a.origin} size={40} title={d.name} />
           <span>
             <strong>{d.name}</strong>
             <small className="mono">
