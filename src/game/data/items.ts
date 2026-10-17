@@ -103,4 +103,4 @@ export const CLASS_LABEL: Record<UnitClass, string> = {
 };
 
 /** Items a country can steal-reward by level. */
-export const STEAL_TABLE = ['intel', 'docs', 'secret', 'tech', 'space'];
+export const STEAL_TABLE = ['intel', 'docs', 'docs', 'secret', 'tech'];

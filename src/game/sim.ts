@@ -251,9 +251,10 @@ function monthly(s: GameState, a: Agency) {
   for (const st of a.stations) st.units = leave(st.units);
   for (const t of a.teams) t.units = leave(t.units);
   let machines = 0;
+  const flying = new Set(a.flight ? a.fleet.map((u) => u.uid) : []);
   for (const u of allUnits(a)) {
     if (!isPersonnel(u)) {
-      u.idle = true;
+      if (!flying.has(u.uid)) u.idle = true;
       machines += upkeepOf(u);
     }
   }

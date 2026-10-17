@@ -2,6 +2,13 @@ import { dayOf, M, notify, player, profit, ref, say } from './state';
 import type { Msg } from './msg';
 import type { GameState } from './types';
 
+/** Meta de lucro por Dificuldade (índice = Dificuldade), sobre `preset.target`. */
+export const PROFIT_GOAL_MULT = [1, 0.8, 0.95, 1.1];
+
+/** Lucro necessário para vencer um Objetivo "Lucro no prazo" (mínimo US$ 1, i.e. só ficar no azul). */
+export const profitGoal = (s: GameState) =>
+  Math.max(1, Math.round((s.options.preset.target ?? 0) * PROFIT_GOAL_MULT[s.options.difficulty]));
+
 export const daysLeft = (s: GameState) => {
   const d = s.options.preset.days;
   return d ? d - s.time / 24 : Infinity;
@@ -25,7 +32,9 @@ export function checkObjective(s: GameState) {
   switch (pr.objective) {
     case 'profit':
       if (pr.days && s.time >= pr.days * 24) {
-        if (p > 0) end(true, M('msg.obj.profitWon', { days: pr.days, profit: ref.money(p) }), p);
+        if (p >= profitGoal(s)) end(true, M('msg.obj.profitWon', { days: pr.days, profit: ref.money(p) }), p);
+        // TODO(i18n): chave própria "abaixo da meta de {goal}" pedida à sessão de i18n.
+        else if (p > 0) end(false, M('msg.obj.quickLost'), p);
         else end(false, M('msg.obj.profitLost', { days: pr.days, profit: ref.money(p) }), p);
       }
       return;
