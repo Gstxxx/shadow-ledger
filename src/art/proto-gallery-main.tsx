@@ -5,6 +5,7 @@ import '@fontsource/ibm-plex-mono/400.css';
 import '@fontsource/ibm-plex-mono/600.css';
 import Gallery from './proto-gallery';
 import { GameScreenMock } from './proto-gamekit';
+import { StageDemo } from './proto-stage';
 import { DIRECTOR_ORIGINS, DirectorPortrait, AnalystPortrait, GameIcon, ICONS, Logo, OperativePortrait, type AnalystMood } from './index';
 
 // Montagem temporária para revisão. `?solo=...` mostra um asset grande para inspeção:
@@ -41,6 +42,7 @@ function Solo(): ReactNode {
     const list = q.get('o') ? [q.get('o') as (typeof DIRECTOR_ORIGINS)[number]] : DIRECTOR_ORIGINS;
     return wrap(list.map((o) => <DirectorPortrait key={o} origin={o} mood={mood} size={size} blink={false} />));
   }
+  if (solo === 'stage') return <StageDemo initial={(q.get('m') as 'country' | 'agency' | 'item' | 'none') ?? 'country'} />;
   if (solo === 'game') return <div style={{ background: 'var(--g-bg)', minHeight: '100vh' }}><GameScreenMock width={Number(q.get('w') ?? 1440)} /></div>;
   if (solo === 'logo') return wrap(<Logo variant="full" height={140} />);
   if (solo === 'ops') return wrap(['raven-07', 'mbeki', 'ito-kenji'].map((s, i) => <OperativePortrait key={s} seed={s} size={300} status={i === 2 ? 'DETIDO' : undefined} code={i === 1 ? undefined : 'OP-0417'} name={i ? undefined : 'Raven'} />));
@@ -48,4 +50,14 @@ function Solo(): ReactNode {
 }
 
 document.body.style.margin = '0';
+// simula áreas seguras como o ?safe= do jogo: ?safe=top,right,bottom,left
+const safe = q.get('safe');
+if (safe) {
+  const [t = 0, r = 0, b = 0, l = 0] = safe.split(',').map(Number);
+  const st = document.documentElement.style;
+  st.setProperty('--safe-t', `${t}px`);
+  st.setProperty('--safe-r', `${r}px`);
+  st.setProperty('--safe-b', `${b}px`);
+  st.setProperty('--safe-l', `${l}px`);
+}
 createRoot(document.getElementById('root')!).render(<StrictMode>{solo ? <Solo /> : <Gallery />}</StrictMode>);

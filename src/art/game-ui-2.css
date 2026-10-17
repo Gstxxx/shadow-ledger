@@ -1234,3 +1234,270 @@
     box-shadow: inset 2px 0 0 var(--g-action);
   }
 }
+
+/* ═════════════════════════════════════════════════════════════════════
+   ADR 0006 — modal central com abas, tamanhos lg/xl, troca animada
+   ═════════════════════════════════════════════════════════════════════ */
+.g-modal-scrim {
+  /* respiro + áreas seguras do iOS (variáveis da ui-polish, com env() de reserva) */
+  padding:
+    max(12px, var(--safe-t, env(safe-area-inset-top, 0px)))
+    max(12px, var(--safe-r, env(safe-area-inset-right, 0px)))
+    max(12px, var(--safe-b, env(safe-area-inset-bottom, 0px)))
+    max(12px, var(--safe-l, env(safe-area-inset-left, 0px)));
+}
+.g-modal--lg,
+.g-modal--xl {
+  overflow: hidden;
+}
+.g-modal--lg {
+  width: min(1100px, 100%);
+  max-height: 100%;
+}
+.g-modal--xl {
+  /* quase a tela toda, mas o mapa ainda aparece em volta (ADR 0006) */
+  width: min(1320px, 100%);
+  height: min(880px, 100%);
+  max-height: 100%;
+}
+/* celular deitado e telas baixas: ocupa a área segura inteira */
+@media (max-height: 560px) {
+  .g-modal--lg,
+  .g-modal--xl {
+    width: 100%;
+    height: 100%;
+  }
+}
+/* em pé e estreito: lg/xl ocupam a tela (o scrim já reserva as áreas seguras) */
+@media (max-width: 600px) and (orientation: portrait) {
+  .g-modal--lg,
+  .g-modal--xl {
+    width: 100%;
+    height: 100%;
+  }
+}
+.g-modal--lg .g-modal__body,
+.g-modal--xl .g-modal__body {
+  min-height: 0;
+  overflow: auto;
+  overscroll-behavior: contain;
+}
+
+/* corpo com abas */
+.g-modal__main {
+  display: flex;
+  flex-direction: column;
+  flex: 1 1 auto;
+  min-height: 0;
+}
+.g-modal__main > .g-modal__body {
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow: auto;
+  background: linear-gradient(180deg, rgba(35, 42, 50, 0.55), transparent 120px);
+}
+.g-modal__tabs {
+  flex: none;
+  padding: 0 14px;
+}
+.g-modal__tabs.g-tabs::after {
+  background: rgba(35, 42, 50, 0.9);
+}
+.g-modal--side .g-modal__main {
+  flex-direction: row;
+}
+.g-modal--side .g-modal__tabs {
+  width: clamp(132px, 22%, 210px);
+  padding: 10px 0;
+}
+
+/* fichário lateral (deitado) — seletor duplo porque game-ui.css (fase 1) carrega depois */
+.g-tabs.g-tabs--side {
+  flex-direction: column;
+  align-items: stretch;
+  gap: 2px;
+  padding: 8px 0;
+  overflow-x: hidden;
+  overflow-y: auto;
+}
+.g-tabs.g-tabs--side::after {
+  left: auto;
+  right: 0;
+  top: 0;
+  bottom: 0;
+  width: 2px;
+  height: auto;
+  box-shadow: -1px 0 0 var(--g-line-2);
+}
+.g-tabs--side .g-tab {
+  justify-content: flex-start;
+  min-height: 44px;
+  margin: 0 2px 0 0;
+  padding: 8px 12px 8px 14px;
+}
+.g-tabs--side .g-tab::before {
+  inset: 0 4px 0 0;
+  clip-path: polygon(0 0, calc(100% - 7px) 0, 100% 7px, 100% calc(100% - 7px), calc(100% - 7px) 100%, 0 100%);
+}
+@media (hover: hover) {
+  .g-tabs--side .g-tab:hover:not([aria-selected='true'])::before {
+    inset: 0 2px 0 0;
+  }
+}
+.g-tabs--side .g-tab[aria-selected='true'] {
+  margin: 0;
+  padding-bottom: 8px;
+}
+.g-tabs--side .g-tab[aria-selected='true']::before {
+  inset: 0;
+  box-shadow:
+    inset 2px 0 0 var(--g-action),
+    inset 8px 0 14px rgba(242, 169, 59, 0.1);
+}
+.g-tabs--side .g-badge {
+  margin-left: auto;
+}
+
+/* troca de aba / de modal no histórico */
+.g-modal__pane {
+  animation: g-pane-in 170ms var(--g-ease) both;
+}
+@keyframes g-pane-in {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+.g-modal--side .g-modal__pane {
+  animation-name: g-pane-in-x;
+}
+@keyframes g-pane-in-x {
+  from {
+    opacity: 0;
+    transform: translateX(8px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+/* ═════════════════════════════════════════════════════════════════════
+   Barra de ações flutuante (dock sobre o mapa)
+   ═════════════════════════════════════════════════════════════════════ */
+.g-dock {
+  --c: 10px;
+  display: inline-flex;
+  gap: 4px;
+  padding: 5px;
+  background:
+    linear-gradient(180deg, rgba(31, 38, 46, 0.92), rgba(14, 17, 21, 0.94));
+  clip-path: polygon(var(--c) 0, calc(100% - var(--c)) 0, 100% var(--c), 100% 100%, 0 100%, 0 var(--c));
+  box-shadow:
+    inset 0 1px 0 rgba(214, 222, 232, 0.22),
+    inset 0 2px 0 rgba(242, 169, 59, 0.22),
+    inset 0 0 0 1px rgba(214, 222, 232, 0.1);
+  backdrop-filter: blur(8px) saturate(1.1);
+  -webkit-backdrop-filter: blur(8px) saturate(1.1);
+  filter: drop-shadow(0 10px 22px rgba(0, 0, 0, 0.6));
+}
+.g-dock__btn {
+  position: relative;
+  display: grid;
+  justify-items: center;
+  align-content: center;
+  gap: 3px;
+  min-width: 72px;
+  min-height: 58px;
+  padding: 6px 10px 5px;
+  border: 0;
+  color: var(--g-text-2);
+  background: linear-gradient(180deg, #232a32, #171c22);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.08),
+    inset 0 -2px 0 rgba(0, 0, 0, 0.4),
+    inset 0 0 0 1px rgba(0, 0, 0, 0.6);
+  font-family: var(--g-font-display);
+  font-stretch: 78%;
+  font-weight: 700;
+  font-size: 12px;
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+  cursor: pointer;
+  touch-action: manipulation;
+  transition:
+    transform var(--g-press) var(--g-ease),
+    color var(--g-fade) var(--g-ease),
+    box-shadow var(--g-fade) var(--g-ease);
+}
+.g-dock__icon {
+  display: grid;
+  place-items: center;
+  height: 26px;
+}
+.g-dock__label {
+  white-space: nowrap;
+}
+.g-dock__count {
+  position: absolute;
+  top: 3px;
+  right: 4px;
+}
+@media (hover: hover) {
+  .g-dock__btn:hover:not(:disabled) {
+    color: var(--g-text);
+    box-shadow:
+      inset 0 1px 0 rgba(255, 255, 255, 0.1),
+      inset 0 0 0 1px var(--g-action),
+      0 0 10px rgba(242, 169, 59, 0.3);
+  }
+}
+.g-dock__btn:active:not(:disabled) {
+  transform: translateY(2px);
+  box-shadow:
+    inset 0 2px 4px rgba(0, 0, 0, 0.55),
+    inset 0 0 0 1px rgba(0, 0, 0, 0.6);
+}
+.g-dock__btn[aria-current='true'] {
+  color: var(--g-action-hi);
+  background: linear-gradient(180deg, #2c2414, #1a1710);
+  box-shadow:
+    inset 0 2px 0 var(--g-action),
+    inset 0 0 0 1px rgba(242, 169, 59, 0.5),
+    0 0 12px rgba(242, 169, 59, 0.25);
+}
+.g-dock__btn--alert:not([aria-current='true']) {
+  color: var(--g-danger-hi);
+}
+.g-dock__btn:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+.g-dock__btn:focus-visible {
+  outline: 2px solid var(--g-focus);
+  outline-offset: 2px;
+}
+.g-dock--compact .g-dock__btn {
+  min-width: 52px;
+  min-height: 48px;
+  padding: 6px;
+}
+@media (max-width: 380px) {
+  .g-dock__btn {
+    min-width: 58px;
+    padding: 6px 6px 5px;
+    font-size: 11px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .g-modal__pane,
+  .g-dock__btn {
+    animation: none !important;
+    transition: none !important;
+  }
+}

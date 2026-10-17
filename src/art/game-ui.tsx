@@ -219,17 +219,20 @@ export interface GTabsProps<T extends string> {
   label: string;
   /** mostra só ícones (rótulo vira aria-label) */
   compact?: boolean;
+  /** 'vertical' = fichário lateral (setas para cima/baixo) */
+  orientation?: 'horizontal' | 'vertical';
   sfx?: Sfx | false;
   className?: string;
   style?: CSSProperties;
 }
 
-export function GTabs<T extends string>({ items, value, onChange, label, compact, sfx = 'click', className, style }: GTabsProps<T>) {
+export function GTabs<T extends string>({ items, value, onChange, label, compact, orientation = 'horizontal', sfx = 'click', className, style }: GTabsProps<T>) {
+  const vertical = orientation === 'vertical';
   const refs = useRef<(HTMLButtonElement | null)[]>([]);
   const onKey = (e: KeyboardEvent, i: number) => {
     let n = -1;
-    if (e.key === 'ArrowRight') n = (i + 1) % items.length;
-    else if (e.key === 'ArrowLeft') n = (i - 1 + items.length) % items.length;
+    if (e.key === (vertical ? 'ArrowDown' : 'ArrowRight')) n = (i + 1) % items.length;
+    else if (e.key === (vertical ? 'ArrowUp' : 'ArrowLeft')) n = (i - 1 + items.length) % items.length;
     else if (e.key === 'Home') n = 0;
     else if (e.key === 'End') n = items.length - 1;
     if (n < 0) return;
@@ -239,7 +242,7 @@ export function GTabs<T extends string>({ items, value, onChange, label, compact
     onChange(items[n].id);
   };
   return (
-    <div role="tablist" aria-label={label} className={cx('g-tabs', className)} style={style}>
+    <div role="tablist" aria-label={label} aria-orientation={orientation} className={cx('g-tabs', vertical && 'g-tabs--side', className)} style={style}>
       {items.map((t, i) => {
         const on = t.id === value;
         return (

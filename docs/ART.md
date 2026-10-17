@@ -270,3 +270,26 @@ Barra superior (`.topbar`, `.tb-k`, `.tb-name`, `.tb-time`; a partir de 900px `.
 | marcadores no `WorldMap` (círculos e losangos inline) | `<GMapMarker kind inv>`; rota com `className="g-route"` |
 | `.grid` / `.cell` / `.token` | `<GBoard>` / `<GToken>` |
 | `.log` / `.log-peek` | `<GTelex kicker dark>` |
+
+## ADR 0006: mapa como palco (modal central com abas)
+
+Demo em `/src/art/gallery.html?solo=stage`. Parâmetros: `&m=agency|item|none` escolhe o modal inicial e `&safe=t,r,b,l` simula as áreas seguras.
+
+![xl 1440](art/adr6-xl-1440.webp)
+![voltar](art/adr6-voltar.webp)
+![abas laterais 956×440](art/adr6-abas-laterais-956x440.webp)
+![440 safe](art/adr6-440-safe.webp)
+![dock 440](art/adr6-dock-440.webp)
+
+**`<GModal>`** (compatível com o uso atual, com props novas):
+- `size="md|lg|xl"`: `md` = 560px; `lg` = até 1100px; `xl` = até 1320×880, com o mapa aparecendo em volta. Deitado ou com altura ≤ 560px, `lg` e `xl` ocupam toda a área segura; em pé e estreito, a tela toda. Nesses tamanhos o corpo rola por dentro e o cabeçalho e o rodapé ficam fixos.
+- `tabs` (`{ id, label, icon, count, alert }[]`), `tab`, `onTab` e `tabsLabel` montam um fichário com contador, ícone e estado ativo. `tabsPlacement="top|side|auto"`: no `auto`, as abas vão para a lateral quando a tela está deitada e baixa (≤ 560px de altura), com navegação pelas setas ↑/↓ (`aria-orientation`). O painel tem `role="tabpanel"`.
+- `onBack` e `backLabel` põem um botão de voltar no cabeçalho. `contentKey` (id do conteúdo) toca a transição de troca.
+- O scrim respeita `--safe-t/r/b/l`, com `env(safe-area-inset-*)` de reserva.
+- Motion: abrir em 180ms; trocar de aba ou de conteúdo em 170ms (fade + 6–8px, horizontal com as abas laterais). Com reduced-motion, nada se move.
+
+**`useModalStack<T>()`** guarda o histórico com um modal por vez. Expõe `current`, `canBack`, `open(m)` (sem histórico), `push(m)` (empilha), `replace(m)`, `back()` e `close()`.
+
+**`<GActionBar items active onSelect label compact>`** é o dock para flutuar sobre o mapa: botões de 72×58px com ícone, rótulo e contador (`alert` em vermelho), e `aria-current` no item aberto. A classe `.g-dock` não define posição, e o exemplo usa `bottom: max(10px, var(--safe-b))`. Abaixo de 380px fica mais estreito; com `compact` mostra só ícones.
+
+`<GTabs orientation="vertical">` também funciona fora do modal (classe `.g-tabs--side`).

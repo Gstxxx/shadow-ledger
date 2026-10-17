@@ -1,6 +1,6 @@
-import { useEffect, useId, useRef, type CSSProperties, type InputHTMLAttributes, type ReactNode } from 'react';
+import { useEffect, useId, useRef, useState, type CSSProperties, type InputHTMLAttributes, type ReactNode } from 'react';
 import { GameIcon } from './icons/GameIcon';
-import { GButton, uiSound } from './game-ui';
+import { GButton, GTabs, uiSound, type GTabItem } from './game-ui';
 import './game-ui.css';
 
 // Fase 2 dos componentes de jogo: wrappers finos sobre as classes de game-ui-2.css.
@@ -139,22 +139,82 @@ export interface GModalProps {
   title: ReactNode;
   tone?: 'action' | 'good' | 'bad' | 'intel';
   variant?: 'command' | 'dossier';
+  /** md = 560px (padrão) · lg ≈ 1100px · xl = quase a tela toda; em pé estreito, lg/xl ocupam a tela */
+  size?: 'md' | 'lg' | 'xl';
   /** ações do rodapé */
   actions?: ReactNode;
   closeLabel?: string;
+  /** largura máxima explícita (px); sobrepõe o `size` só na largura */
   width?: number;
+  /** abas do conteúdo (fichário); o painel é `children` da aba ativa */
+  tabs?: GTabItem<string>[];
+  tab?: string;
+  onTab?: (id: string) => void;
+  tabsLabel?: string;
+  /** 'top', 'side' ou 'auto' (lateral quando deitado e baixo, ≤ 560px de altura) */
+  tabsPlacement?: 'top' | 'side' | 'auto';
+  /** voltar no cabeçalho (histórico de modais) */
+  onBack?: () => void;
+  backLabel?: string;
+  /** muda a cada conteúdo novo (troca de modal no histórico) para tocar a transição de troca */
+  contentKey?: string | number;
   children?: ReactNode;
 }
 
-/** Tela de comando (escura) ou dossiê (papel). Esc fecha; foco vai para o modal ao abrir. */
-export function GModal({ open, onClose, kicker, title, tone = 'action', variant = 'command', actions, closeLabel = 'Fechar', width, children }: GModalProps) {
+const SIDE_TABS_QUERY = '(orientation: landscape) and (max-height: 560px)';
+
+function useMedia(q: string) {
+  const get = () => typeof window !== 'undefined' && !!window.matchMedia?.(q).matches;
+  const [m, setM] = useState(get);
+  useEffect(() => {
+    const mq = window.matchMedia?.(q);
+    if (!mq) return;
+    const on = () => setM(mq.matches);
+    on();
+    mq.addEventListener('change', on);
+    return () => mq.removeEventListener('change', on);
+  }, [q]);
+  return m;
+}
+
+/**
+ * Modal de jogo (ADR 0006): tela de comando ou dossiê, com abas de fichário no topo ou na lateral,
+ * voltar no cabeçalho, tamanhos md/lg/xl, foco preso, Esc fecha, foco volta ao fechar.
+ */
+export function GModal({
+  open,
+  onClose,
+  kicker,
+  title,
+  tone = 'action',
+  variant = 'command',
+  size = 'md',
+  actions,
+  closeLabel = 'Fechar',
+  width,
+  tabs,
+  tab,
+  onTab,
+  tabsLabel = 'Seções',
+  tabsPlacement = 'auto',
+  onBack,
+  backLabel = 'Voltar',
+  contentKey,
+  children,
+}: GModalProps) {
   const ref = useRef<HTMLDivElement>(null);
   const tid = useId();
-  // onClose num ref: o jogo re-renderiza várias vezes por segundo e um callback
+  const pid = useId();
+  // onClose/onBack em refs: o jogo re-renderiza várias vezes por segundo e um callback
   // inline não pode refazer o efeito (som de abrir, foco) a cada quadro.
   const closeRef = useRef(onClose);
   closeRef.current = onClose;
+  const backRef = useRef(onBack);
+  backRef.current = onBack;
   const canClose = !!onClose;
+  const autoSide = useMedia(SIDE_TABS_QUERY);
+  const hasTabs = !!tabs && tabs.length > 0;
+  const side = hasTabs && (tabsPlacement === 'side' || (tabsPlacement === 'auto' && autoSide));
   useEffect(() => {
     if (!open) return;
     const prev = document.activeElement as HTMLElement | null;
@@ -196,6 +256,8 @@ export function GModal({ open, onClose, kicker, title, tone = 'action', variant 
     };
   }, [open]);
   if (!open) return null;
+  const active = hasTabs ? (tab ?? tabs[0].id) : undefined;
+  const paneKey = String(contentKey ?? '') + ':' + String(active ?? '');
   return (
     <div className="g-modal-scrim" style={{ zIndex: 300 }} onClick={() => closeRef.current?.()}>
       <div
@@ -204,11 +266,21 @@ export function GModal({ open, onClose, kicker, title, tone = 'action', variant 
         aria-modal="true"
         aria-labelledby={tid}
         tabIndex={-1}
-        className={cx('g-modal', tone !== 'action' && `g-modal--${tone}`, variant === 'dossier' && 'g-modal--dossier')}
+        className={cx(
+          'g-modal',
+          size !== 'md' && `g-modal--${size}`,
+          hasTabs && 'g-modal--tabs',
+          side && 'g-modal--side',
+          tone !== 'action' && `g-modal--${tone}`,
+          variant === 'dossier' && 'g-modal--dossier',
+        )}
         style={width ? { width: `min(${width}px, 100%)` } : undefined}
         onClick={(e) => e.stopPropagation()}
       >
         <div className="g-modal__bar">
+          {onBack ? (
+            <GButton variant="ghost" size="sm" aria-label={backLabel} icon={<span aria-hidden>←</span>} sfx="close" onClick={() => backRef.current?.()} />
+          ) : null}
           <div style={{ display: 'grid', gap: 4, flex: 1, minWidth: 0 }}>
             {kicker != null ? <span className="g-modal__kicker">{kicker}</span> : null}
             <h2 id={tid} className="g-modal__title">
@@ -219,10 +291,101 @@ export function GModal({ open, onClose, kicker, title, tone = 'action', variant 
             <GButton variant="ghost" size="sm" aria-label={closeLabel} icon={<span aria-hidden>✕</span>} sfx="close" onClick={() => closeRef.current?.()} />
           ) : null}
         </div>
-        <div className="g-modal__body">{children}</div>
+        {hasTabs ? (
+          <div className="g-modal__main">
+            <GTabs
+              className="g-modal__tabs"
+              label={tabsLabel}
+              items={tabs.map((t) => ({ ...t, panel: pid }))}
+              value={active as string}
+              onChange={(id) => onTab?.(id)}
+              orientation={side ? 'vertical' : 'horizontal'}
+            />
+            <div key={paneKey} id={pid} role="tabpanel" className="g-modal__body g-modal__pane">
+              {children}
+            </div>
+          </div>
+        ) : (
+          <div key={contentKey} className={cx('g-modal__body', contentKey != null && 'g-modal__pane')}>
+            {children}
+          </div>
+        )}
         {actions ? <div className="g-modal__foot">{actions}</div> : null}
       </div>
     </div>
+  );
+}
+
+/**
+ * Histórico de modais (ADR 0006): um modal por vez; abrir outro empilha, voltar desempilha.
+ * `current` é o topo; passe um id dele como `contentKey` do GModal.
+ */
+export function useModalStack<T>() {
+  const [stack, setStack] = useState<T[]>([]);
+  return {
+    current: stack.length ? stack[stack.length - 1] : undefined,
+    depth: stack.length,
+    canBack: stack.length > 1,
+    /** abre por cima do atual (com histórico) */
+    push: (m: T) => setStack((s) => [...s, m]),
+    /** troca o atual sem histórico */
+    replace: (m: T) => setStack((s) => (s.length ? [...s.slice(0, -1), m] : [m])),
+    /** abre do zero (descarta o histórico) */
+    open: (m: T) => setStack([m]),
+    back: () => setStack((s) => s.slice(0, -1)),
+    close: () => setStack([]),
+  };
+}
+
+// ── Barra de ações (dock sobre o mapa) ───────────────────────────────
+
+export interface GDockItem {
+  id: string;
+  label: ReactNode;
+  icon: ReactNode | string;
+  count?: number;
+  alert?: boolean;
+  disabled?: boolean;
+}
+
+export interface GActionBarProps {
+  items: GDockItem[];
+  /** item cujo modal está aberto */
+  active?: string;
+  onSelect: (id: string) => void;
+  label: string;
+  /** só ícones (rótulo vira aria-label), para telas muito estreitas */
+  compact?: boolean;
+  className?: string;
+  style?: CSSProperties;
+}
+
+/** Barra de ações de jogo para flutuar sobre o mapa: botões grandes com ícone, rótulo e contador. A posição fica com quem usa. */
+export function GActionBar({ items, active, onSelect, label, compact, className, style }: GActionBarProps) {
+  return (
+    <nav aria-label={label} className={cx('g-dock', compact && 'g-dock--compact', className)} style={style}>
+      {items.map((it) => (
+        <button
+          key={it.id}
+          type="button"
+          className={cx('g-dock__btn', it.alert && 'g-dock__btn--alert')}
+          aria-current={active === it.id ? 'true' : undefined}
+          aria-label={compact && typeof it.label === 'string' ? it.label : undefined}
+          disabled={it.disabled}
+          onPointerEnter={() => {
+            if (typeof window !== 'undefined' && window.matchMedia?.('(hover: hover)').matches) uiSound('hover');
+          }}
+          onClick={() => {
+            uiSound('open');
+            onSelect(it.id);
+          }}
+        >
+          <span className="g-dock__icon">{typeof it.icon === 'string' ? <GameIcon id={it.icon} size={24} accent={it.alert ? 'signal' : 'warm'} /> : it.icon}</span>
+          {compact ? null : <span className="g-dock__label">{it.label}</span>}
+          {it.count ? <span className={cx('g-badge', it.alert ? 'g-badge--alert' : 'g-badge--action', 'g-dock__count')}>{it.count}</span> : null}
+        </button>
+      ))}
+    </nav>
   );
 }
 
