@@ -636,3 +636,9 @@
 .slm-see-all svg.is-up {
   transform: rotate(180deg);
 }
+.slm-diff-line {
+  margin: 6px 0 0;
+  font-family: var(--sl-font-mono);
+  font-size: var(--sl-fs-sm);
+  color: var(--ng-muted);
+}

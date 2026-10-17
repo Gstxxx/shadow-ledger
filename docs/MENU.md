@@ -153,7 +153,7 @@ O que ainda dá para melhorar:
 
 ## Menos complexidade à vista (2026-10-17)
 
-Regra: o que a maioria precisa fica à vista; o resto abre no toque (`Disclosure` em `controls.tsx`, botão com `aria-expanded` + região; ponte até o `GDetails` da art-kit).
+Regra: o que a maioria precisa fica à vista; o resto abre no toque (`Disclosure` em `controls.tsx` é o `<GDetails>` do kit, com o resumo curto como `hint`). A Dificuldade é um `<GModeSwitch>` (Recruta verde, Operador âmbar, Diretor vermelho) com a linha de rivais abaixo.
 
 - **Nova partida › Cenário**: só o recomendado (Tutorial, com selo "Comece aqui") em destaque, mais o escolhido se for outro; "Ver todos (N)" abre a lista inteira.
 - **Nova partida › Diretor**: 6 cartões com retrato, nome, 1 vantagem e 1 desvantagem curtas (`menu.new.origin.<id>.pro/con`); o dossiê completo fica em "Detalhes: <Origem>".

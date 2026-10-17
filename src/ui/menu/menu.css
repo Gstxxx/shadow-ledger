@@ -832,53 +832,10 @@
 }
 
 
-/* Bloco recolhível (Avançado, Ver todos): rótulo visível, conteúdo no toque. */
-.slm-disc {
-  border-top: 1.5px dashed var(--ng-line, rgba(36, 28, 17, 0.22));
-}
-.slm-disc-toggle {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  width: 100%;
-  min-height: 48px;
-  padding: 8px 2px;
-  border: 0;
-  background: none;
-  color: inherit;
-  text-align: left;
-  cursor: pointer;
-}
-.slm-disc-text {
-  display: grid;
-  flex: 1;
-  min-width: 0;
-}
-.slm-disc-label {
-  font-family: var(--sl-font-display);
-  font-weight: 700;
-  font-size: var(--sl-fs-md);
-  text-transform: uppercase;
-  letter-spacing: 0.03em;
-}
-.slm-disc-hint {
-  font-size: var(--sl-fs-sm);
-  opacity: 0.7;
-}
-.slm-disc-chev {
-  flex: none;
-  transition: transform var(--sl-dur-base, 160ms) ease;
-}
-.slm-disc.is-open .slm-disc-chev {
-  transform: rotate(180deg);
-}
-.slm-disc-body {
+/* GDetails no papel do dossiê: corpo com espaço entre os campos. */
+.slm-disc .g-details__pad {
   display: grid;
   gap: 16px;
-  padding: 4px 0 12px;
-}
-.slm-disc-body[hidden] {
-  display: none;
 }
 
 /* Continuar: só Jogar à vista; Exportar/Apagar abrem no "⋯", numa linha abaixo. */

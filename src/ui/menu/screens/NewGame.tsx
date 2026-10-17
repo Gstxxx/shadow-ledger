@@ -8,6 +8,7 @@ import { FIRST_NAMES, LAST_NAMES, PLAYER_AGENCY_NAMES } from '../../../game/data
 import { DIFFICULTY_AI } from '../../../game/ai/profiles';
 import type { Continent, Difficulty, ObjectiveKind, OriginId, PresetDef } from '../../../game/types';
 import { Disclosure, Segmented, Stepper } from '../controls';
+import { GModeSwitch } from '../../../art/game-ui-3';
 import { ease, f } from '../ease';
 import { sfx } from '../settings';
 import { presetText, type Strings } from '../strings';
@@ -406,35 +407,20 @@ export function NewGame({ s, lang, presets, tutorial, reduced, onStart }: Props)
 
             <fieldset className="slm-group">
               <legend>{t.difficulty}</legend>
-              <div className="slm-diffs" role="radiogroup" aria-label={t.difficulty}>
-                {([1, 2, 3] as Difficulty[]).map((d) => {
-                  const c = t.difficultyCards[d - 1];
-                  const on = d === difficulty;
-                  return (
-                    <button
-                      key={d}
-                      type="button"
-                      role="radio"
-                      aria-checked={on}
-                      className="slm-diff"
-                      onClick={() => {
-                        if (!on) sfx('click');
-                        setDifficulty(d);
-                        setTouchedDiff(true);
-                      }}
-                    >
-                      <span className="slm-diff-head">
-                        <Dots n={d} />
-                        <strong>{c.name}</strong>
-                        <span className="slm-card-check" aria-hidden="true">
-                          <Check size={14} strokeWidth={3} />
-                        </span>
-                      </span>
-                      <span className="slm-diff-rivals">{t.rivalsLine(rivalCount(d))}</span>
-                    </button>
-                  );
-                })}
-              </div>
+              <GModeSwitch<'1' | '2' | '3'>
+                label={t.difficulty}
+                value={String(difficulty) as '1' | '2' | '3'}
+                onChange={(v) => {
+                  setDifficulty(Number(v) as Difficulty);
+                  setTouchedDiff(true);
+                }}
+                options={([1, 2, 3] as Difficulty[]).map((d) => ({
+                  value: String(d) as '1' | '2' | '3',
+                  label: t.difficultyCards[d - 1].name,
+                  tone: d === 1 ? 'ok' : d === 2 ? 'action' : 'danger',
+                }))}
+              />
+              <p className="slm-diff-line">{t.rivalsLine(rivalCount(difficulty))}</p>
             </fieldset>
 
             <Disclosure label={t.advanced} hint={t.advancedHint} defaultOpen={entry.kind === 'sandbox'} reduced={reduced}>
