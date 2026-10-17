@@ -149,11 +149,10 @@ export function StageDock({ stage, compact }: { stage: StageApi; compact?: boole
   const m = stage.current;
   const active: DockId | undefined =
     m?.kind === 'country' ? (m.tab === 'market' ? 'market' : 'country') : m?.kind === 'agency' ? (m.tab === 'threats' ? 'threats' : 'agency') : m?.kind === 'item' ? 'market' : undefined;
-  const offers = s.contracts.filter((k) => k.status === 'offered').length;
   const items = [
     { id: 'country', label: countryName(selected), icon: <MapPin size={22} /> },
     { id: 'market', label: t('game.country.market'), icon: <Store size={22} /> },
-    { id: 'agency', label: t('game.topbar.agency'), icon: <Briefcase size={22} />, count: offers || undefined },
+    { id: 'agency', label: t('game.topbar.agency'), icon: <Briefcase size={22} />, alert: a.director.status !== 'free' || a.arrears > 0 },
     { id: 'threats', label: t('game.agency.tab.threats'), icon: <AlertTriangle size={22} />, count: a.threats.length || undefined, alert: a.threats.length > 0 },
   ];
   const onSelect = (id: string) => {
