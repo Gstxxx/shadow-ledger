@@ -176,7 +176,7 @@ export default {
   'game.agency.stations.rivalStations': '{n, plural, one {# Estação} other {# Estações}}:',
   'game.agency.teams.title': 'Equipes',
   'game.agency.teams.hint': 'Equipes agem sem o Diretor: viajam por Voo Comercial (só Pessoal) ou num Cargueiro Destacado, fazem Operações Especiais em Combate Automático e nunca comerciam.',
-  'game.agency.teams.empty': 'Nenhuma Equipe em campo. Destaque Unidades da Escolta (aba Frota) ou de uma Estação.',
+  'game.agency.teams.empty': 'Nenhuma Equipe em campo. Destaque Unidades da Escolta ou de uma Estação para agir em outro país sem você.',
   'game.agency.teams.travelTo': '→ {country} · {time}',
   'game.agency.teams.at': 'em {country}',
   'game.agency.teams.captured': 'Capturado: {qty}× {item}',

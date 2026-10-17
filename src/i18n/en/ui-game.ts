@@ -175,7 +175,7 @@ export default {
   'game.agency.stations.rivalStations': '{n, plural, one {# Station} other {# Stations}}:',
   'game.agency.teams.title': 'Teams',
   'game.agency.teams.hint': 'Teams act without the Director: they travel by Commercial Flight (Personnel only) or on a Detached Freighter, run Special Operations in Auto-Resolve and never trade.',
-  'game.agency.teams.empty': 'No Team in the field. Detach Units from the Escort (Fleet tab) or from a Station.',
+  'game.agency.teams.empty': 'No Team in the field. Detach Units from the Escort or from a Station to act in another country without you.',
   'game.agency.teams.travelTo': '→ {country} · {time}',
   'game.agency.teams.at': 'in {country}',
   'game.agency.teams.captured': 'Captured: {qty}× {item}',
