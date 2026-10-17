@@ -99,6 +99,7 @@ export function ConnectedMainMenu({ skipIntro }: { skipIntro?: boolean }) {
         difficulty: cfg.difficulty,
         hardcore: cfg.hardcore,
         rivals: cfg.rivals,
+        origin: cfg.origin,
         directorName: cfg.directorName,
         agencyName: cfg.agencyName,
       };

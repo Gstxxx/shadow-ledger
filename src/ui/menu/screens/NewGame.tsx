@@ -6,13 +6,16 @@ import { COUNTRY_SEEDS } from '../../../game/data/countries';
 import { ITEMS } from '../../../game/data/items';
 import { FIRST_NAMES, LAST_NAMES, PLAYER_AGENCY_NAMES } from '../../../game/data/names';
 import { DIFFICULTY_AI } from '../../../game/ai/profiles';
-import type { Continent, Difficulty, ObjectiveKind, PresetDef } from '../../../game/types';
+import type { Continent, Difficulty, ObjectiveKind, OriginId, PresetDef } from '../../../game/types';
 import { Segmented, Stepper } from '../controls';
 import { ease, f } from '../ease';
 import { sfx } from '../settings';
 import { presetText, type Strings } from '../strings';
 import type { Lang, StartConfig } from '../types';
 import { MiniMap } from './MiniMap';
+import { DirectorStep } from './DirectorStep';
+import { useOriginStrings } from './originStrings';
+import { TUTORIAL_ORIGIN } from '../../../game/data/origins';
 import './newgame.css';
 import { countryName, itemName } from '../../../i18n/lookup';
 import { useNewGameStrings, type NewGameStrings } from './newGameStrings';
@@ -27,6 +30,8 @@ interface Props {
 }
 
 type Kind = StartConfig['kind'];
+type Step = 1 | 2 | 3;
+type Origin = Exclude<OriginId, 'none'>;
 interface Entry {
   key: string;
   kind: Kind;
@@ -89,6 +94,7 @@ function Dots({ n, label }: { n: number; label?: string }) {
 
 export function NewGame({ s, lang, presets, tutorial, reduced, onStart }: Props) {
   const t = useNewGameStrings();
+  const o = useOriginStrings();
   const compact = useCompact();
 
   const [region, setRegion] = useState<Continent>('NA');
@@ -130,7 +136,9 @@ export function NewGame({ s, lang, presets, tutorial, reduced, onStart }: Props)
   const [selected, setSelected] = useState(() => entries[0]?.key);
   const entry = entries.find((e) => e.key === selected) ?? entries[0];
 
-  const [step, setStep] = useState<1 | 2>(1);
+  const [step, setStep] = useState<Step>(1);
+  const [origin, setOrigin] = useState<Origin>(() => (entries[0]?.kind === 'tutorial' ? (TUTORIAL_ORIGIN as Origin) : 'exagent'));
+  const [touchedOrigin, setTouchedOrigin] = useState(false);
   const [phoneDetails, setPhoneDetails] = useState(false);
   const [difficulty, setDifficulty] = useState<Difficulty>(() => (entries[0]?.kind === 'tutorial' ? 1 : 2));
   const [touchedDiff, setTouchedDiff] = useState(false);
@@ -147,10 +155,12 @@ export function NewGame({ s, lang, presets, tutorial, reduced, onStart }: Props)
     if (key !== selected) sfx('type');
     setSelected(key);
     const e = entries.find((x) => x.key === key);
+    // No Tutorial a Origem padrão é a do motor (Contrabandista), até a pessoa escolher outra.
+    if (e && !touchedOrigin) setOrigin(e.kind === 'tutorial' ? (TUTORIAL_ORIGIN as Origin) : 'exagent');
     if (e && !touchedDiff) setDifficulty(e.kind === 'tutorial' ? 1 : (Math.min(3, Math.max(1, e.preset.challenge)) as Difficulty));
   };
 
-  const goStep = useCallback((n: 1 | 2) => {
+  const goStep = useCallback((n: Step) => {
     sfx('click');
     setStep(n);
     if (n === 1) setPhoneDetails(false);
@@ -160,9 +170,9 @@ export function NewGame({ s, lang, presets, tutorial, reduced, onStart }: Props)
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
       if (e.key !== 'Escape') return;
-      if (step === 2) {
+      if (step > 1) {
         e.preventDefault();
-        goStep(1);
+        goStep((step - 1) as Step);
       } else if (phoneDetails) {
         e.preventDefault();
         setPhoneDetails(false);
@@ -209,6 +219,7 @@ export function NewGame({ s, lang, presets, tutorial, reduced, onStart }: Props)
     sfx('click');
     onStart({
       kind: entry.kind,
+      origin,
       preset: entry.preset,
       difficulty,
       hardcore,
@@ -231,14 +242,14 @@ export function NewGame({ s, lang, presets, tutorial, reduced, onStart }: Props)
 
   return (
     <div className="slm-ng" data-compact={compact || undefined}>
-      <ol className="slm-steps" aria-label={t.stepOf(step, 2)}>
-        {([1, 2] as const).map((n) => (
+      <ol className="slm-steps" aria-label={t.stepOf(step, 3)}>
+        {([1, 2, 3] as const).map((n) => (
           <li key={n}>
             <button type="button" className="slm-step" aria-current={step === n ? 'step' : undefined} onClick={() => step !== n && goStep(n)}>
               <span className="slm-step-num" aria-hidden="true">
                 {n < step ? <Check size={14} strokeWidth={3} /> : n}
               </span>
-              <span>{n === 1 ? t.stepScenario : t.stepConfigure}</span>
+              <span>{n === 1 ? t.stepScenario : n === 2 ? o.step : t.stepConfigure}</span>
             </button>
           </li>
         ))}
@@ -246,7 +257,7 @@ export function NewGame({ s, lang, presets, tutorial, reduced, onStart }: Props)
 
       <div className="slm-ng-body" ref={body}>
         <h3 className="slm-sr" ref={heading} tabIndex={-1}>
-          {t.stepOf(step, 2)}: {step === 1 ? t.stepScenario : t.stepConfigure}
+          {t.stepOf(step, 3)}: {step === 1 ? t.stepScenario : step === 2 ? o.step : t.stepConfigure}
         </h3>
 
         {step === 1 && (
@@ -323,6 +334,19 @@ export function NewGame({ s, lang, presets, tutorial, reduced, onStart }: Props)
         )}
 
         {step === 2 && (
+          <DirectorStep
+            o={o}
+            value={origin}
+            reduced={reduced}
+            onChange={(id) => {
+              setOrigin(id);
+              setTouchedOrigin(true);
+            }}
+            onConfirm={() => goStep(3)}
+          />
+        )}
+
+        {step === 3 && (
           <form
             className="slm-ng-config"
             onSubmit={(ev) => {
@@ -451,6 +475,10 @@ export function NewGame({ s, lang, presets, tutorial, reduced, onStart }: Props)
                   <dd>{titleOf(entry)}</dd>
                 </div>
                 <div>
+                  <dt>{o.title}</dt>
+                  <dd>{o.origins.find((x) => x.id === origin)?.name}</dd>
+                </div>
+                <div>
                   <dt>{t.objective}</dt>
                   <dd>{t.outcome(entry.preset.objective, entry.preset.days, entry.preset.target)}</dd>
                 </div>
@@ -483,17 +511,28 @@ export function NewGame({ s, lang, presets, tutorial, reduced, onStart }: Props)
       <div className="slm-ng-foot">
         {step === 1 ? (
           <>
-            <span className="slm-ng-foot-info">{t.stepOf(1, 2)}</span>
+            <span className="slm-ng-foot-info">{t.stepOf(1, 3)}</span>
             <button type="button" className="slm-btn slm-btn--primary slm-btn--lg" onClick={() => goStep(2)}>
-              {compact && phoneDetails ? t.chooseThis : t.next}
+              {compact && phoneDetails ? t.chooseThis : o.next}
+              <ArrowRight size={18} aria-hidden="true" />
+            </button>
+          </>
+        ) : step === 2 ? (
+          <>
+            <button type="button" className="slm-btn slm-btn--ghost" onClick={() => goStep(1)}>
+              <ArrowLeft size={18} aria-hidden="true" />
+              {t.backToScenarios}
+            </button>
+            <button type="button" className="slm-btn slm-btn--primary slm-btn--lg" onClick={() => goStep(3)}>
+              {t.next}
               <ArrowRight size={18} aria-hidden="true" />
             </button>
           </>
         ) : (
           <>
-            <button type="button" className="slm-btn slm-btn--ghost" onClick={() => goStep(1)}>
+            <button type="button" className="slm-btn slm-btn--ghost" onClick={() => goStep(2)}>
               <ArrowLeft size={18} aria-hidden="true" />
-              {t.backToScenarios}
+              {o.back}
             </button>
             <button type="button" className={`slm-btn slm-btn--lg ${hardcore ? 'slm-btn--danger' : 'slm-btn--primary'}`} onClick={start}>
               {hardcore && <Skull size={18} aria-hidden="true" />}

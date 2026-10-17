@@ -1,4 +1,4 @@
-import type { Difficulty, PresetDef } from '../../game/types';
+import type { Difficulty, OriginId, PresetDef } from '../../game/types';
 
 export type { Lang } from '../../i18n';
 
@@ -11,6 +11,8 @@ export interface StartConfig {
   hardcore: boolean;
   /** Número de Agências Rivais (0–4); sem valor, a Dificuldade decide. */
   rivals?: number;
+  /** Origem do Diretor (src/game/data/origins.ts). */
+  origin?: OriginId;
   directorName?: string;
   agencyName?: string;
 }

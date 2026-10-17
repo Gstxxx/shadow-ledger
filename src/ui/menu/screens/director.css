@@ -1,0 +1,272 @@
+/* Passo Diretor da Nova partida: dossiê aberto da Origem + grade de fichas. Sobre o papel do dossiê. */
+
+.slm-dir {
+  display: grid;
+  grid-template-columns: minmax(0, 1.15fr) minmax(0, 1fr);
+  gap: clamp(14px, 2.6vw, 28px);
+  align-items: start;
+}
+
+/* ── Dossiê aberto ── */
+.slm-dir-dossier {
+  position: relative;
+  perspective: 900px;
+}
+.slm-dir-page {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  gap: 14px;
+  padding: 12px;
+  border: 1px solid rgba(36, 28, 17, 0.28);
+  border-radius: var(--sl-radius-2);
+  background: rgba(255, 255, 255, 0.45);
+  box-shadow: 0 1px 0 rgba(255, 255, 255, 0.6) inset;
+}
+.slm-dir-big {
+  width: 140px;
+  border: 1px solid rgba(36, 28, 17, 0.35);
+  box-shadow: 0 6px 14px -8px rgba(0, 0, 0, 0.55);
+  overflow: hidden;
+  align-self: start;
+}
+.slm-dir-big svg {
+  display: block;
+  width: 100% !important;
+  height: auto !important;
+}
+.slm-dir-text {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  min-width: 0;
+}
+.slm-dir-kicker {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-family: var(--sl-font-mono);
+  font-size: var(--sl-fs-xs);
+  font-weight: 600;
+  color: var(--sl-stamp-red);
+}
+.slm-dir-title {
+  margin: 0;
+  font-family: var(--sl-font-display);
+  font-weight: 700;
+  font-size: clamp(24px, 4.4vh, 34px);
+  line-height: 1;
+  text-transform: uppercase;
+}
+.slm-dir-bio {
+  margin: 0;
+  font-family: var(--sl-font-type);
+  font-size: var(--sl-fs-sm);
+  line-height: 1.4;
+}
+.slm-dir-pro,
+.slm-dir-con {
+  display: flex;
+  gap: 8px;
+  margin: 0;
+  padding: 7px 9px;
+  border-radius: var(--sl-radius-1);
+  font-size: var(--sl-fs-sm);
+  line-height: 1.3;
+}
+.slm-dir-pro svg,
+.slm-dir-con svg {
+  flex: none;
+  margin-top: 1px;
+}
+.slm-dir-pro {
+  background: rgba(31, 107, 58, 0.1);
+  border-left: 3px solid #1f6b3a;
+  color: #17502b;
+}
+.slm-dir-con {
+  background: rgba(179, 38, 30, 0.08);
+  border-left: 3px solid var(--sl-stamp-red);
+  color: #8e1d18;
+}
+.slm-dir-pro strong,
+.slm-dir-con strong {
+  font-weight: 700;
+}
+
+/* Capa de pasta que gira para abrir */
+.slm-dir-cover {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  border-radius: var(--sl-radius-2);
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.18), transparent 40%),
+    #c9a96a;
+  border: 1px solid #8f6d32;
+  box-shadow: 0 10px 24px -12px rgba(0, 0, 0, 0.6);
+  color: #3a2a10;
+  backface-visibility: hidden;
+  visibility: hidden;
+  will-change: transform;
+}
+.slm-dir-cover-tab {
+  position: absolute;
+  top: -10px;
+  left: 18px;
+  width: 92px;
+  height: 12px;
+  border-radius: 4px 4px 0 0;
+  background: #c9a96a;
+  border: 1px solid #8f6d32;
+  border-bottom: 0;
+}
+.slm-dir-cover-code {
+  font-family: var(--sl-font-mono);
+  font-size: var(--sl-fs-xs);
+  font-weight: 700;
+  letter-spacing: 0.06em;
+}
+
+/* ── Grade de fichas ── */
+.slm-dir-q {
+  margin: 0 0 8px;
+  font-family: var(--sl-font-display);
+  font-weight: 700;
+  font-size: var(--sl-fs-lg);
+  text-transform: uppercase;
+}
+.slm-dir-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 8px;
+  padding: 3px;
+}
+.slm-dir-card {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  min-height: 44px;
+  padding: 8px 6px 7px;
+  border: 1.5px solid rgba(36, 28, 17, 0.22);
+  border-radius: var(--sl-radius-2);
+  background: rgba(255, 255, 255, 0.28);
+  color: var(--sl-paper-ink) !important;
+  text-align: center;
+  transition: border-color var(--sl-dur-fast), box-shadow var(--sl-dur-base) var(--sl-ease-out), transform var(--sl-dur-base) var(--sl-ease-out);
+}
+.slm-dir-card:hover {
+  border-color: rgba(36, 28, 17, 0.5);
+}
+.slm-dir-card[aria-checked='true'] {
+  border: 2px solid var(--sl-stamp-blue);
+  padding: 7.5px 5.5px 6.5px;
+  background: rgba(255, 255, 255, 0.6);
+  box-shadow: 0 0 0 3px rgba(31, 78, 140, 0.18), 0 8px 22px -10px rgba(31, 78, 140, 0.55);
+  transform: translateY(-2px);
+}
+.slm-dir-card:focus-visible {
+  outline: 3px solid var(--sl-stamp-blue);
+  outline-offset: 2px;
+}
+.slm-dir-card .slm-card-check {
+  position: absolute;
+  top: 5px;
+  right: 5px;
+  width: 20px;
+  height: 20px;
+  display: grid;
+  place-items: center;
+  border-radius: 50%;
+  border: 1.5px solid rgba(36, 28, 17, 0.22);
+  color: transparent;
+}
+.slm-dir-card[aria-checked='true'] .slm-card-check {
+  background: var(--sl-stamp-blue);
+  border-color: var(--sl-stamp-blue);
+  color: #fff;
+}
+.slm-dir-face {
+  display: block;
+  width: 56px;
+  height: 56px;
+  overflow: hidden;
+  border-radius: 3px;
+  border: 1px solid rgba(36, 28, 17, 0.3);
+}
+.slm-dir-face svg {
+  display: block;
+  width: 100% !important;
+  height: 100% !important;
+}
+.slm-dir-name {
+  font-weight: 600;
+  font-size: var(--sl-fs-xs);
+  line-height: 1.2;
+}
+.slm-dir-code {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-family: var(--sl-font-mono);
+  font-size: var(--sl-fs-2xs);
+  color: var(--sl-paper-ink-muted);
+}
+
+/* ── Telas estreitas e celular em pé: dossiê em cima, fichas embaixo ── */
+@media (max-width: 819px) {
+  .slm-dir-code {
+    display: none;
+  }
+}
+/* Em pé: dossiê em cima, fichas embaixo (deitado baixo continua lado a lado). */
+@media (max-width: 819px) and (orientation: portrait) {
+  .slm-dir {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+@media (max-width: 819px) and (orientation: landscape) {
+  .slm-dir {
+    grid-template-columns: minmax(0, 1.1fr) minmax(0, 1fr);
+  }
+  .slm-dir-page {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .slm-dir-big {
+    width: 84px;
+  }
+}
+@media (max-width: 560px) {
+  .slm-dir-grid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+  .slm-dir-page {
+    grid-template-columns: 96px minmax(0, 1fr);
+    gap: 10px;
+    padding: 10px;
+  }
+  .slm-dir-big {
+    width: 96px;
+  }
+}
+@media (max-height: 420px) {
+  .slm-dir-big {
+    width: 96px;
+  }
+  .slm-dir-bio {
+    display: none;
+  }
+  .slm-dir-q {
+    display: none;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .slm-dir-card {
+    transition: none;
+  }
+}

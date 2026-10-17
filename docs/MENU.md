@@ -33,6 +33,18 @@ O jeito sem store: `<MainMenu {...props} />`. Todas as props são opcionais, ent
 - Continuar mostra um único slot (o autosave de `store/game`). Para apagar um save, o store precisa expor `deleteSave()`.
 - Não existe Preset de Tutorial próprio.
 
+## Nova partida: passo Diretor
+
+Ordem dos passos: **Cenário → Diretor → Configurar**.
+
+- **Fichas:** 6 Origens (`ORIGINS` de `src/game/data/origins.ts`). Cada ficha tem o retrato da art-kit (`DirectorPortrait`), o nome e o emblema. A escolhida ganha borda azul, brilho e check.
+- **Dossiê aberto:** ao lado (em pé, em cima) fica o dossiê da Origem escolhida: retrato em busto, bio, Vantagem em verde e Desvantagem em vermelho, com ícones.
+- **Animação:** ao trocar de Origem, a capa de pasta manila gira sobre a dobra (`gentleIn`, 10 quadros) e a página de dentro pousa: o retrato com `softLand` e as linhas com 2 quadros entre si. Com reduzir movimento, a troca é por corte.
+- **Teclado:** setas, Home e End movem a seleção; escolher de novo a Origem já escolhida avança para Configurar.
+- **Partida:** a Origem vai em `StartConfig.origin`, que vira `GameOptions.origin`, e aparece no resumo. No Tutorial, o padrão é a do motor (`TUTORIAL_ORIGIN`, Contrabandista) até a pessoa escolher outra.
+- **Ids:** o motor usa `exagent`/`analyst` e a arte usa `field-agent`/`sigint`. `artOrigin(id)`, exportado de `src/ui/menu`, faz a tradução para quem precisar do retrato.
+- **Textos:** as chaves `origin.<id>.name/.desc/.advantage/.disadvantage` e `menu.new.origin.*`, `menu.new.step.director`, `menu.new.nextDirector`, `menu.new.backToDirector`. Enquanto elas não existem no i18n, vale a reserva em `screens/originStrings.ts`.
+
 ## Celular em pé (ADR 0005)
 
 Referências de retrato: 360×640 e 390×844.

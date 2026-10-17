@@ -631,3 +631,23 @@
     grid-template-columns: minmax(0, 1fr);
   }
 }
+
+/* Telas bem estreitas (celular em pé): passos só com o número, menos o atual; rodapé mais justo. */
+@media (max-width: 420px) {
+  .slm-step:not([aria-current]) > span:last-child {
+    display: none;
+  }
+  .slm-steps li + li::before {
+    width: 12px;
+    margin: 0 2px;
+  }
+  .slm-ng-foot {
+    gap: 8px;
+  }
+  .slm-ng-foot .slm-btn {
+    padding: 0 12px;
+  }
+  .slm-btn--lg {
+    font-size: var(--sl-fs-sm) !important;
+  }
+}
