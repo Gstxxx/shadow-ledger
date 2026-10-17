@@ -10,6 +10,7 @@ import type {
   Unit,
 } from './types';
 import { strengthBonus } from './strength';
+import { equipMult } from './equipment';
 import { canFight, def, FORT_ID, knockOut, makeFort, nextUid, strOf, traitMult, usesConvert } from './units';
 import type { MintCtx } from './units';
 import { M, say } from './msg';
@@ -216,7 +217,7 @@ function eff(c: CombatState, ref: CombatUnitRef) {
     raw += c.originBonus.all + (ref.unit.hp.army > 0 ? c.originBonus.military : 0);
     raw = Math.max(0.5, raw);
   }
-  const base = raw * (1 + ref.unit.xp * 0.006) * traitMult(ref.unit, 'strength');
+  const base = raw * (1 + ref.unit.xp * 0.006) * traitMult(ref.unit, 'strength') * equipMult(ref.unit, c.type);
   return base * (ref.side === 'p' ? mod.player : mod.enemy);
 }
 

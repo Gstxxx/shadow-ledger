@@ -139,6 +139,8 @@ export interface Unit {
   /** Segurança local contratada para uma única defesa. */
   temp?: boolean;
   record?: UnitRecord;
+  /** Equipamento carregado (Pessoal): ids de src/game/data/equipment.ts por slot. */
+  gear?: { weapon?: string; armor?: string; kit?: string };
 }
 
 /** Lote de Carga (ou de Cofre). */
@@ -477,6 +479,8 @@ export interface Agency {
   /** Manutenção em atraso (US$). */
   arrears: number;
   stats: AgencyStats;
+  /** Equipamento comprado no Arsenal e ainda não equipado: id → quantidade. */
+  gearStock?: Record<string, number>;
 }
 
 export interface GameState {

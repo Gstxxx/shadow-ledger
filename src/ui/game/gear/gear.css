@@ -1,0 +1,152 @@
+/* Equipamento (ficha da Unidade) e Arsenal (aba da Agência). */
+.gear-art {
+  display: block;
+  flex: 0 0 auto;
+  width: 72px;
+  height: auto;
+  border-radius: 3px;
+  box-shadow: 0 0 0 1px rgba(214, 222, 232, 0.12);
+}
+.gear-k {
+  font-size: 12px;
+  color: var(--paper-3);
+}
+.gear-slots {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  gap: 8px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.gear-slot {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  min-height: 56px;
+  padding: 6px 10px 6px 6px;
+  text-align: left;
+  color: var(--paper);
+  background: rgba(214, 222, 232, 0.04);
+  border: 1px solid var(--line-2);
+  border-radius: 4px;
+  cursor: pointer;
+}
+.gear-slot.empty {
+  border-style: dashed;
+}
+.gear-slot.on,
+.gear-slot:focus-visible {
+  border-color: var(--amber);
+  outline: none;
+  box-shadow: 0 0 0 1px var(--amber);
+}
+.gear-thumb .gear-art {
+  width: 60px;
+}
+.gear-plus {
+  display: grid;
+  place-items: center;
+  width: 60px;
+  height: 40px;
+  font-size: 20px;
+  color: var(--paper-3);
+}
+.gear-txt {
+  display: grid;
+  gap: 2px;
+  min-width: 0;
+}
+.gear-txt b {
+  font-size: 14px;
+  line-height: 1.2;
+  overflow-wrap: anywhere;
+}
+.gear-pick {
+  display: grid;
+  gap: 8px;
+  margin-top: 8px;
+  padding: 10px;
+  background: rgba(10, 13, 16, 0.6);
+  border: 1px solid var(--line-2);
+  border-radius: 4px;
+}
+.gear-opts,
+.arsenal-list,
+.arsenal-stock {
+  display: grid;
+  gap: 8px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.gear-opt,
+.arsenal-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.gear-opt-main,
+.arsenal-main {
+  display: grid;
+  flex: 1;
+  gap: 2px;
+  min-width: 0;
+}
+.gear-opt .btn,
+.arsenal-row .btn,
+.gear-pick-foot .btn {
+  min-height: 44px;
+  flex: 0 0 auto;
+}
+.gear-delta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 2px 10px;
+  font: 600 12.5px var(--mono);
+}
+.gear-delta .up {
+  color: var(--green);
+}
+.gear-delta .down {
+  color: var(--red);
+}
+.gear-pick-foot {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+.gear-now {
+  margin: 8px 0 0;
+  font: 600 12.5px var(--mono);
+  color: var(--green);
+}
+.arsenal {
+  display: grid;
+  gap: 12px;
+}
+.arsenal-h {
+  margin: 4px 0 0;
+  font-size: 12px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--paper-3);
+}
+.arsenal-stock li {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.arsenal-stock .gear-art {
+  width: 48px;
+}
+.arsenal-stock b {
+  margin-left: auto;
+}
+@media (max-width: 420px) {
+  .arsenal-row .gear-art,
+  .gear-opt .gear-art {
+    width: 56px;
+  }
+}

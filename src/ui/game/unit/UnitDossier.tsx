@@ -12,6 +12,7 @@ import type { I18n, Key, Lang } from '../../../i18n';
 import { classLabel, countryName, itemBlurb, itemName, stationName, traitBlurb, traitName } from '../../../i18n/lookup';
 import { Help } from '../help/Glossary';
 import { Details, Verdict } from '../stage/Verdict';
+import { GearSection } from '../gear/GearSection';
 import './unit.css';
 
 /** Tipos de força, na ordem em que aparecem na ficha, com o ícone do kit. */
@@ -274,6 +275,8 @@ export function UnitDossier({ uid, onClose, embedded }: { uid: string; onClose: 
             </ul>
           </section>
         )}
+
+        {human && <GearSection u={u} />}
 
         {human && (
           <section className="ud-sec">

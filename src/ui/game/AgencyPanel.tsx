@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { AlertTriangle, Building2, FileSignature, Plane, Shield, UserRound, Users } from 'lucide-react';
+import { AlertTriangle, Building2, FileSignature, Plane, Shield, UserRound, Users, Crosshair } from 'lucide-react';
 import * as A from '../../game/actions';
 import { ITEMS } from '../../game/data/items';
 import { STATIONS } from '../../game/data/rules';
@@ -16,6 +16,7 @@ import { Empty, Section } from './bits';
 import { UnitRow } from './UnitRow';
 import { FleetSpace, UnitCard, UpkeepBalance } from './unit/UnitCard';
 import { useOpenUnit } from './unit/DossierHost';
+import { ArsenalTab } from './gear/ArsenalTab';
 import './agency.css';
 import { DirectorAvatar } from './DirectorAvatar';
 import { cargoQty } from '../../game/cargo';
@@ -28,7 +29,7 @@ import type { Agency } from '../../game/types';
 /** Diretor não pode voar (Detido, Sequestrado, morto). */
 const d0 = (a: Agency) => a.director.status !== 'free';
 
-export type AgencyTab = 'director' | 'fleet' | 'escort' | 'stations' | 'teams' | 'contracts' | 'threats';
+export type AgencyTab = 'director' | 'fleet' | 'escort' | 'arsenal' | 'stations' | 'teams' | 'contracts' | 'threats';
 type Tab = AgencyTab;
 
 /** Abas da Agência com contadores (para o fichário do modal). */
@@ -42,6 +43,7 @@ export function useAgencyTabs() {
     { id: 'director' as Tab, label: t('game.agency.director.title'), icon: <UserRound size={16} />, alert: a.director.status !== 'free' || a.arrears > 0 },
     { id: 'fleet' as Tab, label: t('game.agency.fleet.title'), icon: <Plane size={16} />, count: cargoUnits || undefined },
     { id: 'escort' as Tab, label: t('game.agency.escort.title'), icon: <Shield size={16} />, count: a.escort.length || undefined },
+    { id: 'arsenal' as Tab, label: t('game.agency.tab.arsenal'), icon: <Crosshair size={16} /> },
     { id: 'stations' as Tab, label: t('game.agency.tab.stations'), icon: <Building2 size={16} />, count: a.stations.length || undefined },
     { id: 'teams' as Tab, label: t('game.agency.tab.teams'), icon: <Users size={16} />, count: a.teams.length || undefined },
     { id: 'contracts' as Tab, label: t('game.agency.tab.contracts'), icon: <FileSignature size={16} />, count: offers || undefined },
@@ -56,6 +58,7 @@ export function AgencyTabBody({ tab }: { tab: AgencyTab }) {
       {tab === 'director' && <DirectorTab />}
       {tab === 'fleet' && <FleetTab />}
       {tab === 'escort' && <EscortTab />}
+      {tab === 'arsenal' && <ArsenalTab />}
       {tab === 'stations' && <StationsTab />}
       {tab === 'teams' && <TeamsTab />}
       {tab === 'contracts' && <ContractsTab />}

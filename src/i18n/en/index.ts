@@ -3,6 +3,7 @@ import common from './common';
 import uiGame from './ui-game';
 import uiHelp from './ui-help';
 import uiMarket from './ui-market';
+import uiGear from './ui-gear';
 import menu from './menu';
 import title from './title';
 import app from './app';
@@ -15,7 +16,7 @@ const en: Record<keyof typeof ptBR, string> = {
   ...common,
   ...uiGame,
   ...uiHelp,
-  ...uiMarket,
+  ...uiMarket, ...uiGear,
   ...menu,
   ...title,
   ...app,
