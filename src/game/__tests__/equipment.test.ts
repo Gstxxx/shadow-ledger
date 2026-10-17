@@ -1,6 +1,8 @@
 import { describe, expect, it } from 'vitest';
 import { GEAR } from '../data/equipment';
-import { arsenalOffer, buyGear, equipGear, equipMult, gearStock } from '../equipment';
+import { arsenalOffer, buyGear, equipBonus, equipGear, gearStock } from '../equipment';
+import { unitStrength } from '../strength';
+import { strOf } from '../units';
 import { PRESETS } from '../data/rules';
 import { allUnits, newGame, player } from '../state';
 import { isPersonnel } from '../units';
@@ -9,14 +11,15 @@ const game = () => newGame({ preset: PRESETS[0], difficulty: 2, hardcore: false,
 const person = (a: ReturnType<typeof player>) => allUnits(a).find(isPersonnel)!;
 
 describe('Equipamento e Arsenal', () => {
-  it('multiplica a força por tipo de Combate e só no tipo do bônus', () => {
+  it('soma força por tipo de Combate, só no tipo do bônus, pelo gancho de força', () => {
     const s = game();
     const a = player(s);
     const u = person(a);
-    expect(equipMult(u, 'urban')).toBe(1);
-    u.gear = { weapon: 'carbine', armor: 'vest' };
-    expect(equipMult(u, 'army')).toBeCloseTo((1 + GEAR.carbine.bonus.army!) * (1 + GEAR.vest.bonus.army!));
-    expect(equipMult(u, 'legal')).toBe(1);
+    expect(equipBonus(u, 'urban')).toBe(0);
+    u.gear = { weapon: 'carbine', armor: 'plate' };
+    expect(equipBonus(u, 'army')).toBe(GEAR.carbine.bonus.army! + GEAR.plate.bonus.army!);
+    expect(equipBonus(u, 'legal')).toBe(0);
+    if (strOf(u, 'urban') > 0) expect(unitStrength(u, 'urban')).toBe(strOf(u, 'urban') + equipBonus(u, 'urban'));
   });
 
   it('país em guerra vende mais e mais barato', () => {

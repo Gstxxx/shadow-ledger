@@ -5,8 +5,9 @@ export type GearSlot = 'weapon' | 'armor' | 'kit';
 export const GEAR_SLOTS: GearSlot[] = ['weapon', 'armor', 'kit'];
 
 /**
- * Equipamento: o que uma Unidade do Pessoal carrega (não é Carga). `bonus` multiplica a força da Unidade
- * naquele tipo de Combate (0,2 = +20%). `tier` controla onde o Arsenal tem o item: 1 em todo lugar,
+ * Equipamento: o que uma Unidade do Pessoal carrega (não é Carga). `bonus` soma pontos de força da Unidade
+ * naquele tipo de Combate (gancho src/game/strength.ts). Faixa do balanceamento: ~30 mil por ponto;
+ * comum +1 (15–60 mil), intermediário +2 ou +1 em dois tipos (60–200 mil), topo +3 (até 300 mil). `tier` controla onde o Arsenal tem o item: 1 em todo lugar,
  * 2 em países maiores ou em conflito, 3 só em guerra. Nomes e descrições em i18n: `gear.<id>.name|blurb`.
  */
 export interface GearDef {
@@ -18,14 +19,14 @@ export interface GearDef {
 }
 
 const list: GearDef[] = [
-  { id: 'pistol', slot: 'weapon', price: 40_000, tier: 1, bonus: { urban: 0.15 } },
-  { id: 'carbine', slot: 'weapon', price: 180_000, tier: 2, bonus: { urban: 0.2, army: 0.25 } },
-  { id: 'manpads', slot: 'weapon', price: 650_000, tier: 3, bonus: { air: 0.4, army: 0.1 } },
-  { id: 'vest', slot: 'armor', price: 60_000, tier: 1, bonus: { urban: 0.15, army: 0.1 } },
-  { id: 'plate', slot: 'armor', price: 220_000, tier: 2, bonus: { urban: 0.2, army: 0.2 } },
-  { id: 'radio', slot: 'kit', price: 80_000, tier: 1, bonus: { urban: 0.05, army: 0.05, air: 0.05 } },
-  { id: 'nvg', slot: 'kit', price: 250_000, tier: 2, bonus: { urban: 0.15, army: 0.1 } },
-  { id: 'papers', slot: 'kit', price: 120_000, tier: 2, bonus: { legal: 0.25 } },
+  { id: 'pistol', slot: 'weapon', price: 30_000, tier: 1, bonus: { urban: 1 } },
+  { id: 'carbine', slot: 'weapon', price: 150_000, tier: 2, bonus: { urban: 1, army: 2 } },
+  { id: 'manpads', slot: 'weapon', price: 300_000, tier: 3, bonus: { air: 3 } },
+  { id: 'vest', slot: 'armor', price: 40_000, tier: 1, bonus: { urban: 1 } },
+  { id: 'plate', slot: 'armor', price: 160_000, tier: 2, bonus: { urban: 2, army: 1 } },
+  { id: 'radio', slot: 'kit', price: 50_000, tier: 1, bonus: { army: 1 } },
+  { id: 'nvg', slot: 'kit', price: 120_000, tier: 2, bonus: { urban: 1, army: 1 } },
+  { id: 'papers', slot: 'kit', price: 110_000, tier: 2, bonus: { legal: 2 } },
 ];
 
 export const GEAR: Record<string, GearDef> = Object.fromEntries(list.map((g) => [g.id, g]));

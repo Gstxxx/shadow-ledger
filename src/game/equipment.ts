@@ -1,5 +1,5 @@
-// Equipamento e Arsenal (backlog 5). O Equipamento multiplica a força da Unidade por tipo de Combate,
-// como os Traços (combat.ts eff()). O Arsenal é a loja de Equipamento, separada do Mercado: sem estoque
+// Equipamento e Arsenal (backlog 5). O Equipamento soma pontos de força à Unidade por tipo de Combate,
+// pelo gancho de src/game/strength.ts (Combate, Prévia e Combate Automático). O Arsenal é a loja de Equipamento, separada do Mercado: sem estoque
 // guardado, a oferta e o preço saem do Nível e da política do país (em guerra há mais oferta e é mais barato).
 import { GEAR, GEAR_IDS } from './data/equipment';
 import type { GearDef, GearSlot } from './data/equipment';
@@ -7,20 +7,22 @@ import { M, ref, say } from './msg';
 import type { Result } from './actions';
 import type { Msg } from './msg';
 import { allUnits } from './state';
+import { registerStrengthMod } from './strength';
 import type { Agency, CombatType, Country, GameState, Unit } from './types';
 import { isPersonnel } from './units';
 
 export type GearResult = Result;
 const done = (ok: boolean, m: Msg): Result => (ok ? { ok: true, msg: say(m), m } : { ok: false, msg: say(m), m });
 
-/** Multiplicador de força do Equipamento da Unidade neste tipo de Combate (1 sem Equipamento). */
-export function equipMult(u: Unit, type: CombatType): number {
+/** Pontos de força que o Equipamento da Unidade soma neste tipo de Combate (0 sem Equipamento). */
+export function equipBonus(u: Unit, type: CombatType): number {
   const g = u.gear;
-  if (!g) return 1;
-  let m = 1;
-  for (const id of [g.weapon, g.armor, g.kit]) if (id && GEAR[id]) m *= 1 + (GEAR[id].bonus[type] ?? 0);
-  return m;
+  if (!g) return 0;
+  let n = 0;
+  for (const id of [g.weapon, g.armor, g.kit]) if (id && GEAR[id]) n += GEAR[id].bonus[type] ?? 0;
+  return n;
 }
+registerStrengthMod('equipment', equipBonus);
 
 /** Só o Pessoal usa Equipamento. */
 export const canEquip = (u: Unit) => isPersonnel(u) && !u.temp;
@@ -36,7 +38,7 @@ export function arsenalTier(c: Country): number {
 /** Fator de preço do Arsenal: guerra barateia, sanções encarecem. */
 export function arsenalPriceFactor(c: Country): number {
   if (c.politics === 'war' || c.politics === 'civilwar') return 0.85;
-  if (c.politics === 'sanctions') return 1.25;
+  if (c.politics === 'sanctions') return 1.2;
   if (c.politics === 'disorder') return 0.95;
   return 1;
 }

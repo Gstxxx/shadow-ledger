@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { GEAR, GEAR_IDS, GEAR_SLOTS } from '../../../game/data/equipment';
 import type { GearSlot } from '../../../game/data/equipment';
-import { canEquip, equipGear, equipMult, gearStock } from '../../../game/equipment';
+import { canEquip, equipBonus, equipGear, gearStock } from '../../../game/equipment';
 import { player } from '../../../game/state';
 import type { CombatType, Unit } from '../../../game/types';
 import { def, strOf } from '../../../game/units';
@@ -13,7 +13,6 @@ import { GearArt } from './GearArt';
 import './gear.css';
 
 const TYPES: CombatType[] = ['urban', 'army', 'legal', 'air'];
-const one = (n: number) => Math.round(n * 10) / 10;
 
 /** Força efetiva (com Equipamento) por tipo de Combate em que a Unidade luta. */
 function forces(u: Unit, gear: Unit['gear']) {
@@ -22,7 +21,7 @@ function forces(u: Unit, gear: Unit['gear']) {
   return TYPES.filter((ty) => (ty === 'legal' ? d.str.legal > 0 || d.str.convert > 0 : d.str[ty] > 0)).map((ty) => ({
     ty,
     base: strOf(u, ty),
-    eff: one(strOf(u, ty) * equipMult(v, ty)),
+    eff: strOf(u, ty) > 0 ? strOf(u, ty) + equipBonus(v, ty) : 0,
   }));
 }
 

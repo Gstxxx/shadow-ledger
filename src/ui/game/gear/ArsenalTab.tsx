@@ -36,7 +36,7 @@ export function ArsenalTab() {
   const stock = GEAR_IDS.filter((id) => gearStock(a, id) > 0);
   const bonusText = (id: string) =>
     TYPES.filter((ty) => GEAR[id].bonus[ty])
-      .map((ty) => t('game.gear.bonus', { type: t(`game.unit.strength.${ty}` as Key), pct: fmt.pct(GEAR[id].bonus[ty]!) }))
+      .map((ty) => t('game.gear.bonus', { type: t(`game.unit.strength.${ty}` as Key), n: GEAR[id].bonus[ty]! }))
       .join(' · ');
 
   return (
