@@ -107,7 +107,7 @@ export function statusOf(u: Unit, t: I18n['t'], detained?: boolean): { label: st
 }
 
 /** Ficha completa de uma Unidade em modal central (folha em tela cheia no celular deitado). */
-export function UnitDossier({ uid, onClose }: { uid: string; onClose: () => void }) {
+export function UnitDossier({ uid, onClose, embedded }: { uid: string; onClose: () => void; embedded?: boolean }) {
   const s = useGame();
   const a = player(s);
   const act = useGameStore((st) => st.act);
@@ -118,6 +118,8 @@ export function UnitDossier({ uid, onClose }: { uid: string; onClose: () => void
 
   // Foco preso no modal; Esc fecha; o foco volta para quem abriu.
   useEffect(() => {
+    // Dentro do palco (GModal) o foco, o Esc e o voltar são do modal.
+    if (embedded) return;
     const prev = document.activeElement as HTMLElement | null;
     dialog.current?.querySelector<HTMLElement>('[data-autofocus]')?.focus();
     const onKey = (e: KeyboardEvent) => {
@@ -145,7 +147,7 @@ export function UnitDossier({ uid, onClose }: { uid: string; onClose: () => void
       document.removeEventListener('keydown', onKey, true);
       prev?.focus?.();
     };
-  }, [onClose]);
+  }, [onClose, embedded]);
 
   // Gesto: arrastar a folha para baixo fecha (celular).
   const drag = useRef<{ y: number; t: number } | null>(null);
@@ -167,33 +169,8 @@ export function UnitDossier({ uid, onClose }: { uid: string; onClose: () => void
   const strengths = STRENGTH_META.filter((m) => d.str[m.key] > 0);
   const titleId = `ud-${u.uid}`;
 
-  return (
-    <div className="ud-scrim g-skin" onClick={onClose}>
-      <div
-        ref={dialog}
-        className="ud"
-        role="dialog"
-        aria-modal="true"
-        aria-labelledby={titleId}
-        onClick={(e) => e.stopPropagation()}
-        onPointerDown={(e) => {
-          if ((e.target as HTMLElement).closest('.ud-grip')) drag.current = { y: e.clientY, t: performance.now() };
-        }}
-        onPointerUp={(e) => {
-          if (drag.current && e.clientY - drag.current.y > 60) onClose();
-          drag.current = null;
-        }}
-      >
-        <div className="ud-grip only-sheet" aria-hidden />
-        <header className="ud-head">
-          <span className="ud-kicker mono">
-            {t('game.unit.kicker', { kind: d.cls === 'cargo' ? t('game.unit.kickerFleet') : classLabel(d.cls, lang) })}
-          </span>
-          <button className="btn icon ghost ud-x" aria-label={t('game.unit.closeDossier')} onClick={onClose} data-autofocus>
-            <X size={18} />
-          </button>
-        </header>
-
+  const inner = (
+      <>
         <div className="ud-body">
           <div className="ud-photo">
             {human ? (
@@ -426,6 +403,37 @@ export function UnitDossier({ uid, onClose }: { uid: string; onClose: () => void
               </button>
             ))}
         </footer>
+      </>
+  );
+  if (embedded) return <div className="ud ud--embedded">{inner}</div>;
+  return (
+    <div className="ud-scrim g-skin" onClick={onClose}>
+      <div
+        ref={dialog}
+        className="ud"
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby={titleId}
+        onClick={(e) => e.stopPropagation()}
+        onPointerDown={(e) => {
+          if ((e.target as HTMLElement).closest('.ud-grip')) drag.current = { y: e.clientY, t: performance.now() };
+        }}
+        onPointerUp={(e) => {
+          if (drag.current && e.clientY - drag.current.y > 60) onClose();
+          drag.current = null;
+        }}
+      >
+        <div className="ud-grip only-sheet" aria-hidden />
+        <header className="ud-head">
+          <span className="ud-kicker mono">
+            {t('game.unit.kicker', { kind: d.cls === 'cargo' ? t('game.unit.kickerFleet') : classLabel(d.cls, lang) })}
+          </span>
+          <button className="btn icon ghost ud-x" aria-label={t('game.unit.closeDossier')} onClick={onClose} data-autofocus>
+            <X size={18} />
+          </button>
+        </header>
+
+        {inner}
       </div>
     </div>
   );

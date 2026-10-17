@@ -12,6 +12,7 @@ import { CountryOps, CountryOverview, CountryStation, CountrySub } from '../Coun
 import { MarketPanel } from '../market/MarketPanel';
 import { ItemTrade } from '../market/ItemTrade';
 import type { CountryTab, StageApi, StageModal } from './context';
+import { UnitDossier, findUnit } from '../unit/UnitDossier';
 import './stage.css';
 
 /** Modal central do palco (ADR 0006): País, Agência ou Item, um por vez, com voltar. */
@@ -112,6 +113,27 @@ export function StageModals({ stage }: { stage: StageApi }) {
         <div className="stage-body">
           <AgencyTabBody tab={m.tab} />
         </div>
+      </GModal>
+    );
+  }
+
+  if (m.kind === 'unit') {
+    const found = findUnit(a, m.uid);
+    if (!found) return null;
+    return (
+      <GModal
+        open
+        size="lg"
+        variant="command"
+        onClose={close}
+        onBack={back}
+        backLabel={t('common.back')}
+        closeLabel={t('common.close')}
+        kicker={classLabel(def(found.unit.itemId).cls)}
+        title={found.unit.name}
+        contentKey={`unit-${m.uid}`}
+      >
+        <UnitDossier uid={m.uid} embedded onClose={back ?? close} />
       </GModal>
     );
   }

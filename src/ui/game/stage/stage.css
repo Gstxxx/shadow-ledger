@@ -662,3 +662,19 @@ html .mkt-row.g-card:has(.mkt-thumb) {
 html:root {
   --paper-3: #99938a;
 }
+/* Ficha de Unidade dentro do palco: sem a moldura própria (o GModal já é o cartão). */
+.ud.ud--embedded {
+  width: auto;
+  max-height: none;
+  margin: 0;
+  border: 0;
+  box-shadow: none;
+  background: none;
+  overflow: visible;
+}
+.ud.ud--embedded .ud-verdict {
+  padding: 0;
+}
+.ud.ud--embedded .ud-name {
+  display: none;
+}

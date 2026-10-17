@@ -6,7 +6,8 @@ export type CountryTab = 'overview' | 'market' | 'ops' | 'station';
 export type StageModal =
   | { kind: 'country'; id: string; tab: CountryTab }
   | { kind: 'agency'; tab: AgencyTab }
-  | { kind: 'item'; countryId: string; itemId: string; side?: 'buy' | 'sell' };
+  | { kind: 'item'; countryId: string; itemId: string; side?: 'buy' | 'sell' }
+  | { kind: 'unit'; uid: string };
 
 export interface StageApi {
   current: StageModal | undefined;
