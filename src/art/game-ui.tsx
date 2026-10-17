@@ -314,11 +314,15 @@ export interface GMeterProps {
   /** rótulo à esquerda e valor à direita (vira uma linha de HUD) */
   label?: ReactNode;
   valueText?: ReactNode;
+  /** nome acessível do role="meter" sem mudar o layout (sem `label`) */
+  ariaLabel?: string;
+  /** leitura do valor para leitor de tela (ex.: '−35, Inimigo do Estado') */
+  ariaValueText?: string;
   className?: string;
   style?: CSSProperties;
 }
 
-export function GMeter({ value, max = 1, tone = 'action', segmented, thin, mark, from, bipolar, label, valueText, className, style }: GMeterProps) {
+export function GMeter({ value, max = 1, tone = 'action', segmented, thin, mark, from, bipolar, label, valueText, ariaLabel, ariaValueText, className, style }: GMeterProps) {
   const clamp = (n: number) => Math.max(0, Math.min(1, n));
   const v = clamp(value / max);
   const f = from != null ? clamp(from / max) : bipolar ? 0.5 : 0;
@@ -330,7 +334,8 @@ export function GMeter({ value, max = 1, tone = 'action', segmented, thin, mark,
       aria-valuemin={0}
       aria-valuemax={max}
       aria-valuenow={value}
-      aria-label={typeof label === 'string' ? label : undefined}
+      aria-label={ariaLabel ?? (typeof label === 'string' ? label : undefined)}
+      aria-valuetext={ariaValueText ?? (typeof valueText === 'string' ? valueText : undefined)}
       className={cx('g-meter', tone !== 'action' && `g-meter--${tone}`, segmented && 'g-meter--segmented', thin && 'g-meter--thin', bipolar && 'g-meter--bipolar', !label && className)}
       style={{ ['--v' as string]: hi, ['--from' as string]: lo, ...(label ? null : style) }}
     >

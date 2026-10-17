@@ -150,22 +150,54 @@ export interface GModalProps {
 export function GModal({ open, onClose, kicker, title, tone = 'action', variant = 'command', actions, closeLabel = 'Fechar', width, children }: GModalProps) {
   const ref = useRef<HTMLDivElement>(null);
   const tid = useId();
+  // onClose num ref: o jogo re-renderiza várias vezes por segundo e um callback
+  // inline não pode refazer o efeito (som de abrir, foco) a cada quadro.
+  const closeRef = useRef(onClose);
+  closeRef.current = onClose;
+  const canClose = !!onClose;
   useEffect(() => {
     if (!open) return;
+    const prev = document.activeElement as HTMLElement | null;
     uiSound('open');
     ref.current?.focus();
     const onKey = (e: KeyboardEvent) => {
-      if (e.key === 'Escape' && onClose) {
+      if (e.key === 'Escape' && closeRef.current) {
+        e.preventDefault();
         uiSound('close');
-        onClose();
+        closeRef.current();
+        return;
+      }
+      // foco preso dentro do modal
+      if (e.key === 'Tab' && ref.current) {
+        const items = [...ref.current.querySelectorAll<HTMLElement>('a[href], button:not([disabled]), input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])')].filter(
+          (el) => el.offsetParent !== null || el === document.activeElement,
+        );
+        if (!items.length) {
+          e.preventDefault();
+          ref.current.focus();
+          return;
+        }
+        const first = items[0];
+        const last = items[items.length - 1];
+        const cur = document.activeElement;
+        if (e.shiftKey && (cur === first || cur === ref.current || !ref.current.contains(cur))) {
+          e.preventDefault();
+          last.focus();
+        } else if (!e.shiftKey && (cur === last || !ref.current.contains(cur))) {
+          e.preventDefault();
+          first.focus();
+        }
       }
     };
     window.addEventListener('keydown', onKey);
-    return () => window.removeEventListener('keydown', onKey);
-  }, [open, onClose]);
+    return () => {
+      window.removeEventListener('keydown', onKey);
+      if (prev && document.contains(prev)) prev.focus();
+    };
+  }, [open]);
   if (!open) return null;
   return (
-    <div className="g-modal-scrim" style={{ zIndex: 300 }} onClick={onClose}>
+    <div className="g-modal-scrim" style={{ zIndex: 300 }} onClick={() => closeRef.current?.()}>
       <div
         ref={ref}
         role="dialog"
@@ -183,8 +215,8 @@ export function GModal({ open, onClose, kicker, title, tone = 'action', variant 
               {title}
             </h2>
           </div>
-          {onClose ? (
-            <GButton variant="ghost" size="sm" aria-label={closeLabel} icon={<span aria-hidden>✕</span>} sfx="close" onClick={onClose} />
+          {canClose ? (
+            <GButton variant="ghost" size="sm" aria-label={closeLabel} icon={<span aria-hidden>✕</span>} sfx="close" onClick={() => closeRef.current?.()} />
           ) : null}
         </div>
         <div className="g-modal__body">{children}</div>
