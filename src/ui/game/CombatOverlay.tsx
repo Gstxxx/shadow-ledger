@@ -12,6 +12,7 @@ import { useT } from '../../i18n';
 import { combatLabel, itemName, tacticBlurb, tacticName } from '../../i18n/lookup';
 import { Portrait } from './Portrait';
 import { msgText } from './msgText';
+import { usePortrait } from './portrait/usePortrait';
 import { RedactedTitle, RollingNumber, useCombatFx } from '../combat-fx';
 
 export function CombatOverlay() {
@@ -147,6 +148,8 @@ function LiveView() {
   const [sel, setSel] = useState<string | null>(null);
   const grid = useRef<HTMLDivElement>(null);
   const fx = useCombatFx({ grid, combat: c, speed: fast ? 2 : 1 });
+  // Em pé (ADR 0005) a grade gira: o jogador embaixo, avançando para cima.
+  const vertical = usePortrait();
   const manual = c.turn === 0 && c.reserve.length > 0;
 
   const step = () => {
@@ -235,7 +238,20 @@ function LiveView() {
         </header>
 
         <div className="grid-wrap">
-          <div ref={grid} className="grid" style={{ gridTemplateColumns: `repeat(${c.cols}, 1fr)`, gridTemplateRows: `repeat(${c.rows}, 1fr)` }}>
+          <div
+            ref={grid}
+            className={`grid${vertical ? ' vertical' : ''}`}
+            style={
+              vertical
+                ? {
+                    gridTemplateColumns: `repeat(${c.rows}, 1fr)`,
+                    gridTemplateRows: `repeat(${c.cols}, 1fr)`,
+                    aspectRatio: `${c.rows} / ${c.cols}`,
+                    height: `min(62vh, calc((100vw - 24px) * ${c.cols / c.rows}))`,
+                  }
+                : { gridTemplateColumns: `repeat(${c.cols}, 1fr)`, gridTemplateRows: `repeat(${c.rows}, 1fr)` }
+            }
+          >
             {cells.map(({ row, col }) => {
               const deployable = c.turn === 0 && !c.result && col < c.deployCols;
               const target = !!sel && canPlace(c, row, col);
@@ -243,14 +259,14 @@ function LiveView() {
                 <button
                   key={`${row}-${col}`}
                   className={`cell${deployable ? ' deploy' : ''}${target ? ' target' : ''}${col >= c.cols - c.deployCols ? ' hostile-zone' : ''}`}
-                  style={{ gridRow: row + 1, gridColumn: col + 1 }}
+                  style={vertical ? { gridRow: c.cols - col, gridColumn: row + 1 } : { gridRow: row + 1, gridColumn: col + 1 }}
                   onClick={() => cellClick(row, col)}
                   aria-label={t('game.combat.cell', { row: row + 1, col: col + 1 })}
                 />
               );
             })}
             {c.units.map((u) => (
-              <Token key={u.key} r={u} c={c} />
+              <Token key={u.key} r={u} c={c} vertical={vertical} />
             ))}
           </div>
         </div>
@@ -349,7 +365,7 @@ function TurnLabel({ turn, max }: { turn: number; max: number }) {
   );
 }
 
-function Token({ r, c }: { r: CombatUnitRef; c: CombatState }) {
+function Token({ r, c, vertical }: { r: CombatUnitRef; c: CombatState; vertical: boolean }) {
   const { t } = useT();
   const u: Unit = r.unit;
   const fort = u.itemId === FORT_ID;
@@ -360,11 +376,22 @@ function Token({ r, c }: { r: CombatUnitRef; c: CombatState }) {
       className={`token side-${r.side}`}
       data-fx-key={r.key}
       data-fx-side={r.side}
+      data-fx-col={r.col}
+      data-fx-row={r.row}
       style={{
-        left: `${(r.col / c.cols) * 100}%`,
-        top: `${(r.row / c.rows) * 100}%`,
-        width: `${100 / c.cols}%`,
-        height: `${100 / c.rows}%`,
+        ...(vertical
+          ? {
+              left: `${(r.row / c.rows) * 100}%`,
+              top: `${((c.cols - 1 - r.col) / c.cols) * 100}%`,
+              width: `${100 / c.rows}%`,
+              height: `${100 / c.cols}%`,
+            }
+          : {
+              left: `${(r.col / c.cols) * 100}%`,
+              top: `${(r.row / c.rows) * 100}%`,
+              width: `${100 / c.cols}%`,
+              height: `${100 / c.rows}%`,
+            }),
       }}
       title={`${u.name} · ${itemName(u.itemId)}`}
     >

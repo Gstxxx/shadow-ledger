@@ -1,0 +1,261 @@
+/* ── Celular em pé (ADR 0005) ───────────────────────────────
+   Mapa na metade de cima; painéis numa folha inferior com abas. */
+.game.upright .game-body {
+  display: block;
+  position: relative;
+  overflow: hidden;
+}
+.game.upright .map-area {
+  position: absolute;
+  inset: 0 0 50% 0;
+  transition: bottom 0.3s var(--ease-land);
+}
+.game.upright.sheet-peek .map-area {
+  bottom: 76px;
+}
+.game.upright .map-modes {
+  top: 8px;
+  left: 8px;
+}
+
+.sheet {
+  position: absolute;
+  inset: 0;
+  z-index: 25;
+  display: flex;
+  flex-direction: column;
+  background: var(--ink-1);
+  border-top: 1px solid var(--line-2);
+  border-radius: 12px 12px 0 0;
+  box-shadow: 0 -18px 50px rgba(0, 0, 0, 0.55);
+  transition: transform 0.32s var(--ease-land);
+  will-change: transform;
+  touch-action: none;
+}
+.sheet.dragging {
+  transition: none;
+}
+.sheet-head {
+  flex: none;
+  touch-action: none;
+  user-select: none;
+  cursor: grab;
+}
+.sheet.dragging .sheet-head {
+  cursor: grabbing;
+}
+.sheet-grip {
+  display: grid;
+  place-items: center;
+  width: 100%;
+  height: 22px;
+  padding: 0;
+  border: 0;
+  background: none;
+  cursor: inherit;
+}
+.sheet-grip > span {
+  width: 44px;
+  height: 4px;
+  border-radius: 2px;
+  background: var(--line-2);
+}
+.sheet-grip:focus-visible > span {
+  outline: 2px solid var(--amber);
+  outline-offset: 4px;
+}
+.sheet-tabs {
+  display: flex;
+  gap: 6px;
+  padding: 0 10px 8px;
+}
+.sheet-tab {
+  position: relative;
+  flex: 1;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  min-height: 44px;
+  border: 1px solid var(--line-2);
+  border-radius: var(--r);
+  background: var(--ink-2);
+  color: var(--paper-2);
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+}
+.sheet-tab[aria-selected='true'] {
+  border-color: var(--amber);
+  background: var(--amber-glow);
+  color: var(--paper);
+}
+.sheet-tab.hot {
+  color: #ff9da0;
+}
+.sheet-tab:focus-visible {
+  outline: 2px solid var(--amber);
+  outline-offset: 2px;
+}
+.sheet-badge {
+  min-width: 18px;
+  padding: 0 5px;
+  border-radius: 9px;
+  background: var(--ink-4);
+  font: 500 11px/18px var(--mono);
+}
+.sheet-tab.hot .sheet-badge {
+  background: var(--red);
+  color: var(--paper);
+}
+.sheet-body {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  border-top: 1px solid var(--line);
+  touch-action: pan-y;
+}
+/* O painel rola dentro da folha; o padding deixa o fim alcançável com a folha a meia altura. */
+.sheet-body > .panel-scroll,
+.sheet-body > .agency > .panel-scroll {
+  padding-bottom: calc(var(--sheet-off, 0px) + 24px);
+}
+.sheet-body > .agency {
+  flex: 1;
+  min-height: 0;
+}
+.sheet.snap-peek .sheet-body {
+  visibility: hidden;
+}
+
+/* Barra superior compacta: caixa, data/hora, velocidade; o resto num toque. */
+.game.upright .topbar {
+  gap: 2px;
+  padding: 0 2px 0 6px;
+}
+.game.upright .tb-clock {
+  margin-right: 4px;
+}
+.game.upright .tb-agency,
+.game.upright .tb-stat.hide-xs,
+.game.upright .only-narrow,
+.game.upright .only-mid {
+  display: none !important;
+}
+.game.upright .tb-date {
+  display: block;
+  font-size: 10px;
+}
+.game.upright .tb-clock {
+  display: grid;
+  line-height: 1.1;
+}
+.tb-more {
+  min-height: 44px;
+  padding: 0 4px;
+  border: 0;
+  background: none;
+  color: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+.tb-more:focus-visible {
+  outline: 2px solid var(--amber);
+}
+.game.upright .tb-speed {
+  gap: 2px;
+}
+.game.upright .tb-speed .btn {
+  width: 44px;
+  min-width: 44px;
+  padding: 0;
+}
+@media (max-width: 380px) {
+  .game.upright .tb-date {
+    display: none;
+  }
+}
+.tb-details {
+  position: absolute;
+  top: var(--top);
+  left: 0;
+  right: 0;
+  z-index: 30;
+  display: grid;
+  gap: 10px;
+  padding: 12px 14px;
+  background: var(--ink-2);
+  border-bottom: 1px solid var(--line-2);
+  box-shadow: 0 16px 40px rgba(0, 0, 0, 0.5);
+}
+.tb-details .tb-stat {
+  display: flex !important;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+}
+.tb-details .tension {
+  flex: 1;
+  max-width: 160px;
+}
+
+/* Modais em tela cheia com rolagem. */
+@media (orientation: portrait) and (max-width: 820px) {
+  .scrim,
+  .combat-screen {
+    padding: 0;
+    place-items: stretch;
+  }
+  .event-card,
+  .event-card.big,
+  .combat-card,
+  .combat-card.wide {
+    width: 100%;
+    max-height: none;
+    height: 100%;
+    border-radius: 0;
+    overflow-y: auto;
+    overscroll-behavior: contain;
+  }
+  .tactics {
+    grid-template-columns: 1fr;
+  }
+  .cb-head h2 {
+    flex-basis: 100%;
+    order: 2;
+    font-size: 20px;
+  }
+  .cb-actions {
+    position: sticky;
+    bottom: 0;
+    background: var(--ink-1);
+    padding-top: 8px;
+    flex-wrap: wrap;
+  }
+  /* Grade vertical: o jogador embaixo, avançando para cima. */
+  .grid.vertical {
+    max-height: none;
+    width: auto;
+    background:
+      linear-gradient(0deg, rgba(242, 169, 59, 0.05) 0%, transparent 37.5%, transparent 62.5%, rgba(229, 72, 77, 0.05) 100%), #0a0c0f;
+  }
+}
+.game.upright .tb-details .tb-stat.hide-xs {
+  display: flex !important;
+}
+.game.upright .tb-v,
+.game.upright .tb-time {
+  white-space: nowrap;
+}
+.game.upright .tb-stat .tb-v {
+  font-size: 15px;
+}
+.tb-details .tb-stat {
+  flex-direction: row;
+  text-align: left;
+}
+/* Valores da barra nunca quebram linha (em qualquer orientação). */
+.topbar .tb-v {
+  white-space: nowrap;
+}
