@@ -284,4 +284,6 @@ export default {
   'msg.ai.neutralizeLost': '{agency} fracassou em uma Neutralização em {country}.',
   'msg.ai.denounced': '{agency} denunciou {target} às autoridades de {country}.',
   'msg.ai.paidRansom': '{agency} pagou {price} para libertar o próprio Diretor.',
+  'msg.obj.profitBelowGoal': '{days} dias encerrados com lucro de {profit}, abaixo da meta de {goal}.',
+  'msg.act.locked': 'Disponível depois do Tutorial.',
 } as const;
