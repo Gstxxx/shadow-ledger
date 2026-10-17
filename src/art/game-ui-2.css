@@ -12,7 +12,7 @@
    HUD: barra superior e mostradores
    ═════════════════════════════════════════════════════════════════════ */
 .g-hud {
-  position: relative;
+  /* sem position: o contêiner do jogo decide (absoluto no celular, estático no desktop) */
   background:
     repeating-linear-gradient(180deg, rgba(255, 255, 255, 0.012) 0 1px, transparent 1px 3px),
     linear-gradient(180deg, #161b21 0%, #0e1115 70%, #0b0e11 100%);
@@ -25,7 +25,7 @@
 .g-dial {
   --c: 5px;
   --dial-fg: var(--g-text);
-  position: relative;
+  /* sem position: o contêiner do jogo decide (absoluto no celular, estático no desktop) */
   display: inline-grid;
   gap: 1px;
   align-content: center;
@@ -76,7 +76,7 @@
    Folha inferior e gavetas laterais
    ═════════════════════════════════════════════════════════════════════ */
 .g-sheet {
-  position: relative;
+  /* sem position: o contêiner do jogo decide (absoluto no celular, estático no desktop) */
   background:
     url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='140' height='140'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 1 0 0 0 0 1 0 0 0 0 1 0 0 0 .04 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E"),
     linear-gradient(180deg, var(--g-raised), var(--g-surface) 120px);
@@ -98,7 +98,7 @@
   clip-path: polygon(4px 0, calc(100% - 4px) 0, 100% 100%, 0 100%);
 }
 .g-drawer {
-  position: relative;
+  /* sem position: o contêiner do jogo decide (absoluto no celular, estático no desktop) */
   background: linear-gradient(90deg, var(--g-surface), var(--g-raised));
   box-shadow:
     inset -1px 0 0 rgba(214, 222, 232, 0.14),
