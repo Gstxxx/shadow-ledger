@@ -16,6 +16,7 @@ import { MiniMap } from './MiniMap';
 import { DirectorStep } from './DirectorStep';
 import { useOriginStrings } from './originStrings';
 import { TUTORIAL_ORIGIN } from '../../../game/data/origins';
+import { PROFIT_GOAL_MULT } from '../../../game/objective';
 import './newgame.css';
 import { countryName, itemName } from '../../../i18n/lookup';
 import { useNewGameStrings, type NewGameStrings } from './newGameStrings';
@@ -234,7 +235,9 @@ export function NewGame({ s, lang, presets, tutorial, reduced, onStart }: Props)
   const rivalsShown = (d: Difficulty) => (entry.kind === 'sandbox' ? String(sandboxRivals) : rivalCount(d));
 
   const titleOf = (e: Entry) => (e.kind === 'sandbox' ? t.sandboxTitle : presetText(lang, e.preset).title);
-  const outcomeOf = (e: Entry) => (e.kind === 'sandbox' ? t.sandboxOutcome : t.outcome(e.preset.objective, e.preset.days, e.preset.target));
+  // "Lucro no prazo": a meta real é target × PROFIT_GOAL_MULT[Dificuldade] (src/game/objective.ts).
+  const goalOf = (p: PresetDef) => (p.objective === 'profit' && p.target ? Math.round(p.target * PROFIT_GOAL_MULT[difficulty]) : p.target);
+  const outcomeOf = (e: Entry) => (e.kind === 'sandbox' ? t.sandboxOutcome : t.outcome(e.preset.objective, e.preset.days, goalOf(e.preset)));
   const regionLabel = (p: PresetDef) => regionOf(p).map((c) => s.continents[c]).join(' · ');
 
   const showList = step === 1 && (!compact || !phoneDetails);
@@ -480,7 +483,7 @@ export function NewGame({ s, lang, presets, tutorial, reduced, onStart }: Props)
                 </div>
                 <div>
                   <dt>{t.objective}</dt>
-                  <dd>{t.outcome(entry.preset.objective, entry.preset.days, entry.preset.target)}</dd>
+                  <dd>{t.outcome(entry.preset.objective, entry.preset.days, goalOf(entry.preset))}</dd>
                 </div>
                 <div>
                   <dt>{t.difficulty}</dt>
