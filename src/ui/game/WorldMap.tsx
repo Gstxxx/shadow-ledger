@@ -154,6 +154,23 @@ export function WorldMap({ mode, onPickCountry }: { mode: MapMode; onPickCountry
     const c = s.countries[a.location];
     return focusView(c.lon, c.lat, 1.8);
   });
+  // Decolagem: o palco volta ao mapa enquadrando a rota inteira (origem e destino).
+  const flightKey = a.flight ? `${a.flight.from}>${a.flight.to}@${a.flight.depart}` : null;
+  useEffect(() => {
+    if (a.flight) setView(() => homeView(svg.current));
+  }, [flightKey]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  // "Ver no mapa" (Eventos e afins) centra o país pedido.
+  useEffect(() => {
+    focusHandler = (id: string) => {
+      const c = useGameStore.getState().game?.countries[id];
+      if (c) setView((v) => focusView(c.lon, c.lat, Math.max(v.k, 2.2)));
+    };
+    return () => {
+      focusHandler = null;
+    };
+  }, []);
+
   // Follow the Diretor when the Frota lands somewhere new.
   useEffect(() => {
     if (a.flight) return;
@@ -176,10 +193,7 @@ export function WorldMap({ mode, onPickCountry }: { mode: MapMode; onPickCountry
       if (r.width > 0) setPxPerUnit(r.width / box.w);
       // Primeira medida real, ou um tamanho que força mais zoom (o palco muda depois da montagem): centra no Diretor.
       if (r.width > 0) fitted.current = true;
-      const g = useGameStore.getState().game;
-      const me = g?.agencies.find((x) => x.isPlayer);
-      const loc = me && g?.countries[me.location];
-      setView((v) => (loc && (firstFit || v.k < minK()) ? focusView(loc.lon, loc.lat, Math.max(v.k, 1.8)) : clampView(v)));
+      setView((v) => (firstFit || v.k < minK() ? homeView(el, v.k) : clampView(v)));
     });
     ro.observe(el);
     return () => ro.disconnect();
@@ -442,6 +456,44 @@ export function WorldMap({ mode, onPickCountry }: { mode: MapMode; onPickCountry
 }
 
 const minK = () => Math.max(box.w / W, box.h / H);
+
+let focusHandler: ((id: string) => void) | null = null;
+/** Centra o mapa num país (para ações que levam ao mapa, como "Ver no mapa"). */
+export function focusCountryOnMap(id: string) {
+  focusHandler?.(id);
+}
+
+/** Vista inicial: a rota inteira durante um voo; senão, o Diretor no centro. */
+function homeView(el: SVGSVGElement | null, k0 = 1.8): View {
+  const g = useGameStore.getState().game;
+  const me = g?.agencies.find((x) => x.isPlayer);
+  if (!g || !me) return clampView({ k: minK(), x: box.x, y: box.y });
+  if (me.flight) {
+    const p = g.countries[me.flight.from];
+    const q = g.countries[me.flight.to];
+    // Folga para o que cobre o mapa: camadas no topo; Relatório e barra de ações embaixo.
+    const r = el?.getBoundingClientRect();
+    const u = r && r.width ? box.w / r.width : 1;
+    const top = (document.querySelector('.map-modes')?.getBoundingClientRect().height ?? 40) + 16;
+    const foot = (document.querySelector('.stage-foot')?.getBoundingClientRect().height ?? 0) + 16;
+    return fitView([p.lon, p.lat], [q.lon, q.lat], top * u, foot * u);
+  }
+  const loc = g.countries[me.location];
+  return focusView(loc.lon, loc.lat, Math.max(k0, 1.8));
+}
+
+/** Enquadra dois pontos (rota de voo), com folga para o HUD e a barra de ações. */
+function fitView(a: [number, number], b: [number, number], padTop = 0, padBottom = 0): View {
+  const [ax, ay] = project(a[0], a[1]);
+  const [bx, by] = project(b[0], b[1]);
+  const dx = Math.abs(ax - bx) + 80;
+  const dy = Math.abs(ay - by) + 60;
+  const visH = Math.max(40, box.h - padTop - padBottom);
+  const k = Math.max(minK(), Math.min(4, box.w / dx, visH / dy));
+  const cx = (ax + bx) / 2;
+  const cy = (ay + by) / 2;
+  return clampView({ k, x: box.x + box.w / 2 - cx * k, y: box.y + padTop + visH / 2 - cy * k });
+}
 
 function focusView(lon: number, lat: number, want: number): View {
   const [px, py] = project(lon, lat);

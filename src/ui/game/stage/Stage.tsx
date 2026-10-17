@@ -38,6 +38,11 @@ export function StageModals({ stage }: { stage: StageApi }) {
   useEffect(() => {
     if (fight) stage.close();
   }, [fight]); // eslint-disable-line react-hooks/exhaustive-deps
+  // Decolar devolve o palco ao mapa para o jogador ver a rota (o mapa enquadra o voo).
+  const flightKey = a.flight ? `${a.flight.from}>${a.flight.to}@${a.flight.depart}` : null;
+  useEffect(() => {
+    if (flightKey) stage.close();
+  }, [flightKey]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const close = useCallback(() => stage.close(), [stage]);
   const back = stage.canBack ? stage.back : undefined;

@@ -8,6 +8,8 @@ import { audio } from '../../audio/engine';
 import { useT } from '../../i18n';
 import { countryName, presetTitle } from '../../i18n/lookup';
 import { msgText } from './msgText';
+import { useStage } from './stage/context';
+import { focusCountryOnMap } from './WorldMap';
 import { GModal } from '../../art';
 import { profitGoal } from '../../game/objective';
 
@@ -28,6 +30,7 @@ export function EventModal() {
   const s = useGame();
   const ack = useGameStore((st) => st.ackEvent);
   const select = useGameStore((st) => st.select);
+  const stage = useStage();
   const ev = s.events.find((e) => e.kind !== 'engage');
   const evId = ev?.id;
   // Estável entre renders: o GModal refaz o efeito (e o som de abrir) quando onClose muda.
@@ -59,7 +62,10 @@ export function EventModal() {
             <button
               className="btn"
               onClick={() => {
+                // Leva ao mapa: fecha o modal do palco e centra o país.
+                stage?.close();
                 select(ev.countryId!);
+                focusCountryOnMap(ev.countryId!);
                 ack(ev.id);
               }}
             >
