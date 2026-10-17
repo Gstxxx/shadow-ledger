@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { player, standing } from '../../game/state';
 import { useGame, useGameStore } from '../../store/game';
 import { audio } from '../../audio/engine';
@@ -13,6 +13,7 @@ import { DossierHost } from './unit/DossierHost';
 import { useMedia, usePortrait } from './portrait/usePortrait';
 import { StageDock, StageModals } from './stage/Stage';
 import { StageCtx } from './stage/context';
+import { useStageHistory } from './stage/history';
 import type { StageApi, StageModal } from './stage/context';
 import { installSafeAreaDebug } from './portrait/safeArea';
 // Regras de pé (modais e Combate em tela cheia, grade vertical); antes vinham junto com a folha inferior.
@@ -63,10 +64,8 @@ export function GameScreen() {
 
   // ADR 0006: o mapa é o palco; País, Agência e Item abrem um modal central por vez, com voltar.
   const stack = useModalStack<StageModal>();
-  const stage: StageApi = useMemo(
-    () => ({ current: stack.current, canBack: stack.canBack, open: stack.open, push: stack.push, replace: stack.replace, back: stack.back, close: stack.close }),
-    [stack.current, stack.canBack], // eslint-disable-line react-hooks/exhaustive-deps
-  );
+  // O palco fica na URL (?m=…) e o voltar do navegador/celular volta um modal.
+  const stage: StageApi = useStageHistory(stack);
 
   // Ao pousar (ou sair de Detido/Sequestrado), o país escolhido segue o Diretor.
   const select = useGameStore((st) => st.select);
