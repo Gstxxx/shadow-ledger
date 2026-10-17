@@ -12,6 +12,7 @@ import { buildIntro, finalState, HANDOFF_AT, type IntroEls } from './intro';
 import { COLS, LEDGER_CH, ledgerRows } from './ledger';
 import { sfx, useMenuSettings } from './settings';
 import { useLang } from '../../i18n';
+import { installSafeAreaDebug } from '../game/portrait/safeArea';
 import { useStrings } from './strings';
 import { Continue } from './screens/Continue';
 import { Credits } from './screens/Credits';
@@ -76,6 +77,11 @@ export function MainMenu(props: MainMenuProps) {
     }),
     [],
   );
+
+  // Debug ?safe=top,right,bottom,left (px) da ui-polish: simula os recortes do iPhone também no menu.
+  useEffect(() => {
+    installSafeAreaDebug();
+  }, []);
 
   // Música do menu: o motor só toca depois do primeiro gesto (política de autoplay).
   useEffect(() => {

@@ -10,9 +10,7 @@ const q = new URLSearchParams(location.search);
 if (q.get('rm') === '1') useSettings.getState().setReducedMotion(true);
 if (q.get('rm') === '0') useSettings.getState().setReducedMotion(false);
 if (q.get('install')) forceInstallMode(q.get('install') as InstallMode);
-// ?safe=top,right,bottom,left (px): simula os recortes do iPhone pelas mesmas variáveis do debug da tela de jogo.
-const safe = q.get('safe')?.split(',').map(Number);
-if (safe) ['top', 'right', 'bottom', 'left'].forEach((k, i) => document.documentElement.style.setProperty(`--safe-${k}`, `${safe[i] ?? 0}px`));
+// ?safe=top,right,bottom,left (px) é tratado pelo MainMenu, com o debug da tela de jogo.
 
 // Para inspeção com o painel oculto (rAF parado): window.__gsap.ticker.tick()
 (window as unknown as { __gsap: typeof gsap }).__gsap = gsap;

@@ -57,7 +57,7 @@ Referências de retrato: 360×640 e 390×844.
 
 ## Área segura (notch, Dynamic Island, home indicator)
 
-`.slm-root` usa `100dvh` e define `--slm-st/sr/sb/sl` como `var(--safe-*, env(safe-area-inset-*))`. Assim, o debug `?safe=top,right,bottom,left` da tela de jogo, que define `--safe-*`, simula os recortes, e no aparelho vale o `env()`.
+`.slm-root` usa `100dvh` e define `--slm-st/sr/sb/sl` como `var(--safe-t|r|b|l, env(safe-area-inset-*))`. O MainMenu chama `installSafeAreaDebug()` da ui-polish (`src/ui/game/portrait/safeArea.ts`). Assim, `?safe=top,right,bottom,left` simula os recortes também no menu, e no aparelho vale o `env()`.
 
 O que respeita os insets:
 - o padding do Título;
