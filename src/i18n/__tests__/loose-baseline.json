@@ -1,7 +1,6 @@
 {
-  "App.tsx": 1,
-  "art/Gallery.tsx": 61,
   "art/Logo.tsx": 6,
+  "ui/analyst/AnalystLayer.tsx": 1,
   "ui/game/market/MarketPanel.tsx": 1,
   "ui/title/NewGame.tsx": 22,
   "ui/title/Settings.tsx": 17,
