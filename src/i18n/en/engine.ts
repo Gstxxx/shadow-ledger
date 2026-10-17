@@ -243,12 +243,7 @@ export default {
   // tension.ts: Tensão Global e Crise Final
   'msg.tension.topTitle': 'Global Tension at the Top',
   'msg.tension.topBody': 'The Weapon of Mass Destruction market is open. If tension stays at the Top for {days} days, a country will use one.',
-  'msg.tension.ledgerNone': '{agency}: nothing sold.',
-  'msg.tension.ledgerSale': '{qty}× {item} to {country}',
-  'msg.tension.ledgerLine': '{agency}: {sales}.',
   'msg.tension.finalCrisisTitle': 'Final Crisis',
-  'msg.tension.finalCrisisLog': 'Final Crisis. {lines}',
-  'msg.tension.finalCrisisReason': 'Global Tension stayed at the Top for too long and a weapon was used. No one wins. {lines}',
 
   // objective.ts: fim de partida
   'msg.obj.wonTitle': 'Objective achieved',

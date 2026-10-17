@@ -243,12 +243,7 @@ export default {
   // tension.ts: Tensão Global e Crise Final
   'msg.tension.topTitle': 'Tensão Global no Topo',
   'msg.tension.topBody': 'O mercado de Armas de Destruição em Massa está aberto. Se a tensão ficar no Topo por {days} dias, um país usa uma.',
-  'msg.tension.ledgerNone': '{agency}: nada vendido.',
-  'msg.tension.ledgerSale': '{qty}× {item} a {country}',
-  'msg.tension.ledgerLine': '{agency}: {sales}.',
   'msg.tension.finalCrisisTitle': 'Crise Final',
-  'msg.tension.finalCrisisLog': 'Crise Final. {lines}',
-  'msg.tension.finalCrisisReason': 'A Tensão Global ficou no Topo tempo demais e uma arma foi usada. Ninguém vence. {lines}',
 
   // objective.ts: fim de partida
   'msg.obj.wonTitle': 'Objetivo cumprido',
