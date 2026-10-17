@@ -70,6 +70,14 @@ html .game.stage .toasts {
 html .game.stage.upright .toasts {
   bottom: calc(150px + var(--safe-b));
 }
+/* Os toasts vivem fora de .game (portal): mesma altura acima da barra de ações, largura toda dentro da safe-area. */
+html:has(.game.stage) .toasts {
+  bottom: calc(96px + var(--safe-b));
+  width: min(460px, calc(100% - 24px - var(--safe-l) - var(--safe-r)));
+}
+html:has(.game.stage.upright) .toasts {
+  bottom: calc(150px + var(--safe-b));
+}
 
 /* ── HUD fino: Caixa e Lucro do mesmo tamanho ───────────────────────── */
 html .game.stage .topbar {
