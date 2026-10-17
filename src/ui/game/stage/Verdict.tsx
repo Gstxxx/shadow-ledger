@@ -10,10 +10,22 @@ export type VerdictTone = 'good' | 'bad' | 'warn' | 'neutral';
 const ICON = { good: CheckCircle2, bad: AlertTriangle, warn: AlertTriangle, neutral: Info };
 
 /** Veredito do topo da tela (docs/UX-RULES.md, regra 1): ícone + uma frase + a ação principal. Miolo: GVerdict do kit. */
-export function Verdict({ tone, children, action, icon }: { tone: VerdictTone; children: ReactNode; action?: ReactNode; icon?: ReactNode }) {
+export function Verdict({
+  tone,
+  children,
+  action,
+  secondary,
+  icon,
+}: {
+  tone: VerdictTone;
+  children: ReactNode;
+  action?: ReactNode;
+  secondary?: ReactNode;
+  icon?: ReactNode;
+}) {
   const Icon = ICON[tone];
   return (
-    <GVerdict tone={tone} icon={icon ?? <Icon size={26} />} action={action} actionsPlacement="below" className="verdict">
+    <GVerdict tone={tone} icon={icon ?? <Icon size={26} />} action={action} secondary={secondary} actionsPlacement="below" className="verdict">
       {children}
     </GVerdict>
   );

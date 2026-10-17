@@ -306,10 +306,12 @@ function EscortTab() {
               >
                 {t('game.agency.escort.formTeam', { n: picking.length })}
               </button>
-              <button className="btn ghost" onClick={() => setPicking(null)}>
-                {t('game.agency.escort.cancel')}
-              </button>
             </>
+          }
+          secondary={
+            <button className="btn ghost" onClick={() => setPicking(null)}>
+              {t('game.agency.escort.cancel')}
+            </button>
           }
         >
           {t('game.agency.escort.pickHint')}
@@ -681,10 +683,40 @@ function ThreatsTab() {
   const act = useGameStore((st) => st.act);
   const select = useGameStore((st) => st.select);
   const { t, fmt } = useT();
+  const stage = useStage();
+  // "O que ataca primeiro e o que eu faço?" (docs/UX-RULES.md): a mais urgente e a reação mais forte disponível.
+  const live = a.threats.filter((x) => !x.cancelled).sort((x, y) => x.strikesAt - y.strikesAt);
+  const next = live[0];
+  const PREF: ThreatReaction[] = ['evacuate', 'reinforce', 'bribe', 'lawyers'];
+  const pick = next && PREF.find((id) => A.reactionAvailable(a, next.id, id) && !next.reactions.includes(id) && A.reactionCost(s, a, next.id, id) <= a.cash);
+  const pickR = pick && REACTIONS.find((r) => r.id === pick)!;
   return (
+    <div className="ag-screen">
+    {next ? (
+      <Verdict
+        tone="bad"
+        action={
+          pickR ? (
+            <button className="btn primary" title={t(pickR.blurb)} onClick={() => act((g, ag) => A.react(g, ag, next.id, pickR.id), 'click')}>
+              {t(pickR.label)}
+              {A.reactionCost(s, a, next.id, pickR.id) ? ` ${fmt.money(A.reactionCost(s, a, next.id, pickR.id))}` : ''}
+            </button>
+          ) : undefined
+        }
+        secondary={
+          <button className="btn ghost" onClick={() => (stage ? stage.open({ kind: 'country', id: next.countryId, tab: 'overview' }) : select(next.countryId))}>
+              {countryName(next.countryId)}
+            </button>
+        }
+      >
+        <b>{threatLabel(next.kind)}</b> · {countryName(next.countryId)} · <b className="num">{formatDuration(next.strikesAt - s.time)}</b>
+      </Verdict>
+    ) : (
+      <Verdict tone="good">{t('game.agency.threats.empty')}</Verdict>
+    )}
+    {a.threats.length > 0 && (
     <Section title={t('game.agency.threats.title')}>
-      {!a.threats.length && <Empty>{t('game.agency.threats.empty')}</Empty>}
-      {a.threats.map((th) => {
+      <ShortList max={3} items={a.threats} render={(th) => {
         return (
           <div key={th.id} className={`threat${th.cancelled ? ' cancelled' : ''}`}>
             <header className="threat-head">
@@ -706,7 +738,7 @@ function ThreatsTab() {
                   return (
                     <button
                       key={r.id}
-                      className="btn sm"
+                      className="btn sm ghost"
                       disabled={used || cost > a.cash}
                       title={t(r.blurb)}
                       onClick={() => act((g, ag) => A.react(g, ag, th.id, r.id), 'click')}
@@ -722,7 +754,9 @@ function ThreatsTab() {
             )}
           </div>
         );
-      })}
+      }} />
     </Section>
+    )}
+    </div>
   );
 }
