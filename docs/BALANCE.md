@@ -74,6 +74,11 @@ Três momentos, todos com Agências Rivais ligadas:
 - **Antes**: motor de 16/10 (até `3529245`/`ad5b0fa`), 8 sementes por célula.
 - **Motor atual**: `5658a74`, que já aplicou o lote 1 abaixo (P1–P10), 8 sementes.
 - **Proposto**: motor atual + lote 2 (P11–P16) medido como variante, 8 sementes.
+- **Final**: `4bd590f`, que aplicou o lote 2. Verificação com 8 sementes reproduz o proposto: Iniciante
+  75/50/13% (Primeiro Contrato), 88/63/0% (Mediterrâneo), 100/100/13% (Pacífico), 88/13/0% (Sahel),
+  75/25/0% (Andes), 75/50/0% (Linha Vermelha); Passivo 0% em todos; quem mais lucra por semente:
+  Guloso 55%, Operador 23%, Iniciante 20%; letalidade 13/30/51%; Prévia ≤ 3,5 pp; Crise Final 0% para
+  pacíficos e 100% para o Operador hiperagressivo (dia 87–120).
 
 ### Vitória do bot Iniciante (régua da Dificuldade) — Recruta / Operador / Diretor
 
@@ -151,7 +156,7 @@ Todas as trocas exatas estão em `tools/balance/proposals.ts` (arquivo, texto an
 O motor também mudou a Tensão Global por conta própria (Operações +1/+3, Golpe +6, decaimento
 −0,45 + 0,015 por guerra), o que resolveu a Crise Final para quem não escala.
 
-### Lote 2 — enviado, a aplicar
+### Lote 2 — aplicado pelo motor em `4bd590f`
 
 | Id | Mudança | Efeito medido |
 |---|---|---|
@@ -173,6 +178,7 @@ O motor também mudou a Tensão Global por conta própria (Operações +1/+3, Go
 - **Construtor de Estações** perde as metas de lucro dos Presets grandes (Estações rendem ~3,5 M/mês
   contra ~27 M/mês do Comércio): Estações são suporte (informação, defesa, Cofre), não fonte principal.
 - **Bugs encontrados** (fora do balanceamento): Agências Rivais deixam Estações acima da capacidade
-  (milhares de dias-Estação por grade; enviado à sessão das Rivais); a Frota do jogador fica
-  sobrecarregada em voo quando um cargueiro para por Manutenção não paga (~3% das partidas);
+  (milhares de dias-Estação por grade; enviado à sessão das Rivais); a Frota do jogador ficava
+  sobrecarregada em voo quando um cargueiro parava por Manutenção não paga (~3% das partidas; corrigido
+  em `4bd590f`: cargueiro em voo não para);
   conversões em Combate podem passar a capacidade de uma Célula (~1,5% das partidas).
