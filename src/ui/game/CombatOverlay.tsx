@@ -147,9 +147,9 @@ function LiveView() {
   const [fast, setFast] = useState(false);
   const [sel, setSel] = useState<string | null>(null);
   const grid = useRef<HTMLDivElement>(null);
-  const fx = useCombatFx({ grid, combat: c, speed: fast ? 2 : 1 });
   // Em pé (ADR 0005) a grade gira: o jogador embaixo, avançando para cima.
   const vertical = usePortrait();
+  const fx = useCombatFx({ grid, combat: c, speed: fast ? 2 : 1, axis: vertical ? 'y' : 'x' });
   const manual = c.turn === 0 && c.reserve.length > 0;
 
   const step = () => {
