@@ -366,4 +366,5 @@ export default {
   'game.overlay.over.profitGoal': 'Profit goal',
   'game.stage.seeAll': 'See all',
   'game.stage.details': 'Details',
+  'game.overlay.openMarket': 'Open market',
 } as const;
