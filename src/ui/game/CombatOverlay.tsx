@@ -310,7 +310,7 @@ function LiveView() {
           <CombatResult
             kind={combatSucceeded(c) ? 'win' : 'lose'}
             title={combatSucceeded(c) ? t('game.combat.result.win').toUpperCase() : t('combatfx.stamp.lose')}
-            items={[]}
+            items={resultItems(c, combatSucceeded(c), t)}
             doneLabel={t('game.combat.finish')}
             onDone={finish}
             board={grid.current}
@@ -375,6 +375,26 @@ function LiveView() {
       </div>
     </div>
   );
+}
+
+/**
+ * Cards da tela de resultado, só com o que o CombatState já sabe. XP, recompensa e o destino do Diretor
+ * são sorteados em resolveCombat (no Concluir) e ficam para o Relatório.
+ */
+function resultItems(c: CombatState, win: boolean, t: ReturnType<typeof useT>['t']) {
+  const kos = Object.values(c.credits ?? {}).reduce((n, x) => n + x.kos, 0);
+  const items: { label: string; value: number; tone?: 'good' | 'bad' | 'neutral' }[] = [];
+  if (win) {
+    items.push({ label: t('combatfx.result.kos'), value: kos, tone: 'good' });
+    items.push({ label: t('combatfx.result.converts'), value: c.converted.length, tone: 'good' });
+    if (c.downed.length) items.push({ label: t('combatfx.result.downed'), value: c.downed.length, tone: 'bad' });
+    if (c.turned.length) items.push({ label: t('combatfx.result.turned'), value: c.turned.length, tone: 'bad' });
+  } else {
+    items.push({ label: t('combatfx.result.downed'), value: c.downed.length, tone: 'bad' });
+    items.push({ label: t('combatfx.result.turned'), value: c.turned.length, tone: 'bad' });
+    if (kos) items.push({ label: t('combatfx.result.kos'), value: kos, tone: 'neutral' });
+  }
+  return items;
 }
 
 /** "turno {turn}/{max}" traduzido, com o número de turno rolando (combat-fx). */
