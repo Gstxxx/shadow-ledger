@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import type { CSSProperties } from 'react';
 import { FastForward, Pause, Play, SkipForward, Swords } from 'lucide-react';
 import { canPlace, place, stepCombat, succeeded, TACTICS, unplace, autoDeploy } from '../../game/combat';
 import { cancelPending, negotiateCost } from '../../game/actions';
@@ -250,16 +251,16 @@ function LiveView() {
         <div className="grid-wrap">
           <div
             ref={grid}
-            className={`grid${vertical ? ' vertical' : ''}`}
+            className={`grid g-board${vertical ? ' vertical' : ''}`}
             style={
-              vertical
+              (vertical
                 ? {
-                    gridTemplateColumns: `repeat(${c.rows}, 1fr)`,
-                    gridTemplateRows: `repeat(${c.cols}, 1fr)`,
+                    '--cols': c.rows,
+                    '--rows': c.cols,
                     aspectRatio: `${c.rows} / ${c.cols}`,
                     height: `min(62vh, calc((100vw - 24px) * ${c.cols / c.rows}))`,
                   }
-                : { gridTemplateColumns: `repeat(${c.cols}, 1fr)`, gridTemplateRows: `repeat(${c.rows}, 1fr)` }
+                : { '--cols': c.cols, '--rows': c.rows, aspectRatio: `${c.cols} / ${c.rows}` }) as unknown as CSSProperties
             }
           >
             {cells.map(({ row, col }) => {
@@ -268,7 +269,9 @@ function LiveView() {
               return (
                 <button
                   key={`${row}-${col}`}
-                  className={`cell${deployable ? ' deploy' : ''}${target ? ' target' : ''}${col >= c.cols - c.deployCols ? ' hostile-zone' : ''}`}
+                  className={`cell g-board__cell${deployable ? ' deploy g-board__cell--deploy' : ''}${target ? ' target g-board__cell--target' : ''}${
+                    col >= c.cols - c.deployCols ? ' hostile-zone g-board__cell--enemy' : ''
+                  }`}
                   style={vertical ? { gridRow: c.cols - col, gridColumn: row + 1 } : { gridRow: row + 1, gridColumn: col + 1 }}
                   onClick={() => cellClick(row, col)}
                   aria-label={t('game.combat.cell', { row: row + 1, col: col + 1 })}
@@ -384,7 +387,7 @@ function Token({ r, c, vertical }: { r: CombatUnitRef; c: CombatState; vertical:
   const cur = strOf(u, c.type);
   return (
     <div
-      className={`token side-${r.side}`}
+      className={`token g-token side-${r.side}${r.side === 'e' ? ' g-token--enemy' : ''}`}
       data-fx-key={r.key}
       data-fx-side={r.side}
       data-fx-col={r.col}
@@ -406,7 +409,7 @@ function Token({ r, c, vertical }: { r: CombatUnitRef; c: CombatState; vertical:
       }}
       title={`${u.name} · ${itemName(u.itemId)}`}
     >
-      {fort ? <span className="fort">▦</span> : <Portrait unit={u} size={40} hostile={r.side === 'e'} />}
+      <span className="g-token__card">{fort ? <span className="fort">▦</span> : <Portrait unit={u} size={40} hostile={r.side === 'e'} />}</span>
       <span className="tk-bar">
         <span style={{ width: `${Math.min(100, (cur / max) * 100)}%` }} />
       </span>

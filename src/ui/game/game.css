@@ -1372,3 +1372,28 @@ button.unit-row:hover {
     opacity: 0.45;
   }
 }
+
+/* Combate com o tabuleiro do kit (.g-board / .g-token), mantendo a grade e os ganchos da combat-fx. */
+.cell.g-board__cell {
+  border: 0;
+  padding: 0;
+  cursor: default;
+}
+.cell.g-board__cell--deploy,
+.cell.g-board__cell--target {
+  cursor: pointer;
+}
+.token.g-token {
+  display: flex;
+  gap: 2px;
+}
+.g-skin .token .g-token__card .portrait {
+  box-shadow: none;
+}
+.g-token__card .fort {
+  width: 40px;
+  height: 40px;
+}
+.g-token--enemy .tk-bar span {
+  background: var(--red);
+}

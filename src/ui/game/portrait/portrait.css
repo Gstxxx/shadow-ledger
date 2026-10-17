@@ -236,7 +236,7 @@
     flex-wrap: wrap;
   }
   /* Grade vertical: o jogador embaixo, avançando para cima. */
-  .grid.vertical {
+  html .grid.vertical {
     max-height: none;
     width: auto;
     background:
