@@ -12,6 +12,10 @@ import { Help } from '../help/Glossary';
 import { marketRows, maxAffordable, priceRange, sellUntilBreakEven, whyCantBuy, whyCantSell } from './model';
 import { PriceRange, dealOf } from './MarketPanel';
 import { BigNumber, Details, Verdict } from '../stage/Verdict';
+import { PriceChart } from './PriceChart';
+import type { PriceMark } from './PriceChart';
+import { priceHistory, worldAverageHistory } from '../../../game/history';
+import { politicsLabel } from '../../../i18n/lookup';
 import type { VerdictTone } from '../stage/Verdict';
 
 type Side = 'buy' | 'sell';
@@ -45,6 +49,13 @@ export function ItemTrade({ countryId, itemId, initialSide }: { countryId: strin
   if (!r) return <p className="mkt-why">{t('game.market.unknown')}</p>;
 
   const { cheapest, best } = priceRange(s, a, itemId);
+  // Histórico do preço aqui (só onde houve informação ao vivo) e os eventos que explicam os picos.
+  const hist = priceHistory(s, countryId, itemId);
+  const markText = (k: string) =>
+    k === 'coup' ? t('game.country.couped') : k === 'playerBuy' ? t('game.market.opp.buy') : k === 'playerSell' ? t('game.market.opp.sell') : politicsLabel(k);
+  const markKind = (k: string) =>
+    k === 'war' || k === 'civilwar' || k === 'sanctions' || k === 'coup' ? 'war' : k === 'playerBuy' || k === 'playerSell' ? 'buy' : 'info';
+  const marks: PriceMark[] = hist.flatMap((p) => (p.events ?? []).map((k) => ({ t: p.day * 24, kind: markKind(k), text: markText(k) })));
   const deal = dealOf(r, t);
   const used = usedCargo(a);
   const max = maxCargo(a);
@@ -148,10 +159,11 @@ export function ItemTrade({ countryId, itemId, initialSide }: { countryId: strin
 
   return (
     <div className="trade2">
+      {/* Imagem herói do item (16:9 em pé; coluna esquerda deitado). O ItemIllustration da menu-motion entra aqui. */}
+      <div className="trade2-hero" aria-hidden>
+        <GameIcon id={itemId} size={112} accent={r.it.wmd ? 'signal' : 'warm'} />
+      </div>
       <div className="trade2-id">
-        <span className="g-well trade2-icon">
-          <GameIcon id={itemId} size={36} accent={r.it.wmd ? 'signal' : 'warm'} />
-        </span>
         <span className="mono trade2-sub">
           {r.it.wmd ? t('game.market.wmd') : classLabel(r.it.cls)} · {t('game.market.perUnit', { weight: fmt.tons(r.it.weight) })}
         </span>
@@ -172,6 +184,21 @@ export function ItemTrade({ countryId, itemId, initialSide }: { countryId: strin
       <Verdict tone={tone} action={action}>
         {text}
       </Verdict>
+      {hist.length > 1 && (
+            <PriceChart
+              points={hist.map((p) => ({ t: p.day * 24, buy: p.buy, sell: p.sell }))}
+              world={worldAverageHistory(s, itemId).map((p) => ({ t: p.day * 24, v: p.mid }))}
+              paid={owned ? Math.round(r.paidEach) : undefined}
+              marks={marks}
+              labels={{
+                buy: t('game.market.youPay'),
+                sell: t('game.market.youGet'),
+                world: t('game.market.chart.world'),
+                paid: t('game.market.opp.youPaid'),
+                today: t('game.market.chart.today'),
+              }}
+            />
+          )}
 
       {here && !(side === 'sell' && !owned) && (side === 'sell' ? r.sell > 0 : r.buy > 0) && (
         <>

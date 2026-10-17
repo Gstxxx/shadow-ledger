@@ -552,3 +552,60 @@ html .game.stage.upright .topbar {
   font-size: 13px;
   color: var(--paper-2);
 }
+/* Imagem herói do item: 16:9 em pé; deitado, ocupa a coluna esquerda no topo. */
+.trade2-hero {
+  display: grid;
+  place-items: center;
+  aspect-ratio: 16 / 9;
+  width: 100%;
+  max-height: 220px;
+  overflow: hidden;
+  background:
+    radial-gradient(70% 70% at 50% 45%, rgba(242, 169, 59, 0.12), transparent 70%),
+    linear-gradient(180deg, #1b2027, #0d1013);
+}
+.trade2-hero > svg,
+.trade2-hero > img {
+  max-width: 100%;
+  max-height: 100%;
+}
+@media (orientation: landscape) and (max-height: 560px) {
+  .trade2-hero {
+    grid-column: 1;
+    max-height: 150px;
+  }
+  .trade2 > .pchart {
+    grid-column: 2;
+  }
+}
+/* Deitado e baixo, com imagem e gráfico: áreas nomeadas (a regra antiga de linhas fixas não cabe mais). */
+@media (orientation: landscape) and (max-height: 560px) {
+  .trade2 {
+    grid-template-columns: minmax(0, 0.9fr) minmax(0, 1.1fr);
+    grid-template-rows: auto;
+    grid-template-areas:
+      'hero big'
+      'hero chart'
+      'id chart'
+      'tabs qty'
+      'verdict go'
+      'details details';
+  }
+  .trade2 > .trade2-hero { grid-area: hero; }
+  .trade2 > .trade2-id { grid-area: id; }
+  .trade2 > .trade2-tabs { grid-area: tabs; }
+  .trade2 > .verdict { grid-area: verdict; }
+  .trade2 > .big-number { grid-area: big; }
+  .trade2 > .pchart { grid-area: chart; }
+  .trade2 > .trade2-qty { grid-area: qty; }
+  .trade2 > .trade2-go { grid-area: go; align-self: end; }
+  .trade2 > .details-g { grid-area: details; }
+}
+
+/* Modais grandes do palco: o corpo encolhe e rola por dentro (com imagem e gráfico o item passa da altura). */
+html .g-modal--lg .g-modal__body,
+html .g-modal--xl .g-modal__body {
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow-y: auto;
+}

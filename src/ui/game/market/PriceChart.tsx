@@ -29,7 +29,8 @@ export function PriceChart({
   labels,
 }: {
   points: PricePoint[];
-  world?: number;
+  /** média mundial por dia (mesma escala t), tracejada */
+  world?: { t: number; v: number }[];
   paid?: number;
   marks?: PriceMark[];
   labels: { buy: string; sell: string; world: string; paid: string; today: string };
@@ -55,7 +56,7 @@ export function PriceChart({
   const t0 = points[0].t;
   const t1 = points[points.length - 1].t;
   const vals = points.flatMap((p) => [p.buy, p.sell].filter((v) => v > 0));
-  if (world) vals.push(world);
+  if (world) for (const p of world) if (p.v > 0 && p.t >= points[0].t) vals.push(p.v);
   if (paid) vals.push(paid);
   let lo = Math.min(...vals);
   let hi = Math.max(...vals);
@@ -90,7 +91,7 @@ export function PriceChart({
         <li>
           <i className="sw sell" /> {labels.sell}
         </li>
-        {world ? (
+        {world && world.length > 1 ? (
           <li>
             <i className="sw world" /> {labels.world}
           </li>
@@ -116,7 +117,16 @@ export function PriceChart({
         {[0.25, 0.5, 0.75].map((f) => (
           <line key={f} className="grid" x1={padL} x2={w - padR} y1={padT + f * (H - padT - padB)} y2={padT + f * (H - padT - padB)} />
         ))}
-        {world ? <line className="ref world" x1={padL} x2={w - padR} y1={y(world)} y2={y(world)} /> : null}
+        {world && world.length > 1 ? (
+          <path
+            className="ref world"
+            fill="none"
+            d={world
+              .filter((p) => p.v > 0 && p.t >= t0)
+              .map((p, i) => `${i ? 'L' : 'M'}${x(p.t).toFixed(1)},${y(p.v).toFixed(1)}`)
+              .join(' ')}
+          />
+        ) : null}
         {paid ? <line className="ref paid" x1={padL} x2={w - padR} y1={y(paid)} y2={y(paid)} /> : null}
         <path className="ln buy" d={path('buy')} />
         <path className="ln sell" d={path('sell')} />
