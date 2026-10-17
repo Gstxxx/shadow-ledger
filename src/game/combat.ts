@@ -9,6 +9,7 @@ import type {
   Tactic,
   Unit,
 } from './types';
+import { strengthBonus } from './strength';
 import { canFight, def, FORT_ID, knockOut, makeFort, nextUid, strOf, traitMult, usesConvert } from './units';
 import type { MintCtx } from './units';
 import { M, say } from './msg';
@@ -209,6 +210,8 @@ export function autoDeploy(c: CombatState) {
 function eff(c: CombatState, ref: CombatUnitRef) {
   const mod = tacticMod(c.tactic, c.type);
   let raw = strOf(ref.unit, c.type);
+  // Modificadores registrados (Equipamento etc.) valem para quem está de pé, dos dois lados.
+  if (raw > 0 && ref.unit.itemId !== FORT_ID) raw = Math.max(0.5, raw + strengthBonus(ref.unit, c.type));
   if (ref.side === 'p' && c.originBonus && raw > 0 && ref.unit.itemId !== FORT_ID) {
     raw += c.originBonus.all + (ref.unit.hp.army > 0 ? c.originBonus.military : 0);
     raw = Math.max(0.5, raw);
