@@ -8,15 +8,36 @@
   "start_url": "./",
   "scope": "./",
   "display": "fullscreen",
-  "display_override": ["fullscreen", "standalone"],
+  "display_override": [
+    "fullscreen",
+    "standalone"
+  ],
   "orientation": "any",
   "background_color": "#0b0e12",
   "theme_color": "#0b0e12",
-  "categories": ["games", "strategy"],
+  "categories": [
+    "games",
+    "strategy"
+  ],
   "icons": [
-    { "src": "icons/icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
-    { "src": "icons/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" },
-    { "src": "icons/icon-maskable-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+    {
+      "src": "icons/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "icons/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "icons/icon-maskable-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
+    }
   ],
   "screenshots": [
     {
@@ -39,6 +60,20 @@
       "type": "image/webp",
       "form_factor": "wide",
       "label": "Nova partida: escolha o cenário e o primeiro Contrato da agência"
+    },
+    {
+      "src": "screenshots/retrato-mapa.webp",
+      "sizes": "1080x1920",
+      "type": "image/webp",
+      "form_factor": "narrow",
+      "label": "Em pé: mapa em cima, painel do país e Mercado numa folha arrastável"
+    },
+    {
+      "src": "screenshots/retrato-diretor.webp",
+      "sizes": "1080x1920",
+      "type": "image/webp",
+      "form_factor": "narrow",
+      "label": "Escolha a Origem do Diretor, com Vantagem e Desvantagem"
     }
   ]
 }

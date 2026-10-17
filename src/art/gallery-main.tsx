@@ -1,6 +1,10 @@
 import { StrictMode, type ReactNode } from 'react';
 import { createRoot } from 'react-dom/client';
+import '@fontsource-variable/archivo/wdth.css';
+import '@fontsource/ibm-plex-mono/400.css';
+import '@fontsource/ibm-plex-mono/600.css';
 import Gallery from './Gallery';
+import { GameScreenMock } from './GameKitDemo';
 import { DIRECTOR_ORIGINS, DirectorPortrait, AnalystPortrait, GameIcon, ICONS, Logo, OperativePortrait, type AnalystMood } from './index';
 
 // Montagem temporária para revisão. `?solo=...` mostra um asset grande para inspeção:
@@ -37,6 +41,7 @@ function Solo(): ReactNode {
     const list = q.get('o') ? [q.get('o') as (typeof DIRECTOR_ORIGINS)[number]] : DIRECTOR_ORIGINS;
     return wrap(list.map((o) => <DirectorPortrait key={o} origin={o} mood={mood} size={size} blink={false} />));
   }
+  if (solo === 'game') return <div style={{ background: 'var(--g-bg)', minHeight: '100vh' }}><GameScreenMock width={Number(q.get('w') ?? 1440)} /></div>;
   if (solo === 'logo') return wrap(<Logo variant="full" height={140} />);
   if (solo === 'ops') return wrap(['raven-07', 'mbeki', 'ito-kenji'].map((s, i) => <OperativePortrait key={s} seed={s} size={300} status={i === 2 ? 'DETIDO' : undefined} code={i === 1 ? undefined : 'OP-0417'} name={i ? undefined : 'Raven'} />));
   return null;

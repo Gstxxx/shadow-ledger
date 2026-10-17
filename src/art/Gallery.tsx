@@ -29,6 +29,7 @@ import {
   type IconAccent,
   type IconGroup,
 } from './index';
+import { GameKitShowcase, GameScreenMock, MenuMock } from './GameKitDemo';
 
 // ── utilidades da página ─────────────────────────────────────────────
 const lum = (hex: string) => {
@@ -127,6 +128,7 @@ export default function Gallery() {
         <a href="#retratos">Retratos</a>
         <a href="#diretor">Diretor</a>
         <a href="#moldura">Moldura</a>
+        <a href="#jogo">Jogo</a>
       </nav>
 
       {/* ── Composição de abertura ── */}
@@ -505,6 +507,17 @@ export default function Gallery() {
               <span style={{ fontFamily: 'var(--sl-font-type)' }}>Recorte preso com fita.</span>
             </DossierPaper>
           </div>
+        </div>
+      </Section>
+      {/* ── Jogo ── */}
+      <Section id="jogo" n="07" title="Componentes de jogo">
+        <h3>Botões, segmentado, etiquetas, barras</h3>
+        <GameKitShowcase />
+        <h3>Menu principal</h3>
+        <MenuMock />
+        <h3>Tela de jogo recriada com .g-*</h3>
+        <div style={{ overflowX: 'auto' }}>
+          <GameScreenMock />
         </div>
       </Section>
     </div>

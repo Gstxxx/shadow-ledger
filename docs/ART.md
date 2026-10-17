@@ -112,3 +112,98 @@ Todos são camadas `position:absolute; inset:0` (exceto o radar) e `pointer-even
   - A cada `index.html` novo, os assets de builds antigos são apagados.
   - Só registra fora do servidor de dev (script inline no `<head>` do `index.html`).
   - Mude `SHELL_VERSION` só quando mudar a lógica do SW.
+
+## Componentes de jogo (`game-ui.css`, `game-ui.tsx`)
+
+O pedido foi que a interface parecesse um jogo, e não uma página HTML. O sistema `.g-*` dá volume, corte chanfrado e resposta física aos controles. As classes funcionam direto em JSX, e os componentes React são atalhos que já tocam o som de UI pela API existente (`audio.sfx('click' | 'hover')`).
+
+### Auditoria (jogo publicado em 1440×900 e 440×956)
+
+| O que parece "página web" | Onde | Correção |
+|---|---|---|
+| Botões planos de formulário (retângulo âmbar liso, contorno de 1px) sem volume nem estado de pressionado | Comprar, Ver México, Destacar Equipe, `.btn` em geral | `.g-btn` com bisel, aro duplo, sombra que comprime e desce 2px ao pressionar, brilho âmbar no hover |
+| Desabilitado só com opacidade 38%, que parece "carregando" | Comprar sem caixa/espaço | Face apagada com tarja diagonal; continua legível |
+| Toggles de camada e velocidade como caixas soltas de borda fina | Postura/Exposição/Política, 1×/2×/4×/8× | `.g-seg`: trilho rebaixado com a opção ativa em relevo âmbar |
+| Abas sublinhadas (navegação de site) e pílulas que transbordam | Frota/Carga/…; Oportunidades/Armamento | `.g-tabs`/`.g-tab` como fichário: trapézio, a ativa encosta no corpo, filete âmbar no topo |
+| Seções separadas só por um fio; superfícies todas iguais | Painéis de país e agência | `.g-panel` com chanfro, rebites, marca de registro âmbar, textura de chapa e cabeçalho com marca |
+| Traços como `<span>` com contorno verde | Persuasivo, Modesto | `.g-chip`: etiqueta com furo, em tons de sistema |
+| Barras finas e cinza, sem escala | Reputação, Exposição, Espaço, Tensão | `.g-meter` com trilho rebaixado, marcas de 10%, borda de avanço e limiar |
+| Números sem algarismos tabulares em alguns lugares; títulos em sans de documento | barra superior, nome do país | `.g-counter` (tabular, unidade menor, pisca verde/vermelho ao mudar); `.g-title` (Archivo largura 75%, caixa alta) |
+| "?" de 16px abaixo da área de toque mínima | Reputação?, Exposição?, Carga? | `.g-help`: 20px visíveis e 44px de toque |
+| Menu principal como lista de links | Menu | `.g-menu-item`: marcador ▶ que desliza, faixa âmbar, som |
+
+Antes, no jogo publicado:
+
+![antes 1440](art/antes-jogo-1440.webp)
+
+Depois, com a mesma tela recriada com `.g-*` (`?solo=game` na galeria):
+
+![depois 1440](art/depois-jogo-1440.webp)
+
+Ponte `.g-skin` aplicada ao jogo real, sem mudar o JSX: só os `.btn` mudam.
+
+![ponte](art/ponte-g-skin-1440.webp)
+
+Kit em 1280 e em 440:
+
+![kit](art/kit-jogo.webp)
+![kit 440](art/kit-jogo-440.webp)
+
+### Paleta de jogo (hierarquia)
+
+| Papel | Token | Uso |
+|---|---|---|
+| Fundo | `--g-bg` #090b0e | atrás de tudo |
+| Superfície | `--g-surface` #11151a | painéis |
+| Elevada | `--g-raised` #181d23 | topo dos painéis, corpo das abas |
+| Controle | `--g-control` #222930 | face dos botões secundários |
+| Rebaixado | `--g-sunken` #06080a | trilhos de barra e de segmentado |
+| Texto | `--g-text` 15:1 · `--g-text-2` 8,2:1 · `--g-text-3` 4,6:1 (só rótulo) | |
+| Ação | `--g-action` #f2a93b (texto `--g-on-action`, 10:1) | o que o jogador pode fazer |
+| Perigo | `--g-danger` #e5484d | Abortar, Ameaça, Exposição alta |
+| Ao vivo | `--g-live` #4fd8e0 | **só** preços ao vivo, radar, espaço em tempo real |
+| Ganho | `--g-ok` #46b98d | lucro, traço positivo |
+
+Motion: pressionar em 80ms e transições de cor/brilho em 140ms; com reduced-motion fica sem animação.
+
+### Classes e componentes
+
+| Classe | Componente | Variantes |
+|---|---|---|
+| `.g-btn` | `<GButton variant size icon iconEnd sub block busy sfx>` | `--primary` `--secondary` (padrão) `--danger` `--ghost`, `--sm` `--lg` `--block` `--icon`; estados `:disabled`, `.is-pressed`, `.is-busy` |
+| `.g-btn--icon` | `<GIconButton label icon>` | `label` vira `aria-label` |
+| `.g-seg` + `.g-seg__opt[aria-checked]` | `<GSegmented options value onChange label>` | navegação por setas |
+| `.g-panel` + `.g-panel__head/__title/__rule/__code` | `<GPanel label code tone raised pad>` | `--raised` `--sunken` `--alert` `--action` `--paper` |
+| `.g-tabs` + `.g-tab[aria-selected]` + `.g-tabbody` | `<GTabs items value onChange label compact>` | `--alert`; setas, Home e End |
+| `.g-chip` | `<GChip tone icon>` | `--ok` `--warn` `--danger` `--live` (ponto pulsando) |
+| `.g-badge` | `<GBadge tone>` | `--alert` `--action` |
+| `.g-meter` + `.g-meter__fill` (`--v` 0..1) + `.g-meter__mark` (`--m`) | `<GMeter value max tone segmented thin mark label valueText>` | `--danger` `--live` `--ok` `--neutral`, `--segmented` `--thin` |
+| `.g-counter` | `<GCounter value format unit suffix signed flash size>` | `--lg`, `.is-up`/`.is-down` |
+| `.g-row` | — | linha de lista com faixa âmbar no hover e na seleção; `--off` |
+| `.g-menu-item` | `<GMenuItem label meta current>` | |
+| `.g-help` | `<GHelp label>` | |
+| `.g-title`, `.g-label` | — | título de seção, rótulo mono |
+
+**Ponte `.g-skin`.** Com `import './art/game-ui.css'` e a classe `g-skin` num ancestral (por exemplo o `#root` ou `.game`), os botões antigos (`.btn`, `.btn.primary`, `.btn.danger`, `.btn.ghost`, `.btn.sm`, `.btn.icon`) ganham o visual de `.g-btn` sem trocar o JSX. É o caminho mais curto para a tela de jogo; o resto (abas, chips, barras) se adota trocando a classe.
+
+### Adoção: atual → novo
+
+| Atual | Novo |
+|---|---|
+| `button.btn` / `.btn.primary` / `.btn.danger` / `.btn.ghost` / `.btn.sm` / `.btn.icon` | `g-skin` no ancestral (ponte) ou `.g-btn` + `--primary/--danger/--ghost/--sm/--icon` |
+| `.map-modes button` (Postura/Exposição/Política) | `<GSegmented>` ou `.g-seg` > `.g-seg__opt[aria-checked]` |
+| `.tb-speed` (pausa, 1×–8×) | `.g-seg`; pausa com `.g-seg__opt` usando ícone |
+| `.map-zoom` (+ / −) | `.g-btn.g-btn--icon.g-btn--sm` |
+| `.tabs` / `.tab` / `.badge` (painel da agência) | `.g-tabs` / `.g-tab` / `.g-badge` (`--alert` quando `.hot`) e corpo `.g-tabbody` |
+| abas de categoria do Mercado (`.mk-head` pílulas) | `<GTabs>` com `icon` e `count` |
+| `.sec` / `.sec-head` (seções do painel) | `.g-panel` + `.g-panel__head` |
+| `.chip`, `.trait`, `.status` | `.g-chip` (`--ok` traço bom, `--warn` Ferido/Danificado, `--danger` Detido, `--live` "preços ao vivo") |
+| `.meter` / `.meter-fill`, `.cap-bar`, `.tension` / `.tension-fill` / `.tension-mark` | `.g-meter` (`--v`) + `.g-meter__mark` (`--m`); Tensão `--danger --segmented` |
+| `.tb-v`, `.num` (valores da barra) | `.g-counter` (`--lg` na barra superior) |
+| `.cty-title` (nome do país) | `.g-title` |
+| `.mk-row`, `.unit-row`, `.station-row` | `.g-row` (`aria-selected` ou `.is-selected`) |
+| `?` de glossário | `.g-help` |
+| menu: `.slm-nav-item` | `<GMenuItem>` / `.g-menu-item` (`.g-menu-item__meta` no lugar de `.slm-nav-meta`) |
+| menu: `.slm-btn--primary` / `.slm-btn--ghost` (no papel) | `.g-btn--primary` / `.g-btn--ghost` dentro de `.g-panel--paper`, ou só a ponte |
+| menu: `.slm-seg` / `.slm-seg-btn` | `.g-seg` / `.g-seg__opt` |
+| menu: `.slm-icon-btn` | `.g-btn--icon` |

@@ -18,5 +18,7 @@ export { AnalystPortrait, OperativePortrait } from './portraits';
 export type { AnalystMood, AnalystPortraitProps, OperativePortraitProps, OperativeTone } from './portraits';
 export { DirectorPortrait, DirectorCard, DIRECTOR_ORIGINS, ORIGIN_INFO } from './directors';
 export type { DirectorOrigin, DirectorMood, DirectorPortraitProps, DirectorCardProps } from './directors';
+export { GButton, GIconButton, GSegmented, GPanel, GTabs, GChip, GBadge, GMeter, GCounter, GMenuItem, GHelp, uiSound } from './game-ui';
+export type { GButtonProps, GButtonVariant, GIconButtonProps, GSegmentedProps, GSegOption, GPanelProps, GTabsProps, GTabItem, GChipProps, GMeterProps, GCounterProps, GMenuItemProps } from './game-ui';
 export { CornerBrackets, DossierFrame, Stamp, Redacted, RedactionBar, Divider, ClassificationBar, Tape } from './frame';
 export type { CornerBracketsProps, DossierFrameProps, StampProps, StampPreset, RedactedProps, RedactionBarProps, DividerProps, ClassificationBarProps, TapeProps } from './frame';

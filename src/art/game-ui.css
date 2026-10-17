@@ -1,0 +1,1225 @@
+/*
+ * Shadow Ledger — componentes de JOGO (.g-*).
+ * Volume (bisel, borda dupla, sombra interna), corte chanfrado, estados físicos.
+ * Autossuficiente: usa as fontes que o jogo já carrega (Archivo variável com eixo
+ * de largura, IBM Plex Mono) e cai para os tokens --sl-* fora do jogo.
+ *
+ * Hierarquia de cor:
+ *   fundo (--g-bg) < superfície (--g-surface) < elevada (--g-raised) < controle (--g-control)
+ *   âmbar = ação · vermelho-sinal = perigo · ciano = só "ao vivo"/radar · verde = ganho
+ */
+
+:root {
+  /* superfícies */
+  --g-bg: #090b0e;
+  --g-surface: #11151a;
+  --g-raised: #181d23;
+  --g-control: #222930;
+  --g-control-hi: #2d353e;
+  --g-sunken: #06080a;
+  --g-line: rgba(214, 222, 232, 0.1);
+  --g-line-2: rgba(214, 222, 232, 0.18);
+  --g-bevel-hi: rgba(255, 255, 255, 0.09);
+  --g-bevel-lo: rgba(0, 0, 0, 0.55);
+
+  /* texto (AA sobre --g-surface e --g-raised) */
+  --g-text: #e7eaee; /* 15:1 */
+  --g-text-2: #a7b0ba; /* 8.2:1 */
+  --g-text-3: #737d88; /* 4.6:1 — rótulos, nunca corpo */
+
+  /* papéis de cor */
+  --g-action: #f2a93b;
+  --g-action-hi: #ffcb6b;
+  --g-action-lo: #c07a17;
+  --g-action-rim: #3d2606;
+  --g-on-action: #1b1203; /* 10:1 sobre âmbar */
+  --g-action-glow: rgba(242, 169, 59, 0.45);
+
+  --g-danger: #e5484d;
+  --g-danger-hi: #ff7176;
+  --g-danger-lo: #a5272c;
+  --g-danger-rim: #3d0a0c;
+  --g-on-danger: #1d0405;
+  --g-danger-glow: rgba(229, 72, 77, 0.45);
+
+  --g-live: #4fd8e0;
+  --g-live-glow: rgba(79, 216, 224, 0.4);
+  --g-ok: #46b98d;
+  --g-ok-hi: #7fe0b8;
+
+  --g-focus: #ffe0a3;
+
+  /* forma e tipo */
+  --g-cut: 7px;
+  --g-font-display: 'Archivo Variable', 'Archivo', var(--sl-font-display, 'Barlow Condensed'), 'Arial Narrow', sans-serif;
+  --g-font-mono: 'IBM Plex Mono', var(--sl-font-mono, ui-monospace), ui-monospace, monospace;
+  --g-press: 80ms;
+  --g-fade: 140ms;
+  --g-ease: cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+/* ═════════════════════════════════════════════════════════════════════
+   Botões
+   ═════════════════════════════════════════════════════════════════════ */
+.g-btn {
+  --c: var(--g-cut);
+  --rim: rgba(0, 0, 0, 0.9);
+  --face-hi: var(--g-control-hi);
+  --face: var(--g-control);
+  --face-lo: #1a1f25;
+  --edge: rgba(255, 255, 255, 0.14);
+  --txt: var(--g-text);
+  --glow: var(--g-action-glow);
+  --hover-rim: var(--g-action);
+
+  position: relative;
+  isolation: isolate;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  min-height: 44px;
+  min-width: 44px;
+  padding: 0 18px;
+  margin: 0;
+  border: 0;
+  background: none;
+  color: var(--txt);
+  font-family: var(--g-font-display);
+  font-stretch: 78%;
+  font-weight: 700;
+  font-size: 15px;
+  line-height: 1;
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+  white-space: nowrap;
+  cursor: pointer;
+  user-select: none;
+  -webkit-tap-highlight-color: transparent;
+  touch-action: manipulation;
+  filter: drop-shadow(0 2px 0 rgba(0, 0, 0, 0.6)) drop-shadow(0 6px 10px rgba(0, 0, 0, 0.35));
+  transition:
+    transform var(--g-press) var(--g-ease),
+    filter var(--g-fade) var(--g-ease),
+    color var(--g-fade) var(--g-ease);
+}
+.g-btn::before,
+.g-btn::after {
+  content: '';
+  position: absolute;
+  clip-path: polygon(var(--c) 0, 100% 0, 100% calc(100% - var(--c)), calc(100% - var(--c)) 100%, 0 100%, 0 var(--c));
+  pointer-events: none;
+}
+/* aro externo */
+.g-btn::before {
+  inset: 0;
+  z-index: -2;
+  background: var(--rim);
+  transition: background var(--g-fade) var(--g-ease);
+}
+/* face com bisel */
+.g-btn::after {
+  inset: 1px;
+  z-index: -1;
+  background: linear-gradient(180deg, var(--face-hi), var(--face) 46%, var(--face-lo));
+  box-shadow:
+    inset 0 1px 0 var(--edge),
+    inset 0 -2px 0 rgba(0, 0, 0, 0.3),
+    inset 1px 0 0 rgba(255, 255, 255, 0.04),
+    inset -1px 0 0 rgba(0, 0, 0, 0.2);
+  transition: filter var(--g-fade) var(--g-ease);
+}
+.g-btn > * {
+  position: relative;
+}
+.g-btn svg {
+  width: 18px;
+  height: 18px;
+  flex: none;
+}
+.g-btn__sub {
+  font-family: var(--g-font-mono);
+  font-stretch: 100%;
+  font-weight: 500;
+  font-size: 11px;
+  letter-spacing: 0.04em;
+  text-transform: none;
+  opacity: 0.75;
+}
+
+@media (hover: hover) {
+  .g-btn:hover:not(:disabled):not([aria-disabled='true']) {
+    --rim: var(--hover-rim);
+    filter: drop-shadow(0 2px 0 rgba(0, 0, 0, 0.6)) drop-shadow(0 0 7px var(--glow));
+  }
+  .g-btn:hover:not(:disabled):not([aria-disabled='true'])::after {
+    filter: brightness(1.1);
+  }
+}
+
+/* pressionado: desce 2px, sombra comprime, bisel inverte */
+.g-btn:active:not(:disabled):not([aria-disabled='true']),
+.g-btn.is-pressed {
+  transform: translateY(2px);
+  filter: drop-shadow(0 0 0 rgba(0, 0, 0, 0.6)) drop-shadow(0 1px 2px rgba(0, 0, 0, 0.5));
+}
+.g-btn:active:not(:disabled):not([aria-disabled='true'])::after,
+.g-btn.is-pressed::after {
+  background: linear-gradient(180deg, var(--face-lo), var(--face) 55%, var(--face-hi));
+  box-shadow:
+    inset 0 2px 3px rgba(0, 0, 0, 0.45),
+    inset 0 -1px 0 var(--edge);
+}
+
+.g-btn:focus-visible {
+  outline: 2px solid var(--g-focus);
+  outline-offset: 3px;
+}
+
+/* desabilitado: sem volume, tarja diagonal */
+.g-btn:disabled,
+.g-btn[aria-disabled='true'] {
+  --rim: rgba(255, 255, 255, 0.07);
+  --face-hi: #171b20;
+  --face: #15191d;
+  --face-lo: #13161a;
+  --edge: transparent;
+  --txt: var(--g-text-3);
+  cursor: not-allowed;
+  filter: none;
+}
+.g-btn:disabled::after,
+.g-btn[aria-disabled='true']::after {
+  background:
+    repeating-linear-gradient(-45deg, rgba(255, 255, 255, 0.045) 0 5px, transparent 5px 11px),
+    linear-gradient(180deg, var(--face-hi), var(--face-lo));
+}
+
+/* ocupado: faixa de varredura */
+.g-btn.is-busy {
+  pointer-events: none;
+}
+.g-btn.is-busy::after {
+  background:
+    linear-gradient(90deg, transparent 0 35%, rgba(255, 255, 255, 0.22) 50%, transparent 65%) 0 0 / 220% 100%,
+    linear-gradient(180deg, var(--face-hi), var(--face) 46%, var(--face-lo));
+  animation: g-sweep 0.9s linear infinite;
+}
+@keyframes g-sweep {
+  from { background-position: 120% 0, 0 0; }
+  to { background-position: -120% 0, 0 0; }
+}
+
+/* variantes */
+.g-btn--primary {
+  --rim: var(--g-action-rim);
+  --face-hi: var(--g-action-hi);
+  --face: var(--g-action);
+  --face-lo: var(--g-action-lo);
+  --edge: rgba(255, 255, 255, 0.55);
+  --txt: var(--g-on-action);
+  --hover-rim: #ffe2a6;
+}
+.g-btn--danger {
+  --rim: var(--g-danger-rim);
+  --face-hi: var(--g-danger-hi);
+  --face: var(--g-danger);
+  --face-lo: var(--g-danger-lo);
+  --edge: rgba(255, 255, 255, 0.45);
+  --txt: var(--g-on-danger);
+  --glow: var(--g-danger-glow);
+  --hover-rim: #ffb3b6;
+}
+.g-btn--ghost {
+  --rim: var(--g-line-2);
+  --face-hi: rgba(17, 21, 26, 0.92);
+  --face: rgba(17, 21, 26, 0.92);
+  --face-lo: rgba(17, 21, 26, 0.92);
+  --edge: transparent;
+  --txt: var(--g-text-2);
+  filter: none;
+}
+@media (hover: hover) {
+  .g-btn--ghost:hover:not(:disabled) {
+    color: var(--g-action-hi);
+  }
+  .g-btn--secondary:hover:not(:disabled) {
+    color: var(--g-action-hi);
+  }
+}
+.g-btn--secondary {
+  /* padrão (classe opcional, para leitura) */
+}
+.g-btn--sm {
+  --c: 5px;
+  min-height: 34px;
+  min-width: 34px;
+  padding: 0 12px;
+  font-size: 13px;
+}
+.g-btn--lg {
+  --c: 10px;
+  min-height: 54px;
+  padding: 0 26px;
+  font-size: 19px;
+}
+.g-btn--block {
+  display: flex;
+  width: 100%;
+}
+.g-btn--icon {
+  padding: 0;
+  width: 44px;
+}
+.g-btn--icon.g-btn--sm {
+  width: 34px;
+}
+.g-btn--icon svg {
+  width: 20px;
+  height: 20px;
+}
+/* área de toque mínima de 44px nos tamanhos pequenos */
+.g-btn--sm .g-hit,
+.g-help .g-hit {
+  position: absolute;
+  inset: -6px;
+}
+
+/* ═════════════════════════════════════════════════════════════════════
+   Ponte opcional: dentro de um ancestral .g-skin, os botões antigos
+   (.btn, .btn.primary/.danger/.ghost/.sm/.icon de src/index.css) ganham
+   o visual de .g-btn sem trocar o JSX. !important só para neutralizar
+   fundo/borda/raio/opacidade/cor da regra antiga.
+   ═════════════════════════════════════════════════════════════════════ */
+.g-skin .btn,
+.g-skin .btn:hover,
+.g-skin .btn:disabled {
+  background: none !important;
+  border: 0 !important;
+  border-radius: 0 !important;
+  opacity: 1 !important;
+}
+.g-skin .btn.danger,
+.g-skin .btn.primary {
+  color: var(--txt) !important;
+}
+.g-skin .btn {
+  --c: var(--g-cut);
+  --rim: rgba(0, 0, 0, 0.9);
+  --face-hi: var(--g-control-hi);
+  --face: var(--g-control);
+  --face-lo: #1a1f25;
+  --edge: rgba(255, 255, 255, 0.14);
+  --txt: var(--g-text);
+  --glow: var(--g-action-glow);
+  --hover-rim: var(--g-action);
+
+  position: relative;
+  isolation: isolate;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  min-height: 44px;
+  min-width: 44px;
+  padding: 0 18px;
+  margin: 0;
+  border: 0;
+  background: none;
+  color: var(--txt);
+  font-family: var(--g-font-display);
+  font-stretch: 78%;
+  font-weight: 700;
+  font-size: 15px;
+  line-height: 1;
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+  white-space: nowrap;
+  cursor: pointer;
+  user-select: none;
+  -webkit-tap-highlight-color: transparent;
+  touch-action: manipulation;
+  filter: drop-shadow(0 2px 0 rgba(0, 0, 0, 0.6)) drop-shadow(0 6px 10px rgba(0, 0, 0, 0.35));
+  transition:
+    transform var(--g-press) var(--g-ease),
+    filter var(--g-fade) var(--g-ease),
+    color var(--g-fade) var(--g-ease);
+}
+.g-skin .btn::before,
+.g-skin .btn::after {
+  content: '';
+  position: absolute;
+  clip-path: polygon(var(--c) 0, 100% 0, 100% calc(100% - var(--c)), calc(100% - var(--c)) 100%, 0 100%, 0 var(--c));
+  pointer-events: none;
+}
+/* aro externo */
+.g-skin .btn::before {
+  inset: 0;
+  z-index: -2;
+  background: var(--rim);
+  transition: background var(--g-fade) var(--g-ease);
+}
+/* face com bisel */
+.g-skin .btn::after {
+  inset: 1px;
+  z-index: -1;
+  background: linear-gradient(180deg, var(--face-hi), var(--face) 46%, var(--face-lo));
+  box-shadow:
+    inset 0 1px 0 var(--edge),
+    inset 0 -2px 0 rgba(0, 0, 0, 0.3),
+    inset 1px 0 0 rgba(255, 255, 255, 0.04),
+    inset -1px 0 0 rgba(0, 0, 0, 0.2);
+  transition: filter var(--g-fade) var(--g-ease);
+}
+.g-skin .btn > * {
+  position: relative;
+}
+.g-skin .btn svg {
+  width: 18px;
+  height: 18px;
+  flex: none;
+}
+.g-skin .btn-sub {
+  font-family: var(--g-font-mono);
+  font-stretch: 100%;
+  font-weight: 500;
+  font-size: 11px;
+  letter-spacing: 0.04em;
+  text-transform: none;
+  opacity: 0.75;
+}
+
+@media (hover: hover) {
+  .g-skin .btn:hover:not(:disabled):not([aria-disabled='true']) {
+    --rim: var(--hover-rim);
+    filter: drop-shadow(0 2px 0 rgba(0, 0, 0, 0.6)) drop-shadow(0 0 7px var(--glow));
+  }
+  .g-skin .btn:hover:not(:disabled):not([aria-disabled='true'])::after {
+    filter: brightness(1.1);
+  }
+}
+
+/* pressionado: desce 2px, sombra comprime, bisel inverte */
+.g-skin .btn:active:not(:disabled):not([aria-disabled='true']),
+.g-skin .btn.is-pressed {
+  transform: translateY(2px);
+  filter: drop-shadow(0 0 0 rgba(0, 0, 0, 0.6)) drop-shadow(0 1px 2px rgba(0, 0, 0, 0.5));
+}
+.g-skin .btn:active:not(:disabled):not([aria-disabled='true'])::after,
+.g-skin .btn.is-pressed::after {
+  background: linear-gradient(180deg, var(--face-lo), var(--face) 55%, var(--face-hi));
+  box-shadow:
+    inset 0 2px 3px rgba(0, 0, 0, 0.45),
+    inset 0 -1px 0 var(--edge);
+}
+
+.g-skin .btn:focus-visible {
+  outline: 2px solid var(--g-focus);
+  outline-offset: 3px;
+}
+
+/* desabilitado: sem volume, tarja diagonal */
+.g-skin .btn:disabled,
+.g-skin .btn[aria-disabled='true'] {
+  --rim: rgba(255, 255, 255, 0.07);
+  --face-hi: #171b20;
+  --face: #15191d;
+  --face-lo: #13161a;
+  --edge: transparent;
+  --txt: var(--g-text-3);
+  cursor: not-allowed;
+  filter: none;
+}
+.g-skin .btn:disabled::after,
+.g-skin .btn[aria-disabled='true']::after {
+  background:
+    repeating-linear-gradient(-45deg, rgba(255, 255, 255, 0.045) 0 5px, transparent 5px 11px),
+    linear-gradient(180deg, var(--face-hi), var(--face-lo));
+}
+
+/* ocupado: faixa de varredura */
+.g-skin .btn.is-busy {
+  pointer-events: none;
+}
+.g-skin .btn.is-busy::after {
+  background:
+    linear-gradient(90deg, transparent 0 35%, rgba(255, 255, 255, 0.22) 50%, transparent 65%) 0 0 / 220% 100%,
+    linear-gradient(180deg, var(--face-hi), var(--face) 46%, var(--face-lo));
+  animation: g-sweep 0.9s linear infinite;
+}
+@keyframes g-sweep {
+  from { background-position: 120% 0, 0 0; }
+  to { background-position: -120% 0, 0 0; }
+}
+
+/* variantes */
+.g-skin .btn.primary {
+  --rim: var(--g-action-rim);
+  --face-hi: var(--g-action-hi);
+  --face: var(--g-action);
+  --face-lo: var(--g-action-lo);
+  --edge: rgba(255, 255, 255, 0.55);
+  --txt: var(--g-on-action);
+  --hover-rim: #ffe2a6;
+}
+.g-skin .btn.danger {
+  --rim: var(--g-danger-rim);
+  --face-hi: var(--g-danger-hi);
+  --face: var(--g-danger);
+  --face-lo: var(--g-danger-lo);
+  --edge: rgba(255, 255, 255, 0.45);
+  --txt: var(--g-on-danger);
+  --glow: var(--g-danger-glow);
+  --hover-rim: #ffb3b6;
+}
+.g-skin .btn.ghost {
+  --rim: var(--g-line-2);
+  --face-hi: rgba(17, 21, 26, 0.92);
+  --face: rgba(17, 21, 26, 0.92);
+  --face-lo: rgba(17, 21, 26, 0.92);
+  --edge: transparent;
+  --txt: var(--g-text-2);
+  filter: none;
+}
+@media (hover: hover) {
+  .g-skin .btn.ghost:hover:not(:disabled) {
+    color: var(--g-action-hi);
+  }
+  .g-skin .btn.secondary:hover:not(:disabled) {
+    color: var(--g-action-hi);
+  }
+}
+.g-skin .btn.sm {
+  --c: 5px;
+  min-height: 34px;
+  min-width: 34px;
+  padding: 0 12px;
+  font-size: 13px;
+}
+.g-skin .btn.lg {
+  --c: 10px;
+  min-height: 54px;
+  padding: 0 26px;
+  font-size: 19px;
+}
+.g-skin .btn.block {
+  display: flex;
+  width: 100%;
+}
+.g-skin .btn.icon {
+  padding: 0;
+  width: 44px;
+}
+.g-skin .btn.icon.btn.sm {
+  width: 34px;
+}
+.g-skin .btn.icon svg {
+  width: 20px;
+  height: 20px;
+}
+/* área de toque mínima de 44px nos tamanhos pequenos */
+.g-skin .btn.sm .g-hit,
+.g-help .g-hit {
+  position: absolute;
+  inset: -6px;
+}
+
+
+/* ═════════════════════════════════════════════════════════════════════
+   Controle segmentado (velocidade, camadas do mapa)
+   ═════════════════════════════════════════════════════════════════════ */
+.g-seg {
+  --c: 6px;
+  display: inline-flex;
+  gap: 3px;
+  padding: 3px;
+  background: var(--g-sunken);
+  clip-path: polygon(var(--c) 0, 100% 0, 100% calc(100% - var(--c)), calc(100% - var(--c)) 100%, 0 100%, 0 var(--c));
+  box-shadow:
+    inset 0 2px 4px rgba(0, 0, 0, 0.8),
+    inset 0 0 0 1px rgba(255, 255, 255, 0.06);
+}
+.g-seg__opt {
+  position: relative;
+  min-height: 38px;
+  min-width: 40px;
+  padding: 0 12px;
+  border: 0;
+  background: transparent;
+  color: var(--g-text-3);
+  font-family: var(--g-font-display);
+  font-stretch: 78%;
+  font-weight: 700;
+  font-size: 13px;
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+  cursor: pointer;
+  touch-action: manipulation;
+  transition:
+    color var(--g-fade) var(--g-ease),
+    background var(--g-fade) var(--g-ease),
+    transform var(--g-press) var(--g-ease);
+}
+.g-seg__opt:hover {
+  color: var(--g-text);
+  background: rgba(255, 255, 255, 0.04);
+}
+.g-seg__opt:active {
+  transform: translateY(1px);
+}
+.g-seg__opt[aria-checked='true'],
+.g-seg__opt[aria-pressed='true'],
+.g-seg__opt[aria-selected='true'] {
+  color: var(--g-on-action);
+  background: linear-gradient(180deg, var(--g-action-hi), var(--g-action) 50%, var(--g-action-lo));
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.55),
+    inset 0 -2px 0 rgba(0, 0, 0, 0.25),
+    0 0 10px rgba(242, 169, 59, 0.25);
+}
+.g-seg__opt:focus-visible {
+  outline: 2px solid var(--g-focus);
+  outline-offset: -2px;
+}
+.g-seg__opt svg {
+  width: 16px;
+  height: 16px;
+  vertical-align: -3px;
+}
+
+/* ═════════════════════════════════════════════════════════════════════
+   Painéis
+   ═════════════════════════════════════════════════════════════════════ */
+.g-panel {
+  --c: 12px;
+  --rim: linear-gradient(180deg, rgba(214, 222, 232, 0.2), rgba(214, 222, 232, 0.06) 40%, rgba(214, 222, 232, 0.1));
+  --face-top: var(--g-raised);
+  --face-bot: var(--g-surface);
+  --rivet: rgba(214, 222, 232, 0.28);
+  position: relative;
+  isolation: isolate;
+  min-width: 0;
+  color: var(--g-text);
+  padding: var(--g-pad, 14px 16px 16px);
+}
+.g-panel::before,
+.g-panel::after {
+  content: '';
+  position: absolute;
+  clip-path: polygon(var(--c) 0, 100% 0, 100% calc(100% - var(--c)), calc(100% - var(--c)) 100%, 0 100%, 0 var(--c));
+  pointer-events: none;
+}
+.g-panel::before {
+  inset: 0;
+  z-index: -2;
+  background: var(--rim);
+}
+.g-panel::after {
+  inset: 1px;
+  z-index: -1;
+  background:
+    /* rebites nos cantos retos */
+    radial-gradient(circle at calc(100% - 7px) 7px, var(--rivet) 1.3px, transparent 1.9px),
+    radial-gradient(circle at 7px calc(100% - 7px), var(--rivet) 1.3px, transparent 1.9px),
+    /* marca de registro nos chanfros */
+    linear-gradient(135deg, transparent calc(var(--c) + 2px), rgba(242, 169, 59, 0.55) calc(var(--c) + 2px), rgba(242, 169, 59, 0.55) calc(var(--c) + 3.5px), transparent calc(var(--c) + 3.5px)) 0 0 / 22px 22px no-repeat,
+    /* textura de chapa */
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='140' height='140'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 1 0 0 0 0 1 0 0 0 0 1 0 0 0 .05 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E"),
+    linear-gradient(180deg, var(--face-top), var(--face-bot));
+  box-shadow:
+    inset 0 1px 0 var(--g-bevel-hi),
+    inset 0 -1px 0 var(--g-bevel-lo);
+}
+.g-panel--raised {
+  filter: drop-shadow(0 10px 18px rgba(0, 0, 0, 0.5));
+}
+.g-panel--sunken {
+  --rim: linear-gradient(180deg, rgba(0, 0, 0, 0.8), rgba(214, 222, 232, 0.08));
+  --face-top: #07090b;
+  --face-bot: #0b0e12;
+  --rivet: transparent;
+}
+.g-panel--sunken::after {
+  box-shadow: inset 0 3px 8px rgba(0, 0, 0, 0.7);
+}
+.g-panel--alert {
+  --rim: linear-gradient(180deg, rgba(229, 72, 77, 0.75), rgba(229, 72, 77, 0.2));
+}
+.g-panel--action {
+  --rim: linear-gradient(180deg, rgba(242, 169, 59, 0.75), rgba(242, 169, 59, 0.18));
+}
+.g-panel--paper {
+  --rim: linear-gradient(180deg, #d9cba9, #a8977a);
+  --face-top: #efe7d6;
+  --face-bot: #e3d8c0;
+  --rivet: rgba(60, 45, 25, 0.35);
+  color: #241c11;
+}
+
+.g-panel__head {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: -2px 0 12px;
+  min-height: 20px;
+  font-family: var(--g-font-mono);
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--g-text-2);
+}
+.g-panel__head::before {
+  content: '';
+  width: 6px;
+  height: 6px;
+  background: var(--g-head-mark, var(--g-action));
+  box-shadow: 0 0 6px var(--g-head-mark, var(--g-action));
+  flex: none;
+}
+.g-panel__title {
+  color: var(--g-text);
+}
+.g-panel__rule {
+  flex: 1;
+  min-width: 12px;
+  height: 1px;
+  background: repeating-linear-gradient(90deg, var(--g-line-2) 0 3px, transparent 3px 6px);
+}
+.g-panel__code {
+  color: var(--g-text-3);
+  font-weight: 500;
+}
+.g-panel--alert .g-panel__head {
+  --g-head-mark: var(--g-danger);
+}
+.g-panel--paper .g-panel__head {
+  color: #6b5a3e;
+}
+
+/* título de seção grande (nome do país, cabeçalhos) */
+.g-title {
+  margin: 0;
+  font-family: var(--g-font-display);
+  font-stretch: 75%;
+  font-weight: 800;
+  font-size: 28px;
+  line-height: 0.95;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+  color: var(--g-text);
+}
+.g-label {
+  font-family: var(--g-font-mono);
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--g-text-3);
+}
+
+/* ═════════════════════════════════════════════════════════════════════
+   Abas de fichário
+   ═════════════════════════════════════════════════════════════════════ */
+.g-tabs {
+  position: relative;
+  min-width: 0;
+  display: flex;
+  align-items: flex-end;
+  gap: 2px;
+  padding: 0 6px;
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+.g-tabs::-webkit-scrollbar {
+  display: none;
+}
+.g-tabs::after {
+  content: '';
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: 2px;
+  background: var(--g-raised);
+  box-shadow: 0 -1px 0 var(--g-line-2);
+  z-index: 0;
+}
+.g-tab {
+  position: relative;
+  isolation: isolate;
+  z-index: 1;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  flex: none;
+  min-height: 40px;
+  padding: 6px 16px 4px;
+  margin-bottom: 2px;
+  border: 0;
+  background: none;
+  color: var(--g-text-3);
+  font-family: var(--g-font-display);
+  font-stretch: 78%;
+  font-weight: 700;
+  font-size: 13px;
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+  white-space: nowrap;
+  cursor: pointer;
+  touch-action: manipulation;
+  transition: color var(--g-fade) var(--g-ease);
+}
+.g-tab::before {
+  content: '';
+  position: absolute;
+  inset: 4px 0 0;
+  z-index: -1;
+  clip-path: polygon(7px 0, calc(100% - 7px) 0, 100% 100%, 0 100%);
+  background: linear-gradient(180deg, #161b21, #11151a);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.05),
+    inset 0 -6px 8px rgba(0, 0, 0, 0.35);
+  transition:
+    background var(--g-fade) var(--g-ease),
+    inset var(--g-press) var(--g-ease);
+}
+.g-tab svg {
+  width: 16px;
+  height: 16px;
+}
+@media (hover: hover) {
+  .g-tab:hover:not([aria-selected='true']) {
+    color: var(--g-text);
+  }
+  .g-tab:hover:not([aria-selected='true'])::before {
+    background: linear-gradient(180deg, #1e242b, #161a20);
+    inset: 2px 0 0;
+  }
+}
+.g-tab[aria-selected='true'] {
+  z-index: 2;
+  color: var(--g-text);
+  margin-bottom: 0;
+  padding-bottom: 6px;
+}
+.g-tab[aria-selected='true']::before {
+  inset: 0;
+  background: linear-gradient(180deg, #232a32, var(--g-raised));
+  box-shadow:
+    inset 0 2px 0 var(--g-action),
+    inset 0 3px 8px rgba(242, 169, 59, 0.12);
+}
+.g-tab:focus-visible {
+  outline: 2px solid var(--g-focus);
+  outline-offset: -3px;
+}
+.g-tab--alert:not([aria-selected='true']) {
+  color: var(--g-danger-hi);
+}
+/* corpo da ficha logo abaixo das abas */
+.g-tabbody {
+  background: var(--g-raised);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.03);
+  padding: 12px;
+}
+
+/* ═════════════════════════════════════════════════════════════════════
+   Etiquetas (chips) e contadores (badges)
+   ═════════════════════════════════════════════════════════════════════ */
+.g-chip {
+  --chip-bg: #252c34;
+  --chip-fg: #c9d0d8;
+  --chip-edge: rgba(255, 255, 255, 0.08);
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  height: 22px;
+  padding: 0 9px 0 15px;
+  font-family: var(--g-font-mono);
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  white-space: nowrap;
+  color: var(--chip-fg);
+  background: var(--chip-bg);
+  clip-path: polygon(7px 0, 100% 0, 100% 100%, 7px 100%, 0 50%);
+  box-shadow: inset 0 1px 0 var(--chip-edge);
+}
+/* furo da etiqueta */
+.g-chip::before {
+  content: '';
+  position: absolute;
+  left: 6px;
+  top: 50%;
+  width: 4px;
+  height: 4px;
+  margin-top: -2px;
+  border-radius: 50%;
+  background: var(--g-bg);
+  box-shadow: inset 0 1px 1px rgba(0, 0, 0, 0.8);
+}
+.g-chip svg {
+  width: 13px;
+  height: 13px;
+}
+.g-chip--ok {
+  --chip-bg: #133327;
+  --chip-fg: var(--g-ok-hi);
+}
+.g-chip--warn {
+  --chip-bg: #3a2a0e;
+  --chip-fg: var(--g-action-hi);
+}
+.g-chip--danger {
+  --chip-bg: #3d1214;
+  --chip-fg: #ff9fa2;
+}
+.g-chip--live {
+  --chip-bg: #0c2c30;
+  --chip-fg: var(--g-live);
+}
+.g-chip--live .g-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--g-live);
+  box-shadow: 0 0 6px var(--g-live-glow);
+  animation: g-live 1.6s ease-in-out infinite;
+}
+@keyframes g-live {
+  50% { opacity: 0.35; }
+}
+
+.g-badge {
+  display: inline-grid;
+  place-items: center;
+  min-width: 18px;
+  height: 18px;
+  padding: 0 4px;
+  font-family: var(--g-font-mono);
+  font-size: 11px;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+  line-height: 1;
+  color: var(--g-text);
+  background: #2a323b;
+  clip-path: polygon(3px 0, calc(100% - 3px) 0, 100% 3px, 100% calc(100% - 3px), calc(100% - 3px) 100%, 3px 100%, 0 calc(100% - 3px), 0 3px);
+}
+.g-badge--alert {
+  color: #fff;
+  background: var(--g-danger);
+  box-shadow: 0 0 8px var(--g-danger-glow);
+}
+.g-badge--action {
+  color: var(--g-on-action);
+  background: var(--g-action);
+}
+
+/* ═════════════════════════════════════════════════════════════════════
+   Barras de HUD
+   ═════════════════════════════════════════════════════════════════════ */
+.g-meter {
+  --v: 0;
+  --tone: var(--g-action);
+  --tone-lo: var(--g-action-lo);
+  --tone-glow: var(--g-action-glow);
+  position: relative;
+  height: 10px;
+  background: var(--g-sunken);
+  box-shadow:
+    inset 0 1px 3px rgba(0, 0, 0, 0.85),
+    0 0 0 1px rgba(255, 255, 255, 0.07);
+}
+.g-meter__fill {
+  position: absolute;
+  top: 1px;
+  bottom: 1px;
+  left: 1px;
+  width: calc((100% - 2px) * var(--v));
+  background: linear-gradient(90deg, var(--tone-lo), var(--tone));
+  box-shadow: 0 0 8px var(--tone-glow);
+  transition: width 150ms var(--g-ease);
+}
+.g-meter__fill::after {
+  content: '';
+  position: absolute;
+  right: 0;
+  top: 0;
+  bottom: 0;
+  width: 2px;
+  background: #fff;
+  opacity: 0.75;
+}
+/* marcas a cada 10% */
+.g-meter::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: repeating-linear-gradient(90deg, transparent 0 calc(10% - 1px), rgba(0, 0, 0, 0.55) calc(10% - 1px) 10%);
+  pointer-events: none;
+}
+.g-meter--segmented {
+  height: 12px;
+}
+.g-meter--segmented::after {
+  background: repeating-linear-gradient(90deg, transparent 0 calc(10% - 3px), var(--g-sunken) calc(10% - 3px) 10%);
+}
+.g-meter--thin {
+  height: 6px;
+}
+.g-meter--thin::after {
+  display: none;
+}
+.g-meter--danger {
+  --tone: var(--g-danger);
+  --tone-lo: var(--g-danger-lo);
+  --tone-glow: var(--g-danger-glow);
+}
+.g-meter--live {
+  --tone: var(--g-live);
+  --tone-lo: #1b7d84;
+  --tone-glow: var(--g-live-glow);
+}
+.g-meter--ok {
+  --tone: var(--g-ok);
+  --tone-lo: #1f6b4f;
+  --tone-glow: rgba(70, 185, 141, 0.4);
+}
+.g-meter--neutral {
+  --tone: #9aa4ae;
+  --tone-lo: #4d5660;
+  --tone-glow: transparent;
+}
+.g-meter__mark {
+  position: absolute;
+  top: -4px;
+  bottom: -4px;
+  left: calc(var(--m) * 100%);
+  width: 2px;
+  margin-left: -1px;
+  background: var(--g-text);
+  box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.6);
+  z-index: 1;
+}
+.g-meterrow {
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  align-items: center;
+  gap: 10px;
+}
+
+/* ═════════════════════════════════════════════════════════════════════
+   Contadores
+   ═════════════════════════════════════════════════════════════════════ */
+.g-counter {
+  font-family: var(--g-font-mono);
+  font-variant-numeric: tabular-nums;
+  font-feature-settings: 'tnum' 1, 'zero' 1;
+  font-weight: 600;
+  color: var(--g-text);
+  white-space: nowrap;
+}
+.g-counter__unit {
+  margin-right: 0.25em;
+  font-weight: 500;
+  font-size: 0.78em;
+  color: var(--g-text-3);
+}
+.g-counter__suffix {
+  margin-left: 0.15em;
+  font-size: 0.78em;
+  color: var(--g-text-2);
+}
+.g-counter--lg {
+  font-size: 22px;
+}
+.g-counter--up {
+  color: var(--g-ok-hi);
+}
+.g-counter--down {
+  color: var(--g-danger-hi);
+}
+.g-counter.is-up {
+  animation: g-up 600ms var(--g-ease);
+}
+.g-counter.is-down {
+  animation: g-down 600ms var(--g-ease);
+}
+@keyframes g-up {
+  0% { color: var(--g-ok-hi); text-shadow: 0 0 10px rgba(127, 224, 184, 0.7); }
+}
+@keyframes g-down {
+  0% { color: var(--g-danger-hi); text-shadow: 0 0 10px var(--g-danger-glow); }
+}
+
+/* ═════════════════════════════════════════════════════════════════════
+   Linhas de lista, itens de menu, ajuda
+   ═════════════════════════════════════════════════════════════════════ */
+.g-row {
+  position: relative;
+  display: grid;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 12px 10px 14px;
+  background: linear-gradient(90deg, rgba(255, 255, 255, 0.025), transparent 60%);
+  box-shadow: inset 0 -1px 0 var(--g-line);
+  transition: background var(--g-fade) var(--g-ease);
+}
+.g-row::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 8px;
+  bottom: 8px;
+  width: 2px;
+  background: var(--g-action);
+  transform: scaleY(0);
+  transition: transform var(--g-fade) var(--g-ease);
+}
+@media (hover: hover) {
+  .g-row:hover {
+    background: linear-gradient(90deg, rgba(242, 169, 59, 0.07), transparent 70%);
+  }
+  .g-row:hover::before {
+    transform: scaleY(1);
+  }
+}
+.g-row[aria-selected='true'],
+.g-row.is-selected {
+  background: linear-gradient(90deg, rgba(242, 169, 59, 0.12), transparent 75%);
+}
+.g-row[aria-selected='true']::before,
+.g-row.is-selected::before {
+  transform: scaleY(1);
+}
+.g-row--off {
+  opacity: 0.55;
+}
+
+.g-menu-item {
+  position: relative;
+  display: flex;
+  align-items: baseline;
+  gap: 14px;
+  width: 100%;
+  min-height: 52px;
+  padding: 10px 14px 10px 28px;
+  border: 0;
+  background: none;
+  color: var(--g-text-2);
+  text-align: left;
+  font-family: var(--g-font-display);
+  font-stretch: 78%;
+  font-weight: 700;
+  font-size: 24px;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  cursor: pointer;
+  transition:
+    color var(--g-fade) var(--g-ease),
+    padding var(--g-fade) var(--g-ease),
+    background var(--g-fade) var(--g-ease);
+}
+.g-menu-item::before {
+  content: '';
+  position: absolute;
+  left: 8px;
+  top: 50%;
+  width: 0;
+  height: 0;
+  border: 6px solid transparent;
+  border-left: 9px solid var(--g-action);
+  margin-top: -6px;
+  opacity: 0;
+  transform: translateX(-6px);
+  transition:
+    opacity var(--g-fade) var(--g-ease),
+    transform var(--g-fade) var(--g-ease);
+}
+.g-menu-item__meta {
+  margin-left: auto;
+  font-family: var(--g-font-mono);
+  font-stretch: 100%;
+  font-weight: 500;
+  font-size: 11px;
+  letter-spacing: 0.1em;
+  color: var(--g-text-3);
+}
+.g-menu-item:hover,
+.g-menu-item:focus-visible,
+.g-menu-item[aria-current='true'] {
+  outline: none;
+  color: var(--g-text);
+  padding-left: 34px;
+  background: linear-gradient(90deg, rgba(242, 169, 59, 0.14), transparent 70%);
+}
+.g-menu-item:hover::before,
+.g-menu-item:focus-visible::before,
+.g-menu-item[aria-current='true']::before {
+  opacity: 1;
+  transform: none;
+}
+.g-menu-item:active {
+  color: var(--g-action-hi);
+}
+.g-menu-item:disabled {
+  color: var(--g-text-3);
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.g-help {
+  position: relative;
+  display: inline-grid;
+  place-items: center;
+  width: 20px;
+  height: 20px;
+  padding: 0;
+  border: 0;
+  vertical-align: -4px;
+  color: var(--g-text-2);
+  background: #252c34;
+  font-family: var(--g-font-mono);
+  font-weight: 600;
+  font-size: 11px;
+  cursor: help;
+  clip-path: polygon(30% 0, 70% 0, 100% 30%, 100% 70%, 70% 100%, 30% 100%, 0 70%, 0 30%);
+}
+.g-help::after {
+  content: '';
+  position: absolute;
+  inset: -12px;
+}
+.g-help:hover,
+.g-help:focus-visible {
+  color: var(--g-on-action);
+  background: var(--g-action);
+  outline: none;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .g-btn,
+  .g-btn::after,
+  .g-seg__opt,
+  .g-tab,
+  .g-tab::before,
+  .g-meter__fill,
+  .g-row,
+  .g-row::before,
+  .g-menu-item,
+  .g-menu-item::before {
+    transition: none !important;
+  }
+  .g-btn.is-busy::after,
+  .g-chip--live .g-dot,
+  .g-counter.is-up,
+  .g-counter.is-down {
+    animation: none !important;
+  }
+  .g-btn:active:not(:disabled) {
+    transform: none;
+  }
+}
