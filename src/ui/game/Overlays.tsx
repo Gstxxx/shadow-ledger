@@ -60,7 +60,7 @@ export function EventModal() {
           {more > 0 && <span className="mono hint-sm ev-queued">{t('game.overlay.queued', { n: more })}</span>}
           {ev.countryId && (
             <button
-              className="btn"
+              className="btn ghost"
               onClick={() => {
                 // Leva ao mapa: fecha o modal do palco e centra o país.
                 stage?.close();
