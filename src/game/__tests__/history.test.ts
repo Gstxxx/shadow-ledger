@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { buy, openStation, sell, travel } from '../actions';
 import { PRESETS } from '../data/rules';
-import { HISTORY_DAYS, historyOf, priceHistory, worldAverageHistory } from '../history';
+import { HISTORY_DAYS, historyOf, priceChart, priceHistory, worldAverageHistory } from '../history';
 import { loadSave } from '../save';
 import { advance } from '../sim';
 import { newGame, player } from '../state';
@@ -68,6 +68,17 @@ describe('Histórico de preços', () => {
     const avg = worldAverageHistory(s, item);
     expect(avg.length).toBeGreaterThan(0);
     expect(avg.every((x) => x.mid > 0 && x.countries >= 1)).toBe(true);
+  });
+
+  it('formato do gráfico: pontos por dia em horas, média mundial e marcadores', () => {
+    const s = play(40);
+    const a = player(s);
+    const item = s.countries[a.location].stock[0];
+    const ch = priceChart(s, a.location, item, 30);
+    expect(ch.points.length).toBeGreaterThan(0);
+    expect(ch.points.length).toBeLessThanOrEqual(30);
+    expect(ch.points.every((p) => p.t % 24 === 0)).toBe(true);
+    expect(ch.world).toBeGreaterThan(0);
   });
 
   it('saves antigos ganham histórico vazio', () => {

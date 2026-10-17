@@ -1,6 +1,7 @@
 // Histórico de preços: uma amostra diária por país × item, só onde o jogador tem informação ao vivo
 // (Estações e o país do Diretor), numa janela dos últimos 60 dias. Pensado para caber no save.
 import { originMods } from './data/origins';
+import { POLITICS_LABEL } from './data/rules';
 import { BUY_SPREAD, interested, midPrice, SELL_SPREAD } from './market';
 import { intelCountries, player } from './state';
 import type { GameState, Politics } from './types';
@@ -123,4 +124,37 @@ export function worldAverageHistory(s: GameState, itemId: string): { day: number
   return [...byDay.entries()]
     .sort((x, y) => x[0] - y[0])
     .map(([day, { sum, n }]) => ({ day, mid: Math.round(sum / n), countries: n }));
+}
+
+// ── Formato do gráfico do modal de item (combinado com a ui-polish) ──
+
+export interface PriceChart {
+  /** Um ponto por dia com amostra, do mais antigo ao mais novo; t em horas de jogo. */
+  points: { t: number; buy: number; sell: number }[];
+  /** Média mundial conhecida hoje (preço médio por unidade), para a linha tracejada. */
+  world?: number;
+  /** Marcadores: política do país, Golpe e Comércio do jogador (Saturação). */
+  events: { t: number; kind: PriceEventKind; text: string }[];
+}
+
+const EVENT_TEXT: Record<string, string> = {
+  coup: 'Golpe',
+  playerBuy: 'Sua compra (Saturação)',
+  playerSell: 'Sua venda (Saturação)',
+};
+
+/** priceHistory no formato do gráfico: janela dos últimos `days` dias. */
+export function priceChart(s: GameState, countryId: string, itemId: string, days = 30): PriceChart {
+  const today = Math.floor(s.time / 24);
+  const from = today - days + 1;
+  const pts = priceHistory(s, countryId, itemId).filter((p) => p.day >= from);
+  const world = worldAverageHistory(s, itemId).filter((w) => w.day >= from);
+  const events = historyOf(s)
+    .events.filter((e) => e.day >= from && e.countryId === countryId && (!e.itemId || e.itemId === itemId))
+    .map((e) => ({ t: e.day * 24, kind: e.kind, text: EVENT_TEXT[e.kind] ?? POLITICS_LABEL[e.kind as Politics] ?? e.kind }));
+  return {
+    points: pts.map((p) => ({ t: p.day * 24, buy: p.buy, sell: p.sell })),
+    world: world.length ? world[world.length - 1].mid : undefined,
+    events,
+  };
 }
