@@ -358,6 +358,8 @@ export function resolveCombat(s: GameState, c: CombatState) {
           );
         } else {
           cty.politics = pick(s, ['disorder', 'civilwar'] as const);
+          // Paga pela oposição (CONTEXT.md: Neutralização).
+          a.cash += cty.level * 250_000;
           notify(s, a, 'combat', M('msg.combat.neutralizeTitle'), M('msg.combat.neutralizeBody', { country, casualty }), 'good', r.countryId);
         }
       } else {

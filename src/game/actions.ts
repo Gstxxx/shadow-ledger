@@ -494,7 +494,7 @@ export function operationStrength(s: GameState, a: Agency, countryId: string, op
   const c = s.countries[countryId];
   const diff = 0.8 + s.options.difficulty * 0.2;
   const base =
-    op === 'bank' ? 5 + c.level * 4 : op === 'tech' ? 6 + c.level * 5 : op === 'neutralize' ? 8 + c.level * 5 : 12 + c.level * 8;
+    op === 'bank' ? 5 + c.level * 4 : op === 'tech' ? 6 + c.level * 5 : op === 'neutralize' ? 6 + c.level * 4 : 10 + c.level * 6;
   const p = postureIn(a, countryId);
   return Math.round(base * diff * (p === 'enemy' ? 1.2 : p === 'ally' ? 0.9 : 1));
 }

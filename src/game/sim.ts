@@ -284,12 +284,14 @@ function rollContracts(s: GameState) {
   if (open >= 4 || !chance(s, 0.45)) return;
   const pool = Object.values(s.countries).filter((c) => c.level >= 2);
   const c = pick(s, pool);
+  // Orçamento primeiro: só itens que cabem nele (nada de um caça avulso maior que o caixa inicial).
+  const budget = randRange(s, 0.2, 2) * 1_000_000 * (0.6 + c.level * 0.2) * contractScale(s.tension);
   const items = ITEM_LIST.filter(
-    (it) => it.tradable && !it.wmd && it.cls !== 'special' && it.cls !== 'cargo' && interested(c, it) && it.rank <= c.level - 1,
+    (it) =>
+      it.tradable && !it.wmd && it.cls !== 'special' && it.cls !== 'cargo' && interested(c, it) && it.rank <= c.level - 1 && it.price <= budget,
   );
   if (!items.length) return;
   const it = pick(s, items);
-  const budget = randRange(s, 0.5, 3.5) * 1_000_000 * (0.6 + c.level * 0.2) * contractScale(s.tension);
   const qty = Math.max(1, Math.min(25, Math.round(budget / it.price)));
   const premium = randRange(s, 1.25, 1.6);
   s.uidCounter += 1;
