@@ -38,8 +38,8 @@ const SKELETON: { id: string; icon: string; highlight?: boolean; blocks: Shape[]
   { id: 'trade', icon: 'crate', blocks: [{ ol: 5 }, 'p', { ul: [1, 1, 1, 1, 1] }] },
   { id: 'stations', icon: 'station-safehouse', blocks: [{ ul: [1, 1] }, 'tip'] },
   { id: 'threats', icon: 'threat', blocks: [{ ul: [1, 1, { sub: 2 }] }] },
-  { id: 'units', icon: 'team', blocks: [{ ul: [1, 1, 1, 1] }] },
-  { id: 'combat', icon: 'combat-urban', blocks: [{ ul: [1, 1, 1, 1] }] },
+  { id: 'units', icon: 'team', blocks: [{ ul: [1, 1, 1, 1, 1] }] },
+  { id: 'combat', icon: 'combat-urban', blocks: [{ ul: [1, 1, 1, 1, 1, 1] }] },
   { id: 'late', icon: 'tension', blocks: [{ ul: [1, 1, 1, 1] }] },
 ];
 

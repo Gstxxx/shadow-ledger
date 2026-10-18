@@ -4,7 +4,7 @@ Você é o **Diretor** de uma agência privada de inteligência. Ganha dinheiro 
 
 ## 1. Começando
 1. No menu, escolha **Nova partida → Primeiro Contrato** e a dificuldade **Recruta**.
-2. Você começa nos Estados Unidos com um cargueiro (a sua **Frota**), alguns seguranças e um advogado (a sua **Escolta**) e US$ 4 mi em caixa.
+2. Você começa nos Estados Unidos com um cargueiro (a sua **Frota**), alguns seguranças e um advogado (a sua **Escolta**) e US$ 4.000.000 em caixa.
 3. Objetivo deste cenário: terminar 90 dias com **Lucro** positivo. Lucro = tudo que você tem hoje (caixa + carga + Estações + Unidades) menos o que tinha no início.
 
 ## 2. Os controles do tempo
@@ -13,7 +13,7 @@ Você é o **Diretor** de uma agência privada de inteligência. Ganha dinheiro 
 - Pause sempre que for pensar. Não há penalidade.
 
 ## 3. O ciclo básico: comprar, voar, vender
-1. **Comprar:** no painel da esquerda está o mercado do país onde você está. Toque num item, escolha a quantidade e toque em **Comprar**. "Compra" é o preço que você paga.
+1. **Comprar:** toque em **Mercado** na barra de baixo para ver o mercado do país onde você está. Toque num item, escolha a quantidade e toque em **Comprar**. "Compra" é o preço que você paga.
 2. **Espaço no avião:** cada item pesa. A barra da Frota mostra quanto do cargueiro já está ocupado (a Escolta também ocupa espaço). Aeronaves de combate voam ao lado e não ocupam.
 3. **Voar:** toque em outro país no mapa e depois em **Voar para cá**. O voo leva horas; países distantes levam mais.
 4. **Vender:** ao chegar, abra o item no mercado e toque em **Vender**. "Venda" é o que você recebe.
@@ -43,11 +43,14 @@ Você é o **Diretor** de uma agência privada de inteligência. Ganha dinheiro 
 - Cada Unidade tem força por tipo de Combate (**Urbano**, **Militar**, **Jurídico**, **Aéreo**) e **Traços** que mudam o desempenho.
 - **Advogados** lutam no Combate Jurídico. **Agentes de Influência** convencem inimigos a trocar de lado.
 - **Toda Unidade cobra Manutenção mensal.** Exército parado drena o caixa: contrate perto da hora de usar.
+- **Equipamento:** na ficha de uma Unidade há 3 slots (arma principal, proteção e acessório). Toque num slot para equipar e veja a força antes → depois. Compre no **Arsenal** (aba da Agência); em país em guerra há mais oferta e preço menor, e o armamento pesado só aparece lá.
 
 ## 7. Combate
 - Acontece quando você é interceptado, quando uma Estação é atacada ou numa Operação Especial.
 - Antes de lutar, a **Prévia** mostra a chance de vitória. Escolha uma **Tática**: **Assalto** (ataca forte, perde mais), **Defensiva** (segura a linha), **Infiltração** (agentes e influência rendem mais) ou **Negociar** (paga para evitar a luta).
 - Com o Diretor presente, você pode assumir a grade e posicionar as Unidades. Sem ele, o combate é automático.
+- O botão **Combate** reúne os **Contratos de Combate** (proteção de comboio, extração, defesa): cada um mostra pagamento, prazo e chance de vitória antes de aceitar. É uma fonte de renda além do comércio.
+- Na aba **Caçadas**, **Grupos Hostis** marcados no mapa dão recompensa. Cumpra com a Escolta (com o Diretor, na grade) ou com uma Equipe no país (combate automático).
 - Se o Diretor perder, ele fica **Detido** (pelo Estado) ou **Sequestrado** (pelo crime), e você paga para tirá-lo. No **Modo Hardcore**, perder é fim de jogo.
 
 ## 8. Equipes, Operações e o fim de jogo
