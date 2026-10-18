@@ -291,3 +291,30 @@
     margin-top: 0;
   }
 }
+
+/* "Tudo sobre o jogo" dentro do GDetails: sem o fundo rebaixado (vira véu sobre texto longo), coluna que encolhe
+   (a faixa de chips não pode alargar o grid) e overflow liberado quando aberto (para a navegação grudar no topo). */
+.slm-howto-all .g-details__body,
+.slm-howto-all .g-details__inner,
+.slm-howto-all .g-details__pad,
+.slm-howto-full,
+.slm-howto-doc {
+  min-width: 0;
+  max-width: 100%;
+}
+.slm-howto-all .g-details__pad {
+  padding: 8px 0 0;
+  background: none;
+  box-shadow: none;
+  font-size: inherit;
+  color: var(--sl-paper-ink);
+}
+.slm-howto-all .g-details__body[data-open='true'] > .g-details__inner {
+  overflow: visible;
+}
+.slm-howto-full .slm-howto-nav ul {
+  max-width: 100%;
+}
+.slm-howto-doc {
+  overflow-wrap: anywhere;
+}
