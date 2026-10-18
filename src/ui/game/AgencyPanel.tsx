@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useLayoutEffect, useState } from 'react';
 import { AlertTriangle, Building2, FileSignature, Plane, Shield, UserRound, Users, Crosshair } from 'lucide-react';
 import * as A from '../../game/actions';
 import { ITEMS } from '../../game/data/items';
@@ -53,6 +53,13 @@ export function useAgencyTabs() {
 
 /** Conteúdo de uma aba da Agência (o fichário fica com quem usa). */
 export function AgencyTabBody({ tab }: { tab: AgencyTab }) {
+  // Em pé, a faixa de abas rola: a aba aberta sempre fica à vista (ex.: Arsenal, que fica além da borda).
+  useLayoutEffect(() => {
+    const el = document.querySelector<HTMLElement>('.g-modal__tabs [aria-selected="true"]');
+    const strip = el?.parentElement;
+    if (!el || !strip || strip.scrollWidth <= strip.clientWidth) return;
+    strip.scrollLeft = el.offsetLeft - strip.offsetLeft - (strip.clientWidth - el.offsetWidth) / 2;
+  }, [tab]);
   return (
     <div className="agency agency--bare">
       {tab === 'director' && <DirectorTab />}
