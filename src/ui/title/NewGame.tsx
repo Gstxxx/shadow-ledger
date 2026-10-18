@@ -7,7 +7,7 @@ import type { Difficulty, ObjectiveKind, PresetDef } from '../../game/types';
 import { useGameStore } from '../../store/game';
 import { sweepOut } from './sweep';
 
-const money = (n: number) => `US$ ${(n / 1_000_000).toLocaleString('pt-BR')} mi`;
+const money = (n: number) => `US$ ${Math.round(n).toLocaleString('pt-BR')}`;
 const CUSTOM = 'custom';
 
 const DIFF_BLURB: Record<Difficulty, string> = {

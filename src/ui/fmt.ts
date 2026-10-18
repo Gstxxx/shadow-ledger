@@ -1,12 +1,7 @@
-/** US$ 12,4 mi / US$ 850 mil / US$ 1.200 */
+/** Valor completo: US$ 12.400.000 / US$ 850.000 / US$ 1.200 */
 export function money(n: number): string {
   const sign = n < 0 ? '−' : '';
-  const a = Math.abs(n);
-  if (a >= 1e9) return `${sign}US$ ${(a / 1e9).toFixed(2).replace('.', ',')} bi`;
-  if (a >= 1e6) return `${sign}US$ ${(a / 1e6).toFixed(a >= 1e8 ? 0 : 1).replace('.', ',')} mi`;
-  if (a >= 1e4) return `${sign}US$ ${Math.round(a / 1e3)} mil`;
-  if (a < 50) return 'US$ 0';
-  return `${sign}US$ ${(a / 1e3).toFixed(1).replace('.', ',')} mil`;
+  return `${sign}US$ ${Math.round(Math.abs(n)).toLocaleString('pt-BR')}`;
 }
 
 export const moneyFull = (n: number) => `US$ ${Math.round(n).toLocaleString('pt-BR')}`;

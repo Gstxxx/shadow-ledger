@@ -63,13 +63,13 @@ describe('format (interpolação e plural)', () => {
 
 describe('formatação por idioma', () => {
   it('moeda', () => {
-    expect(F.money('pt-BR', 1_200_000)).toBe('US$ 1,2 mi');
-    expect(F.money('en', 1_200_000)).toBe('$1.2M');
-    expect(F.money('pt-BR', 850_000)).toBe('US$ 850 mil');
-    expect(F.money('en', 850_000)).toBe('$850K');
-    expect(F.money('pt-BR', -12_400_000)).toBe('−US$ 12,4 mi');
-    expect(F.money('en', 2_500_000_000)).toBe('$2.5B');
-    expect(F.money('en', 3)).toBe('$0');
+    expect(F.money('pt-BR', 1_200_000)).toBe('US$ 1.200.000');
+    expect(F.money('en', 1_200_000)).toBe('$1,200,000');
+    expect(F.money('pt-BR', 850_000)).toBe('US$ 850.000');
+    expect(F.money('en', 850_000)).toBe('$850,000');
+    expect(F.money('pt-BR', -12_400_000)).toBe('−US$ 12.400.000');
+    expect(F.money('en', 2_500_000_000)).toBe('$2,500,000,000');
+    expect(F.money('en', 3)).toBe('$3');
   });
   it('moeda completa, percentual e toneladas', () => {
     expect(F.moneyFull('en', 1234567)).toBe('$1,234,567');
@@ -77,6 +77,6 @@ describe('formatação por idioma', () => {
     expect(F.pct('en', 0.456)).toBe('46%');
     expect(F.tons('pt-BR', 4.25)).toBe('4,3 t');
     expect(F.tons('en', 4.25)).toBe('4.3 t');
-    expect(F.amount('en', 1_500_000)).toBe('1.5M');
+    expect(F.amount('en', 1_500_000)).toBe('1,500,000');
   });
 });
