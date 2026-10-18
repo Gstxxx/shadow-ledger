@@ -22,7 +22,7 @@ export function ArsenalTab() {
   const act = useGameStore((st) => st.act);
   const { t, fmt, lang } = useT();
   const c = s.countries[a.location];
-  const offer = arsenalOffer(c);
+  const offer = arsenalOffer(c, s.time / 24);
   const country = countryName(c.id, lang);
   const canBuy = a.director.status === 'free' && !a.flight && !s.over;
   const war = c.politics === 'war' || c.politics === 'civilwar';

@@ -174,6 +174,234 @@ const Papers: Draw = ({ ink }) => (
   </g>
 );
 
+// ── Peças parametrizadas: armas longas e coletes no mesmo desenho, variando proporção e acessórios ──
+interface GunOpts {
+  len: number;
+  body?: 'olive' | 'dark' | 'sand';
+  scope?: boolean;
+  bipod?: boolean;
+  suppressor?: boolean;
+  drum?: boolean;
+  tube?: boolean;
+  stock?: boolean;
+}
+const gun =
+  (o: GunOpts): Draw =>
+  ({ ink }) => {
+    const L = o.len;
+    const fill = ink.u(o.body ?? 'dark');
+    return (
+      <g>
+        <Shadow ink={ink} cx={240} rx={L / 2 + 10} />
+        <g transform={`translate(${240 - L / 2} 136) rotate(-3 ${L / 2} 40)`}>
+          {o.stock !== false && <path d="M0 40L60 26H84V60H60L6 72Z" fill={ink.u('olive')} stroke={C.ink} strokeWidth={2} />}
+          <rect x={84} y={20} width={L * 0.36} height={40} rx={4} fill={fill} stroke={C.ink} strokeWidth={2} />
+          {o.scope && (
+            <g>
+              <rect x={96} y={-2} width={L * 0.28} height={16} rx={7} fill={C.steelLo} stroke={C.ink} strokeWidth={1.5} />
+              <circle cx={96 + L * 0.28} cy={6} r={9} fill={C.glass} stroke={C.ink} strokeWidth={1.5} />
+              <rect x={120} y={14} width={8} height={8} fill={C.steelLo} />
+            </g>
+          )}
+          {o.drum ? (
+            <circle cx={110 + L * 0.1} cy={86} r={24} fill={ink.u('dark')} stroke={C.ink} strokeWidth={2} />
+          ) : (
+            <path d={`M${100 + L * 0.12} 60h24l-6 62q-1 6-8 6h-12z`} fill={ink.u('dark')} stroke={C.ink} strokeWidth={2} />
+          )}
+          <path d={`M${84 + L * 0.3} 60h12l-6 36-10-2z`} fill="#1c2026" stroke={C.ink} strokeWidth={2} />
+          <rect x={84 + L * 0.36} y={26} width={L * 0.3} height={28} rx={3} fill={fill} stroke={C.ink} strokeWidth={2} />
+          {o.tube && <rect x={84 + L * 0.38} y={54} width={L * 0.22} height={22} rx={10} fill={ink.u('olive')} stroke={C.ink} strokeWidth={2} />}
+          <rect x={84 + L * 0.66} y={34} width={L * 0.3} height={10} fill={ink.u('steel')} stroke={C.ink} strokeWidth={1.5} />
+          {o.suppressor && <rect x={84 + L * 0.86} y={29} width={L * 0.16} height={20} rx={6} fill="#14181d" stroke={C.ink} strokeWidth={2} />}
+          {o.bipod && <path d={`M${84 + L * 0.62} 46l-22 66M${84 + L * 0.62} 46l14 66`} stroke={C.steelLo} strokeWidth={4} strokeLinecap="round" />}
+          <Shine d={`M90 24H${80 + L * 0.36}`} />
+        </g>
+      </g>
+    );
+  };
+
+const vest =
+  (body: 'dark' | 'olive' | 'sand', pouches: number, heavy = false): Draw =>
+  ({ ink }) => (
+    <g>
+      <Shadow ink={ink} cx={240} rx={heavy ? 150 : 130} />
+      <path
+        d={
+          heavy
+            ? 'M138 60L196 50Q220 84 240 84Q260 84 284 50L342 60L362 150L352 256Q240 276 128 256L118 150Z'
+            : 'M150 70L196 58Q220 92 240 92Q260 92 284 58L330 70L346 140L338 248Q240 266 142 248L134 140Z'
+        }
+        fill={ink.u(body)}
+        stroke={C.ink}
+        strokeWidth={2}
+      />
+      {heavy && <path d="M150 96H330L336 236Q240 254 144 236Z" fill={ink.u('steel')} opacity={0.45} stroke={C.ink} />}
+      {Array.from({ length: pouches }, (_, i) => {
+        const w = 150 / pouches;
+        return <rect key={i} x={164 + i * w} y={164} width={w - 8} height={44} rx={4} fill="#1d232b" opacity={0.85} stroke={C.ink} strokeWidth={1.5} />;
+      })}
+      {heavy && <path d="M118 150Q100 120 130 96M362 150Q380 120 350 96" fill="none" stroke={C.ink} strokeWidth={14} strokeLinecap="round" opacity={0.6} />}
+      <Shine d="M156 76L196 64" />
+    </g>
+  );
+
+const Smg = gun({ len: 340, suppressor: true, stock: false });
+const Sniper = gun({ len: 400, body: 'sand', scope: true, bipod: true });
+const Grenadel = gun({ len: 330, body: 'olive', tube: true });
+const Lmg = gun({ len: 400, drum: true, bipod: true });
+const Camo = vest('olive', 3);
+const Heavy = vest('dark', 4, true);
+
+const GasMask: Draw = ({ ink }) => (
+  <g>
+    <Shadow ink={ink} cx={240} rx={110} />
+    <path d="M170 110Q170 66 240 62Q310 66 310 110L300 190Q240 222 180 190Z" fill={ink.u('dark')} stroke={C.ink} strokeWidth={2} />
+    {[200, 280].map((x) => (
+      <circle key={x} cx={x} cy={128} r={24} fill={C.glass} stroke={C.ink} strokeWidth={4} />
+    ))}
+    <circle cx={240} cy={206} r={30} fill={ink.u('olive')} stroke={C.ink} strokeWidth={2} />
+    {[0, 1, 2, 3].map((i) => (
+      <path key={i} d={`M220 ${196 + i * 7}H260`} stroke={C.oliveLo} strokeWidth={3} />
+    ))}
+    <Shine d="M186 120Q190 90 214 104" />
+  </g>
+);
+
+const Dossier: Draw = ({ ink }) => (
+  <g>
+    <Shadow ink={ink} cx={240} cy={GROUND - 4} rx={140} />
+    <g transform="rotate(-5 240 180)">
+      <path d="M130 84h80l10 -12h70v12" fill={ink.u('sand')} stroke={C.ink} strokeWidth={2} />
+      <rect x={130} y={84} width={220} height={160} rx={3} fill={ink.u('sand')} stroke={C.ink} strokeWidth={2} />
+      <rect x={150} y={110} width={84} height={64} fill={C.steel} stroke={C.ink} />
+      <circle cx={192} cy={136} r={14} fill={C.fleetLo} />
+      {[0, 1, 2, 3].map((i) => (
+        <path key={i} d={`M248 ${120 + i * 16}H330`} stroke={C.sandLo} strokeWidth={3} />
+      ))}
+      <rect x={196} y={190} width={110} height={30} fill="none" stroke={C.red} strokeWidth={4} transform="rotate(-8 250 205)" />
+    </g>
+  </g>
+);
+
+const Helmet: Draw = ({ ink }) => (
+  <g>
+    <Shadow ink={ink} cx={240} rx={110} />
+    <path d="M140 210Q140 96 240 92Q340 96 340 210Z" fill={ink.u('olive')} stroke={C.ink} strokeWidth={2} />
+    <path d="M150 196H330" stroke={C.oliveLo} strokeWidth={8} />
+    <path d="M178 196Q180 236 240 238Q300 236 302 196" fill={C.glass} opacity={0.85} stroke={C.ink} strokeWidth={2} />
+    <rect x={226} y={96} width={28} height={20} rx={3} fill={C.steelLo} />
+    <Shine d="M168 150Q190 108 236 104" w={3} />
+  </g>
+);
+
+const Suit: Draw = ({ ink }) => (
+  <g>
+    <Shadow ink={ink} cx={240} rx={120} />
+    <path d="M150 74L210 58L240 120L270 58L330 74L346 250Q240 268 134 250Z" fill="#20252e" stroke={C.ink} strokeWidth={2} />
+    <path d="M210 58L240 120L270 58L254 56L240 86L226 56Z" fill={C.fleetHi} stroke={C.ink} />
+    <path d="M234 92L246 92L250 170L240 182L230 170Z" fill={C.red} stroke={C.ink} />
+    <path d="M210 58L196 150L240 120M270 58L284 150L240 120" fill="none" stroke="#0d1015" strokeWidth={3} />
+    <rect x={290} y={150} width={30} height={6} fill={C.fleetLo} />
+    <Shine d="M160 80L206 66" />
+  </g>
+);
+
+const Chute: Draw = ({ ink }) => (
+  <g>
+    <Shadow ink={ink} cx={240} rx={110} />
+    <path d="M190 90V60M290 90V60" stroke="#262c20" strokeWidth={14} strokeLinecap="round" />
+    <rect x={166} y={90} width={148} height={150} rx={18} fill={ink.u('olive')} stroke={C.ink} strokeWidth={2} />
+    <rect x={182} y={110} width={116} height={50} rx={8} fill={C.oliveLo} stroke={C.ink} />
+    <path d="M166 176H314" stroke="#262c20" strokeWidth={8} />
+    <circle cx={240} cy={206} r={16} fill={C.red} stroke={C.ink} strokeWidth={2} />
+    <Shine d="M176 98H300" />
+  </g>
+);
+
+const Lawyer: Draw = ({ ink }) => (
+  <g>
+    <Shadow ink={ink} cx={240} rx={140} />
+    <path d="M200 120V100Q200 90 210 90H270Q280 90 280 100V120" fill="none" stroke={C.ink} strokeWidth={8} />
+    <rect x={130} y={120} width={220} height={130} rx={10} fill={ink.u('wood')} stroke={C.ink} strokeWidth={2} />
+    <path d="M130 170H350" stroke="#33291c" strokeWidth={4} />
+    {[170, 310].map((x) => (
+      <rect key={x} x={x - 12} y={160} width={24} height={20} rx={3} fill={ink.u('steel')} stroke={C.ink} />
+    ))}
+    <rect x={300} y={60} width={56} height={92} rx={8} fill="#11161c" stroke={C.ink} strokeWidth={2} transform="rotate(12 328 106)" />
+    <Shine d="M138 128H342" />
+  </g>
+);
+
+const Breach: Draw = ({ ink }) => (
+  <g>
+    <Shadow ink={ink} cx={240} rx={170} />
+    <g transform="rotate(-14 240 180)">
+      <rect x={80} y={168} width={300} height={14} rx={6} fill={ink.u('steel')} stroke={C.ink} strokeWidth={2} />
+      <path d="M380 160Q410 168 400 190L378 182Z" fill={C.steelLo} stroke={C.ink} strokeWidth={2} />
+      <path d="M80 160L64 150L70 186L84 184Z" fill={C.steelLo} stroke={C.ink} strokeWidth={2} />
+      <rect x={120} y={164} width={70} height={22} rx={4} fill={C.red} opacity={0.9} />
+    </g>
+    <g transform="rotate(10 300 220)">
+      <rect x={260} y={190} width={110} height={30} rx={4} fill={ink.u('dark')} stroke={C.ink} strokeWidth={2} />
+      <rect x={366} y={196} width={30} height={18} fill={C.steelLo} stroke={C.ink} />
+    </g>
+    <Shine d="M86 170H370" />
+  </g>
+);
+
+const ROTORS: [number, number][] = [
+  [130, 110],
+  [350, 110],
+  [130, 210],
+  [350, 210],
+];
+const Drone: Draw = ({ ink }) => (
+  <g>
+    <Shadow ink={ink} cx={240} rx={150} ry={7} />
+    {ROTORS.map(([x, y], i) => (
+      <g key={i}>
+        <path d={`M240 160L${x} ${y}`} stroke={C.ink} strokeWidth={10} />
+        <path d={`M240 160L${x} ${y}`} stroke={C.steel} strokeWidth={6} />
+        <ellipse cx={x} cy={y - 8} rx={46} ry={6} fill="rgba(200,210,220,0.25)" stroke={C.steelLo} />
+        <circle cx={x} cy={y} r={9} fill={C.steelLo} stroke={C.ink} />
+      </g>
+    ))}
+    <rect x={204} y={136} width={72} height={48} rx={12} fill={ink.u('fleet')} stroke={C.ink} strokeWidth={2} />
+    <circle cx={240} cy={194} r={12} fill={C.glass} stroke={C.ink} strokeWidth={2} />
+    <circle cx={262} cy={146} r={3} fill={C.red} />
+    <Shine d="M210 142H270" />
+  </g>
+);
+
+const Laser: Draw = ({ ink }) => (
+  <g>
+    <Shadow ink={ink} cx={240} rx={140} />
+    <path d="M200 236L240 170L280 236M240 170V244" fill="none" stroke={C.steelLo} strokeWidth={6} />
+    <rect x={164} y={96} width={70} height={24} rx={4} fill={C.sandLo} stroke={C.ink} />
+    <rect x={150} y={120} width={190} height={56} rx={8} fill={ink.u('sand')} stroke={C.ink} strokeWidth={2} />
+    <circle cx={346} cy={148} r={22} fill={C.glass} stroke={C.ink} strokeWidth={3} />
+    <circle cx={346} cy={148} r={7} fill={C.red} />
+    <path d="M368 148L470 120" stroke={C.red} strokeWidth={2} opacity={0.7} />
+    <Shine d="M158 126H330" />
+  </g>
+);
+
+const Immunity: Draw = ({ ink }) => (
+  <g>
+    <Shadow ink={ink} cx={240} cy={GROUND - 4} rx={130} />
+    <g transform="rotate(-6 240 170)">
+      <rect x={156} y={70} width={150} height={196} rx={6} fill="#1f3a5c" stroke={C.ink} strokeWidth={2} />
+      <circle cx={231} cy={150} r={34} fill="none" stroke={C.amber} strokeWidth={3} />
+      <path d="M197 150H265M231 116V184M206 128Q231 150 206 172M256 128Q231 150 256 172" fill="none" stroke={C.amber} strokeWidth={2} />
+      <rect x={186} y={206} width={90} height={10} fill={C.amber} opacity={0.8} />
+    </g>
+    <g transform="rotate(10 320 220)">
+      <rect x={270} y={196} width={120} height={50} rx={4} fill={ink.u('paper')} stroke={C.ink} />
+      <circle cx={364} cy={221} r={14} fill={C.red} opacity={0.85} />
+    </g>
+  </g>
+);
+
 const SCENES: Record<string, { draw: Draw; bg: BackdropKind }> = {
   pistol: { draw: Pistol, bg: 'studio' },
   carbine: { draw: Carbine, bg: 'studio' },
@@ -183,6 +411,22 @@ const SCENES: Record<string, { draw: Draw; bg: BackdropKind }> = {
   radio: { draw: Radio, bg: 'desk' },
   nvg: { draw: Nvg, bg: 'studio' },
   papers: { draw: Papers, bg: 'desk' },
+  dossier: { draw: Dossier, bg: 'desk' },
+  smg: { draw: Smg, bg: 'studio' },
+  sniper: { draw: Sniper, bg: 'yard' },
+  grenadel: { draw: Grenadel, bg: 'yard' },
+  lmg: { draw: Lmg, bg: 'yard' },
+  helmet: { draw: Helmet, bg: 'sky' },
+  camo: { draw: Camo, bg: 'yard' },
+  suit: { draw: Suit, bg: 'studio' },
+  gasmask: { draw: GasMask, bg: 'studio' },
+  chute: { draw: Chute, bg: 'sky' },
+  heavyarmor: { draw: Heavy, bg: 'yard' },
+  lawyer: { draw: Lawyer, bg: 'desk' },
+  breach: { draw: Breach, bg: 'studio' },
+  drone: { draw: Drone, bg: 'sky' },
+  laser: { draw: Laser, bg: 'yard' },
+  immunity: { draw: Immunity, bg: 'desk' },
 };
 
 export function GearArt({ id, size = 'sm', alt = '' }: { id: string; size?: 'sm' | 'lg'; alt?: string }) {

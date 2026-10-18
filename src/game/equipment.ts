@@ -48,12 +48,21 @@ export interface ArsenalOffer {
   price: number;
 }
 
-/** O que o Arsenal do país vende, na ordem do catálogo. */
-export function arsenalOffer(c: Country): ArsenalOffer[] {
-  const tier = arsenalTier(c);
+/** O item está à venda neste país (e neste dia da partida)? */
+export function sellsHere(g: GearDef, c: Country, day = Infinity): boolean {
+  if (g.tier > arsenalTier(c)) return false;
+  if (g.continents && !g.continents.includes(c.continent)) return false;
+  if (g.minLevel && c.level < g.minLevel) return false;
+  if (g.minDay && day < g.minDay) return false;
+  return true;
+}
+
+/** O que o Arsenal do país vende, na ordem do catálogo (mais barato primeiro). */
+export function arsenalOffer(c: Country, day = Infinity): ArsenalOffer[] {
   const f = arsenalPriceFactor(c);
   return GEAR_IDS.map((id) => GEAR[id])
-    .filter((g) => g.tier <= tier)
+    .filter((g) => sellsHere(g, c, day))
+    .sort((x, y) => x.price - y.price)
     .map((g) => ({ def: g, price: Math.round((g.price * f) / 1000) * 1000 }));
 }
 
@@ -74,7 +83,7 @@ export function buyGear(s: GameState, a: Agency, id: string): GearResult {
   const b = blocked(s, a);
   if (b) return done(false, b);
   const c = s.countries[a.location];
-  const o = arsenalOffer(c).find((x) => x.def.id === id);
+  const o = arsenalOffer(c, s.time / 24).find((x) => x.def.id === id);
   if (!o) return done(false, M('msg.gear.notHere', { country: ref.country(c.id) }));
   if (o.price > a.cash) return done(false, M('msg.act.noCash'));
   a.cash -= o.price;

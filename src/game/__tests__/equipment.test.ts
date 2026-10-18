@@ -47,3 +47,30 @@ describe('Equipamento e Arsenal', () => {
     expect(gearStock(a, 'pistol')).toBe(1);
   });
 });
+
+describe('Arsenal: catálogo e restrições', () => {
+  it('tem 24 itens, 8 por slot, e cobre os 4 tipos de Combate', async () => {
+    const { GEAR_IDS, GEAR } = await import('../data/equipment');
+    expect(GEAR_IDS.length).toBe(24);
+    for (const slot of ['weapon', 'armor', 'kit']) expect(GEAR_IDS.filter((id) => GEAR[id].slot === slot).length).toBe(8);
+    for (const ty of ['legal', 'urban', 'army', 'air'] as const) expect(GEAR_IDS.filter((id) => GEAR[id].bonus[ty]).length).toBeGreaterThanOrEqual(4);
+    // faixa do balanceamento: ≤ 300 mil e ~30 mil por ponto (± folga)
+    for (const id of GEAR_IDS) {
+      const pts = Object.values(GEAR[id].bonus).reduce((a, b) => a + (b ?? 0), 0);
+      expect(GEAR[id].price).toBeLessThanOrEqual(300_000);
+      expect(GEAR[id].price / pts).toBeGreaterThanOrEqual(25_000);
+      expect(GEAR[id].price / pts).toBeLessThanOrEqual(100_000);
+    }
+  });
+
+  it('armamento pesado só no fim do jogo; região e Nível limitam a oferta', () => {
+    const s = game();
+    const c = Object.values(s.countries)[0];
+    const war = { ...c, politics: 'war' as const, level: 5, continent: 'EU' as const };
+    expect(arsenalOffer(war, 5).some((o) => o.def.id === 'lmg')).toBe(false);
+    expect(arsenalOffer(war, 40).some((o) => o.def.id === 'lmg')).toBe(true);
+    expect(arsenalOffer(war, 40).some((o) => o.def.id === 'camo')).toBe(false);
+    expect(arsenalOffer({ ...war, continent: 'AF' }, 40).some((o) => o.def.id === 'camo')).toBe(true);
+    expect(arsenalOffer({ ...war, level: 2 }, 40).some((o) => o.def.id === 'immunity')).toBe(false);
+  });
+});
