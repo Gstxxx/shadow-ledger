@@ -1,6 +1,7 @@
 // Continuous clock (ADR 0001): advance in small steps, stop at the first Evento.
 import { tickRivals } from './ai/brain';
 import { recordPriceEvent, samplePrices } from './history';
+import { dailyHunts, rollCombatJobs, tickCombatJobs, tickHunts } from './combatJobs';
 import { contractScale, politicsChurn, tickTension } from './tension';
 import { beginCombat } from './combatFlow';
 import { COUNTRY_SEEDS, neighbors } from './data/countries';
@@ -77,6 +78,8 @@ function tick(s: GameState, dt: number) {
   s.contracts = s.contracts.filter((k) => k.status === 'offered' || k.status === 'accepted' || s.time - k.offeredAt < 24 * 20);
 
   if (s.group && !s.group.defeated && s.time >= s.group.nextMoveAt) moveGroup(s);
+  tickCombatJobs(s);
+  tickHunts(s);
 
   const day = dayOf(s.time);
   while (s.lastDay < day) {
@@ -204,6 +207,8 @@ function dailyWorld(s: GameState) {
   }
   rollContracts(s);
   samplePrices(s);
+  rollCombatJobs(s);
+  dailyHunts(s);
 }
 
 function dailyAgency(s: GameState, a: Agency) {

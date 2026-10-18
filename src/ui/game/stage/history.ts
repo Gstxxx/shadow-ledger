@@ -16,6 +16,8 @@ export function encodeStage(m: StageModal): string {
       return `i.${m.countryId}.${m.itemId}.${m.side ?? ''}`;
     case 'unit':
       return `u.${m.uid}`;
+    case 'combat':
+      return `k.${m.tab}`;
   }
 }
 
@@ -26,6 +28,7 @@ export function decodeStage(v: string | null): StageModal | null {
   if (k === 'a' && a) return { kind: 'agency', tab: a as never };
   if (k === 'i' && a && b) return { kind: 'item', countryId: a, itemId: b, side: c === 'buy' || c === 'sell' ? c : undefined };
   if (k === 'u' && a) return { kind: 'unit', uid: a };
+  if (k === 'k' && (a === 'contracts' || a === 'hunts')) return { kind: 'combat', tab: a };
   return null;
 }
 

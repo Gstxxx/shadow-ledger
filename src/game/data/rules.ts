@@ -194,3 +194,29 @@ export const FENCE_RATE = 0.6;
 
 /** Bagagem de itens capturados que uma Equipe leva num Voo Comercial (t). */
 export const COMMERCIAL_BAGGAGE_T = 0.5;
+
+/** Contratos de combate (backlog item 3). Valores iniciais; a sessão de balanceamento ajusta. */
+export const COMBAT_JOB = {
+  dailyChance: 0.6,
+  maxOffers: 4,
+  maxActive: 3,
+  baseStrength: 2,
+  strengthPerLevel: 1.5,
+  strengthPerDay: 0.06,
+  /** US$ por ponto de força hostil, antes do fator de nível do país (0,7 + 0,12 × nível). */
+  rewardPerStrength: 60_000,
+  exposure: 6,
+  failReputation: 5,
+};
+
+/** Caçadas a grupos hostis. */
+export const HUNT = {
+  /** Grupos no mundo por Dificuldade (índice 1..3). */
+  bands: [0, 2, 3, 4],
+  baseStrength: 6,
+  strengthPerDay: 0.08,
+  bountyPerStrength: 45_000,
+  moveEveryH: [72, 150] as [number, number],
+  reputation: 4,
+  exposure: 10,
+};

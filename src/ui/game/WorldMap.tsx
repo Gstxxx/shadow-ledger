@@ -12,6 +12,8 @@ import { audio } from '../../audio/engine';
 import { useT } from '../../i18n';
 import { countryName } from '../../i18n/lookup';
 import { GMapMarker } from '../../art';
+import { bandsOf } from '../../game/combatJobs';
+import { useStage } from './stage/context';
 import { StationPin, StationPinDefs } from './map/StationPin';
 import { localHour, reliefTexture } from './map/relief';
 
@@ -155,6 +157,7 @@ export function WorldMap({ mode, onPickCountry }: { mode: MapMode; onPickCountry
   const a = player(s);
   const selected = useGameStore((st) => st.selected);
   const select = useGameStore((st) => st.select);
+  const stage = useStage();
   const [view, setView] = useState<View>(() => {
     const c = s.countries[a.location];
     return focusView(c.lon, c.lat, 1.8);
@@ -436,6 +439,33 @@ export function WorldMap({ mode, onPickCountry }: { mode: MapMode; onPickCountry
               </g>
             );
           })()}
+
+          {/* Grupos hostis com recompensa (Caçadas): último avistamento */}
+          {bandsOf(s)
+            .filter((b) => b.seenAt)
+            .map((b) => {
+              const cc = s.countries[b.seenAt!.countryId];
+              const [x, y] = project(cc.lon, cc.lat);
+              const d = 6.5 * inv;
+              return (
+                <g
+                  key={b.id}
+                  transform={`translate(${x + 8 * inv} ${y + 8 * inv})`}
+                  className="g-mapmark g-mapmark--threat band-pin"
+                  role="button"
+                  aria-label={b.name}
+                  style={{ cursor: 'pointer' }}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    stage?.open({ kind: 'combat', tab: 'hunts' });
+                  }}
+                >
+                  <circle r={d * 1.5} fill="transparent" />
+                  <path d={`M0 ${-d}L${d} 0L0 ${d}L${-d} 0Z`} fill="#0b0d10" stroke="var(--red)" strokeWidth={1.6 * inv} />
+                  <path d={`M${-d * 0.5} 0H${d * 0.5}M0 ${-d * 0.5}V${d * 0.5}`} stroke="var(--red)" strokeWidth={1.4 * inv} />
+                </g>
+              );
+            })}
 
           {/* Equipes */}
           {a.teams.map((t) => {

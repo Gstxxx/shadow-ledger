@@ -1,0 +1,35 @@
+/* Quadro de Combate (Contratos de combate e Caçadas) */
+.combat-board {
+  display: grid;
+  gap: 12px;
+}
+.cb-list {
+  display: grid;
+  gap: 8px;
+}
+.cb-meta {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px 10px;
+  font-size: 12px;
+  color: var(--paper-2);
+}
+.cb-hint {
+  margin: 0;
+  font-size: 12px;
+  color: var(--paper-3);
+}
+@media (max-width: 520px) {
+  /* Selo do pagamento continua à direita; a ação desce para uma linha inteira. */
+  .combat-board .g-card {
+    grid-template-columns: auto 1fr auto !important;
+  }
+  .combat-board .g-card > :last-child:not(:nth-child(-n + 3)) {
+    grid-column: 1 / -1;
+    justify-self: stretch;
+  }
+  .combat-board .g-card > :last-child:not(:nth-child(-n + 3)) .g-btn {
+    width: 100%;
+  }
+}

@@ -339,6 +339,41 @@ export interface Contract {
   reputation: number;
 }
 
+// ── Contratos de combate e Caçadas (backlog item 3) ─────────
+
+/** convoy = proteção de comboio, extraction = extração, defense = defesa. */
+export type CombatContractKind = 'convoy' | 'extraction' | 'defense';
+
+/** Contrato de combate: pagamento por lutar num país até um prazo. */
+export interface CombatContract {
+  id: string;
+  countryId: string;
+  kind: CombatContractKind;
+  client: string;
+  /** Força total do lado hostil. */
+  strength: number;
+  reward: number;
+  reputation: number;
+  offeredAt: number;
+  offerExpires: number;
+  deadline: number;
+  status: 'offered' | 'accepted' | 'done' | 'failed' | 'expired';
+  agencyId?: string;
+}
+
+/** Grupo hostil itinerante com recompensa por eliminação. */
+export interface HostileBand {
+  id: string;
+  name: string;
+  countryId: string;
+  strength: number;
+  units: Unit[];
+  bounty: number;
+  nextMoveAt: number;
+  /** Último avistamento conhecido pela agência do jogador. */
+  seenAt?: { countryId: string; at: number };
+}
+
 // ── Combate ──────────────────────────────────────────────
 
 /** Tática: Assalto, Defensiva, Infiltração, Negociar. */
@@ -377,6 +412,8 @@ export type CombatReason =
   | { kind: 'appeal'; countryId: string }
   | { kind: 'rescue'; countryId: string; teamId: string }
   | { kind: 'intercept'; countryId: string; teamId: string }
+  | { kind: 'job'; jobId: string; countryId: string; by: 'director' | string }
+  | { kind: 'hunt'; bandId: string; countryId: string; by: 'director' | string }
   /** Ação hostil de uma Equipe contra a Estação de outra agência. */
   | { kind: 'hostile'; act: 'sabotage' | 'raid'; countryId: string; teamId: string; targetId: string };
 
@@ -509,6 +546,10 @@ export interface GameState {
   uidCounter: number;
   /** Memória das Agências Rivais (src/game/ai). */
   ai?: AiState;
+  /** Contratos de combate oferecidos e aceitos. */
+  combatContracts?: CombatContract[];
+  /** Grupos hostis caçáveis. */
+  hostiles?: HostileBand[];
   /** Histórico de preços conhecidos (src/game/history.ts). */
   priceHistory?: PriceHistoryState;
   /** Progresso do Tutorial e da Analista (src/game/tutorial). */

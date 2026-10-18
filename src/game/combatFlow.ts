@@ -6,6 +6,7 @@ import { ITEMS, STEAL_TABLE } from './data/items';
 import { STATIONS, THREAT_BY_STATE } from './data/rules';
 import { originMods } from './data/origins';
 import { recordPriceEvent } from './history';
+import { resolveCombatJob, resolveHunt } from './combatJobs';
 import { checkObjective } from './objective';
 import { pick, randInt, randRange } from './rng';
 import {
@@ -439,6 +440,13 @@ export function resolveCombat(s: GameState, c: CombatState) {
         notify(s, a, 'combat', M(`msg.combat.hostileFailedTitle.${r.act}`), M('msg.combat.hostileFailedBody', { target: target.name, country, casualty }), 'bad', r.countryId);
         notify(s, target, 'station', M('msg.combat.hostileRepelledTitle'), M('msg.combat.hostileRepelledBody', { country, agency: a.name }), 'good', r.countryId);
       }
+      break;
+    }
+    case 'job':
+    case 'hunt': {
+      const cas = ref.casualty(downedTotal, lostTotal);
+      const out = r.kind === 'job' ? resolveCombatJob(s, a, r.jobId, ok, cas) : resolveHunt(s, a, r.bandId, ok, cas);
+      if (out) notify(s, a, 'combat', out.title, out.body, out.tone, r.countryId);
       break;
     }
     case 'intercept': {

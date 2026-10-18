@@ -10,6 +10,7 @@ import app from './app';
 import data from './data';
 import engine from './engine';
 import analyst from './analyst';
+import combatBoard from './combat-board';
 import type ptBR from '../pt-BR';
 
 const en: Record<keyof typeof ptBR, string> = {
@@ -23,5 +24,6 @@ const en: Record<keyof typeof ptBR, string> = {
   ...data,
   ...engine,
   ...analyst,
+  ...combatBoard,
 };
 export default en;

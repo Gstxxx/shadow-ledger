@@ -10,6 +10,7 @@ import app from './app';
 import data from './data';
 import engine from './engine';
 import analyst from './analyst';
+import combatBoard from './combat-board';
 
-const ptBR = { ...common, ...uiGame, ...uiHelp, ...uiMarket, ...uiGear, ...menu, ...title, ...app, ...data, ...engine, ...analyst } as const;
+const ptBR = { ...common, ...uiGame, ...uiHelp, ...uiMarket, ...uiGear, ...menu, ...title, ...app, ...data, ...engine, ...analyst, ...combatBoard } as const;
 export default ptBR;

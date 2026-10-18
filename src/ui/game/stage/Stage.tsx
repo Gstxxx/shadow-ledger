@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useLayoutEffect, useRef } from 'react';
-import { AlertTriangle, Briefcase, MapPin, Store } from 'lucide-react';
+import { AlertTriangle, Briefcase, Crosshair, MapPin, Store, Swords } from 'lucide-react';
 import { GActionBar, GModal } from '../../../art';
 import { directorAt, player, stationIn } from '../../../game/state';
 import { useGame, useGameStore } from '../../../store/game';
@@ -13,6 +13,8 @@ import { MarketPanel } from '../market/MarketPanel';
 import { ItemTrade } from '../market/ItemTrade';
 import type { CountryTab, StageApi, StageModal } from './context';
 import { UnitDossier, findUnit } from '../unit/UnitDossier';
+import { CombatBoard, useCombatBoardBadge } from '../combat-board/CombatBoard';
+import type { CombatBoardTab } from '../combat-board/CombatBoard';
 import './stage.css';
 
 /** Modal central do palco (ADR 0006): País, Agência ou Item, um por vez, com voltar. */
@@ -117,6 +119,36 @@ export function StageModals({ stage }: { stage: StageApi }) {
     );
   }
 
+  if (m.kind === 'combat') {
+    return (
+      <GModal
+        open
+        size="lg"
+        variant="command"
+        tone="action"
+        onClose={close}
+        onBack={back}
+        backLabel={t('common.back')}
+        closeLabel={t('common.close')}
+        kicker={a.name}
+        title={t('combat.board.title')}
+        tabs={[
+          { id: 'contracts', label: t('combat.board.tab.contracts'), icon: <Swords size={16} /> },
+          { id: 'hunts', label: t('combat.board.tab.hunts'), icon: <Crosshair size={16} /> },
+        ]}
+        tab={m.tab}
+        onTab={(tab) => stage.replace({ kind: 'combat', tab: tab as CombatBoardTab })}
+        tabsLabel={t('combat.board.title')}
+        tabsPlacement="auto"
+        contentKey="combat-board"
+      >
+        <div className="stage-body">
+          <CombatBoard tab={m.tab} />
+        </div>
+      </GModal>
+    );
+  }
+
   if (m.kind === 'unit') {
     const found = findUnit(a, m.uid);
     if (!found) return null;
@@ -160,7 +192,7 @@ export function StageModals({ stage }: { stage: StageApi }) {
   );
 }
 
-type DockId = 'country' | 'market' | 'agency' | 'threats';
+type DockId = 'country' | 'market' | 'agency' | 'combat' | 'threats';
 
 /** Barra de ações sobre o mapa: País · Mercado · Agência · Ameaças. */
 export function StageDock({ stage, compact }: { stage: StageApi; compact?: boolean }) {
@@ -168,13 +200,15 @@ export function StageDock({ stage, compact }: { stage: StageApi; compact?: boole
   const s = useGame();
   const a = player(s);
   const selected = useGameStore((st) => st.selected) ?? a.location;
+  const combatBadge = useCombatBoardBadge();
   const m = stage.current;
   const active: DockId | undefined =
-    m?.kind === 'country' ? (m.tab === 'market' ? 'market' : 'country') : m?.kind === 'agency' ? (m.tab === 'threats' ? 'threats' : 'agency') : m?.kind === 'item' ? 'market' : undefined;
+    m?.kind === 'country' ? (m.tab === 'market' ? 'market' : 'country') : m?.kind === 'agency' ? (m.tab === 'threats' ? 'threats' : 'agency') : m?.kind === 'item' ? 'market' : m?.kind === 'combat' ? 'combat' : undefined;
   const items = [
     { id: 'country', label: countryName(selected), icon: <MapPin size={22} /> },
     { id: 'market', label: t('game.country.market'), icon: <Store size={22} /> },
     { id: 'agency', label: t('game.topbar.agency'), icon: <Briefcase size={22} />, alert: a.director.status !== 'free' || a.arrears > 0 },
+    { id: 'combat', label: t('combat.board.dock'), icon: <Swords size={22} />, count: combatBadge || undefined },
     { id: 'threats', label: t('game.agency.tab.threats'), icon: <AlertTriangle size={22} />, count: a.threats.length || undefined, alert: a.threats.length > 0 },
   ];
   const onSelect = (id: string) => {
@@ -185,7 +219,9 @@ export function StageDock({ stage, compact }: { stage: StageApi; compact?: boole
           ? { kind: 'country', id: selected, tab: 'market' }
           : id === 'agency'
             ? { kind: 'agency', tab: 'director' }
-            : { kind: 'agency', tab: 'threats' };
+            : id === 'combat'
+              ? { kind: 'combat', tab: 'contracts' }
+              : { kind: 'agency', tab: 'threats' };
     if (active === id) stage.close();
     else stage.open(want);
   };
@@ -194,7 +230,7 @@ export function StageDock({ stage, compact }: { stage: StageApi; compact?: boole
   useLayoutEffect(() => {
     const btns = ref.current?.querySelectorAll<HTMLElement>('.g-dock__btn');
     if (!btns) return;
-    const tours = ['drawer-left', 'market-dock', 'drawer-right', 'threats-dock'];
+    const tours = ['drawer-left', 'market-dock', 'drawer-right', 'combat-dock', 'threats-dock'];
     btns.forEach((b, i) => (b.dataset.tour = tours[i]));
   });
   return (
