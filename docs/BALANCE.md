@@ -193,7 +193,7 @@ npx vitest run --config tools/balance/vitest.config.ts costs
 VARIANT=lote7 npx vitest run --config tools/balance/vitest.config.ts costs
 ```
 
-### Antes → depois (lote 7, proposto ao motor)
+### Antes → depois (lote 7, aplicado pelo motor em `e84342b`)
 
 | Contratos oferecidos (Recruta / Operador / Diretor) | Antes | Lote 7 |
 |---|---|---|
@@ -236,5 +236,10 @@ Em fração do caixa inicial do Preset (C):
   ~18–25 no Diretor (a faixa de roubo a banco/tecnologia em país nível 2–3).
 - Pagamento 1,3–1,6× a entrada (margem de 30–60%, igual aos Contratos de comércio); a falha custa a
   entrada mais a fiança.
-- Equipamento do Arsenal (item 5): +1 de força por ~20–30% do preço de um Operador Tático
-  (~30–45 mil); comum 15–60 mil, topo até 600 mil e nunca acima do preço da Unidade que o carrega.
+- Equipamento do Arsenal (item 5): bônus aditivo, ~30–55 mil por ponto de força (um Operador Tático
+  dá 5 pontos Urbanos por 150 mil); comum +1 por 30–50 mil, intermediário +2 a +3 por 110–160 mil, topo
+  +3 por até 300 mil. Aplicado em `src/game/data/equipment.ts` (987bd20) dentro dessa faixa.
+- Contratos de combate do item 3 (`COMBAT_JOB`, 5c29f0e): sem custo de entrada, força hostil inicial
+  ~3–8 (~50% de chance com a Escolta inicial, sem reforço) e pagamento de ~0,2–0,5 M por Contrato no
+  começo; a falha custa só Feridas/Danificadas e −5 de Reputação. Fica abaixo da faixa de força 13–20
+  acima, que supunha +3 reforços: é a porta de entrada barata, e a força cresce 0,06 por dia.
