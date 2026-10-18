@@ -182,3 +182,59 @@ O motor também mudou a Tensão Global por conta própria (Operações +1/+3, Go
   sobrecarregada em voo quando um cargueiro parava por Manutenção não paga (~3% das partidas; corrigido
   em `4bd590f`: cargueiro em voo não para);
   conversões em Combate podem passar a capacidade de uma Célula (~1,5% das partidas).
+
+## Custo de entrada de Contratos e Operações (backlog item 4, 17/10)
+
+Pedido: "missões e Contratos caros demais". Medido com `tools/balance/costs.bench.test.ts`
+(Primeiro Contrato, 30 sementes, primeiros 30 dias; caixa inicial 5,0 / 4,0 / 3,4 M):
+
+```bash
+npx vitest run --config tools/balance/vitest.config.ts costs
+VARIANT=lote7 npx vitest run --config tools/balance/vitest.config.ts costs
+```
+
+### Antes → depois (lote 7, proposto ao motor)
+
+| Contratos oferecidos (Recruta / Operador / Diretor) | Antes | Lote 7 |
+|---|---|---|
+| Custo mediano do lote (comprar no mercado mais barato) | 2,01 / 1,96 / 2,05 M | 1,25 / 1,26 / 1,27 M |
+| Pagamento mediano | 3,17 / 3,34 / 3,33 M | 1,79 / 1,77 / 1,78 M |
+| Margem mediana | 66 / 54 / 55% | 43 / 42 / 37% |
+| Ofertas com custo ≤ 25% do caixa | 20 / 11 / 9% | 50 / 36 / 33% |
+| Ofertas com custo ≤ 50% do caixa | 60 / 51 / 36% | 95 / 84 / 71% |
+| Ofertas que custam mais que o caixa inteiro | 22 / 21 / 30% | 0 / 1 / 1% |
+
+| Reforço para Prévia ≥ 60% com a Escolta inicial (Recruta) | Antes | Lote 7 |
+|---|---|---|
+| Roubo a banco, país nível 2–3 | +3 Op. Táticos (0,45 M) | igual |
+| Neutralização, nível 3 | +4 Comandos (1,28 M) | +3 (0,96 M), e paga 0,75 M |
+| Neutralização, nível 5 | impossível (> 9) | +7 Comandos (2,24 M) |
+| Golpe, nível 2 | impossível (> 9) | +3 Comandos (0,96 M) |
+| Golpe, nível 3 | impossível | +7 Comandos (2,24 M) |
+
+Reações a Ameaças (suborno 0,07–0,5 M, advogados 0,12–0,3 M, reforço 0,10–0,25 M; ≤ 15% do
+caixa) e fiança (0,39–1,43 M) não precisaram mudar.
+
+| Id | Mudança | Motivo |
+|---|---|---|
+| P17 | `sim.ts` rollContracts: orçamento `0.5–3.5 M` → `0.2–2 M` (× nível e Tensão, como antes), calculado antes do item, e só itens com `price <= budget` | Com qty mínima 1, um caça ou tanque estourava o orçamento: 1 em cada 4–5 ofertas custava mais que o caixa inicial. |
+| P18 | `actions.ts` operationStrength: Neutralização `8 + 5·nível` → `6 + 4·nível`; Golpe `12 + 8·nível` → `10 + 6·nível` | Pediam mais Comandos do que cabem na grade em qualquer país nível ≥ 3. |
+| P19 | `combatFlow.ts` Neutralização bem-sucedida paga `250 mil × nível` | Era "paga pela oposição" sem pagar nada: só risco. |
+
+Efeito na grade completa (4 sementes, base × lote 7): Iniciante e Passivo sem mudança fora do ruído
+(Passivo segue 0% nas metas), Guloso −10 a −20% no Primeiro Contrato por Contratos menores,
+Operador agressivo +10 a +30% de lucro e Crise Final alguns dias antes (dia 75–106 contra 87–120),
+porque passa a fazer Neutralizações.
+
+### Curva de custo para novas missões (Contratos de combate, item 3)
+
+Em fração do caixa inicial do Preset (C):
+
+- Entrada (aceitar ou montar a força): 0,1–0,3 C no começo, 0,3–0,6 C no meio; nunca mais que C nos
+  primeiros 30 dias, e pelo menos 1 em cada 3 ofertas abaixo de 0,25 C.
+- Força inimiga vencível (Prévia ≥ 60%) com a Escolta inicial + até 3 reforços: ~13–20 no Recruta,
+  ~18–25 no Diretor (a faixa de roubo a banco/tecnologia em país nível 2–3).
+- Pagamento 1,3–1,6× a entrada (margem de 30–60%, igual aos Contratos de comércio); a falha custa a
+  entrada mais a fiança.
+- Equipamento do Arsenal (item 5): +1 de força por ~20–30% do preço de um Operador Tático
+  (~30–45 mil); comum 15–60 mil, topo até 600 mil e nunca acima do preço da Unidade que o carrega.

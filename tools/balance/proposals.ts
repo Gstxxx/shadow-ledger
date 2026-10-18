@@ -176,7 +176,46 @@ export const profitGoal = (s: GameState) =>
 ];
 
 /** Lotes são cumulativos na ordem: o lote N inclui os anteriores. */
-export const BATCH_ORDER: string[] = ['lote0', 'lote1', 'lote2', 'lote3', 'lote4', 'lote5', 'lote6'];
+export const BATCH_ORDER: string[] = ['lote1', 'lote2', 'lote3', 'lote4', 'lote5', 'lote6', 'lote7'];
+
+// ── Lote 7: custo de entrada de Contratos e Operações (backlog item 4) ──
+PROPOSALS.push(
+  {
+    id: 'P17',
+    batch: 'lote7',
+    file: 'src/game/sim.ts',
+    from: `  const items = ITEM_LIST.filter(
+    (it) => it.tradable && !it.wmd && it.cls !== 'special' && it.cls !== 'cargo' && interested(c, it) && it.rank <= c.level - 1,
+  );
+  if (!items.length) return;
+  const it = pick(s, items);
+  const budget = randRange(s, 0.5, 3.5) * 1_000_000 * (0.6 + c.level * 0.2) * contractScale(s.tension);`,
+    to: `  const budget = randRange(s, 0.2, 2) * 1_000_000 * (0.6 + c.level * 0.2) * contractScale(s.tension);
+  const items = ITEM_LIST.filter(
+    (it) =>
+      it.tradable && !it.wmd && it.cls !== 'special' && it.cls !== 'cargo' && interested(c, it) && it.rank <= c.level - 1 && it.price <= budget,
+  );
+  if (!items.length) return;
+  const it = pick(s, items);`,
+    why: 'O lote mediano de um Contrato custava US$ 2 M (40–60% do caixa inicial) e 21–30% das ofertas custavam mais que o caixa inteiro: com qty mínima 1, um caça ou tanque passava muito do orçamento. Orçamento menor e só itens que cabem nele.',
+  },
+  {
+    id: 'P18',
+    batch: 'lote7',
+    file: 'src/game/actions.ts',
+    from: "op === 'neutralize' ? 8 + c.level * 5 : 12 + c.level * 8;",
+    to: "op === 'neutralize' ? 6 + c.level * 4 : 10 + c.level * 6;",
+    why: 'Neutralização e Golpe pediam mais de 9 Comandos (o máximo que cabe na grade) em países nível ≥ 3: inalcançáveis em qualquer momento da partida.',
+  },
+  {
+    id: 'P19',
+    batch: 'lote7',
+    file: 'src/game/combatFlow.ts',
+    from: "          cty.politics = pick(s, ['disorder', 'civilwar'] as const);",
+    to: "          cty.politics = pick(s, ['disorder', 'civilwar'] as const);\n          a.cash += cty.level * 250_000;",
+    why: 'A Neutralização é "paga pela oposição", mas não pagava nada: todo o risco (Diretor Detido, −20 de Reputação, +3 de Tensão) sem recompensa. US$ 250 mil por nível do país.',
+  },
+);
 
 export function variantPatches(name: string): Proposal[] {
   const upto = BATCH_ORDER.indexOf(name);
@@ -187,5 +226,8 @@ export function variantPatches(name: string): Proposal[] {
     return one;
   }
   const batches = new Set(BATCH_ORDER.slice(0, upto + 1));
-  return PROPOSALS.filter((p) => batches.has(p.batch));
+  return PROPOSALS.filter((p) => batches.has(p.batch) && !APPLIED.has(p.id));
 }
+
+/** Já aplicadas no motor (5658a74 e 4bd590f); o código em volta mudou depois, então não reaplicar. */
+const APPLIED = new Set(['P1', 'P2', 'P3', 'P4', 'P5', 'P6', 'P7', 'P8', 'P9', 'P10', 'P11', 'P12', 'P13', 'P14', 'P15', 'P16']);
