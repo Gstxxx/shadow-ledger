@@ -22,7 +22,7 @@ import {
 } from './model';
 import type { BlockMsg, MarketRow, Opportunity, Segment } from './model';
 import { useStage } from '../stage/context';
-import { ILLUSTRATED_IDS, ItemIllustration } from '../../item-illustrations';
+import { ItemPic } from './ItemPic';
 import { ShortList, Verdict } from '../stage/Verdict';
 import { useCanStore } from '../VaultPanel';
 import { def } from '../../../game/units';
@@ -265,7 +265,7 @@ function OppList({
         return (
           <li key={`${o.kind}-${o.itemId}-${o.to}`} className={`opp kind-${o.kind}${o.block ? ' blocked' : ''}`}>
             <GCard
-              icon={<GameIcon id={o.itemId} size={28} accent="warm" />}
+              icon={<ItemThumb id={o.itemId} accent="warm" />}
               tone={o.block ? 'off' : o.kind !== 'buy-here' ? 'hot' : 'default'}
               title={
                 <span className="opp-item">
@@ -592,9 +592,7 @@ function HireList({ countryId }: { countryId: string }) {
       {list.map((r) => (
         <li key={r.itemId} className="mkt-item hire">
           <div className="mkt-row static g-card">
-            <span className="g-well">
-              <GameIcon id={r.itemId} size={28} accent="cold" />
-            </span>
+            <ItemThumb id={r.itemId} accent="cold" />
             <span className="mkt-name">
               <span className="mkt-name-t">{itemName(r.itemId)}</span>
               <span className="mkt-name-s">
@@ -718,17 +716,7 @@ function SellList({ countryId, onBuy }: { countryId: string; onBuy: () => void }
   );
 }
 
-/** Miniatura do item nas linhas do Mercado: a ilustração (96×64) quando existe; senão o ícone do kit. */
+/** Miniatura do item nas linhas do Mercado: foto, ilustração ou ícone na mesma moldura (ItemPic). */
 function ItemThumb({ id, accent }: { id: string; accent: 'warm' | 'signal' | 'cold' }) {
-  if (ILLUSTRATED_IDS.includes(id))
-    return (
-      <span className="g-well mkt-thumb">
-        <ItemIllustration id={id} size="sm" alt="" />
-      </span>
-    );
-  return (
-    <span className="g-well">
-      <GameIcon id={id} size={28} accent={accent} />
-    </span>
-  );
+  return <ItemPic id={id} accent={accent} />;
 }

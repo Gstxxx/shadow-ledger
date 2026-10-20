@@ -13,7 +13,7 @@ import { marketRows, maxAffordable, priceRange, sellUntilBreakEven, whyCantBuy, 
 import { PriceRange, dealOf } from './MarketPanel';
 import { BigNumber, Details, Verdict } from '../stage/Verdict';
 import { PriceChart } from './PriceChart';
-import { ILLUSTRATED_IDS, ItemIllustration } from '../../item-illustrations';
+import { ItemPic } from './ItemPic';
 import type { PriceMark } from './PriceChart';
 import { priceHistory, worldAverageHistory } from '../../../game/history';
 import { politicsLabel } from '../../../i18n/lookup';
@@ -194,13 +194,9 @@ export function ItemTrade({ countryId, itemId, initialSide }: { countryId: strin
 
   return (
     <div className="trade2">
-      {/* Imagem herói do item (ilustração da menu-motion; o ícone do kit se o id não tiver ilustração). */}
+      {/* Imagem herói: ilustração da menu-motion, senão o ícone, na moldura do ItemPic. */}
       <div className="trade2-hero">
-        {ILLUSTRATED_IDS.includes(itemId) ? (
-          <ItemIllustration id={itemId} size="lg" className="trade2-illo" />
-        ) : (
-          <GameIcon id={itemId} size={112} accent={r.it.wmd ? 'signal' : 'warm'} />
-        )}
+        <ItemPic id={itemId} size="lg" accent={r.it.wmd ? 'signal' : 'warm'} />
       </div>
       <div className="trade2-id">
         <span className="mono trade2-sub">
@@ -282,7 +278,7 @@ export function ItemTrade({ countryId, itemId, initialSide }: { countryId: strin
                   </button>
                 </span>
               )}
-              {lossN > 0 && <span className="trade2-loss">{t('game.market.trade.lossFrom', { n: lossN })}</span>}
+              {lossN > 1 && <span className="trade2-loss">{t('game.market.trade.lossFrom', { n: lossN })}</span>}
             </div>
           )}
 
