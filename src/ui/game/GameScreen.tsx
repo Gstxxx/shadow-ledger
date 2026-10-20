@@ -9,6 +9,7 @@ import { CombatOverlay } from './CombatOverlay';
 import { DirectorBanner, EventModal, GameOver, LogPanel } from './Overlays';
 import { TopBar } from './TopBar';
 import { AnalystLayer } from '../analyst';
+import { CinematicHost } from '../cinematics';
 import { WorldMap } from './WorldMap';
 import { DossierHost } from './unit/DossierHost';
 import { useMedia, usePortrait } from './portrait/usePortrait';
@@ -138,6 +139,7 @@ export function GameScreen() {
       <StageModals stage={stage} />
       <EventModal />
       <CombatOverlay />
+      <CinematicHost />
       <GameOver onQuit={quit} />
       {/* Analista (rival-ai): sem gavetas no palco, "abrir painel" abre o país do Diretor ou a Agência. */}
       <AnalystLayer
