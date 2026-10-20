@@ -11,6 +11,7 @@ import { useT } from '../../i18n';
 import { objectiveLabel, tensionBandLabel } from '../../i18n/lookup';
 import { useMedia, usePortrait } from './portrait/usePortrait';
 import { GMeter, GSegmented } from '../../art';
+import { CashPop } from './fx/ScreenFx';
 import { DirectorAvatar } from './DirectorAvatar';
 
 export function TopBar({ onMenu }: { onMenu: () => void }) {
@@ -61,6 +62,7 @@ export function TopBar({ onMenu }: { onMenu: () => void }) {
       <span className="tb-k mono g-dial__k">{t('game.topbar.cash')}</span>
       <span className="tb-v num g-dial__v">{fmt.money(a.cash)}</span>
       <span className="tb-cap mono">{target > 1 ? goal : `${objectiveLabel(pr.objective)} · ${goal}`}</span>
+      <CashPop />
     </div>
   );
   const profitStat = (

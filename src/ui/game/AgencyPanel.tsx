@@ -17,6 +17,7 @@ import { UnitRow } from './UnitRow';
 import { FleetSpace, UnitCard, UpkeepBalance } from './unit/UnitCard';
 import { useOpenUnit } from './unit/DossierHost';
 import { ArsenalTab } from './gear/ArsenalTab';
+import { AlarmIcon, ArrestIcon } from './fx/ScreenFx';
 import { isLocked } from '../../game/tutorial/locks';
 import './agency.css';
 import { DirectorAvatar } from './DirectorAvatar';
@@ -134,6 +135,7 @@ function DirectorTab() {
       {held ? (
         <Verdict
           tone="bad"
+          icon={d.status === 'detained' ? <ArrestIcon /> : undefined}
           action={
             <button className="btn primary" disabled={a.cash < (d.price ?? 0)} onClick={() => act((g, ag) => A.payRelease(g, ag), 'buy')}>
               {t(d.status === 'detained' ? 'game.overlay.payBail' : 'game.overlay.payRansom', { price: fmt.money(d.price ?? 0) })}
@@ -706,6 +708,7 @@ function ThreatsTab() {
     {next ? (
       <Verdict
         tone="bad"
+        icon={<AlarmIcon ring={live.length} />}
         action={
           pickR ? (
             <button className="btn primary" title={t(pickR.blurb)} onClick={() => act((g, ag) => A.react(g, ag, next.id, pickR.id), 'click')}>

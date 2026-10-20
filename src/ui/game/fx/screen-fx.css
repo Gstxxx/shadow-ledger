@@ -1,0 +1,90 @@
+/* Efeitos curtos fora do Combate (vfx-extra). */
+.fx-cash-host {
+  display: none;
+}
+.fx-cash {
+  position: fixed;
+  z-index: 400;
+  display: grid;
+  gap: 2px;
+  pointer-events: none;
+}
+.fx-cash-pop {
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+  font: 700 13px var(--mono);
+  white-space: nowrap;
+  animation: fx-cash-rise 1.4s ease-out forwards;
+}
+.fx-cash-pop .sl-sprite {
+  margin: -24px -18px -14px -22px;
+}
+.fx-cash-pop.up b {
+  color: var(--green);
+}
+.fx-cash-pop.down b {
+  color: var(--red);
+}
+@keyframes fx-cash-rise {
+  0% {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+  15% {
+    opacity: 1;
+    transform: none;
+  }
+  80% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+}
+.fx-tape {
+  position: fixed;
+  left: 50%;
+  top: calc(var(--safe-t, 0px) + 96px);
+  z-index: 80;
+  display: grid;
+  justify-items: center;
+  gap: 2px;
+  transform: translateX(-50%);
+  pointer-events: none;
+  color: #ff9a9d;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  font-size: 12px;
+  animation: fx-tape-out 1.5s ease-in forwards;
+}
+@keyframes fx-tape-out {
+  0%,
+  80% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0;
+  }
+}
+.fx-icon {
+  position: relative;
+  display: inline-block;
+  flex: none;
+  width: 44px;
+  height: 44px;
+  overflow: hidden;
+}
+.fx-icon .sl-sprite {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%) scale(0.6);
+}
+@media (prefers-reduced-motion: reduce) {
+  .fx-cash-pop,
+  .fx-tape {
+    animation: none;
+  }
+}

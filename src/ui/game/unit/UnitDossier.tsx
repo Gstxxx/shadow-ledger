@@ -13,6 +13,7 @@ import { classLabel, countryName, itemBlurb, itemName, stationName, traitBlurb, 
 import { Help } from '../help/Glossary';
 import { Details, Verdict } from '../stage/Verdict';
 import { GearSection } from '../gear/GearSection';
+import { ArrestIcon } from '../fx/ScreenFx';
 import { isLocked } from '../../../game/tutorial/locks';
 import './unit.css';
 
@@ -236,6 +237,7 @@ export function UnitDossier({ uid, onClose, embedded }: { uid: string; onClose: 
           <div className="ud-verdict">
             <Verdict
               tone="bad"
+              icon={place.kind === 'station' && place.detained ? <ArrestIcon /> : undefined}
               action={
                 canRepair ? (
                   <button className="btn primary" disabled={a.cash < repairCost(u)} onClick={() => act((g, ag) => A.repair(g, ag, u.uid), 'buy')}>

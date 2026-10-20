@@ -3,6 +3,7 @@ import { AlertTriangle, Briefcase, Crosshair, MapPin, Store, Swords } from 'luci
 import { GActionBar, GModal } from '../../../art';
 import { directorAt, player, stationIn } from '../../../game/state';
 import { isLocked } from '../../../game/tutorial/locks';
+import { AlarmIcon } from '../fx/ScreenFx';
 import { useGame, useGameStore } from '../../../store/game';
 import { useT } from '../../../i18n';
 import { classLabel, countryName, itemName } from '../../../i18n/lookup';
@@ -211,7 +212,7 @@ export function StageDock({ stage, compact }: { stage: StageApi; compact?: boole
     { id: 'market', label: t('game.country.market'), icon: <Store size={22} /> },
     { id: 'agency', label: t('game.topbar.agency'), icon: <Briefcase size={22} />, alert: a.director.status !== 'free' || a.arrears > 0 },
     { id: 'combat', label: t('combat.board.dock'), icon: <Swords size={22} />, count: combatBadge || undefined },
-    { id: 'threats', label: t('game.agency.tab.threats'), icon: <AlertTriangle size={22} />, count: a.threats.length || undefined, alert: a.threats.length > 0 },
+    { id: 'threats', label: t('game.agency.tab.threats'), icon: a.threats.length ? <AlarmIcon ring={a.threats.length} /> : <AlertTriangle size={22} />, count: a.threats.length || undefined, alert: a.threats.length > 0 },
   ];
   const onSelect = (id: string) => {
     const want: StageModal =

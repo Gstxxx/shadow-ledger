@@ -15,6 +15,7 @@ import { useCanStore } from './VaultPanel';
 import { marketRows, opportunities, priceRange } from './market/model';
 import { itemName } from '../../i18n/lookup';
 import { GModal } from '../../art';
+import { ArrestIcon } from './fx/ScreenFx';
 import { profitGoal } from '../../game/objective';
 
 /** Tom do Evento → tom do modal de comando. */
@@ -59,7 +60,7 @@ export function EventModal() {
       kicker={`${formatDate(ev.at)} · ${formatClock(ev.at)}`}
       title={
         <>
-          <Icon size={20} /> {msgText(ev.titleMsg, ev.title, lang)}
+          {ev.kind === 'director' && player(s).director.status === 'detained' ? <ArrestIcon /> : <Icon size={20} />} {msgText(ev.titleMsg, ev.title, lang)}
         </>
       }
       actions={
