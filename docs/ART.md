@@ -317,9 +317,28 @@ Compatibilidade com a API local da ui-polish (`stage/Verdict.tsx`): `GVerdict` a
 
 O rodapé do `GModal` agora gruda embaixo (`position: sticky`) quando o modal rola, então a ação primária fica sempre à vista, inclusive deitado e com pouca altura.
 
-## Arte dos itens e retratos de Unidade
+## Arte dos itens do Mercado (`ItemArt.tsx`)
 
-A arte dos itens do Mercado e do Arsenal é feita por código em `src/ui/item-illustrations` e `src/ui/game/gear/GearArt.tsx`. O pipeline de fotos de domínio público que existiu aqui foi retirado, porque o usuário escolheu as ilustrações por código.
+`<ItemArt id size alt tag illustration />` desenha a arte de qualquer item do catálogo em 4:3:
+1. **Foto tratada**, quando o id está em `src/art/itemPhotos.ts`: `public/items/<id>-96.webp` (listas, até 160px) ou `<id>-480.webp` (modal do item). São 20 equipamentos: viaturas, picape armada, blindado 6x6, tanques, antiaéreo, helicópteros, caças, bombardeiro, cargueiros, fuzis, metralhadora e míssil antitanque. Fontes e licenças estão em `docs/CREDITS.md` (todas em domínio público).
+2. **Prancha ilustrada** quando não há foto: Pessoal com retrato duotone (DiceBear) e ícone da função; Informação, Programas e Armas de Destruição em Massa com o ícone técnico sobre uma prancheta com grade (ADM com faixas de perigo vermelhas). O Lança-foguetes (`rpg`) e o Blindado de Combate (`ifv`) também ficam na prancha, porque não houve foto adequada sem rosto em close.
+3. **Só o `<GameIcon>`** em tamanhos de até 40px.
+
+O componente desenha a moldura por cima de qualquer imagem: cantos chanfrados, linhas de varredura e, a partir de 200px, os cantos âmbar e a etiqueta da categoria (`tag={false}` esconde; `tag="..."` troca o texto). Se o arquivo falhar ao carregar, ele cai na prancha.
+
+![itens 96](art/itens-96.webp)
+![itens 240](art/itens-240.webp)
+
+### Trocar pela versão gerada (Higgsfield ou outra)
+
+1. Gere a imagem do equipamento em paisagem, com o objeto centrado, sem texto nem marcas, e de preferência com pelo menos 960px de largura.
+2. Passe pelo mesmo tratamento das fotos: recorte 4:3, grade fria (luminância em três paradas, #070e12 → #466068 → #deecec, mantendo 28% da cor original), vinheta e grão. Exporte em WebP de 480×360 (≤ 60 KB) e 96×72. A ferramenta faz tudo isso sem dependências novas: `node src/art/tools/grade-items.mjs <pasta-com-<id>.jpg|png|webp> public/items [id1,id2]`. Ela usa o Chrome instalado (caminho padrão do Windows em `grade-items.mjs`), e o recorte por item (foco `fx`/`fy` e `zoom`) fica em `src/art/tools/item-crops.json`.
+3. Grave como `public/items/<id>-480.webp` e `public/items/<id>-96.webp`, **com o mesmo nome**. Se for um item que hoje usa prancha, acrescente o id em `src/art/itemPhotos.ts`.
+4. Atualize `docs/CREDITS.md`: troque a linha do item por "imagem gerada para o jogo" com a ferramenta e a data.
+
+## Retratos de Unidade (`UnitPortrait.tsx`)
+
+No jogo, os itens usam a foto (`ItemArt`) quando o id está em `ITEM_PHOTOS` e a ilustração por código (`src/ui/item-illustrations`, Arsenal em `src/ui/game/gear/GearArt.tsx`) no resto.
 
 **`<UnitPortrait itemId seed name size hostile hurt out alt />`** (`src/art/UnitPortrait.tsx`) é o retrato de Unidade no mesmo estilo realista dessas ilustrações:
 - **Pessoal:** busto (cabeça e ombros) da figura da função de `people.tsx`, com luz de contorno, fundo de estúdio e vinheta. A `seed` da Unidade sorteia, de forma estável, o cabelo ou a cobertura permitidos para a função (ex.: guarda-costas com cabelo curto, penteado para trás, careca ou coque; comando com visão noturna, balaclava ou capacete), o corpo e o tom da roupa. Com `name` (o `unit.name`), o corpo segue o primeiro nome da lista de `names.ts`, e o cabelo sorteado combina com ele. Duas Unidades da mesma função ficam diferentes, e a mesma Unidade fica sempre igual.

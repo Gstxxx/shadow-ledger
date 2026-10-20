@@ -8,6 +8,7 @@ import { GameScreenMock } from './proto-gamekit';
 import { StageDemo } from './proto-stage';
 import { SimpleDemo } from './proto-simple';
 import { UnitPortrait } from './UnitPortrait';
+import { ItemArt } from './ItemArt';
 import { ITEMS } from '../game/data/items';
 import { DIRECTOR_ORIGINS, DirectorPortrait, AnalystPortrait, GameIcon, ICONS, Logo, OperativePortrait, type AnalystMood } from './index';
 
@@ -44,6 +45,10 @@ function Solo(): ReactNode {
     const mood = (q.get('mood') ?? 'neutral') as AnalystMood;
     const list = q.get('o') ? [q.get('o') as (typeof DIRECTOR_ORIGINS)[number]] : DIRECTOR_ORIGINS;
     return wrap(list.map((o) => <DirectorPortrait key={o} origin={o} mood={mood} size={size} blink={false} />));
+  }
+  if (solo === 'items') {
+    const size = Number(q.get('size') ?? 240);
+    return wrap(Object.values(ITEMS).map((it) => <div key={it.id} style={{ display: 'grid', gap: 4 }}><ItemArt id={it.id} size={size} alt={it.name} /><span style={{ fontFamily: 'var(--sl-font-mono)', fontSize: 10, color: 'var(--sl-text-muted)' }}>{it.id}</span></div>));
   }
   if (solo === 'units') {
     const size = Number(q.get('size') ?? 72);

@@ -24,6 +24,9 @@ export { GDial, GCard, GSeal, GUnitCard, GModal, useModalStack, GActionBar, GToa
 export type { GDialProps, GCardProps, GUnitCardProps, GModalProps, GActionBarProps, GDockItem, GRangeProps, GStepperProps, GMapMarkerProps, GMarkerKind, GBoardProps } from './game-ui-2';
 export { GVerdict, GBigNumber, GDetails, GModeSwitch } from './game-ui-3';
 export type { GVerdictProps, GVerdictTone, GBigNumberProps, GDetailsProps, GModeSwitchProps, GModeOption } from './game-ui-3';
+export { ItemArt, itemCategory, ITEM_ART_RATIO } from './ItemArt';
+export type { ItemArtProps, ItemArtCategory } from './ItemArt';
+export { ITEM_PHOTOS } from './itemPhotos';
 export { UnitPortrait, unitFigure } from './UnitPortrait';
 export type { UnitPortraitProps } from './UnitPortrait';
 export { CornerBrackets, DossierFrame, Stamp, Redacted, RedactionBar, Divider, ClassificationBar, Tape } from './frame';
