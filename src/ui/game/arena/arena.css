@@ -297,3 +297,33 @@ html .game.combat-open .analyst-layer {
     display: none;
   }
 }
+
+/* Fundo de combate (art-kit): por baixo do piso clicável; a camada front vai por cima das figuras. */
+.iso-bg,
+.iso-bg-front {
+  position: absolute;
+  left: 0;
+  top: 0;
+  image-rendering: pixelated;
+  pointer-events: none;
+  user-select: none;
+}
+.iso-bg-front {
+  z-index: 900;
+}
+.iso-board.has-bg .iso-cell {
+  fill: transparent;
+  stroke: rgba(214, 222, 232, 0.12);
+  stroke-width: 1;
+}
+.iso-board.has-bg .iso-cell.deploy {
+  fill: rgba(242, 169, 59, 0.16);
+}
+.iso-board.has-bg .iso-cell.enemy-zone {
+  fill: rgba(229, 72, 77, 0.1);
+}
+.iso-board.has-bg .iso-cell.target {
+  fill: rgba(242, 169, 59, 0.32);
+  stroke: var(--amber);
+  stroke-width: 2;
+}

@@ -332,7 +332,7 @@ function LiveView() {
                   const anim = f.kind === 'down' ? 'smoke' : target && isMachine(target) ? 'explosion' : 'sparks';
                   return (
                     <span key={`${poses.turn}-${i}`} className="iso-vfx" style={{ left: x, top: y, zIndex: g.depth(f.col, f.row) + 1 }}>
-                      <Sprite set="vfx" anim={anim} playing anchored scale={Math.max(1, Math.round(g.tw / 64))} />
+                      <Sprite set="vfx" anim={anim} playing anchored scale={infantryScale(g.tw)} />
                     </span>
                   );
                 })}
@@ -466,11 +466,20 @@ function TurnLabel({ turn, max }: { turn: number; max: number }) {
   );
 }
 
-function xlScale(tw: number, frameWidth: number) {
-  const s = (1.25 * tw) / Math.max(1, frameWidth);
-  if (s >= 1) return Math.floor(s);
-  // Abaixo de 1: degraus de 0,25 (voxel aguenta), para o veículo não ficar pequeno ao lado do Pessoal.
-  return Math.max(0.25, Math.floor(s * 4) / 4);
+/** Escala inteira do Pessoal: ~0,75 casa de altura (o pé do atlas fica a ~48 px do topo, a 1×). */
+export function infantryScale(tw: number) {
+  return Math.max(1, Math.round((0.75 * tw) / 48));
+}
+
+/**
+ * Escala do veículo XL, derivada da do Pessoal: ~1,2 casa de largura (1,3 para tanques e helicópteros),
+ * bem maior que a figura de um soldado; fracionária em degraus de 0,125 (voxel aguenta).
+ */
+function xlScale(tw: number, frameWidth: number, id?: string) {
+  const big = id === 'tank1' || id === 'tank3' || id === 'heli1' || id === 'heli3';
+  // A largura visível do veículo é ~80% do quadro do atlas (o resto é margem transparente).
+  const s = ((big ? 1.3 : 1.2) * tw) / Math.max(1, frameWidth * 0.8);
+  return Math.max(0.25, Math.floor(s * 8) / 8);
 }
 
 /** Destroço de veículo: toca `_destroyed` uma vez e depois fica em `_wreck` (laço) até o fim da luta. */
@@ -491,7 +500,7 @@ function Wreck({ r, g }: { r: CombatUnitRef; g: IsoGeom }) {
         anim={done ? `${sp.xl}_wreck` : `${sp.xl}_destroyed`}
         playing
         mirror={r.side === 'e'}
-        scale={xlScale(g.tw, atlas.frameWidth)}
+        scale={xlScale(g.tw, atlas.frameWidth, sp.xl)}
         anchored
         onEnd={() => setDone(true)}
       />
@@ -521,9 +530,8 @@ function IsoToken({ r, c, g, pose }: { r: CombatUnitRef; c: CombatState; g: IsoG
   const w = f.w * g.tw;
   const h = f.h * g.tw;
   const feet = g.tw * 0.12;
-  // Escala: Pessoal em escala inteira (~1 a cada 64 px de casa). Veículo XL: cabe em ~1,25 casa de largura,
-  // inteiro a partir de 1 e em degraus de 0,25 abaixo disso (voxel aguenta escala fracionária).
-  const scale = sp?.xl && atlas && atlas.id === spriteSet ? xlScale(g.tw, atlas.frameWidth) : Math.max(1, Math.round(g.tw / 64));
+  // Escala: o Pessoal primeiro (inteira, ~0,75 casa de altura); os veículos XL derivam dela (~1,2–1,3 casa).
+  const scale = sp?.xl && atlas && atlas.id === spriteSet ? xlScale(g.tw, atlas.frameWidth, sp.xl) : infantryScale(g.tw);
   return (
     <div
       className={`token iso-token side-${r.side} pose-${pose}`}

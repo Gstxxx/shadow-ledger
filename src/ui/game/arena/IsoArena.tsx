@@ -1,6 +1,8 @@
 import { useEffect, useLayoutEffect, useRef, useState } from 'react';
 import type { KeyboardEvent, ReactNode, RefObject } from 'react';
-import type { CombatState, CombatUnitRef } from '../../../game/types';
+import type { CombatState, CombatType, CombatUnitRef } from '../../../game/types';
+import { sceneUrl, useArena } from '../../../art';
+import type { ArenaId, ArenaManifest } from '../../../art/sprites';
 import { def, FORT_ID } from '../../../game/units';
 import './arena.css';
 
@@ -41,6 +43,32 @@ export function isoGeom(cols: number, rows: number, tw: number): IsoGeom {
     depth: (col, row) => 10 + (col - row + rows) * 2,
   };
 }
+
+/**
+ * Geometria do fundo de combate (art-kit), lida só do manifesto: vértice (c, r') = origem + c·colStep + r'·rowStep,
+ * em px 1× × escala inteira S. No fundo a linha 0 é a de trás; aqui a 0 é a da frente (r' = linhas − j).
+ * O pé da Unidade fica 1 px (× S) abaixo do centro da casa, como a art-kit mediu.
+ */
+export function bgGeom(m: ArenaManifest, rows: number, S: number): IsoGeom {
+  const pt = (i: number, j: number): [number, number] => {
+    const r = rows - j;
+    return [S * (m.gridOrigin.x + i * m.colStep.x + r * m.rowStep.x), S * (m.gridOrigin.y + i * m.colStep.y + r * m.rowStep.y)];
+  };
+  return {
+    tw: S * Math.abs(m.colStep.x - m.rowStep.x),
+    width: S * m.frameWidth,
+    height: S * m.frameHeight,
+    pt,
+    center: (col, row) => {
+      const [x, y] = pt(col + 0.5, row + 0.5);
+      return [x, y + S];
+    },
+    depth: (col, row) => 10 + (col - row + rows) * 2,
+  };
+}
+
+/** Fundo do tipo de Combate. */
+export const ARENA_OF: Record<CombatType, ArenaId> = { urban: 'urbano', army: 'militar', legal: 'juridico', air: 'aereo' };
 
 /** Largura de casa que cabe no espaço (largura e, se houver, altura). */
 export function fitTile(cols: number, rows: number, w: number, h: number): number {
@@ -101,10 +129,20 @@ export function IsoArena({
     return () => ro.disconnect();
   }, []);
 
-  const fit = fitTile(c.cols, c.rows, box.w, box.h);
-  // Zoom: casas 1,5× maiores; a arena rola dentro da área (começa no lado do jogador).
-  const tw = zoom ? Math.round(fit * 1.5) : fit;
-  const g = isoGeom(c.cols, c.rows, tw);
+  const bg = useArena(ARENA_OF[c.type]);
+  let g: IsoGeom;
+  if (bg) {
+    // Fundo na maior escala que cabe, em meios passos (1, 1,5, 2…): o voxel aguenta e assim ele enche a área
+    // (com a escala inteira, 1366×768 caía para 1×). O zoom sobe um nível e rola.
+    const fitS = Math.min(box.w / bg.frameWidth, (box.h || Infinity) / bg.frameHeight);
+    const S = Math.max(0.5, Math.floor(fitS * 2) / 2);
+    g = bgGeom(bg, c.rows, zoom ? S + 1 : S);
+  } else {
+    const fit = fitTile(c.cols, c.rows, box.w, box.h);
+    // Zoom: casas 1,5× maiores; a arena rola dentro da área (começa no lado do jogador).
+    g = isoGeom(c.cols, c.rows, zoom ? Math.round(fit * 1.5) : fit);
+  }
+  const tw = g.tw;
   const cells: { row: number; col: number }[] = [];
   for (let row = c.rows - 1; row >= 0; row--) for (let col = 0; col < c.cols; col++) cells.push({ row, col });
   const poly = (pts: [number, number][]) => pts.map((p) => p.map((v) => v.toFixed(1)).join(',')).join(' ');
@@ -121,17 +159,18 @@ export function IsoArena({
       <button className="btn icon iso-zoom" aria-pressed={zoom} aria-label={zoom ? zoomLabels.out : zoomLabels.in} onClick={() => setZoom(!zoom)}>
         {zoom ? '−' : '+'}
       </button>
-      <div ref={boardRef} className="iso-board" style={{ width: g.width, height: g.height }}>
+      <div ref={boardRef} className={`iso-board${bg ? ' has-bg' : ''}`} style={{ width: g.width, height: g.height }}>
+        {bg && <img className="iso-bg" src={sceneUrl(bg, bg.static)} width={g.width} height={g.height} alt="" draggable={false} />}
         <svg className="iso-floor" width={g.width} height={g.height} viewBox={`0 0 ${g.width} ${g.height}`}>
-          {/* Laje: faces da frente (linha 0) e da direita (última coluna) */}
-          <polygon
+          {/* Laje (só sem fundo): faces da frente (linha 0) e da direita (última coluna) */}
+          {!bg && <polygon
             className="iso-slab iso-slab--front"
             points={poly([g.pt(0, 0), g.pt(c.cols, 0), [g.pt(c.cols, 0)[0], g.pt(c.cols, 0)[1] + slab], [g.pt(0, 0)[0], g.pt(0, 0)[1] + slab]])}
-          />
-          <polygon
+          />}
+          {!bg && <polygon
             className="iso-slab iso-slab--side"
             points={poly([g.pt(c.cols, 0), g.pt(c.cols, c.rows), [g.pt(c.cols, c.rows)[0], g.pt(c.cols, c.rows)[1] + slab], [g.pt(c.cols, 0)[0], g.pt(c.cols, 0)[1] + slab]])}
-          />
+          />}
           {cells.map(({ row, col }) => (
             <polygon
               key={`${row}-${col}`}
@@ -147,6 +186,8 @@ export function IsoArena({
         </svg>
         {c.units.map((r) => renderUnit(r, g))}
         {children?.(g)}
+        {/* objetos do cenário que ficam por cima das Unidades */}
+        {bg && <img className="iso-bg-front" src={sceneUrl(bg, bg.front)} width={g.width} height={g.height} alt="" draggable={false} />}
       </div>
     </div>
   );
