@@ -8,6 +8,7 @@ import { SettingsPanel } from '../title/Settings';
 import { CombatOverlay } from './CombatOverlay';
 import { DirectorBanner, EventModal, GameOver, LogPanel } from './Overlays';
 import { TopBar } from './TopBar';
+import { AnalystLayer } from '../analyst';
 import { WorldMap } from './WorldMap';
 import { DossierHost } from './unit/DossierHost';
 import { useMedia, usePortrait } from './portrait/usePortrait';
@@ -138,6 +139,12 @@ export function GameScreen() {
       <EventModal />
       <CombatOverlay />
       <GameOver onQuit={quit} />
+      {/* Analista (rival-ai): sem gavetas no palco, "abrir painel" abre o país do Diretor ou a Agência. */}
+      <AnalystLayer
+        onOpenDrawer={(side) =>
+          stage.open(side === 'left' ? { kind: 'country', id: a.location, tab: 'market' } : { kind: 'agency', tab: 'director' })
+        }
+      />
       <GModal
         open={menu}
         onClose={closeMenu}

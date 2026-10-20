@@ -13,6 +13,7 @@ import { classLabel, countryName, itemBlurb, itemName, stationName, traitBlurb, 
 import { Help } from '../help/Glossary';
 import { Details, Verdict } from '../stage/Verdict';
 import { GearSection } from '../gear/GearSection';
+import { isLocked } from '../../../game/tutorial/locks';
 import './unit.css';
 
 /** Tipos de força, na ordem em que aparecem na ficha, com o ícone do kit. */
@@ -369,7 +370,7 @@ export function UnitDossier({ uid, onClose, embedded }: { uid: string; onClose: 
               <GameIcon id="director" size={16} accent="cold" /> {t('game.unit.takeInEscort')}
             </button>
           )}
-          {place.kind === 'escort' && (
+          {place.kind === 'escort' && !isLocked(s, 'teams') && (
             <button
               className="btn ghost"
               disabled={!directorAt(a, a.location)}

@@ -17,6 +17,7 @@ import { UnitRow } from './UnitRow';
 import { FleetSpace, UnitCard, UpkeepBalance } from './unit/UnitCard';
 import { useOpenUnit } from './unit/DossierHost';
 import { ArsenalTab } from './gear/ArsenalTab';
+import { isLocked } from '../../game/tutorial/locks';
 import './agency.css';
 import { DirectorAvatar } from './DirectorAvatar';
 import { cargoQty } from '../../game/cargo';
@@ -331,7 +332,7 @@ function EscortTab() {
           tone="neutral"
           icon={<Shield size={26} />}
           action={
-            canDetach ? (
+            canDetach && !isLocked(s, 'teams') ? (
               <button className="btn ghost" onClick={() => setPicking([])}>
                 {t('game.agency.escort.detachTeam')}
               </button>
@@ -450,7 +451,7 @@ function TeamsTab() {
         tone="neutral"
         icon={<Users size={26} />}
         action={
-          !a.teams.length && a.escort.length > 0 && stage ? (
+          !a.teams.length && a.escort.length > 0 && stage && !isLocked(s, 'teams') ? (
             <button className="btn ghost" onClick={() => stage.replace({ kind: 'agency', tab: 'escort' })}>
               {t('game.agency.escort.detachTeam')}
             </button>
@@ -570,7 +571,7 @@ function TeamsTab() {
       <Details>
         <p className="hint-sm">{t('game.agency.teams.hint')}</p>
       </Details>
-      {stationsWithUnits.length > 0 && (
+      {stationsWithUnits.length > 0 && !isLocked(s, 'teams') && (
         <Section title={t('game.agency.teams.detachFrom')}>
           <select className="input g-input" value={formFrom ?? ''} onChange={(e) => (setFormFrom(e.target.value || null), setPicks([]))}>
             <option value="">{t('game.agency.teams.chooseStation')}</option>

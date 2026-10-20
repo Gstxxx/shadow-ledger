@@ -2,6 +2,7 @@ import { useCallback, useEffect, useLayoutEffect, useRef } from 'react';
 import { AlertTriangle, Briefcase, Crosshair, MapPin, Store, Swords } from 'lucide-react';
 import { GActionBar, GModal } from '../../../art';
 import { directorAt, player, stationIn } from '../../../game/state';
+import { isLocked } from '../../../game/tutorial/locks';
 import { useGame, useGameStore } from '../../../store/game';
 import { useT } from '../../../i18n';
 import { classLabel, countryName, itemName } from '../../../i18n/lookup';
@@ -58,7 +59,8 @@ export function StageModals({ stage }: { stage: StageApi }) {
     const tabs: { id: CountryTab; label: string; icon: JSX.Element; count?: number }[] = [
       { id: 'overview', label: t('game.topbar.country'), icon: <MapPin size={16} /> },
       { id: 'market', label: t('game.country.market'), icon: <Store size={16} /> },
-      { id: 'ops', label: t('game.country.ops.title'), icon: <AlertTriangle size={16} /> },
+      // Preset Tutorial: Operações travadas no motor, então a aba nem aparece.
+      ...(isLocked(s, 'operations') ? [] : [{ id: 'ops' as CountryTab, label: t('game.country.ops.title'), icon: <AlertTriangle size={16} /> }]),
       { id: 'station', label: t('game.country.station.title'), icon: <Briefcase size={16} />, count: stationIn(a, id)?.units.length || undefined },
     ];
     return (
@@ -86,7 +88,7 @@ export function StageModals({ stage }: { stage: StageApi }) {
         <div className="stage-body">
           {m.tab === 'overview' && <CountryOverview countryId={id} />}
           {m.tab === 'market' && <MarketPanel countryId={id} />}
-          {m.tab === 'ops' && <CountryOps countryId={id} />}
+          {m.tab === 'ops' && !isLocked(s, 'operations') && <CountryOps countryId={id} />}
           {m.tab === 'station' && <CountryStation countryId={id} />}
         </div>
       </GModal>
