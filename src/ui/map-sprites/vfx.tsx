@@ -7,16 +7,15 @@ import type { CSSProperties } from 'react';
 import type { GameState } from '../../game/types';
 import { player } from '../../game/state';
 import { useSettings } from '../../store/settings';
-import vfxJson from '../../../public/sprites/vfx-extra.json';
+import { spriteUrl, useSpriteAtlas, type SpriteAtlas } from '../../art/sprites';
 import './sprites.css';
 
 type VfxName = 'level_up' | 'rain' | 'fog' | 'flare';
-const ATLAS = vfxJson as { image: string; width: number; height: number; frameWidth: number; frameHeight: number; anchor: { x: number; y: number }; animations: { name: string; row: number; frames: number; fps: number }[] };
-const url = `${import.meta.env.BASE_URL}sprites/${ATLAS.image}`;
 
 /** Um quadro de animação do atlas no SVG, com a âncora em (x, y) e largura `w` em unidades do mapa. */
-function AnimSprite({ name, x, y, w, once, slow = 1, opacity = 1 }: { name: VfxName; x: number; y: number; w: number; once?: boolean; slow?: number; opacity?: number }) {
-  const a = ATLAS.animations.find((an) => an.name === name)!;
+function AnimSprite({ atlas: ATLAS, name, x, y, w, once, slow = 1, opacity = 1 }: { atlas: SpriteAtlas; name: VfxName; x: number; y: number; w: number; once?: boolean; slow?: number; opacity?: number }) {
+  const a = ATLAS.animations.find((an) => an.name === name);
+  if (!a) return null;
   const { frameWidth: fw, frameHeight: fh } = ATLAS;
   const k = w / fw;
   const style = {
@@ -27,7 +26,7 @@ function AnimSprite({ name, x, y, w, once, slow = 1, opacity = 1 }: { name: VfxN
   } as CSSProperties;
   return (
     <svg x={x - ATLAS.anchor.x * k} y={y - ATLAS.anchor.y * k} width={fw * k} height={fh * k} viewBox={`0 0 ${fw} ${fh}`} overflow="hidden" opacity={opacity} className="msp-vfx" aria-hidden="true">
-      <image href={url} x={0} y={-a.row * fh} width={ATLAS.width} height={ATLAS.height} className="msp-img msp-vfx-strip" style={style} preserveAspectRatio="none" />
+      <image href={spriteUrl(ATLAS.image)} x={0} y={-a.row * fh} width={ATLAS.width} height={ATLAS.height} className="msp-img msp-vfx-strip" style={style} preserveAspectRatio="none" />
     </svg>
   );
 }
@@ -73,7 +72,8 @@ export function MapVfx({ s, inv, project }: { s: GameState; inv: number; project
   const alive = useRef(true);
   useEffect(() => () => void (alive.current = false), []);
 
-  if (reduced) return null;
+  const atlas = useSpriteAtlas('vfx-extra');
+  if (reduced || !atlas) return null;
 
   const at = (countryId: string) => {
     const c = s.countries[countryId];
@@ -96,15 +96,15 @@ export function MapVfx({ s, inv, project }: { s: GameState; inv: number; project
     <g className="msp-vfx-layer" pointerEvents="none">
       {weather.map((c) => {
         const p = project(c.lon, c.lat);
-        return <AnimSprite key={`w-${c.id}`} name={c.politics === 'disorder' ? 'fog' : 'rain'} x={p[0]} y={p[1] + 10 * inv} w={46 * inv} opacity={0.42} slow={1.6} />;
+        return <AnimSprite atlas={atlas} key={`w-${c.id}`} name={c.politics === 'disorder' ? 'fog' : 'rain'} x={p[0]} y={p[1] + 10 * inv} w={46 * inv} opacity={0.42} slow={1.6} />;
       })}
       {flareAt.map((id) => {
         const p = at(id);
-        return p ? <AnimSprite key={`f-${id}`} name="flare" x={p[0] - 12 * inv} y={p[1] - 2 * inv} w={34 * inv} opacity={0.9} /> : null;
+        return p ? <AnimSprite atlas={atlas} key={`f-${id}`} name="flare" x={p[0] - 12 * inv} y={p[1] - 2 * inv} w={34 * inv} opacity={0.9} /> : null;
       })}
       {pillars.map((pl) => {
         const p = at(pl.countryId);
-        return p ? <AnimSprite key={pl.id} name="level_up" x={p[0]} y={p[1] - 6 * inv} w={70 * inv} once slow={2} /> : null;
+        return p ? <AnimSprite atlas={atlas} key={pl.id} name="level_up" x={p[0]} y={p[1] - 6 * inv} w={70 * inv} once slow={2} /> : null;
       })}
     </g>
   );

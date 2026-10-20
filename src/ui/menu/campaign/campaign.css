@@ -326,3 +326,24 @@
   background: var(--sl-paper);
   border-top: 1px solid var(--cp-line);
 }
+
+/* Retratos da história (Analista, Arrieta, Casa Moravia) em pixel art. */
+.cmp-portrait {
+  display: inline-block;
+  flex: none;
+  line-height: 0;
+  image-rendering: pixelated;
+}
+.slm-brief-analyst {
+  position: relative;
+  padding-left: 72px;
+  min-height: 76px;
+}
+.slm-brief-portrait {
+  position: absolute;
+  left: 12px;
+  top: 10px;
+  border-radius: 6px;
+  overflow: hidden;
+  background: #121820;
+}

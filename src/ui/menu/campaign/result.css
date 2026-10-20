@@ -242,3 +242,27 @@
     grid-column: 2;
   }
 }
+
+/* Pista com o retrato de quem a entrega. */
+.cr2-clue--speaker {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  column-gap: 14px;
+}
+.cr2-clue--speaker > :not(.cr2-clue-portrait) {
+  grid-column: 2;
+}
+.cr2-clue-portrait {
+  grid-row: 1 / span 3;
+  align-self: start;
+  border-radius: 6px;
+  overflow: hidden;
+  background: #121820;
+}
+@media (max-width: 480px) {
+  .cr2-clue-portrait {
+    transform: scale(0.75);
+    transform-origin: top left;
+    margin: 0 -23px -32px 0;
+  }
+}

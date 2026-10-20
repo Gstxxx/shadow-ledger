@@ -11,6 +11,7 @@ import { SceneCinematic } from '../../cinematics/SceneCinematic';
 import { ease, f } from '../ease';
 import { sfx } from '../settings';
 import type { CampaignResultApi } from './connect';
+import { CLUE_SPEAKER, StoryPortrait } from './StoryPortrait';
 import './campaign.css';
 import './result.css';
 
@@ -97,7 +98,8 @@ function Debrief({ api, reduced, onFinale }: { api: CampaignResultApi; reduced: 
         </dl>
       </div>
       <div className="cr2-body">
-        <article className="cr2-clue" data-in>
+        <article className="cr2-clue cr2-clue--speaker" data-in>
+          <StoryPortrait who={CLUE_SPEAKER[n] ?? 'analyst'} size={128} className="cr2-clue-portrait" />
           <span className="cr2-clue-tag">{t('campaign.debrief.newClue')}</span>
           <h3>{t(`campaign.ch.${n}.clue.title` as Key)}</h3>
           <p>{t(`campaign.ch.${n}.clue.body` as Key)}</p>

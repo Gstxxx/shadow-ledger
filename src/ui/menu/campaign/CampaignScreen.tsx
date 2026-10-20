@@ -18,6 +18,7 @@ import { NameField } from '../screens/NewGame';
 import { useNewGameStrings } from '../screens/newGameStrings';
 import { useOriginStrings } from '../screens/originStrings';
 import type { CampaignMenuProps, CampaignView, ChapterInfo, Difficulty } from './types';
+import { StoryPortrait } from './StoryPortrait';
 import './campaign.css';
 
 const pick = <T,>(a: readonly T[]) => a[Math.floor(Math.random() * a.length)];
@@ -283,6 +284,7 @@ function Briefing({ view, chapter, reduced, onBack, onStart }: { view: CampaignV
         {ch('hook')}
       </p>
       <section className="slm-brief-analyst" aria-label={t('campaign.brief.analyst')} data-line>
+        <StoryPortrait who="analyst" className="slm-brief-portrait" />
         <span className="slm-brief-analyst-who">
           <GameIcon id="intel" size={18} accent="var(--sl-stamp-blue)" />
           {t('campaign.brief.analyst')}

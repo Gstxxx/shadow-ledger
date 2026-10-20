@@ -15,7 +15,7 @@ import { GMapMarker } from '../../art';
 import { bandsOf } from '../../game/combatJobs';
 import { useStage } from './stage/context';
 import { StationPin, StationPinDefs } from './map/StationPin';
-import { MapMarker, MapVfx, SPRITE_MIN_ZOOM, StationSprite } from '../map-sprites';
+import { FlightSprite, MapMarker, MapVfx, SPRITE_MIN_ZOOM, StationSprite } from '../map-sprites';
 import { localHour, reliefTexture } from './map/relief';
 
 const W = 1000;
@@ -494,7 +494,19 @@ export function WorldMap({ mode, onPickCountry }: { mode: MapMode; onPickCountry
             return (
               <g key={t.id}>
                 {t.travel && <path className="g-route" d={routePath(t.travel, s)} fill="none" stroke="var(--amber)" strokeOpacity={0.5} strokeDasharray={`${2 * inv} ${3 * inv}`} strokeWidth={inv} />}
-                <path transform={`translate(${x + 7 * inv} ${y + 5 * inv})`} d={`M0 ${-d}L${d} ${d}L${-d} ${d}Z`} fill="none" stroke="var(--amber)" strokeWidth={1.4 * inv} />
+                {t.travel ? (
+                  // Equipe em voo: com Cargueiro Destacado, o sprite dele; em voo comercial, um cargo0 pequeno.
+                  <FlightSprite
+                    itemId={t.travel.mode === 'freighter' ? t.freighter?.itemId : 'cargo0'}
+                    flight={t.travel}
+                    project={project}
+                    inv={inv}
+                    px={t.travel.mode === 'freighter' ? 48 : 32}
+                    fallback={<path transform={`translate(${x + 7 * inv} ${y + 5 * inv})`} d={`M0 ${-d}L${d} ${d}L${-d} ${d}Z`} fill="none" stroke="var(--amber)" strokeWidth={1.4 * inv} />}
+                  />
+                ) : (
+                  <path transform={`translate(${x + 7 * inv} ${y + 5 * inv})`} d={`M0 ${-d}L${d} ${d}L${-d} ${d}Z`} fill="none" stroke="var(--amber)" strokeWidth={1.4 * inv} />
+                )}
               </g>
             );
           })}
@@ -507,9 +519,18 @@ export function WorldMap({ mode, onPickCountry }: { mode: MapMode; onPickCountry
               return (
                 <g>
                   <path className="g-route" d={routePath(a.flight, s)} fill="none" stroke="var(--amber)" strokeWidth={1.2 * inv} strokeDasharray={`${4 * inv} ${3 * inv}`} />
-                  <g transform={`translate(${x} ${y}) rotate(${bearing(a.flight, s)}) scale(${inv})`}>
-                    <path d="M9 0 L-6 -6 L-3 0 L-6 6 Z" fill="var(--amber)" stroke="#0b0d10" strokeWidth={1} />
-                  </g>
+                  {/* Cargueiro líder da Frota (sprite do modelo); sem o atlas, a seta de antes */}
+                  <FlightSprite
+                    itemId={a.fleet.find((u) => u.itemId.startsWith('cargo'))?.itemId}
+                    flight={a.flight}
+                    project={project}
+                    inv={inv}
+                    fallback={
+                      <g transform={`translate(${x} ${y}) rotate(${bearing(a.flight, s)}) scale(${inv})`}>
+                        <path d="M9 0 L-6 -6 L-3 0 L-6 6 Z" fill="var(--amber)" stroke="#0b0d10" strokeWidth={1} />
+                      </g>
+                    }
+                  />
                 </g>
               );
             })()

@@ -1,13 +1,10 @@
 // Sprites isométricos (pixel art, art-kit: public/sprites/*) no mapa e nas Estações.
 // Lê os manifestos estáticos (tamanho e âncora de cada PNG) e desenha com <image> no SVG do mapa ou <img> no HTML,
 // sempre com image-rendering: pixelated e sem filtros (o mapa recalcula a cada 6 h de jogo).
-import type { ReactNode } from 'react';
-import { Sprite, SpriteStill } from '../../art/sprites';
+import { useEffect, useState, type ReactNode } from 'react';
+import { loadSpriteStatic, Sprite, spriteAtlasSync, SpriteStill, type SpriteStaticGroup } from '../../art/sprites';
 import { useSettings } from '../../store/settings';
 import type { OriginId, StationLevel } from '../../game/types';
-import stationsJson from '../../../public/sprites/stations.json';
-import interiorsJson from '../../../public/sprites/interiors.json';
-import markersJson from '../../../public/sprites/markers-stills.json';
 import { StationPin } from '../game/map/StationPin';
 import './sprites.css';
 
@@ -21,17 +18,35 @@ interface Still {
 }
 
 const url = (p: string) => `${import.meta.env.BASE_URL}sprites/${p}`;
-const STATIONS = stationsJson.items as Still[];
-const INTERIORS = interiorsJson.items as Still[];
-const MARKERS = markersJson.items as Still[];
+// Manifestos carregados em tempo de execução (public/sprites/*.json, da art-kit): o build não depende deles e,
+// até chegarem, o mapa usa a plaquinha e os marcadores antigos.
+const cache = new Map<string, Still[]>();
+function useStills(group: string): Still[] | undefined {
+  const [items, setItems] = useState<Still[] | undefined>(() => cache.get(group) ?? (spriteAtlasSync(group) as unknown as SpriteStaticGroup | undefined)?.items);
+  useEffect(() => {
+    if (items) return;
+    let alive = true;
+    loadSpriteStatic(group).then(
+      (g) => {
+        cache.set(group, g.items as Still[]);
+        if (alive) setItems(g.items as Still[]);
+      },
+      () => undefined,
+    );
+    return () => {
+      alive = false;
+    };
+  }, [group, items]);
+  return items;
+}
 
 /** Nível da Estação → id do prédio no manifesto. */
 export const LEVEL_ID: Record<StationLevel, string> = { 1: 'cell', 2: 'safehouse', 3: 'office', 4: 'compound', 5: 'base' };
 export type StationState = 'normal' | 'damaged' | 'interdicted';
 export type MarkerKind = 'hostile_group' | 'threat' | 'rival_agency' | 'player_station' | 'director' | 'contract' | 'hunt' | 'vault' | 'flight';
 
-const stationStill = (level: StationLevel, state: StationState) =>
-  STATIONS.find((x) => x.id === LEVEL_ID[level] && x.state === state) ?? STATIONS.find((x) => x.id === LEVEL_ID[level])!;
+const stationStill = (list: Still[], level: StationLevel, state: StationState) =>
+  list.find((x) => x.id === LEVEL_ID[level] && x.state === state) ?? list.find((x) => x.id === LEVEL_ID[level]);
 
 /** Imagem de sprite no SVG, com o ponto (0,0) na âncora do PNG e largura `w` em unidades do mapa. */
 function SvgStill({ still, w }: { still: Still; w: number }) {
@@ -74,22 +89,24 @@ export function StationSprite(props: {
   onClick?: () => void;
 }) {
   const { x, y, inv, k, level, interdicted, threatened, damaged, scale = 1, label, onClick } = props;
-  if (k < SPRITE_MIN_ZOOM) return <StationPin {...props} />;
+  const stations = useStills('stations');
   const state: StationState = interdicted ? 'interdicted' : damaged || threatened ? 'damaged' : 'normal';
+  const still = stations && stationStill(stations, level, state);
+  if (k < SPRITE_MIN_ZOOM || !still) return <StationPin {...props} />;
   const w = LEVEL_PX[level] * scale * inv;
   return (
     <g className={`msp-station${onClick ? ' pin' : ''}`} transform={`translate(${x} ${y})`} onClick={onClick} role={onClick ? 'button' : undefined} aria-label={label}>
       {label ? <title>{label}</title> : null}
       {onClick && <circle r={22 * inv} fill="transparent" />}
       {threatened && <circle className="stpin-pulse" r={w * 0.42} fill="none" stroke="var(--red)" strokeWidth={1.6 * inv} />}
-      <SvgStill still={stationStill(level, state)} w={w} />
+      <SvgStill still={still} w={w} />
     </g>
   );
 }
 
 /** Marcador isométrico no mapa (Agência Rival, grupo hostil, Ameaça, contrato, Caçada…), com tamanho fixo na tela. */
 export function MapMarker({ kind, x, y, inv, px = 26, children, ...rest }: { kind: MarkerKind; x: number; y: number; inv: number; px?: number; children?: ReactNode } & React.SVGProps<SVGGElement>) {
-  const still = MARKERS.find((m) => m.id === kind);
+  const still = useStills('markers-stills')?.find((m) => m.id === kind);
   if (!still) return null;
   return (
     <g transform={`translate(${x} ${y})`} {...rest}>
@@ -101,7 +118,8 @@ export function MapMarker({ kind, x, y, inv, px = 26, children, ...rest }: { kin
 
 /** Interior da Estação (imagem de destaque da aba/modal), em escala inteira para o pixel ficar nítido. */
 export function StationInterior({ level, maxWidth = 320, maxHeight = 190, className, alt = '' }: { level: StationLevel; maxWidth?: number; maxHeight?: number; className?: string; alt?: string }) {
-  const still = INTERIORS.find((x) => x.id === LEVEL_ID[level]) ?? INTERIORS[0];
+  const still = useStills('interiors')?.find((x) => x.id === LEVEL_ID[level]);
+  if (!still) return null;
   const n = Math.max(1, Math.min(Math.floor(maxWidth / still.width), Math.floor(maxHeight / still.height)));
   return <SpriteStill group="interiors" id={still.id} scale={n} alt={alt} className={`msp-interior${className ? ` ${className}` : ''}`} />;
 }
