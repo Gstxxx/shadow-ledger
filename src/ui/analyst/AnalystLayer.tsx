@@ -184,7 +184,9 @@ export function AnalystLayer({ onOpenDrawer }: AnalystLayerProps) {
 
   const tut = s && guideEnabled(s) ? tutorialOf(s) : undefined;
   const ev = s?.events.find((e) => (e.kind as string) !== 'engage');
-  const topic = s && !s.over && !s.combat ? presentTopics(s).find((id) => !mem.seen.includes(id)) : undefined;
+  // Combate ocupa a tela inteira (grade, Reserva, resultado): a Analista some até ele acabar.
+  const inCombat = !!(s?.combat || s?.pendingCombat);
+  const topic = s && !s.over && !inCombat ? presentTopics(s).find((id) => !mem.seen.includes(id)) : undefined;
 
   // Um Evento novo torna velha a comemoração anterior.
   useEffect(() => {
@@ -257,7 +259,7 @@ export function AnalystLayer({ onOpenDrawer }: AnalystLayerProps) {
   const compact = useCompact();
   const hintOpen = hintChoice ?? !compact;
 
-  if (!s) return null;
+  if (!s || inCombat) return null;
 
   const ack = () => {
     if (line?.topic) {

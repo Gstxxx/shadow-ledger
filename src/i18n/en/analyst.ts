@@ -25,7 +25,7 @@ export default {
   'analyst.topic.threat.title': 'Threat',
   'analyst.topic.threat.text': 'Threats come with a warning. We have hours, sometimes days. Lawyers, reinforcements, a bribe or evacuation: decide before it lands.',
   'analyst.topic.combat.title': 'Combat',
-  'analyst.topic.combat.text': 'The Forecast estimates each Tactic. Assault presses, Defensive holds, Infiltration favors agents, Negotiate pays to avoid the fight.',
+  'analyst.topic.combat.text': 'First Combat done. Next time, read the Forecast: it estimates each Tactic. Assault presses, Defensive holds, Infiltration favors agents, Negotiate pays to avoid the fight.',
   'analyst.topic.upkeep.title': 'Upkeep',
   'analyst.topic.upkeep.text': 'At month’s end every Unit bills us. No cash, and Personnel walk while machines sit idle. Do not hire before you need to.',
   'analyst.topic.team.title': 'Team',

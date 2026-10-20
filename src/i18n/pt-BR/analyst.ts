@@ -25,7 +25,7 @@ export default {
   'analyst.topic.threat.title': 'Ameaça',
   'analyst.topic.threat.text': 'Ameaças vêm com aviso. Temos horas, às vezes dias. Advogados, reforço, suborno ou evacuar: decida antes que chegue.',
   'analyst.topic.combat.title': 'Combate',
-  'analyst.topic.combat.text': 'A Prévia estima a chance de cada Tática. Assalto pressiona, Defensiva segura, Infiltração favorece agentes, Negociar paga para não lutar.',
+  'analyst.topic.combat.text': 'Primeiro Combate feito. Da próxima vez, olhe a Prévia: ela estima a chance de cada Tática. Assalto pressiona, Defensiva segura, Infiltração favorece agentes, Negociar paga para não lutar.',
   'analyst.topic.upkeep.title': 'Manutenção',
   'analyst.topic.upkeep.text': 'No fim do mês, cada Unidade cobra. Sem caixa, o Pessoal vai embora e as máquinas param. Não contrate antes de precisar.',
   'analyst.topic.team.title': 'Equipe',

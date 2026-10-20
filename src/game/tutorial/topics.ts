@@ -43,7 +43,6 @@ export const TOPIC_TARGETS: Partial<Record<TopicId, string[]>> = {
   fly: ['speed'],
   station: ['open-station', 'drawer-left'],
   threat: ['tab-threats', 'threats-dock'],
-  combat: ['combat-dock'],
   contract: ['tab-contracts', 'drawer-right'],
   team: ['tab-teams', 'drawer-right'],
   tension: ['tension'],
@@ -61,7 +60,8 @@ export function presentTopics(s: GameState): TopicId[] {
   const landed = a.director.status === 'free' && !a.flight;
   const step = t?.step;
   const on: Record<TopicId, boolean> = {
-    combat: s.pendingCombat?.agencyId === a.id || s.combat?.agencyId === a.id,
+    // Logo depois do primeiro Combate: durante ele a tela é toda do Combate e a Analista fica fora.
+    combat: a.stats.combatsWon + a.stats.combatsLost > 0,
     threat: a.threats.length > 0,
     fleet: true,
     buy: landed,

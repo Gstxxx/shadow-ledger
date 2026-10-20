@@ -129,6 +129,13 @@ describe('Tutorial', () => {
     expect(tutorialOf(s)).toBeUndefined();
   });
 
+  it('a explicação de Combate vem depois do primeiro Combate, não durante', () => {
+    const s = tutorial(12);
+    expect(presentTopics(s)).not.toContain('combat');
+    player(s).stats.combatsLost = 1;
+    expect(presentTopics(s)[0]).toBe('combat');
+  });
+
   it('pular o guia encerra o Tutorial', () => {
     const s = tutorial(7);
     skipGuide(s);
