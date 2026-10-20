@@ -3,17 +3,20 @@
  *
  * - Página (navegação / index.html): rede primeiro, cache como reserva offline.
  * - /assets/* (nomes com hash do Vite, imutáveis): cache primeiro.
+ * - /sprites/* (manifestos + atlas que mudam juntos, sem hash no nome): rede primeiro, cache só offline,
+ *   para nunca juntar um manifesto antigo com um PNG novo depois de um deploy.
  * - Demais arquivos do mesmo site (ícones, manifest, dados): cache e revalida em segundo plano.
  *
  * A "versão por build" vem do próprio index.html: a cada index novo baixado, os
  * assets que ele não referencia mais são apagados do cache. SHELL_VERSION só muda
  * quando a lógica deste arquivo muda.
  */
-const SHELL_VERSION = 'v1';
+const SHELL_VERSION = 'v2';     // v2: /sprites/ rede primeiro (e limpa os sprites guardados pela v1)
 const PAGES = `sl-pages-${SHELL_VERSION}`;
 const ASSETS = `sl-assets-${SHELL_VERSION}`;
 const STATIC = `sl-static-${SHELL_VERSION}`;
-const KEEP = [PAGES, ASSETS, STATIC];
+const SPRITES = `sl-sprites-${SHELL_VERSION}`;
+const KEEP = [PAGES, ASSETS, STATIC, SPRITES];
 
 const scopeUrl = new URL(self.registration.scope);
 const INDEX_URL = new URL('./', scopeUrl).href;
@@ -118,6 +121,23 @@ self.addEventListener('fetch', (event) => {
         const r = await fetch(req);
         if (r.ok) event.waitUntil(cache.put(req, r.clone()));
         return r;
+      })(),
+    );
+    return;
+  }
+
+  // Sprites: rede primeiro (o servidor revalida por ETag, 304 é barato); cache só sem rede.
+  if (url.pathname.includes('/sprites/')) {
+    event.respondWith(
+      (async () => {
+        const cache = await caches.open(SPRITES);
+        try {
+          const r = await fetch(req);
+          if (r.ok && r.type === 'basic') event.waitUntil(cache.put(req, r.clone()));
+          return r;
+        } catch {
+          return (await cache.match(req)) || Response.error();
+        }
       })(),
     );
     return;
