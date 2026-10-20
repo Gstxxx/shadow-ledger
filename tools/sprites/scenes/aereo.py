@@ -466,8 +466,8 @@ def env():
     # back strip: two refuellers parked at the hangar mouth either side of the jet nose
     v += fuel_truck(150, 2) + fuel_truck(34, 2, rev=True)
     # no-man's land (cols 3-4, x 100..156): waist-high cover only, clear of the cell centres
-    v += uld(99, 47) + uld(116, 47, 'bag2') + chocks(104, 64) + chocks(121, 64)
-    v += bag_cart(138, 49, 2)
+    v += uld(101, 47) + uld(118, 47, 'bag2') + chocks(104, 64) + chocks(121, 64)
+    v += bag_cart(135, 49, 2)
     v += tug(124, 73) + bag_cart(101, 77, 1)
     v += extinguisher(128, 103) + cone(106, 104) + cone(150, 30)
     return v

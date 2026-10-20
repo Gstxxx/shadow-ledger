@@ -340,21 +340,26 @@ def atlas_frame(set_id, anim='idle', frame=0, mirror=False):
     return im, (ax, ay)
 
 
-def scale_preview(bg_frame, front, b, BG, sets=('urban', 'military')):
+def scale_preview(bg_frame, front, b, BG, sets=('urban', 'military'), props=()):
     """Every cell filled with real character sprites: player cols 0-2 front view, enemy cols 5-7 back view mirrored,
-    cols 3-4 alternate. Anchor (feet) at the cell centre + (0,1), exactly like the game does."""
+    cols 3-4 alternate. Anchor (feet) at the cell centre + (0,1), exactly like the game does. `props` =
+    [(img, x, y, depth)] are drawn interleaved with the units by depth (unit on cell (c,r) = c + r)."""
     W, H = b['W'], b['H']
     c = Image.new('RGBA', (W, H), BG + (255,))
     c.alpha_composite(bg_frame)
     c.alpha_composite(grid_overlay((W, H), b))
-    cells = sorted(((col, row) for col in range(COLS) for row in range(ROWS)), key=lambda k: k[0] + k[1])
-    for col, row in cells:
-        s = sets[(col + row) % len(sets)]
-        enemy = col >= 5 or (col in (3, 4) and row % 2)
-        im, (ax, ay) = atlas_frame(s + '-back' if enemy else s, 'idle', 0, mirror=enemy)
-        X, Y = cell_center(col, row)
-        sx, sy = scr(b, X, Y)
-        c.alpha_composite(im, (int(round(sx - ax)), int(round(sy + 1 - ay))))
+    draws = []
+    for col in range(COLS):
+        for row in range(ROWS):
+            s = sets[(col + row) % len(sets)]
+            enemy = col >= 5 or (col in (3, 4) and row % 2)
+            im, (ax, ay) = atlas_frame(s + '-back' if enemy else s, 'idle', 0, mirror=enemy)
+            X, Y = cell_center(col, row)
+            sx, sy = scr(b, X, Y)
+            draws.append((col + row, 0, im, int(round(sx - ax)), int(round(sy + 1 - ay))))
+    draws += [(dp, 1, im, x, y) for im, x, y, dp in props]
+    for _, _, im, x, y in sorted(draws, key=lambda k: (k[0], k[1])):
+        c.alpha_composite(im, (x, y))
     c.alpha_composite(front)
     return c
 

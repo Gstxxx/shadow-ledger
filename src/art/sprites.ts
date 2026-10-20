@@ -487,10 +487,35 @@ export interface SceneSheet {
  * que vão POR CIMA das Unidades. Grade isométrica de 8 colunas × 3 linhas (jogador 0–2, inimigo 5–7):
  * canto da célula (c, r) = gridOrigin + c·colStep + r·rowStep; centro = canto + (colStep + rowStep) / 2.
  */
+/**
+ * Objeto de cenário recortado do fundo (caixas, barricadas, bancos…). Desenhe-o junto com as Unidades, em ordem
+ * de `depth` crescente: uma Unidade na célula (c, r) tem profundidade c + r. Assim quem está atrás da caixa fica
+ * escondido por ela. A sombra no chão já está no fundo.
+ */
+export interface ArenaProp {
+  id: string;
+  /** arquivo relativo à pasta do manifesto (props/<id>.png) */
+  image: string;
+  /** canto superior esquerdo no fundo, px 1x */
+  x: number;
+  y: number;
+  width: number;
+  height: number;
+  /** ponto no chão (centro da base) no fundo, px 1x */
+  anchor: { x: number; y: number };
+  /** célula que ocupa (pode estar fora da grade: fileira de trás, faixa da esquerda) */
+  col: number;
+  row: number;
+  /** profundidade na mesma unidade das Unidades (c + r da célula delas) */
+  depth: number;
+}
+
 export interface ArenaManifest extends SceneSheet {
   kind: 'arena';
   id: ArenaId;
   front: string;
+  /** objetos para intercalar com as Unidades por profundidade (ver ArenaProp) */
+  props: ArenaProp[];
   gridOrigin: { x: number; y: number };
   cellW: number;
   cellH: number;
@@ -572,4 +597,16 @@ export function useArena(id: ArenaId) {
 /** Cena do menu como estado React. */
 export function useMenuScene(orientation: 'portrait' | 'landscape') {
   return useScene(() => loadMenuScene(orientation), `menu/menu-${orientation}`);
+}
+
+/**
+ * Ordem de desenho de uma arena: Unidades (pela célula) e objetos (por `depth`) juntos, do fundo para a frente.
+ * Empate: a Unidade vem antes do objeto da mesma profundidade. Desenhe `front` por último.
+ */
+export function arenaDrawOrder<U extends { col: number; row: number }>(m: ArenaManifest, units: readonly U[]) {
+  const items: ({ kind: 'unit'; depth: number; unit: U } | { kind: 'prop'; depth: number; prop: ArenaProp })[] = [
+    ...units.map((unit) => ({ kind: 'unit' as const, depth: unit.col + unit.row, unit })),
+    ...m.props.map((prop) => ({ kind: 'prop' as const, depth: prop.depth, prop })),
+  ];
+  return items.sort((a, b) => a.depth - b.depth || (a.kind === b.kind ? 0 : a.kind === 'unit' ? -1 : 1));
 }

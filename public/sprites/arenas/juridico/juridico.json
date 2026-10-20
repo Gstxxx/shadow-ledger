@@ -40,5 +40,157 @@
       7
     ]
   },
-  "note": "Pixel-edge coords at 1x. Corner of cell (c,r) = gridOrigin + c*colStep + r*rowStep; cell centre = corner + 0.5*(colStep+rowStep). Character sprites (rig.py, 128x100) put world origin at pixel edge (64,70): draw them at centre - (64,70)."
+  "props": [
+    {
+      "id": "p00",
+      "image": "props/p00.png",
+      "x": 363,
+      "y": 300,
+      "width": 60,
+      "height": 49,
+      "anchor": {
+        "x": 393.0,
+        "y": 333.5
+      },
+      "col": 3,
+      "row": 0,
+      "depth": 2.982
+    },
+    {
+      "id": "p01",
+      "image": "props/p01.png",
+      "x": 401,
+      "y": 323,
+      "width": 56,
+      "height": 44,
+      "anchor": {
+        "x": 430.0,
+        "y": 355.0
+      },
+      "col": 4,
+      "row": 0,
+      "depth": 3.75
+    },
+    {
+      "id": "p02",
+      "image": "props/p02.png",
+      "x": 477,
+      "y": 345,
+      "width": 22,
+      "height": 20,
+      "anchor": {
+        "x": 488.0,
+        "y": 361.0
+      },
+      "col": 4,
+      "row": 0,
+      "depth": 3.964
+    },
+    {
+      "id": "p03",
+      "image": "props/p03.png",
+      "x": 365,
+      "y": 345,
+      "width": 22,
+      "height": 28,
+      "anchor": {
+        "x": 376.0,
+        "y": 369.0
+      },
+      "col": 3,
+      "row": 1,
+      "depth": 4.25
+    },
+    {
+      "id": "p04",
+      "image": "props/p04.png",
+      "x": 335,
+      "y": 361,
+      "width": 16,
+      "height": 17,
+      "anchor": {
+        "x": 343.0,
+        "y": 375.5
+      },
+      "col": 3,
+      "row": 1,
+      "depth": 4.482
+    },
+    {
+      "id": "p05",
+      "image": "props/p05.png",
+      "x": 361,
+      "y": 367,
+      "width": 18,
+      "height": 16,
+      "anchor": {
+        "x": 370.0,
+        "y": 378.0
+      },
+      "col": 4,
+      "row": 1,
+      "depth": 4.571
+    },
+    {
+      "id": "p06",
+      "image": "props/p06.png",
+      "x": 371,
+      "y": 372,
+      "width": 18,
+      "height": 16,
+      "anchor": {
+        "x": 380.0,
+        "y": 383.0
+      },
+      "col": 4,
+      "row": 1,
+      "depth": 4.75
+    },
+    {
+      "id": "p07",
+      "image": "props/p07.png",
+      "x": 259,
+      "y": 358,
+      "width": 56,
+      "height": 46,
+      "anchor": {
+        "x": 288.0,
+        "y": 390.0
+      },
+      "col": 3,
+      "row": 2,
+      "depth": 5.0
+    },
+    {
+      "id": "p08",
+      "image": "props/p08.png",
+      "x": 371,
+      "y": 360,
+      "width": 60,
+      "height": 48,
+      "anchor": {
+        "x": 402.0,
+        "y": 393.0
+      },
+      "col": 4,
+      "row": 1,
+      "depth": 5.107
+    },
+    {
+      "id": "p09",
+      "image": "props/p09.png",
+      "x": 327,
+      "y": 396,
+      "width": 16,
+      "height": 18,
+      "anchor": {
+        "x": 335.0,
+        "y": 411.5
+      },
+      "col": 4,
+      "row": 2,
+      "depth": 5.768
+    }
+  ],
+  "note": "Pixel-edge coords at 1x. Corner of cell (c,r) = gridOrigin + c*colStep + r*rowStep; cell centre = corner + 0.5*(colStep+rowStep). Character sprites (rig.py, 128x100) put world origin at pixel edge (64,70): draw them at centre - (64,70). Props: draw image at (x, y) on the 1x background; sort props and units together by depth (unit on cell (c,r) = c + r; draw lower depth first), then front."
 }

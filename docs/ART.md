@@ -431,12 +431,17 @@ Personagens, veículos, aeronaves, efeitos, marcadores do mapa, carga e prédios
 - **Fundos de combate (`public/sprites/arenas/<id>/`, ids `urbano militar juridico aereo`):** o `aereo` é o do combate aéreo. Cada um traz:
   - `<id>.png`: quadro 0, parado;
   - `<id>-anim.png`: 6 quadros de ambiente a 6 fps, em grade `columns × rows`;
-  - `<id>-front.png`: objetos que vão **por cima** das Unidades;
+  - `<id>-front.png`: objetos da borda da frente, fora da grade, que vão **por cima** de tudo;
+  - `props/<id>.png`: objetos soltos no chão (caixas, barricadas, bancos, carrinhos), recortados do fundo. No manifesto ficam em `props: [{ id, image, x, y, width, height, anchor, col, row, depth }]`.
+    - Desenhe-os em ordem de `depth` crescente junto com as Unidades. Uma Unidade na célula (c, r) tem profundidade c + r; em empate, a Unidade vem antes. `arenaDrawOrder(m, unidades)` devolve essa ordem.
+    - A sombra deles continua assada no fundo.
+    - O `build.py` recorta tudo o que está na área da grade e o que, fora dela, pode cobrir uma Unidade que esteja atrás.
   - `<id>.json`: manifesto (`kind: "arena"`).
 - **Escala:** a mesma dos personagens, 10 voxels = 1 m (uma pessoa tem 18).
   - A célula de combate tem 28 voxels (2,8 m).
   - Medidas de referência: portas de 10×22, andares de 24, carro de ~4,7 m, caçamba de 2 m, bancos e mesas na altura do joelho e da cintura.
   - O espaço entre as linhas (colunas 3–4) só tem cobertura até o peito.
+- **Células de posicionamento livres:** as colunas 0–2 e 5–7 só têm detalhe plano no chão (marcas, poças, manchas, mato rasteiro). O build falha se algum objeto ficar nelas.
 - **Grade:** todos são 768×570 a 1x e usam a mesma grade de 8 colunas × 3 linhas (jogador nas colunas 0–2, inimigo nas 5–7).
   - Canto da célula (c, r) = `gridOrigin (234,222) + c·colStep (+56,+28) + r·rowStep (−56,+28)`; o centro fica no canto + (0, 28).
   - Leia sempre os números do manifesto, não estes.
