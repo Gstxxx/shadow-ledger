@@ -26,3 +26,22 @@ Cada camada tem `data-slot` (`sky | city | palace | avenue | tanks | fg`). Para 
 ## Prévia e vídeo
 
 `/src/ui/cinematics/preview.html`: toque para tocar. Parâmetros: `?render=1` (para o render.mjs), `?rm=1` e `?country=818` (id numérico do país). A prévia mostra 1,3 s de um tabuleiro parado depois do corte.
+
+## Outras cenas (`scenes.ts`)
+
+Seguem o mesmo estilo do Golpe e usam o mesmo palco, o mesmo grão e a mesma tarja. Cada uma termina com um carimbo de desfecho:
+
+| Cena | Quando toca | Duração | Desfecho |
+|---|---|---|---|
+| Ataque à Estação | Termina um Combate de Ameaça contra uma Estação da sua agência. | 6,4 s | Estação mantida; Estação rebaixada (as janelas apagam); Estação interditada (fita zebrada), quando a Ameaça é batida ou processo. |
+| Caçada concluída | Termina vencido um Combate de Caçada a um Grupo Hostil. | 5,6 s | Carimbo "Neutralizado", a bandeira do grupo cai e a recompensa sobe em contador. |
+| Crise Final | O jogo termina pela Crise Final. | 7,2 s | Rastros de lançamento sobem, clarão e céu vermelho; carimbo "Fim de jogo". |
+
+`<CinematicHost />` observa a store e não precisa de gancho em `src/game`: ele compara o Combate que acabou de terminar (`reason`, `result`, `agencyId`) e o momento em que `over` aparece com `reasonMsg.key === 'msg.crisis.reason'`.
+
+- O relógio do jogo fica pausado enquanto a cena toca.
+- A mesma cena não toca duas vezes seguidas dentro de 2 min.
+- Com reduzir movimento, a cena vira um cartão estático de 1,6 s.
+- Toque, Esc ou Enter pulam.
+
+Depuração: `?cine=raid-held|raid-lost|raid-interdicted|hunt|crisis` força uma cena, no jogo e em `/src/ui/cinematics/preview.html`.

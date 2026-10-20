@@ -1,5 +1,6 @@
 // Prévia da cena do Golpe. ?render=1 (pausada, para o render) · ?rm=1 (reduzir movimento) · ?country=818 (id numérico) · ?lang=en
 // Depois do corte mostra 1,3 s de um tabuleiro de Combate parado, para o vídeo terminar no "corte seco".
+// ?cine=raid-held|raid-lost|raid-interdicted|hunt|crisis mostra as outras cenas pelo CinematicHost (como no jogo).
 import { createRoot } from 'react-dom/client';
 import { gsap } from 'gsap';
 import '../../index.css';
@@ -10,6 +11,9 @@ import { getLang, translate } from '../../i18n';
 import { countryName } from '../../i18n/lookup';
 import { audio } from '../../audio/engine';
 import { buildCoup } from './coup';
+import { CinematicHost } from './CinematicHost';
+import { installSafeAreaDebug } from '../game/portrait/safeArea';
+installSafeAreaDebug();
 import './coup.css';
 import './preview.css';
 
@@ -34,9 +38,15 @@ function Board() {
 }
 
 const root = document.getElementById('root')!;
-createRoot(root).render(<Board />);
+const CINE = q.get('cine');
+createRoot(root).render(
+  <>
+    <Board />
+    {CINE && <CinematicHost />}
+  </>,
+);
 const host = document.createElement('div');
-document.body.appendChild(host);
+if (!CINE) document.body.appendChild(host);
 const h = buildCoup(host, {
   text: {
     kicker: t('cine.coup.kicker'),

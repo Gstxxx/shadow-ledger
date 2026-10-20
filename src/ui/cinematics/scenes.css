@@ -1,0 +1,134 @@
+/* Cenas curtas (Ataque à Estação, Caçada, Crise Final). Base: .cc-* de coup.css. */
+.cs-win {
+  fill: #f2a93b;
+  opacity: 0.75;
+}
+.cs-bar--r {
+  fill: #e5372f;
+}
+.cs-bar--b {
+  fill: #3d7bff;
+}
+.cs-van,
+.cs-agent {
+  position: absolute;
+  left: 0;
+  top: 0;
+  transform-origin: 50% 100%;
+}
+.cs-van {
+  width: 340px;
+  height: 160px;
+}
+.cs-agent {
+  width: 90px;
+  height: 132px;
+}
+.cs-van svg,
+.cs-agent svg {
+  position: static;
+  width: 100%;
+  height: 100%;
+}
+.cs-beam {
+  position: absolute;
+  left: 1180px;
+  top: 600px;
+  width: 160px;
+  height: 640px;
+  margin: -640px 0 0 -80px;
+  transform-origin: 50% 100%;
+  background: linear-gradient(0deg, rgba(225, 238, 255, 0.45), rgba(225, 238, 255, 0) 90%);
+  clip-path: polygon(46% 100%, 54% 100%, 100% 0, 0 0);
+  mix-blend-mode: screen;
+}
+/* Fita de interdição cruzando a fachada (zebrada amarela e preta). */
+.cs-tape {
+  position: absolute;
+  left: 560px;
+  top: 470px;
+  width: 500px;
+  height: 34px;
+  transform-origin: 0 50%;
+  rotate: -9deg;
+  background: repeating-linear-gradient(-45deg, #f0c419 0 26px, #111 26px 52px);
+  box-shadow: 0 6px 14px rgba(0, 0, 0, 0.6);
+}
+.cs-curtain {
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 0;
+  height: 670px;
+  background: linear-gradient(180deg, #05070b, #151a22 85%, #1a1f28);
+}
+.cs-flash {
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(ellipse at 50% 70%, #fff6e0, #ffd9a0 40%, rgba(255, 140, 60, 0.5) 75%);
+  opacity: 0;
+  pointer-events: none;
+}
+.cs-red {
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(ellipse 110% 70% at 50% 100%, rgba(240, 70, 40, 0.75), rgba(160, 20, 20, 0.35) 55%, rgba(60, 0, 0, 0.25));
+  mix-blend-mode: screen;
+  opacity: 0;
+  pointer-events: none;
+}
+.cs-root .cc-siren {
+  opacity: 0;
+}
+.cs-title {
+  top: 24%;
+}
+/* Carimbo do desfecho: centro baixo da tela. */
+.cs-stamp {
+  position: absolute;
+  left: 50%;
+  top: 58%;
+  translate: -50% -50%;
+  display: grid;
+  justify-items: center;
+  gap: 6px;
+  max-width: 90vw;
+}
+.cs-stamp__text {
+  padding: 0.12em 0.45em 0.06em;
+  border: 0.09em solid currentColor;
+  font-family: var(--sl-font-display, 'Barlow Condensed', sans-serif);
+  font-weight: 800;
+  font-size: clamp(30px, min(8.5vw, 12vh), 104px);
+  line-height: 1;
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
+  text-align: center;
+  background: rgba(7, 9, 11, 0.6);
+}
+.cs-stamp--good {
+  color: #f2a93b;
+}
+.cs-stamp--bad {
+  color: #e5372f;
+}
+.cs-stamp__note {
+  padding: 2px 10px;
+  background: rgba(232, 220, 194, 0.94);
+  color: #241c11;
+  font-family: var(--sl-font-mono, ui-monospace, monospace);
+  font-weight: 700;
+  font-size: clamp(14px, 1.8vw, 22px);
+  font-variant-numeric: tabular-nums;
+}
+.cs-stamp__note:empty {
+  display: none;
+}
+@media (orientation: portrait) {
+  .cs-title {
+    top: 20%;
+  }
+  .cs-stamp {
+    top: 52%;
+  }
+}
