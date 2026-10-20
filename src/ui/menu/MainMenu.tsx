@@ -14,6 +14,7 @@ import { COLS, LEDGER_CH, ledgerRows } from './ledger';
 import { sfx, useMenuSettings } from './settings';
 import { translate, useLang } from '../../i18n';
 import { CampaignScreen } from './campaign/CampaignScreen';
+import { MenuScene } from './MenuScene';
 import { installSafeAreaDebug } from '../game/portrait/safeArea';
 import { useStrings } from './strings';
 import { Continue } from './screens/Continue';
@@ -305,6 +306,9 @@ export function MainMenu(props: MainMenuProps) {
         <div ref={lamp} className="slm-lamp" />
         <div ref={black} className="slm-black" />
       </div>
+
+      {/* Fundo de pixel art do Título (art-kit); por cima do livro-caixa da abertura, por baixo do menu */}
+      <MenuScene active={phase === 'title'} reduced={reduced} />
 
       <main ref={titleCol} className="slm-title">
         <h1 ref={wordmark} className="slm-wordmark">
