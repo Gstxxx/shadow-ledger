@@ -10,7 +10,18 @@ import { upkeepOf } from '../units';
 import { E } from './engine';
 import { aiState, GRUDGE_DECAY_H, money, news } from './memory';
 import type { Ctx } from './military';
-import { garrisonHere, handleCapture, handleThreats, hireHere, manageStationHere, planOperation, planStrike, repairHere, runTeams } from './military';
+import {
+  garrisonHere,
+  handleCapture,
+  handleThreats,
+  hireHere,
+  manageStationHere,
+  planOperation,
+  planStrike,
+  relieveCrowding,
+  repairHere,
+  runTeams,
+} from './military';
 import { CRISIS_TENSION, DIFFICULTY_AI, PERSONALITIES } from './profiles';
 import { lotProfit, planContract, planTrade } from './trade';
 import type { RivalMemory } from './types';
@@ -134,6 +145,7 @@ export function decide(s: GameState, a: Agency, mem: RivalMemory) {
   handleCapture(ctx);
   handleThreats(ctx);
   tensionStance(ctx);
+  relieveCrowding(ctx);
   runTeams(ctx);
 
   const landed = a.director.status === 'free' && !a.flight;

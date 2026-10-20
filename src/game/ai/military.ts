@@ -4,9 +4,9 @@ import { ITEMS } from '../data/items';
 import { STATIONS } from '../data/rules';
 import { buyPrice } from '../market';
 import { chance, rand, weighted } from '../rng';
-import { allUnits, directorAt, postureIn, standing, stationIn, travelKm } from '../state';
+import { allUnits, directorAt, postureIn, standing, stationIn, stationValue, travelKm } from '../state';
 import type { Agency, CombatType, GameState, OperationKind, Station, Team, Unit } from '../types';
-import { canFight, def, isPersonnel, strOf } from '../units';
+import { canFight, def, isPersonnel, strOf, unitValue } from '../units';
 import { E } from './engine';
 import { money, news } from './memory';
 import { calm } from './profiles';
@@ -46,11 +46,17 @@ export function handleThreats(ctx: Ctx) {
           ? power(a.escort, type)
           : Infinity;
     if (defense >= t.strength * margin(ctx)) continue;
-    const bribe = reactionCost(s, a, t.id, 'bribe');
+    // Nunca paga mais que metade do que está em jogo: a Estação (e quem está nela) ou o resgate do Diretor.
+    const atStake =
+      t.target === 'station' && st
+        ? stationValue(st.level) + st.units.reduce((x, u) => x + unitValue(u), 0)
+        : 400_000 * s.countries[t.countryId].level;
+    const budget = Math.min(ctx.spendable * 0.4, atStake * 0.5);
+    const affordable = (r: 'bribe' | 'lawyers' | 'reinforce') => reactionCost(s, a, t.id, r) <= budget;
     const options: ['bribe' | 'lawyers' | 'reinforce' | 'evacuate', number][] = [];
-    if (bribe <= ctx.spendable * 0.4 && bribeChance(a, t.id) >= 0.5) options.push(['bribe', bribeChance(a, t.id) * 2]);
-    if ((t.kind === 'raid' || t.kind === 'lawsuit') && reactionCost(s, a, t.id, 'lawyers') <= ctx.spendable * 0.3) options.push(['lawyers', 1]);
-    if (t.target === 'station' && reactionCost(s, a, t.id, 'reinforce') <= ctx.spendable * 0.3) options.push(['reinforce', 1.2]);
+    if (affordable('bribe') && bribeChance(a, t.id) >= 0.5) options.push(['bribe', bribeChance(a, t.id) * 2]);
+    if ((t.kind === 'raid' || t.kind === 'lawsuit') && affordable('lawyers')) options.push(['lawyers', 1]);
+    if (t.target === 'station' && affordable('reinforce')) options.push(['reinforce', 1.2]);
     if (t.target === 'station' && st?.units.length && defense < t.strength * 0.6) options.push(['evacuate', 0.5]);
     if (!options.length) continue;
     const reaction = weighted(s, options);
@@ -153,6 +159,27 @@ export function garrisonHere(ctx: Ctx) {
   }
 }
 
+/**
+ * Estação acima da lotação (o motor deixa Unidades convertidas na defesa ou Detidas devolvidas passarem do
+ * limite): o excedente sai como Equipe, que depois procura outra Estação ou a Escolta.
+ */
+export function relieveCrowding(ctx: Ctx) {
+  const { s, a } = ctx;
+  for (const st of a.stations) {
+    if (st.interdicted) continue;
+    const spec = STATIONS[st.level];
+    const regular = st.units.filter((u) => !u.temp);
+    const extra = regular.length - spec.capacity;
+    // Também sai quem a Estação não abriga mais (rebaixada).
+    const misfit = regular.filter((u) => !spec.allows.includes(def(u.itemId).cls));
+    const surplus = [...misfit, ...regular.filter((u) => !misfit.includes(u)).sort((x, y) => strOf(x, 'urban') - strOf(y, 'urban'))].slice(
+      0,
+      Math.max(misfit.length, extra),
+    );
+    if (surplus.length) E.formTeam(s, a, { stationCountry: st.countryId }, surplus.map((u) => u.uid));
+  }
+}
+
 /** Conserta máquinas Danificadas onde há Estação Escritório+. */
 export function repairHere(ctx: Ctx) {
   const { s, a } = ctx;
@@ -184,11 +211,17 @@ function parkTeam(ctx: Ctx, t: Team) {
     if (!(st && !st.interdicted && E.stashSpoils(s, a, t.id).ok)) E.fenceSpoils(s, a, t.id, lot.lid);
   }
   if (E.mergeTeam(s, a, t.id, 'station').ok || E.mergeTeam(s, a, t.id, 'escort').ok) return;
+  // Só voa para uma Estação que comporta a Equipe inteira. Sem vaga, espera onde está: correr atrás do
+  // Diretor, que não para de voar, queimava passagens sem fim.
   const home = a.stations
-    .filter((st) => !st.interdicted && st.units.length + t.units.length <= STATIONS[st.level].capacity)
+    .filter(
+      (st) =>
+        !st.interdicted &&
+        st.units.length + t.units.length <= STATIONS[st.level].capacity &&
+        t.units.every((u) => STATIONS[st.level].allows.includes(def(u.itemId).cls)),
+    )
     .sort((x, y) => travelKm(t.location, x.countryId) - travelKm(t.location, y.countryId))[0];
-  const to = home?.countryId ?? (a.flight ? undefined : a.location);
-  if (to && to !== t.location) moveTeam(ctx, t, to);
+  if (home && home.countryId !== t.location) moveTeam(ctx, t, home.countryId);
 }
 
 function executeOrder(ctx: Ctx, o: TeamOrder, t: Team): void {
@@ -315,6 +348,8 @@ export function planOperation(ctx: Ctx) {
 
 /** Rancor acima disto não deixa a rival mais furiosa: evita guerras de retaliação sem fim entre rivais. */
 const FURY_CAP = 3;
+/** Caixa disponível mínimo para uma rival agir contra outra agência. */
+const STRIKE_MIN_CASH = 2_000_000;
 /** Espera base entre ações hostis, sem rancor (horas). */
 const STRIKE_COOLDOWN_H = 24 * 20;
 
@@ -340,6 +375,8 @@ function strikeOptions(a: Agency, P: Personality, target: Agency): [StrikeKind, 
 /** Ação contra outra agência (o jogador incluído): sabotagem, roubo de Cofre ou denúncia. O(agências × Estações). */
 export function planStrike(ctx: Ctx) {
   const { s, a, mem, P } = ctx;
+  // Sem folga de caixa, não compra briga: denúncias e retaliação puxam Ameaças e multas de volta.
+  if (ctx.spendable < STRIKE_MIN_CASH) return;
   const rage = (id: string) => Math.min(FURY_CAP, mem.grudge[id] ?? 0);
   const candidates = s.agencies
     .filter((x) => x.id !== a.id && x.director.status !== 'dead')

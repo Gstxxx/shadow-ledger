@@ -6,6 +6,8 @@ export default {
   'analyst.unmute': 'Ouvir a Analista',
   'analyst.skipGuide': 'Pular guia',
   'analyst.objective': 'Objetivo {n}/{total}',
+  'analyst.openPanel': 'Abrir o painel',
+  'analyst.locked': 'Disponível depois do Tutorial.',
   'analyst.guideDone': 'Guia concluído',
 
   'analyst.topic.fleet.title': 'Frota e espaço',
@@ -44,7 +46,7 @@ export default {
   'analyst.step.station.title': 'Abra uma Estação',
   'analyst.step.station.hint': 'No painel do país onde o Diretor está, toque em Abrir. Uma Célula já mostra os preços dali para sempre.',
   'analyst.step.contract.title': 'Aceite um Contrato',
-  'analyst.step.contract.hint': 'Aba Contratos. Entregue antes do prazo. Sem oferta boa, siga negociando: eu aviso.',
+  'analyst.step.contract.hint': 'Aba Contratos. Só aceite o que cabe no avião e no caixa. Sem oferta boa, siga negociando: eu aviso.',
   'analyst.step.free.title': 'Por sua conta',
   'analyst.step.free.hint': 'O resto é com você.',
 

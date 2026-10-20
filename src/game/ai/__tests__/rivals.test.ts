@@ -7,7 +7,7 @@ import type { Agency, Difficulty, GameState } from '../../types';
 import { decide, memoryOf, recordAggression, setupRivals, tickRivals } from '..';
 import { E } from '../engine';
 
-const SANDBOX = { ...PRESETS[0], days: 0 };
+const SANDBOX = { ...PRESETS.find((p) => p.id === 'first-contract')!, days: 0 };
 
 function game(seed: number, difficulty: Difficulty = 3): GameState {
   const s = newGame({ preset: SANDBOX, difficulty, hardcore: false, seed });
@@ -304,6 +304,7 @@ describe('Agências Rivais', () => {
       mem.personality = 'mercador';
       const where = me.stations[0].countryId;
       const before = me.standing[where].exposure;
+      r.cash = 50_000_000; // folga para brigar (rival sem caixa não compra briga)
       recordAggression(s, me.id, r.id, 6);
       for (let i = 0; i < 30 && me.standing[where].exposure === before; i++) {
         r.flight = undefined;

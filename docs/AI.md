@@ -25,18 +25,22 @@ Cada rival decide a cada `interval` horas de jogo (sorteado com jitter) e logo d
 1. **Contas:** quita Manutenção em atraso; calcula o caixa arriscável (caixa − reserva da personalidade, nunca
    menos que 1,5 mês de Manutenção).
 2. **Diretor preso:** paga fiança/resgate se couber; senão manda uma Equipe resgatar.
-3. **Ameaças:** se a defesa não segura, escolhe suborno, advogados, reforço ou evacuação (`react`).
+3. **Ameaças:** se a defesa não segura, escolhe suborno, advogados, reforço ou evacuação (`react`), nunca
+   pagando mais que metade do que está em jogo (valor da Estação e de quem está nela, ou o resgate do Diretor).
 4. **ADM e Tensão Global:** a rival recua (sai do mercado de Armas de Destruição em Massa e para de fazer Operações
    Especiais) quando a Tensão passa de `crisisFear` ou o contador da Crise Final do motor passa de `crisisPatience`
    dias no Topo; volta quando a Tensão cai abaixo do Topo e o contador zera. Antes disso, entre Tensão 35 e 60, a
    função `calm` corta aos poucos as Operações e a venda de armamento pesado a países em guerra (ambos sobem a
    Tensão no motor). O Estado-Sombra se contém só 80% e nunca sai do mercado de ADM.
-5. **Equipes:** cada Equipe com ordem voa (Voo Comercial) e executa; sem ordem, guarda/vende o que capturou e
-   volta para uma Estação ou para a Escolta.
-6. **Com o Diretor pousado:** vende a Carga do plano (ou entrega o Contrato) e a que sobrou; conserta máquinas;
+5. **Lotação:** se uma Estação passou da capacidade (o motor deixa Unidades convertidas na defesa ou Detidas
+   devolvidas passarem do limite), o excedente sai como Equipe pelo `formTeam`.
+6. **Equipes:** cada Equipe com ordem voa (Voo Comercial) e executa; sem ordem, guarda/vende o que capturou e
+   volta para uma Estação **com vaga para ela inteira** ou para a Escolta; sem vaga, espera onde está (correr
+   atrás do Diretor custava dezenas de milhões em passagens por ano).
+7. **Com o Diretor pousado:** vende a Carga do plano (ou entrega o Contrato) e a que sobrou; conserta máquinas;
    abre/sobe a Estação do país; contrata Pessoal (compra + alista, ou advogado); deixa guarnição na Estação.
-7. **Ação hostil** contra outra agência (o jogador incluído) e **Operação Especial** contra um país.
-8. **Comércio:** disputa um Contrato ou planeja um lote; compra se já está no país de compra e decola.
+8. **Ação hostil** contra outra agência (o jogador incluído) e **Operação Especial** contra um país.
+9. **Comércio:** disputa um Contrato ou planeja um lote; compra se já está no país de compra e decola.
 
 ### Comércio
 
@@ -55,6 +59,8 @@ agência alvo entre as que ela consegue atacar agora (Estação operante para sa
 para denunciar), pesando o jogador 2× e o rancor; a ação vem da personalidade. Espera base de 20 dias entre ataques;
 o rancor encurta a espera e aumenta a vontade até um teto (`FURY_CAP` = 3), cada ataque desconta 2 de rancor do alvo,
 e o rancor decai em ~30 dias. Sem o teto, rivais entravam em guerras de retaliação de ~200 ataques por ano.
+Rival com menos de US$ 2 mi disponíveis não ataca ninguém: denúncias trocadas puxavam Ameaças e multas até a
+falência.
 
 ## Personalidades (`ai/profiles.ts`)
 
@@ -66,7 +72,8 @@ e o rancor decai em ~30 dias. Sem o teto, rivais entravam em guerras de retalia�
 | Paciência no Topo | 0 dias | 20 dias | infinita | 6 dias |
 | Escolta | 3 | 6 | 4 | 3 |
 
-Recruta só sorteia Mercador ou Fantasma.
+Recruta só sorteia Mercador ou Fantasma. A Origem do Diretor rival é sorteada conforme a personalidade
+(`ORIGINS_BY_PERSONALITY` em `src/game/data/origins.ts`); os efeitos vêm do motor.
 
 ## Dificuldade (`DIFFICULTY_AI`)
 

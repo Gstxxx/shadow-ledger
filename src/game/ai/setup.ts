@@ -1,7 +1,9 @@
 // Criação das Agências Rivais no início da partida, pela createAgency do motor.
 import { FIRST_NAMES, LAST_NAMES } from '../data/names';
+import { ORIGINS_BY_PERSONALITY } from '../data/origins';
 import { pick, randInt, randRange, shuffle } from '../rng';
 import { log } from '../state';
+import { isLocked } from '../tutorial/locks';
 import type { Continent, GameState, PresetDef } from '../types';
 import { E } from './engine';
 import { aiState } from './memory';
@@ -17,7 +19,8 @@ const GENTLE: PersonalityId[] = ['mercador', 'fantasma'];
  * Idempotente: não faz nada se a partida já tem rivais.
  */
 export function setupRivals(s: GameState) {
-  if (s.agencies.some((a) => !a.isPlayer)) return;
+  // O Tutorial desliga as rivais até o fim do guia (unlockSystems chama de novo).
+  if (s.agencies.some((a) => !a.isPlayer) || isLocked(s, 'rivals')) return;
   const D = DIFFICULTY_AI[s.options.difficulty];
   const preset = s.options.preset;
   // O menu pode fixar o número de rivais; sem isso, a Dificuldade sorteia.
@@ -38,15 +41,17 @@ export function setupRivals(s: GameState) {
     taken.add(start.id);
     usedContinents.add(start.continent);
     const rivalPreset: PresetDef = { ...preset, startCountry: start.id, startStations: [{ countryId: start.id, level: 1 }] };
+    const personality = personalities[i % personalities.length];
     const a = E.createAgency(s, rivalPreset, {
       id: `rival${i + 1}`,
       name: names[i % names.length],
       isPlayer: false,
       director: `${pick(s, FIRST_NAMES)} ${pick(s, LAST_NAMES)}`,
       cashMult: D.cash,
+      // Origem do Diretor rival sorteada conforme a personalidade; os efeitos vêm do motor.
+      origin: pick(s, ORIGINS_BY_PERSONALITY[personality] ?? ORIGINS_BY_PERSONALITY.mercador),
     });
     s.agencies.push(a);
-    const personality = personalities[i % personalities.length];
     aiState(s).rivals[a.id] = {
       agencyId: a.id,
       personality,

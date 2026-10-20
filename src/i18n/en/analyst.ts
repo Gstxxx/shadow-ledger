@@ -6,6 +6,8 @@ export default {
   'analyst.unmute': 'Hear the Analyst',
   'analyst.skipGuide': 'Skip guide',
   'analyst.objective': 'Objective {n}/{total}',
+  'analyst.openPanel': 'Open the panel',
+  'analyst.locked': 'Available after the Tutorial.',
   'analyst.guideDone': 'Guide complete',
 
   'analyst.topic.fleet.title': 'Fleet and space',
@@ -44,7 +46,7 @@ export default {
   'analyst.step.station.title': 'Open a Station',
   'analyst.step.station.hint': 'In the panel of the Director’s country, tap Open. A Cell shows that market’s prices from then on.',
   'analyst.step.contract.title': 'Accept a Contract',
-  'analyst.step.contract.hint': 'Contracts tab. Deliver before the deadline. No good offer yet? Keep trading: I will tell you.',
+  'analyst.step.contract.hint': 'Contracts tab. Only take what fits the plane and the cash. No good offer yet? Keep trading: I will tell you.',
   'analyst.step.free.title': 'On your own',
   'analyst.step.free.hint': 'The rest is up to you.',
 
