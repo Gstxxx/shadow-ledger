@@ -1,7 +1,7 @@
 // A Analista na tela de jogo: balão compacto num canto do mapa (comenta Eventos e explica cada sistema na
 // primeira vez), chip do objetivo guiado e anel de destaque no elemento certo. Só o balão captura cliques.
 import { useEffect, useLayoutEffect, useRef, useState } from 'react';
-import { PanelLeftOpen } from 'lucide-react';
+import { ChevronUp, PanelLeftOpen } from 'lucide-react';
 import { AnalystPortrait } from '../../art';
 import type { AnalystMood } from '../../art';
 import {
@@ -127,19 +127,6 @@ function useRect(read: () => DOMRect | null, deps: unknown[]): DOMRect | null {
   return rect;
 }
 
-/** Tela baixa (celular deitado, ~640×360): a altura é o recurso escasso. */
-function useCompact(): boolean {
-  const query = '(max-height: 520px)';
-  const [on, setOn] = useState(() => matchMedia(query).matches);
-  useEffect(() => {
-    const mq = matchMedia(query);
-    const onChange = () => setOn(mq.matches);
-    mq.addEventListener('change', onChange);
-    return () => mq.removeEventListener('change', onChange);
-  }, []);
-  return on;
-}
-
 interface Line {
   id: string;
   mood: AnalystMood;
@@ -160,8 +147,8 @@ export function AnalystLayer({ onOpenDrawer }: AnalystLayerProps) {
   const mem = useAnalystMemory();
   const t = useAnalystT();
   const [done, setDone] = useState<{ text: string; at: number } | null>(null);
-  // Dica do objetivo: aberta por padrão; recolhida em tela baixa até o jogador tocar no chip.
-  const [hintChoice, setHintOpen] = useState<boolean | null>(null);
+  // Cartão único: pílula fina por padrão; abre ao tocar ou quando chega fala nova, recolhe no "Entendi".
+  const [open, setOpen] = useState(false);
   const pausedByMe = useRef<TopicId | null>(null);
 
   // Guia: avança pelo estado do jogo e guarda no save quando muda.
@@ -177,7 +164,6 @@ export function AnalystLayer({ onOpenDrawer }: AnalystLayerProps) {
           ? t(isTutorialPreset(s.options.preset) ? 'analyst.done.unlocked' : 'analyst.done.free')
           : t(akey(`analyst.done.${last}`));
       setDone({ text, at: Date.now() });
-      setHintOpen(null);
     }
     if (signature(s) !== before) mutate(() => {});
   }, [rev]); // eslint-disable-line react-hooks/exhaustive-deps
@@ -224,6 +210,11 @@ export function AnalystLayer({ onOpenDrawer }: AnalystLayerProps) {
     }
   }, [line?.topic, !!ev]); // eslint-disable-line react-hooks/exhaustive-deps
 
+  // Fala nova (tópico ou passo concluído) abre o cartão; comentário de Evento só acende o ponto.
+  useEffect(() => {
+    if (line && !line.id.startsWith('ev-')) setOpen(true);
+  }, [line?.id]); // eslint-disable-line react-hooks/exhaustive-deps
+
   const [speaking, setSpeaking] = useState(false);
   useEffect(() => {
     if (!line) return;
@@ -247,6 +238,7 @@ export function AnalystLayer({ onOpenDrawer }: AnalystLayerProps) {
     [targets.join(), rev],
   );
   const map = useRect(() => document.querySelector('.map-area')?.getBoundingClientRect() ?? null, []);
+  const ceiling = useRect(() => document.querySelector('.map-modes')?.getBoundingClientRect() ?? null, []);
   // Topo mais alto das barras de baixo (Relatório, barra de ações): o balão fica acima delas.
   const floor = useRect(() => {
     let top = innerHeight;
@@ -256,8 +248,6 @@ export function AnalystLayer({ onOpenDrawer }: AnalystLayerProps) {
     }
     return new DOMRect(0, top, 0, 0);
   }, []);
-  const compact = useCompact();
-  const hintOpen = hintChoice ?? !compact;
 
   if (!s || inCombat) return null;
 
@@ -269,9 +259,12 @@ export function AnalystLayer({ onOpenDrawer }: AnalystLayerProps) {
         useGameStore.setState({ paused: false });
       }
     } else if (line?.id.startsWith('dn-')) setDone(null);
+    setOpen(false);
   };
 
   const progress = tut ? guideProgress(tut) : null;
+  // Espaço livre entre as camadas do mapa (topo) e as barras de baixo: o cartão aberto não passa disso.
+  const room = Math.max(72, (floor?.top ?? innerHeight) - (ceiling?.bottom ?? 0) - 16);
   const corner = {
     left: (map?.left ?? 0) + 10,
     bottom: Math.max(10, innerHeight - (floor?.top ?? innerHeight) + 8),
@@ -294,66 +287,75 @@ export function AnalystLayer({ onOpenDrawer }: AnalystLayerProps) {
       )}
       <div className="analyst-layer" aria-live="polite">
         <div className="analyst-dock" style={corner}>
-          {guiding && progress && !(compact && line) && (
-            <div className="analyst-objective">
-              <button className="analyst-objective-head" onClick={() => setHintOpen(!hintOpen)} aria-expanded={hintOpen}>
-                <span className="mono analyst-kicker">
-                  {t('analyst.objective', {
-                    n: progress.n,
-                    total: progress.total,
-                  })}
+          {(guiding || line) && (
+            <section
+              className={`analyst-card${open ? ' open' : ''} mood-${line?.mood ?? 'neutral'}`}
+              style={{ maxHeight: `min(var(--analyst-cap), ${room}px)` }}
+            >
+              <button className="analyst-pill" onClick={() => setOpen(!open)} aria-expanded={open}>
+                <AnalystPortrait
+                  mood={line?.mood ?? 'neutral'}
+                  size={28}
+                  speaking={speaking && open}
+                  blink={false}
+                  className="analyst-pill-face"
+                  title={t('analyst.name')}
+                />
+                <span className="analyst-pill-text">
+                  {guiding && progress ? (
+                    <>
+                      <span className="mono analyst-kicker">{t('analyst.objective', { n: progress.n, total: progress.total })}</span>{' '}
+                      {t(akey(`analyst.step.${step}.title`))}
+                    </>
+                  ) : (
+                    <>
+                      <span className="mono analyst-kicker">{t('analyst.name')}</span> {line?.title ?? ''}
+                    </>
+                  )}
                 </span>
-                <span className="analyst-objective-title">{t(akey(`analyst.step.${step}.title`))}</span>
+                {line && !open && <span className="analyst-dot" aria-hidden />}
+                <ChevronUp size={16} className="analyst-chevron" aria-hidden />
               </button>
-              {hintOpen && (
-                <p className="analyst-objective-hint">
-                  {t(akey(`analyst.step.${step}.hint`))}{' '}
-                  {onOpenDrawer && (step === 'buy' || step === 'sell' || step === 'station') && !ring && (
-                    <button
-                      className="analyst-link"
-                      onClick={() => onOpenDrawer('left')}
-                      aria-label={t('analyst.openPanel')}
-                      title={t('analyst.openPanel')}
-                    >
-                      <PanelLeftOpen size={14} />
+              {open && (
+                <div className="analyst-card-body" key={line?.id ?? 'hint'}>
+                  {/* Só o texto rola; os botões ficam sempre à vista. */}
+                  <div className="analyst-card-scroll">
+                    {line ? (
+                      <p className="analyst-text">
+                        {line.title && guiding && <strong className="analyst-lead">{line.title}.</strong>} {line.text}
+                      </p>
+                    ) : (
+                      guiding && <p className="analyst-text dim">{t(akey(`analyst.step.${step}.hint`))}</p>
+                    )}
+                  </div>
+                  <div className="analyst-actions">
+                    {line && (line.topic || line.id.startsWith('dn-')) && (
+                      <button className="btn sm primary" onClick={ack}>
+                        {t('analyst.ok')}
+                      </button>
+                    )}
+                    {onOpenDrawer && guiding && (step === 'buy' || step === 'sell' || step === 'station') && !ring && (
+                      <button className="analyst-link" onClick={() => onOpenDrawer('left')} aria-label={t('analyst.openPanel')} title={t('analyst.openPanel')}>
+                        <PanelLeftOpen size={14} />
+                      </button>
+                    )}
+                    {guiding && (
+                      <button className="analyst-link" onClick={() => mutate((g) => skipGuide(g))}>
+                        {t('analyst.skipGuide')}
+                      </button>
+                    )}
+                    <button className="analyst-link" onClick={() => analystMemory.setMuted(!mem.muted)}>
+                      {t(mem.muted ? 'analyst.unmute' : 'analyst.mute')}
                     </button>
-                  )}
-                  <button className="analyst-link" onClick={() => mutate((g) => skipGuide(g))}>
-                    {t('analyst.skipGuide')}
-                  </button>
-                </p>
-              )}
-            </div>
-          )}
-          {line ? (
-            <div className={`analyst-balloon mood-${line.mood}`} key={line.id}>
-              <AnalystPortrait mood={line.mood} size={56} speaking={speaking} className="analyst-face" title={t('analyst.name')} />
-              <div className="analyst-body">
-                <span className="mono analyst-kicker">{line.title ?? t('analyst.name')}</span>
-                <p className="analyst-text">{line.text}</p>
-                <div className="analyst-actions">
-                  {(line.topic || line.id.startsWith('dn-')) && (
-                    <button className="btn sm primary" onClick={ack}>
-                      {t('analyst.ok')}
-                    </button>
-                  )}
-                  <button className="analyst-link" onClick={() => analystMemory.setMuted(true)}>
-                    {t('analyst.mute')}
-                  </button>
+                  </div>
                 </div>
-              </div>
-            </div>
-          ) : (
-            mem.muted && (
-              <button
-                className="analyst-mini"
-                onClick={() => analystMemory.setMuted(false)}
-                aria-label={t('analyst.unmute')}
-                title={t('analyst.unmute')}
-              >
-                <AnalystPortrait mood="neutral" size={36} blink={false} />
-              </button>
-            )
+              )}
+            </section>
+          )}
+          {!guiding && !line && mem.muted && (
+            <button className="analyst-mini" onClick={() => analystMemory.setMuted(false)} aria-label={t('analyst.unmute')} title={t('analyst.unmute')}>
+              <AnalystPortrait mood="neutral" size={36} blink={false} />
+            </button>
           )}
         </div>
       </div>

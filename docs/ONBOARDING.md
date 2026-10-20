@@ -20,9 +20,14 @@ Quem nunca jogou se perdia: muitos painéis, nenhuma ordem. O onboarding tem tr�
 
 Se nenhum alvo do passo está à vista e há um diálogo aberto por cima (ex.: comprou no Mercado e agora precisa voar pelo mapa), o anel vai para o botão "Fechar" do diálogo. O anel fica acima dos modais (z-index 310), recortado pelo contêiner com rolagem; o alvo principal abaixo da dobra rola para a vista uma vez por passo.
 
-### Layout
+### Layout: um cartão só
 
-O balão fica no canto inferior esquerdo da área do mapa, acima do Relatório, com largura de até 360 px (300 px em telas baixas). Fica acima do scrim de Eventos e do Combate (z-index 55), mas só o balão e o chip do objetivo capturam cliques, então o resto da tela continua jogável. Em telas com altura ≤ 520 px (celular deitado, ~640×360), o retrato encolhe para 40 px e o texto corta em 4 linhas.
+Objetivo e Analista dividem **um cartão**, no canto inferior esquerdo do mapa, acima do Relatório e da barra de ações.
+- **Recolhido** (padrão): pílula de uma linha com retrato, "Objetivo N/5 · título" e um ponto âmbar quando há fala nova (comentário de Evento só acende o ponto).
+- **Aberto**: a fala da Analista (título em negrito no começo do parágrafo) ou, sem fala, a dica do passo; botões Entendi, Pular guia e Silenciar sempre à vista (só o texto rola).
+- Abre sozinho quando chega um tópico novo ou um passo é concluído; recolhe no "Entendi"; o toque na pílula alterna.
+- Altura máxima: 25% da tela em pé, 45% deitado, e nunca mais que o espaço entre as camadas do mapa (`.map-modes`) e as barras de baixo. Deitado o cartão é mais largo (até 48% da largura).
+- Fica acima do scrim de Eventos (z-index 55); some durante o Combate.
 
 ## Objetivo guiado
 
