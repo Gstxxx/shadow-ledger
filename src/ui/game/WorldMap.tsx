@@ -15,7 +15,8 @@ import { GMapMarker } from '../../art';
 import { bandsOf } from '../../game/combatJobs';
 import { useStage } from './stage/context';
 import { StationPin, StationPinDefs } from './map/StationPin';
-import { FlightSprite, MapMarker, MapVfx, SPRITE_MIN_ZOOM, StationSprite } from '../map-sprites';
+import { FlightSprite, LEVEL_PX, MapMarker, MapVfx, SPRITE_MIN_ZOOM, StationSprite } from '../map-sprites';
+import { ThreatBadge } from './map/ThreatBadge';
 import { localHour, reliefTexture } from './map/relief';
 
 const W = 1000;
@@ -369,7 +370,11 @@ export function WorldMap({ mode, onPickCountry }: { mode: MapMode; onPickCountry
             .filter((c) => c.status === 'accepted' && c.agencyId === a.id)
             .map((c) => {
               const cc = s.countries[c.countryId];
-              const [x, y] = project(cc.lon, cc.lat);
+              const [x0, y0] = project(cc.lon, cc.lat);
+              // Com Estação no país, o Contrato vai para baixo à esquerda dela (nunca por cima).
+              const withSt = a.stations.some((st) => st.countryId === c.countryId);
+              const x = withSt ? x0 - 26 * inv : x0;
+              const y = withSt ? y0 + 14 * inv : y0;
               return k >= SPRITE_MIN_ZOOM ? (
                 <MapMarker key={c.id} kind="contract" x={x + 10 * inv} y={y - 4 * inv} inv={inv} px={20} />
               ) : (
@@ -420,22 +425,22 @@ export function WorldMap({ mode, onPickCountry }: { mode: MapMode; onPickCountry
             );
           })}
 
-          {/* Ameaças anunciadas */}
+          {/* Ameaças anunciadas: um selo só (alarme + horas), fora da Estação — nunca por cima dela */}
           {a.threats.map((th) => {
             const cc = s.countries[th.countryId];
             const [x0, y0] = project(cc.lon, cc.lat);
-            // Vários marcadores no mesmo país: a Estação fica no centro, a Ameaça à esquerda, o Grupo Hostil à direita.
-            const crowded = a.stations.some((st) => st.countryId === th.countryId);
-            const x = x0 - (crowded ? 20 * inv : 0);
-            const y = y0 + (crowded ? 4 * inv : 0);
-            const left = Math.max(0, th.strikesAt - s.time);
+            const st = a.stations.find((x) => x.countryId === th.countryId);
             return (
-              <g key={th.id}>
-                <MapMarker kind="threat" x={x} y={y} inv={inv} px={24} />
-                <text x={x} y={y - 22 * inv} fontSize={9 * inv} textAnchor="middle" className="map-label hostile" style={{ strokeWidth: 3 * inv }}>
-                  {t('game.map.hours', { n: Math.ceil(left) })}
-                </text>
-              </g>
+              <ThreatBadge
+                key={th.id}
+                x={x0}
+                y={y0 - (st ? 9 * inv : 0)}
+                inv={inv}
+                hours={th.strikesAt - s.time}
+                anchorPx={st ? (k < SPRITE_MIN_ZOOM ? 24 : LEVEL_PX[st.level]) : 12}
+                label={t('game.agency.tab.threats')}
+                onClick={() => stage?.open({ kind: 'agency', tab: 'threats' })}
+              />
             );
           })}
 
@@ -444,7 +449,7 @@ export function WorldMap({ mode, onPickCountry }: { mode: MapMode; onPickCountry
             const cc = s.countries[g.seenAt.countryId];
             const [x0, y0] = project(cc.lon, cc.lat);
             const gid = g.seenAt.countryId;
-            const crowded = a.stations.some((st) => st.countryId === gid) || a.threats.some((th) => th.countryId === gid);
+            const crowded = a.stations.some((st) => st.countryId === gid);
             const x = x0 + (crowded ? 20 * inv : 0);
             const y = y0 + (crowded ? 8 * inv : 0);
             return (
@@ -462,7 +467,11 @@ export function WorldMap({ mode, onPickCountry }: { mode: MapMode; onPickCountry
             .filter((b) => b.seenAt)
             .map((b) => {
               const cc = s.countries[b.seenAt!.countryId];
-              const [x, y] = project(cc.lon, cc.lat);
+              const [x0, y0] = project(cc.lon, cc.lat);
+              // Com Estação no país, a Caçada vai para baixo à direita dela.
+              const withSt = a.stations.some((st) => st.countryId === b.seenAt!.countryId);
+              const x = withSt ? x0 + 18 * inv : x0;
+              const y = withSt ? y0 + 10 * inv : y0;
               const d = 6.5 * inv;
               return (
                 <g

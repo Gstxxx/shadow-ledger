@@ -48,7 +48,8 @@ export function StationPin({
       {label ? <title>{label}</title> : null}
       {/* área de toque ≥ 44 px */}
       {onClick && <circle r={22 / scale} fill="transparent" />}
-      {threatened && <circle className="stpin-pulse" r={11} fill="none" stroke="var(--red)" strokeWidth={1.6} />}
+      {/* sob Ameaça: anel no chão, sob a placa (o selo com as horas fica ao lado, ThreatBadge) */}
+      {threatened && <ellipse className="stpin-pulse" cy={8} rx={13} ry={5} fill="none" stroke="var(--red)" strokeWidth={1.4} />}
       {/* brilho na cor da agência */}
       <circle r={11.5} fill={color} opacity={0.16} />
       {/* placa: aro de metal com bisel e face escura */}

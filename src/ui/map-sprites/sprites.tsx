@@ -68,7 +68,7 @@ function SvgStill({ still, w }: { still: Still; w: number }) {
 export const SPRITE_MIN_ZOOM = 1.7;
 
 /** Largura na tela (px) do prédio de cada Nível: cresce com o Nível, mas não pesa no mapa. */
-const LEVEL_PX: Record<StationLevel, number> = { 1: 44, 2: 52, 3: 58, 4: 66, 5: 76 };
+export const LEVEL_PX: Record<StationLevel, number> = { 1: 44, 2: 52, 3: 58, 4: 66, 5: 76 };
 
 /**
  * Estação no mapa: o prédio isométrico do Nível (normal, danificado sob Ameaça, interditado), no lugar da plaquinha.
@@ -90,7 +90,8 @@ export function StationSprite(props: {
 }) {
   const { x, y, inv, k, level, interdicted, threatened, damaged, scale = 1, label, onClick } = props;
   const stations = useStills('stations');
-  const state: StationState = interdicted ? 'interdicted' : damaged || threatened ? 'damaged' : 'normal';
+  // Sob Ameaça o prédio continua limpo; danificado só quando o ataque acontece (o selo da Ameaça fica ao lado).
+  const state: StationState = interdicted ? 'interdicted' : damaged ? 'damaged' : 'normal';
   const still = stations && stationStill(stations, level, state);
   if (k < SPRITE_MIN_ZOOM || !still) return <StationPin {...props} />;
   const w = LEVEL_PX[level] * scale * inv;
@@ -98,7 +99,8 @@ export function StationSprite(props: {
     <g className={`msp-station${onClick ? ' pin' : ''}`} transform={`translate(${x} ${y})`} onClick={onClick} role={onClick ? 'button' : undefined} aria-label={label}>
       {label ? <title>{label}</title> : null}
       {onClick && <circle r={22 * inv} fill="transparent" />}
-      {threatened && <circle className="stpin-pulse" r={w * 0.42} fill="none" stroke="var(--red)" strokeWidth={1.6 * inv} />}
+      {/* anel no chão, sob a base do prédio (antes dele, para não cobrir) */}
+      {threatened && <ellipse className="stpin-pulse" cy={w * 0.2} rx={w * 0.46} ry={w * 0.2} fill="none" stroke="var(--red)" strokeWidth={1.4 * inv} />}
       <SvgStill still={still} w={w} />
     </g>
   );
