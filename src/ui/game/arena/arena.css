@@ -9,7 +9,7 @@
   overflow: visible;
 }
 .iso-wrap.zoomed {
-  place-items: start;
+  place-items: center start;
   overflow: auto;
   overscroll-behavior: contain;
   -webkit-overflow-scrolling: touch;

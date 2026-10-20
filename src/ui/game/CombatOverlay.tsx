@@ -313,7 +313,7 @@ function LiveView() {
                   const anim = f.kind === 'down' ? 'smoke' : target && isMachine(target) ? 'explosion' : 'sparks';
                   return (
                     <span key={`${poses.turn}-${i}`} className="iso-vfx" style={{ left: x, top: y, zIndex: g.depth(f.col, f.row) + 1 }}>
-                      <Sprite set="vfx" anim={anim} playing anchored scale={Math.max(1, Math.floor(g.tw / 64))} />
+                      <Sprite set="vfx" anim={anim} playing anchored scale={Math.max(1, Math.round(g.tw / 64))} />
                     </span>
                   );
                 })
@@ -328,7 +328,7 @@ function LiveView() {
             <div className="reserve-row">
               {c.reserve.map((u) => (
                 <button key={u.uid} className={`res-unit${sel === u.uid ? ' sel' : ''}`} onClick={() => (audio.sfx('click'), setSel(sel === u.uid ? null : u.uid))}>
-                  <Portrait unit={u} size={36} />
+                  <Portrait unit={u} size={40} look="sprite" />
                   <span className="num">{strOf(u, c.type)}</span>
                 </button>
               ))}
@@ -459,7 +459,7 @@ function IsoToken({ r, c, g, pose }: { r: CombatUnitRef; c: CombatState; g: IsoG
   const h = f.h * g.tw;
   const feet = g.tw * 0.12;
   // Escala inteira (pixel art): ~1 a cada 64 px de casa.
-  const scale = Math.max(1, Math.floor(g.tw / 64));
+  const scale = Math.max(1, Math.round(g.tw / 64));
   return (
     <div
       className={`token iso-token side-${r.side} pose-${pose}`}

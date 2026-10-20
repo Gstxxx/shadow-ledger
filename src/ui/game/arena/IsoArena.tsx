@@ -80,7 +80,8 @@ export function IsoArena({
   /** camada por cima das figuras (efeitos), recebe a geometria */
   children?: (g: IsoGeom) => ReactNode;
 }) {
-  const [zoom, setZoom] = useState(false);
+  // Em pé sobra altura: começa com zoom (casas 1,5×), rolando a partir do lado do jogador.
+  const [zoom, setZoom] = useState(() => typeof matchMedia !== 'undefined' && matchMedia('(orientation: portrait)').matches);
   const wrap = useRef<HTMLDivElement>(null);
   const [box, setBox] = useState({ w: 0, h: 0 });
   useLayoutEffect(() => {
@@ -94,8 +95,8 @@ export function IsoArena({
   }, []);
 
   const fit = fitTile(c.cols, c.rows, box.w, box.h);
-  // Zoom: casas ~1,8× maiores; a arena rola dentro da área (começa no lado do jogador).
-  const tw = zoom ? Math.round(fit * 1.8) : fit;
+  // Zoom: casas 1,5× maiores; a arena rola dentro da área (começa no lado do jogador).
+  const tw = zoom ? Math.round(fit * 1.5) : fit;
   const g = isoGeom(c.cols, c.rows, tw);
   const cells: { row: number; col: number }[] = [];
   for (let row = c.rows - 1; row >= 0; row--) for (let col = 0; col < c.cols; col++) cells.push({ row, col });
