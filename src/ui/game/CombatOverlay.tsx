@@ -332,7 +332,7 @@ function LiveView() {
                   const anim = f.kind === 'down' ? 'smoke' : target && isMachine(target) ? 'explosion' : 'sparks';
                   return (
                     <span key={`${poses.turn}-${i}`} className="iso-vfx" style={{ left: x, top: y, zIndex: g.depth(f.col, f.row) + 1 }}>
-                      <Sprite set="vfx" anim={anim} playing anchored scale={infantryScale(g.tw)} />
+                      <Sprite set="vfx" anim={anim} playing anchored scale={infantryScale(g.tw, g)} />
                     </span>
                   );
                 })}
@@ -467,7 +467,9 @@ function TurnLabel({ turn, max }: { turn: number; max: number }) {
 }
 
 /** Escala inteira do Pessoal: ~0,75 casa de altura (o pé do atlas fica a ~48 px do topo, a 1×). */
-export function infantryScale(tw: number) {
+export function infantryScale(tw: number, g?: IsoGeom) {
+  // Com fundo de combate, o Pessoal fica na escala do fundo (a art-kit desenhou os dois na mesma escala de voxel).
+  if (g?.unitScale) return g.unitScale;
   return Math.max(1, Math.round((0.75 * tw) / 48));
 }
 
@@ -531,7 +533,7 @@ function IsoToken({ r, c, g, pose }: { r: CombatUnitRef; c: CombatState; g: IsoG
   const h = f.h * g.tw;
   const feet = g.tw * 0.12;
   // Escala: o Pessoal primeiro (inteira, ~0,75 casa de altura); os veículos XL derivam dela (~1,2–1,3 casa).
-  const scale = sp?.xl && atlas && atlas.id === spriteSet ? xlScale(g.tw, atlas.frameWidth, sp.xl) : infantryScale(g.tw);
+  const scale = sp?.xl && atlas && atlas.id === spriteSet ? xlScale(g.tw, atlas.frameWidth, sp.xl) : infantryScale(g.tw, g);
   return (
     <div
       className={`token iso-token side-${r.side} pose-${pose}`}

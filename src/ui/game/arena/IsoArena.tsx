@@ -28,6 +28,8 @@ export interface IsoGeom {
   center(col: number, row: number): [number, number];
   /** Profundidade para o z-index: maior = mais à frente. */
   depth(col: number, row: number): number;
+  /** Com fundo de combate: a escala do fundo, que é a mesma do Pessoal (cenário e figuras na mesma escala de voxel). */
+  unitScale?: number;
 }
 
 export function isoGeom(cols: number, rows: number, tw: number): IsoGeom {
@@ -64,6 +66,7 @@ export function bgGeom(m: ArenaManifest, rows: number, S: number): IsoGeom {
       return [x, y + S];
     },
     depth: (col, row) => 10 + (col - row + rows) * 2,
+    unitScale: S,
   };
 }
 
