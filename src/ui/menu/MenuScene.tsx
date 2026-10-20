@@ -27,7 +27,7 @@ export function MenuScene({ active, reduced }: { active: boolean; reduced: boole
     return () => window.removeEventListener('resize', on);
   }, []);
 
-  // Escala inteira que cobre a tela (o excesso é cortado nas bordas, centrado).
+  // Menor escala inteira que cobre a tela (o excesso é cortado: à direita deitado, nas bordas em pé).
   const scale = m && size.w ? Math.max(1, Math.ceil(Math.max(size.w / m.frameWidth, size.h / m.frameHeight))) : 1;
 
   // Quadros: um timer a `fps` move o fundo (sem React por quadro); parado com reduzir movimento ou fora do Título.
@@ -55,7 +55,9 @@ export function MenuScene({ active, reduced }: { active: boolean; reduced: boole
         style={{
           width: w,
           height: h,
-          marginLeft: -w / 2,
+          // Deitado, a cena encosta à esquerda: os ~40% escurecidos ficam sob o menu; em pé, centrada.
+          left: portrait ? '50%' : 0,
+          marginLeft: portrait ? -w / 2 : 0,
           marginTop: -h / 2,
           backgroundImage: `url(${sceneUrl(m, animated ? m.image : m.static)})`,
           backgroundSize: animated ? `${m.columns * w}px ${m.rows * h}px` : `${w}px ${h}px`,
