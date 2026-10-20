@@ -45,3 +45,10 @@ Decisões que o código precisou tomar sem uma resposta no `CONTEXT.md` ou nos A
 ## Sandbox
 
 - Uma Sandbox personalizada é um **Preset** montado na tela de Nova Partida (país inicial, capital, Objetivo, prazo/meta). As Unidades e Estações iniciais da Sandbox personalizada são um pacote padrão. (`ui/NewGame`)
+
+## Campanha (motor)
+- Capítulos 7 e 10 (Destruir): a "rede de Estações da Moravia" e a "Casa Moravia" são o Grupo Hostil do Preset, renomeado; a Agência Rival Casa Moravia roda ao lado. Derrubar Estações rivais de verdade pediria um Objetivo novo.
+- Metas de Lucro e caixa dos 10 Capítulos são um primeiro chute (src/game/campaign/chapters.ts); o balanceamento ajusta.
+- Bônus de caixa: 20% do Lucro, teto de 50% do caixa base do próximo Capítulo (CAMPAIGN em rules.ts), zero com prejuízo. Aguardando o balanceamento confirmar o teto.
+- Reputação levada: trunca para Neutro (−31 vira −15, 40 vira 20).
+- Retry: mesma Campanha, semente nova por tentativa (mesma tentativa = mesmo mundo).

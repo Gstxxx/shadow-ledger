@@ -3,6 +3,7 @@ import type { Msg } from '../i18n/lookup';
 import type { AiState } from './ai/types';
 import type { PriceHistoryState } from './history';
 import type { SystemId, TutorialState } from './tutorial/types';
+import type { CampaignMark } from './campaign/types';
 
 export type Continent = 'NA' | 'SA' | 'EU' | 'AF' | 'ME' | 'AS' | 'OC';
 
@@ -556,6 +557,8 @@ export interface GameState {
   tutorial?: TutorialState;
   /** Quando foi gravado pela última vez (ms desde a época Unix). */
   savedAt?: number;
+  /** Partida de um Capítulo da Campanha (src/game/campaign). */
+  campaign?: CampaignMark;
   /** Crise Final: horas acumuladas com a Tensão Global no Topo. */
   crisis?: { hours: number };
   /** Vendas de Armas de Destruição em Massa, para o epílogo da Crise Final. */

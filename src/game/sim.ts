@@ -14,6 +14,7 @@ import { buildForce } from './forces';
 import type { Faction } from './forces';
 import { driftPrices, interested, maxCargo, midPrice, recoverSaturation, rollStock } from './market';
 import { checkObjective } from './objective';
+import { tickCampaign } from './campaign/flow';
 import { chance, pick, randInt, randRange, weighted } from './rng';
 import {
   addReputation,
@@ -88,6 +89,7 @@ function tick(s: GameState, dt: number) {
     for (const a of s.agencies) dailyAgency(s, a);
     if (s.lastDay % DAYS_PER_MONTH === 0) for (const a of s.agencies) monthly(s, a);
   }
+  tickCampaign(s);
   checkObjective(s);
 }
 

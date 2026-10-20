@@ -11,6 +11,8 @@ import { useSettings } from './settings';
 import type { Speed } from './settings';
 
 const SAVE_KEY = 'shadow-ledger.save.v3';
+/** Partida do Capítulo em andamento da Campanha: slot próprio, não toca o save da partida avulsa. */
+export const CAMPAIGN_GAME_KEY = 'shadow-ledger.campaign.game.v1';
 /** Game hours per real second at 1×. */
 export const HOURS_PER_SECOND = 1;
 
@@ -35,6 +37,8 @@ interface GameStore {
   toasts: Toast[];
   go(screen: Screen): void;
   start(opts: GameOptions): void;
+  /** Entra numa partida já montada (Capítulo da Campanha). */
+  load(g: GameState, paused?: boolean): void;
   continueSaved(): boolean;
   quit(): void;
   /** Run an agency action for the player; toasts the outcome. */
@@ -79,7 +83,7 @@ function readSave(): GameState | null {
 function writeSave(s: GameState) {
   try {
     s.savedAt = Date.now();
-    localStorage.setItem(SAVE_KEY, JSON.stringify(s));
+    localStorage.setItem(s.campaign ? CAMPAIGN_GAME_KEY : SAVE_KEY, JSON.stringify(s));
   } catch {
     /* storage full or blocked: the game keeps running */
   }
@@ -128,6 +132,12 @@ export const useGameStore = create<GameStore>()((set, get) => ({
     lastSaveDay = -1;
     writeSave(g);
     set({ game: g, screen: 'game', rev: get().rev + 1, speed: useSettings.getState().defaultSpeed, paused: false, selected: player(g).location });
+  },
+
+  load: (g, paused = false) => {
+    lastSaveDay = Math.floor(g.time / 24);
+    writeSave(g);
+    set({ game: g, screen: 'game', rev: get().rev + 1, speed: useSettings.getState().defaultSpeed, paused, selected: player(g).location });
   },
 
   continueSaved: () => {

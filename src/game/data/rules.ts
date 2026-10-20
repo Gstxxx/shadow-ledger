@@ -220,3 +220,16 @@ export const HUNT = {
   reputation: 4,
   exposure: 10,
 };
+
+/** Campanha "Herança" (docs/CAMPANHA.md): o que passa de um Capítulo para o outro. */
+export const CAMPAIGN = {
+  maxVeterans: 3,
+  /** Bônus de caixa: fração do Lucro do Capítulo anterior (zero se houve prejuízo). */
+  cashBonusRate: 0.2,
+  /** Teto do bônus, como fração do caixa base do próximo Capítulo. */
+  cashBonusCap: 0.5,
+  /** Reputação volta esta fração do caminho até Neutro (0). */
+  reputationKeep: 0.5,
+  /** Caixa da Casa Moravia por força. */
+  rivalCash: { weak: 0.5, normal: 1, strong: 1.6 },
+};
