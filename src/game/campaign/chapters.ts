@@ -26,15 +26,15 @@ interface Spec {
 }
 
 const SPECS: Spec[] = [
-  { n: 1, objective: 'profit', days: 60, target: 3_000_000, cash: 3_000_000, startCountry: '484', stations: [['484', 1]], units: ['cargo0', 'bodyguard', 'lawyer1'], challenge: 1 },
+  { n: 1, objective: 'profit', days: 60, target: 4_500_000, cash: 3_000_000, startCountry: '484', stations: [['484', 1]], units: ['cargo0', 'bodyguard', 'lawyer1'], challenge: 1 },
   { n: 2, objective: 'quick', days: 45, target: 8_000_000, cash: 5_000_000, startCountry: '380', stations: [['300', 1]], units: ['cargo1', 'bodyguard', 'police', 'lawyer1'], challenge: 1 },
-  { n: 3, objective: 'rescue', days: 40, cash: 6_000_000, startCountry: '276', stations: [['276', 1]], units: ['cargo1', 'swat', 'soldier', 'liaison1'], challenge: 2, region: ['EU'], hostage: 'Irene Vasko' },
-  { n: 4, objective: 'destroy', days: 50, cash: 7_000_000, startCountry: '818', stations: [['818', 2]], units: ['cargo1', 'soldier', 'soldier', 'technical'], challenge: 2, region: ['AF', 'ME'] },
+  { n: 3, objective: 'rescue', days: 55, cash: 6_000_000, startCountry: '276', stations: [['276', 1]], units: ['cargo1', 'swat', 'soldier', 'liaison1'], challenge: 1, region: ['EU'], hostage: 'Irene Vasko' },
+  { n: 4, objective: 'destroy', days: 65, cash: 7_000_000, startCountry: '818', stations: [['818', 2]], units: ['cargo1', 'soldier', 'soldier', 'technical'], challenge: 2, region: ['AF', 'ME'] },
   { n: 5, objective: 'profit', days: 60, target: 25_000_000, cash: 9_000_000, startCountry: '616', stations: [['616', 1], ['804', 1]], units: ['cargo1', 'police', 'soldier', 'lawyer1'], challenge: 2, rival: 'weak' },
-  { n: 6, objective: 'quick', days: 45, target: 30_000_000, cash: 12_000_000, startCountry: '250', stations: [['756', 2]], units: ['cargo1', 'swat', 'bodyguard', 'lawyer2'], challenge: 2, rival: 'normal' },
-  { n: 7, objective: 'destroy', days: 55, cash: 12_000_000, startCountry: '682', stations: [['682', 2], ['784', 1]], units: ['cargo1', 'commando', 'soldier', 'technical'], challenge: 3, region: ['ME'], rival: 'normal', group: MORAVIA },
-  { n: 8, objective: 'rescue', days: 40, cash: 10_000_000, startCountry: '076', stations: [['076', 1], ['604', 1]], units: ['cargo1', 'commando', 'swat', 'liaison1'], challenge: 3, region: ['SA'], rival: 'normal', hostage: 'Duarte Leme' },
-  { n: 9, objective: 'profit', days: 75, target: 80_000_000, cash: 18_000_000, startCountry: '392', stations: [['392', 2], ['410', 1]], units: ['cargo2', 'swat', 'police', 'lawyer2'], challenge: 3, rival: 'normal' },
+  { n: 6, objective: 'quick', days: 55, target: 30_000_000, cash: 12_000_000, startCountry: '250', stations: [['756', 2]], units: ['cargo1', 'swat', 'bodyguard', 'lawyer2'], challenge: 2, rival: 'normal' },
+  { n: 7, objective: 'destroy', days: 75, cash: 12_000_000, startCountry: '682', stations: [['682', 2], ['784', 1]], units: ['cargo1', 'commando', 'soldier', 'technical'], challenge: 3, region: ['ME'], rival: 'normal', group: MORAVIA },
+  { n: 8, objective: 'rescue', days: 60, cash: 10_000_000, startCountry: '076', stations: [['076', 1], ['604', 1]], units: ['cargo1', 'commando', 'swat', 'liaison1'], challenge: 3, region: ['SA'], rival: 'normal', hostage: 'Duarte Leme' },
+  { n: 9, objective: 'profit', days: 75, target: 170_000_000, cash: 18_000_000, startCountry: '392', stations: [['392', 2], ['410', 1]], units: ['cargo2', 'swat', 'police', 'lawyer2'], challenge: 3, rival: 'normal' },
   { n: 10, objective: 'destroy', days: 90, cash: 25_000_000, startCountry: '826', stations: [['826', 2], ['682', 1]], units: ['cargo2', 'commando', 'commando', 'soldier', 'ifv'], challenge: 3, region: ['EU', 'ME', 'AF', 'AS'], rival: 'strong', group: MORAVIA },
 ];
 

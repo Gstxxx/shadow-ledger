@@ -331,7 +331,7 @@ export function newGame(opts: GameOptions): GameState {
     const region = preset.region ?? ['EU'];
     const pool = COUNTRY_SEEDS.filter((c) => region.includes(c.continent) && c.id !== preset.startCountry);
     const start = pick(s, pool);
-    const strength = 12 + preset.challenge * 6 + (opts.difficulty - 1) * 5;
+    const strength = 12 + preset.challenge * 6 + (opts.difficulty - 1) * 3;
     s.group = {
       name: pick(s, GROUP_NAMES),
       countryId: start.id,
