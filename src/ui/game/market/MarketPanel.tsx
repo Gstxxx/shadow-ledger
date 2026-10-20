@@ -164,7 +164,7 @@ export function MarketPanel({ countryId }: { countryId: string }) {
             <SellList countryId={countryId} onBuy={() => setMode('buy')} />
           ) : (
           <>
-          <div className={`mkt-segs g-tabs${segFade}`} ref={segsRef} onScroll={updateSegFade} role="tablist" aria-label={t('game.market.segmentsAria')}>
+          <div className={`mkt-segs g-tabs${segFade}`} ref={segsRef} onScroll={updateSegFade} role="tablist" aria-label={t('game.market.segmentsAria')} data-tour="market">
             {segs.map((g) => (
               <button
                 key={g.id}
@@ -189,7 +189,7 @@ export function MarketPanel({ countryId }: { countryId: string }) {
           {active === 'hire' && <HireList countryId={countryId} />}
 
           {active !== 'opps' && active !== 'hire' && (
-            <ul className="mkt-rows" data-tour="market">
+            <ul className="mkt-rows">
               <ShortList
                 inList
                 key={active}
