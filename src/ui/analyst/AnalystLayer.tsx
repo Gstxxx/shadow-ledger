@@ -88,6 +88,17 @@ function findTarget(ids: string[], scrolled?: { current: string | null }, key = 
   return null;
 }
 
+/** Botão de fechar do diálogo aberto por cima: quando o alvo do passo está atrás dele, é por ali que se sai. */
+function dialogCloser(): DOMRect | null {
+  const dialogs = [...document.querySelectorAll<HTMLElement>('[role="dialog"], [aria-modal="true"]')];
+  const top = dialogs.reverse().find((d) => d.getBoundingClientRect().width > 0);
+  if (!top) return null;
+  for (const b of top.querySelectorAll<HTMLElement>('button[aria-label]')) {
+    if (/^(fechar|close)(\s|$)/i.test(b.getAttribute('aria-label') ?? '')) return visibleRect(b);
+  }
+  return null;
+}
+
 /** Posição de um retângulo da tela, revista a cada 300 ms (painéis abrem, o mapa mexe). */
 function useRect(read: () => DOMRect | null, deps: unknown[]): DOMRect | null {
   const [rect, setRect] = useState<DOMRect | null>(null);
@@ -220,7 +231,11 @@ export function AnalystLayer({ onOpenDrawer }: AnalystLayerProps) {
   const targets = line?.topic ? (TOPIC_TARGETS[line.topic] ?? []) : guiding && !blocked ? STEP_TARGETS[step!] : [];
   const scrolled = useRef<string | null>(null);
   const ring = useRect(
-    () => (targets.length ? findTarget(targets, scrolled, `${step}|${line?.id ?? ''}`) : null),
+    () => {
+      if (!targets.length) return null;
+      // Alvo atrás de um modal (ex.: comprou e agora precisa voar pelo mapa): aponta o botão de fechar.
+      return findTarget(targets, scrolled, `${step}|${line?.id ?? ''}`) ?? (line?.topic ? null : dialogCloser());
+    },
     [targets.join(), rev],
   );
   const map = useRect(() => document.querySelector('.map-area')?.getBoundingClientRect() ?? null, []);

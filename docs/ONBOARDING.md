@@ -18,6 +18,8 @@ Quem nunca jogou se perdia: muitos painéis, nenhuma ordem. O onboarding tem tr�
 - **Silenciar**: some o balão e fica só um retrato de 44 px para reativar. O objetivo guiado continua (tem "Pular guia" próprio).
 - **Spotlight**: enquanto explica um tópico, destaca o elemento dele (`TOPIC_TARGETS`); senão, o alvo do passo (`STEP_TARGETS`). Os alvos são atributos `data-tour` na tela de jogo (`map`, `market`, `buy`, `sell`, `fly`, `fleet`, `open-station`, `speed`, `tab-contracts`, `tab-threats`, `drawer-left`, `drawer-right`). Vale o primeiro visível da lista, então no celular a gaveta fechada (`drawer-left`) é destacada no lugar do botão escondido.
 
+Se nenhum alvo do passo está à vista e há um diálogo aberto por cima (ex.: comprou no Mercado e agora precisa voar pelo mapa), o anel vai para o botão "Fechar" do diálogo. O anel fica acima dos modais (z-index 310), recortado pelo contêiner com rolagem; o alvo principal abaixo da dobra rola para a vista uma vez por passo.
+
 ### Layout
 
 O balão fica no canto inferior esquerdo da área do mapa, acima do Relatório, com largura de até 360 px (300 px em telas baixas). Fica acima do scrim de Eventos e do Combate (z-index 55), mas só o balão e o chip do objetivo capturam cliques, então o resto da tela continua jogável. Em telas com altura ≤ 520 px (celular deitado, ~640×360), o retrato encolhe para 40 px e o texto corta em 4 linhas.
@@ -57,6 +59,12 @@ import { AnalystLayer } from '../analyst';
 // dentro de .game, depois de <GameOver/>:
 <AnalystLayer onOpenDrawer={(side) => setDrawer(side)} />
 ```
+
+### Validado (build de produção local, `?safe=62,0,34,0`)
+
+- **Em pé, 440×956:** chip e balão acima do Relatório e da barra de ações; anel na lista do Mercado, em "Comprar N" (rolado para a vista) e no "Fechar" do modal.
+- **Em pé, 360×640:** o chip cabe acima do Relatório.
+- **Deitado, 956×440:** o balão fica abaixo das camadas do mapa e acima do Relatório; o chip recolhe enquanto ela fala.
 
 ## Harness de desenvolvimento
 
