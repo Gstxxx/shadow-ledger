@@ -1,9 +1,10 @@
 import { useCallback, useEffect, useLayoutEffect, useRef } from 'react';
-import { AlertTriangle, Briefcase, Crosshair, MapPin, Store, Swords } from 'lucide-react';
+import { AlertTriangle } from 'lucide-react';
 import { GActionBar, GModal } from '../../../art';
 import { directorAt, player, stationIn } from '../../../game/state';
 import { isLocked } from '../../../game/tutorial/locks';
 import { AlarmIcon } from '../fx/ScreenFx';
+import { PixelIcon } from '../../../art';
 import { useGame, useGameStore } from '../../../store/game';
 import { useT } from '../../../i18n';
 import { classLabel, countryName, itemName } from '../../../i18n/lookup';
@@ -58,11 +59,11 @@ export function StageModals({ stage }: { stage: StageApi }) {
     const id = m.id;
     const here = directorAt(a, id);
     const tabs: { id: CountryTab; label: string; icon: JSX.Element; count?: number }[] = [
-      { id: 'overview', label: t('game.topbar.country'), icon: <MapPin size={16} /> },
-      { id: 'market', label: t('game.country.market'), icon: <Store size={16} /> },
+      { id: 'overview', label: t('game.topbar.country'), icon: <PixelIcon id="pais" size={20} /> },
+      { id: 'market', label: t('game.country.market'), icon: <PixelIcon id="mercado" size={20} /> },
       // Preset Tutorial: Operações travadas no motor, então a aba nem aparece.
       ...(isLocked(s, 'operations') ? [] : [{ id: 'ops' as CountryTab, label: t('game.country.ops.title'), icon: <AlertTriangle size={16} /> }]),
-      { id: 'station', label: t('game.country.station.title'), icon: <Briefcase size={16} />, count: stationIn(a, id)?.units.length || undefined },
+      { id: 'station', label: t('game.country.station.title'), icon: <PixelIcon id="estacao" size={20} />, count: stationIn(a, id)?.units.length || undefined },
     ];
     return (
       <GModal
@@ -136,8 +137,8 @@ export function StageModals({ stage }: { stage: StageApi }) {
         kicker={a.name}
         title={t('combat.board.title')}
         tabs={[
-          { id: 'contracts', label: t('combat.board.tab.contracts'), icon: <Swords size={16} /> },
-          { id: 'hunts', label: t('combat.board.tab.hunts'), icon: <Crosshair size={16} /> },
+          { id: 'contracts', label: t('combat.board.tab.contracts'), icon: <PixelIcon id="contratos" size={20} /> },
+          { id: 'hunts', label: t('combat.board.tab.hunts'), icon: <PixelIcon id="cacadas" size={20} /> },
         ]}
         tab={m.tab}
         onTab={(tab) => stage.replace({ kind: 'combat', tab: tab as CombatBoardTab })}
@@ -208,11 +209,11 @@ export function StageDock({ stage, compact }: { stage: StageApi; compact?: boole
   const active: DockId | undefined =
     m?.kind === 'country' ? (m.tab === 'market' ? 'market' : 'country') : m?.kind === 'agency' ? (m.tab === 'threats' ? 'threats' : 'agency') : m?.kind === 'item' ? 'market' : m?.kind === 'combat' ? 'combat' : undefined;
   const items = [
-    { id: 'country', label: countryName(selected), icon: <MapPin size={22} /> },
-    { id: 'market', label: t('game.country.market'), icon: <Store size={22} /> },
-    { id: 'agency', label: t('game.topbar.agency'), icon: <Briefcase size={22} />, alert: a.director.status !== 'free' || a.arrears > 0 },
-    { id: 'combat', label: t('combat.board.dock'), icon: <Swords size={22} />, count: combatBadge || undefined },
-    { id: 'threats', label: t('game.agency.tab.threats'), icon: a.threats.length ? <AlarmIcon ring={a.threats.length} small /> : <AlertTriangle size={22} />, count: a.threats.length || undefined, alert: a.threats.length > 0 },
+    { id: 'country', label: countryName(selected), icon: <PixelIcon id="pais" size={32} /> },
+    { id: 'market', label: t('game.country.market'), icon: <PixelIcon id="mercado" size={32} /> },
+    { id: 'agency', label: t('game.topbar.agency'), icon: <PixelIcon id="agencia" size={32} />, alert: a.director.status !== 'free' || a.arrears > 0 },
+    { id: 'combat', label: t('combat.board.dock'), icon: <PixelIcon id="combate" size={32} />, count: combatBadge || undefined },
+    { id: 'threats', label: t('game.agency.tab.threats'), icon: a.threats.length ? <AlarmIcon ring={a.threats.length} small /> : <PixelIcon id="ameacas" size={32} />, count: a.threats.length || undefined, alert: a.threats.length > 0 },
   ];
   const onSelect = (id: string) => {
     const want: StageModal =

@@ -1,5 +1,5 @@
 import { useLayoutEffect, useState } from 'react';
-import { AlertTriangle, Building2, FileSignature, Plane, Shield, UserRound, Users, Crosshair } from 'lucide-react';
+import { Building2, FileSignature, Plane, Shield, UserRound, Users } from 'lucide-react';
 import * as A from '../../game/actions';
 import { ITEMS } from '../../game/data/items';
 import { STATIONS } from '../../game/data/rules';
@@ -18,6 +18,7 @@ import { FleetSpace, UnitCard, UpkeepBalance } from './unit/UnitCard';
 import { useOpenUnit } from './unit/DossierHost';
 import { ArsenalTab } from './gear/ArsenalTab';
 import { AlarmIcon, ArrestIcon } from './fx/ScreenFx';
+import { PixelIcon } from '../../art';
 import { isLocked } from '../../game/tutorial/locks';
 import './agency.css';
 import { DirectorAvatar } from './DirectorAvatar';
@@ -43,13 +44,13 @@ export function useAgencyTabs() {
   const cargoUnits = a.cargo.reduce((x, l) => x + l.qty, 0);
   return [
     { id: 'director' as Tab, label: t('game.agency.director.title'), icon: <UserRound size={16} />, alert: a.director.status !== 'free' || a.arrears > 0 },
-    { id: 'fleet' as Tab, label: t('game.agency.fleet.title'), icon: <Plane size={16} />, count: cargoUnits || undefined },
-    { id: 'escort' as Tab, label: t('game.agency.escort.title'), icon: <Shield size={16} />, count: a.escort.length || undefined },
-    { id: 'arsenal' as Tab, label: t('game.agency.tab.arsenal'), icon: <Crosshair size={16} /> },
-    { id: 'stations' as Tab, label: t('game.agency.tab.stations'), icon: <Building2 size={16} />, count: a.stations.length || undefined },
-    { id: 'teams' as Tab, label: t('game.agency.tab.teams'), icon: <Users size={16} />, count: a.teams.length || undefined },
-    { id: 'contracts' as Tab, label: t('game.agency.tab.contracts'), icon: <FileSignature size={16} />, count: offers || undefined },
-    { id: 'threats' as Tab, label: t('game.agency.tab.threats'), icon: <AlertTriangle size={16} />, count: a.threats.length || undefined, alert: a.threats.length > 0 },
+    { id: 'fleet' as Tab, label: t('game.agency.fleet.title'), icon: <PixelIcon id="frota" size={20} />, count: cargoUnits || undefined },
+    { id: 'escort' as Tab, label: t('game.agency.escort.title'), icon: <PixelIcon id="escolta" size={20} />, count: a.escort.length || undefined },
+    { id: 'arsenal' as Tab, label: t('game.agency.tab.arsenal'), icon: <PixelIcon id="arsenal" size={20} /> },
+    { id: 'stations' as Tab, label: t('game.agency.tab.stations'), icon: <PixelIcon id="estacao" size={20} />, count: a.stations.length || undefined },
+    { id: 'teams' as Tab, label: t('game.agency.tab.teams'), icon: <PixelIcon id="equipes" size={20} />, count: a.teams.length || undefined },
+    { id: 'contracts' as Tab, label: t('game.agency.tab.contracts'), icon: <PixelIcon id="contratos" size={20} />, count: offers || undefined },
+    { id: 'threats' as Tab, label: t('game.agency.tab.threats'), icon: <PixelIcon id="ameacas" size={20} />, count: a.threats.length || undefined, alert: a.threats.length > 0 },
   ];
 }
 
