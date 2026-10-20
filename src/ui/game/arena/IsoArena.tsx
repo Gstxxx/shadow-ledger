@@ -70,6 +70,33 @@ export function bgGeom(m: ArenaManifest, rows: number, S: number): IsoGeom {
   };
 }
 
+/**
+ * Objetos do cenário (caixas, barricadas, bancos…; art-kit) na mesma camada das Unidades, por profundidade. A
+ * profundidade do manifesto é c + r na grade dele (linha 0 = a de trás); a Unidade na casa (col, row) daqui tem
+ * c + (linhas − 1 − row), e g.depth dá 12 + 2·isso. O objeto fica no ímpar logo acima da Unidade de profundidade
+ * ⌊d⌋: quem está na mesma casa ou atrás fica coberto, quem está mais à frente passa por cima. Sem `props`, nada.
+ */
+function ArenaProps({ m, g }: { m: ArenaManifest; g: IsoGeom }) {
+  if (!m.props?.length) return null;
+  const S = g.width / m.frameWidth;
+  return (
+    <>
+      {m.props.map((p) => (
+        <img
+          key={p.id}
+          className="iso-prop"
+          src={sceneUrl(m, p.image)}
+          width={p.width * S}
+          height={p.height * S}
+          alt=""
+          draggable={false}
+          style={{ left: p.x * S, top: p.y * S, zIndex: 13 + 2 * Math.floor(p.depth) }}
+        />
+      ))}
+    </>
+  );
+}
+
 /** Fundo do tipo de Combate. */
 export const ARENA_OF: Record<CombatType, ArenaId> = { urban: 'urbano', army: 'militar', legal: 'juridico', air: 'aereo' };
 
@@ -188,6 +215,7 @@ export function IsoArena({
           ))}
         </svg>
         {c.units.map((r) => renderUnit(r, g))}
+        {bg && <ArenaProps m={bg} g={g} />}
         {children?.(g)}
         {/* objetos do cenário que ficam por cima das Unidades */}
         {bg && <img className="iso-bg-front" src={sceneUrl(bg, bg.front)} width={g.width} height={g.height} alt="" draggable={false} />}

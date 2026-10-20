@@ -327,3 +327,10 @@ html .game.combat-open .analyst-layer {
   stroke: var(--amber);
   stroke-width: 2;
 }
+/* Objetos do cenário: imagem a 1× no tamanho da escala do fundo, intercalada com as Unidades por profundidade. */
+.iso-prop {
+  position: absolute;
+  image-rendering: pixelated;
+  pointer-events: none;
+  user-select: none;
+}
