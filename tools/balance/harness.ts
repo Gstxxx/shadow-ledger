@@ -138,10 +138,12 @@ export interface RunOptions {
   seed: number;
   /** Limite para Presets sem prazo (e partidas longas). */
   capDays?: number;
+  /** Monta a partida de outro jeito (ex.: Capítulo da Campanha); senão, newGame do Preset. */
+  make?: () => GameState;
 }
 
 export function runGame(o: RunOptions): GameResult {
-  const s = newGame({ preset: o.preset, difficulty: o.difficulty, hardcore: false, seed: o.seed });
+  const s = o.make ? o.make() : newGame({ preset: o.preset, difficulty: o.difficulty, hardcore: false, seed: o.seed });
   const a = player(s);
   const bot = BOTS[o.bot];
   const r = botRng(o.seed * 7919 + o.bot.length * 104729);

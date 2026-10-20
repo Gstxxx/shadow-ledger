@@ -246,3 +246,47 @@ Em fração do caixa inicial do Preset (C):
 - Campanha, bônus de caixa entre Capítulos (`CAMPAIGN` em rules.ts): 20% do Lucro do Capítulo anterior,
   teto de 0,25 do caixa base do próximo Capítulo, zero com prejuízo. O teto vira o bônus de fato para
   quem lucra (Lucro de 2–30× C); 0,25 é a diferença Recruta→Operador, sem bola de neve.
+
+## Campanha "Herança" — rampa dos 10 Capítulos (20/10)
+
+Cada Capítulo é montado por `startChapter` (o mesmo caminho da interface) e jogado pelos bots
+Iniciante, Guloso, Operador e Passivo nas 3 Dificuldades, 8 sementes, em dois cenários: sem bônus de
+caixa e com o bônus no teto decidido (25% do caixa base). Sem Veteranos (limite inferior).
+
+```bash
+npx vitest run --config tools/balance/vitest.config.ts campaign-
+node tools/balance/campaign-table.mjs            # tabela de vitória por Capítulo
+```
+
+Vitória do Iniciante, sem bônus (Recruta / Operador / Diretor):
+
+| Cap. | Objetivo | Antes | Proposto (C1–C9 + P20) |
+|---|---|---|---|
+| 1 | lucro (60 d) | 100 / 100 / 88% | 100 / 100 / 50% |
+| 2 | lucro rápido | 100 / 100 / 50% | igual |
+| 3 | resgate | 75 / 0 / 13% | 100 / 88 / 63% |
+| 4 | eliminar grupo | 75 / 0 / 0% | 75 / 38 / 0% |
+| 5 | lucro | 100 / 75 / 25% | igual |
+| 6 | lucro rápido | 50 / 25 / 0% | 88 / 50 / 25% |
+| 7 | eliminar grupo | 38 / 0 / 0% | 63 / 25 / 13% |
+| 8 | resgate | 50 / 0 / 0% | 63 / 25 / 0% |
+| 9 | lucro (75 d) | 100 / 88 / 88% | 88 / 38 / 25% |
+| 10 | eliminar Casa Moravia | 38 / 38 / 25% | não remedido com P20 |
+
+Passivo: 0% em todos. O bônus de 25% soma de 0 a +25 pp e não inverte a rampa. A rampa fica em dente
+de serra (os Capítulos de lucro 5 e 9 respiram entre caças), mas sem penhascos: antes, as caças e
+resgates de 40–55 dias caíam de 63–75% no Recruta para 0% no Operador, e o Capítulo 9 era o mais
+fácil depois do 1.
+
+| Id | Mudança (`chapters.ts`, salvo P20) | Motivo |
+|---|---|---|
+| C1 | Cap. 1 meta 3 M → 4,5 M | Batida até no Diretor (88%). |
+| C3 | Cap. 3 prazo 40 → 55 d, desafio 2 → 1 | Primeiro combate da Campanha; 0% no Operador. |
+| C4, C7, C8 | Prazos 50 → 65, 55 → 75, 40 → 60 d | Sem tempo para armar a Escolta e seguir as pistas. |
+| C6 | Cap. 6 prazo 45 → 55 d | Mais duro que o 7. |
+| C9 | Cap. 9 meta 80 M → 170 M | Lucro mediano do Iniciante 130–230 M. |
+| P20 | `state.ts` força do grupo +5 → +3 por nível de Dificuldade | Penhasco Recruta → Operador. Presets de caça depois: Sahel 75/13/13%, Andes 88/13/13%, Linha Vermelha 63/50/25%. |
+
+Bônus de caixa da Campanha: 20% do Lucro do Capítulo anterior, teto 25% do caixa base (decidido em
+17/10). +25% de caixa é a diferença entre Recruta e Operador; com teto de 50% cada Capítulo ficaria
+uma Dificuldade e meia abaixo da escolhida.

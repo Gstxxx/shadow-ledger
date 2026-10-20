@@ -176,7 +176,7 @@ export const profitGoal = (s: GameState) =>
 ];
 
 /** Lotes são cumulativos na ordem: o lote N inclui os anteriores. */
-export const BATCH_ORDER: string[] = ['lote1', 'lote2', 'lote3', 'lote4', 'lote5', 'lote6', 'lote7'];
+export const BATCH_ORDER: string[] = ['lote1', 'lote2', 'lote3', 'lote4', 'lote5', 'lote6', 'lote7', 'camp1', 'camp2'];
 
 // ── Lote 7: custo de entrada de Contratos e Operações (backlog item 4) ──
 PROPOSALS.push(
@@ -229,5 +229,33 @@ export function variantPatches(name: string): Proposal[] {
   return PROPOSALS.filter((p) => batches.has(p.batch) && !APPLIED.has(p.id));
 }
 
-/** Já aplicadas no motor (5658a74 e 4bd590f); o código em volta mudou depois, então não reaplicar. */
-const APPLIED = new Set(['P1', 'P2', 'P3', 'P4', 'P5', 'P6', 'P7', 'P8', 'P9', 'P10', 'P11', 'P12', 'P13', 'P14', 'P15', 'P16']);
+/** Já aplicadas no motor (5658a74, 4bd590f e e84342b); o código em volta mudou depois, então não reaplicar. */
+const APPLIED = new Set(['P1', 'P2', 'P3', 'P4', 'P5', 'P6', 'P7', 'P8', 'P9', 'P10', 'P11', 'P12', 'P13', 'P14', 'P15', 'P16', 'P17', 'P18', 'P19']);
+
+// ── Campanha "Herança": rampa dos 10 Capítulos (src/game/campaign/chapters.ts) ──
+const ch = (n: number, from: string, to: string, why: string): Proposal => ({
+  id: `C${n}`,
+  batch: 'camp1',
+  file: 'src/game/campaign/chapters.ts',
+  from,
+  to,
+  why,
+});
+PROPOSALS.push(
+  ch(1, "{ n: 1, objective: 'profit', days: 60, target: 3_000_000,", "{ n: 1, objective: 'profit', days: 60, target: 4_500_000,", 'Meta 3 M era batida até no Diretor (88%); 4,5 M dá ~100/88/50%.'),
+  ch(3, "{ n: 3, objective: 'rescue', days: 40,", "{ n: 3, objective: 'rescue', days: 55,", 'Resgate em 40 dias caía para 0% no Operador: falta tempo para armar a Escolta e achar o grupo.'),
+  ch(31, "units: ['cargo1', 'swat', 'soldier', 'liaison1'], challenge: 2, region: ['EU']", "units: ['cargo1', 'swat', 'soldier', 'liaison1'], challenge: 1, region: ['EU']", 'Primeiro Capítulo de combate: grupo de desafio 1 (força 18/23/28).'),
+  ch(4, "{ n: 4, objective: 'destroy', days: 50,", "{ n: 4, objective: 'destroy', days: 65,", 'Caçada em 50 dias: Iniciante 75/0/0%.'),
+  ch(6, "{ n: 6, objective: 'quick', days: 45, target: 30_000_000,", "{ n: 6, objective: 'quick', days: 55, target: 30_000_000,", 'Lucro rápido de 30 M em 45 dias: 50/25/0%, mais duro que os Capítulos seguintes.'),
+  ch(7, "{ n: 7, objective: 'destroy', days: 55,", "{ n: 7, objective: 'destroy', days: 75,", 'Caçada em 55 dias: 38/0/0%.'),
+  ch(8, "{ n: 8, objective: 'rescue', days: 40,", "{ n: 8, objective: 'rescue', days: 60,", 'Resgate em 40 dias: 50/0/0%.'),
+  ch(9, "{ n: 9, objective: 'profit', days: 75, target: 80_000_000,", "{ n: 9, objective: 'profit', days: 75, target: 170_000_000,", 'Meta 80 M com lucro mediano de 130–230 M: 88–100% até no Diretor, o Capítulo mais fácil depois do 1. 170 M dá ~88/38/25%.'),
+);
+PROPOSALS.push({
+  id: 'P20',
+  batch: 'camp2',
+  file: 'src/game/state.ts',
+  from: 'const strength = 12 + preset.challenge * 6 + (opts.difficulty - 1) * 5;',
+  to: 'const strength = 12 + preset.challenge * 6 + (opts.difficulty - 1) * 3;',
+  why: 'Nas caças a Dificuldade era um penhasco: Iniciante 63–75% no Recruta e 0% no Operador (Capítulos 4, 7, 8; Sahel 88/13/0%). +3 de força por nível em vez de +5.',
+});
