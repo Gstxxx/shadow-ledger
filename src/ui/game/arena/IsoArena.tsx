@@ -100,8 +100,9 @@ function ArenaProps({ m, g }: { m: ArenaManifest; g: IsoGeom }) {
 /** Fundo do tipo de Combate. */
 export const ARENA_OF: Record<CombatType, ArenaId> = { urban: 'urbano', army: 'militar', legal: 'juridico', air: 'aereo' };
 
-const loadImage = (src: string) =>
-  new Promise<void>((ok) => {
+const wait = (ms: number): Promise<void> => new Promise((ok) => setTimeout(ok, ms));
+const loadImage = (src: string): Promise<void> =>
+  new Promise((ok) => {
     const img = new Image();
     img.onload = img.onerror = () => ok();
     img.src = src;
@@ -116,7 +117,7 @@ export function preloadCombat(type: CombatType, spriteIds: readonly string[], ms
     .then((m) => Promise.all([m.static, m.front, ...(m.props ?? []).map((p) => p.image)].map((f) => loadImage(sceneUrl(m, f)))))
     .catch(() => undefined);
   const sprites = Promise.all(spriteIds.map((id) => preloadSprites([id]).catch(() => undefined)));
-  return Promise.race([Promise.all([arena, sprites]).then(() => undefined), new Promise<void>((ok) => setTimeout(ok, ms))]);
+  return Promise.race([Promise.all([arena, sprites]).then(() => undefined), wait(ms)]);
 }
 
 /** Largura de casa que cabe no espaço (largura e, se houver, altura). */
@@ -215,7 +216,8 @@ export function IsoArena({
     const sum = pts.reduce((s, p) => { const [x, y] = g.center(p.col, p.row); return [s[0] + x, s[1] + y]; }, [0, 0]);
     return { x: sum[0] / pts.length, y: sum[1] / pts.length };
   })();
-  useEffect(() => {
+  // Antes da pintura: o 1º quadro já sai na posição final (sem passar pelo topo). Só a câmera da luta desliza.
+  useLayoutEffect(() => {
     const el = wrap.current;
     if (!el || !focus) return;
     const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
@@ -264,6 +266,8 @@ export function IsoArena({
               tabIndex={0}
               aria-label={cellLabel(row, col)}
               onClick={() => onCell(row, col)}
+              // Toque/clique não dá foco à casa: o navegador rolava a arena para mostrar o polígono focado.
+              onMouseDown={(e) => e.preventDefault()}
               onKeyDown={(e) => key(e, row, col)}
             />
           ))}
