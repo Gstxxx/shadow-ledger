@@ -9,7 +9,7 @@ import { PRESETS } from '../../game/data/rules';
 import { Dossier } from './Dossier';
 import { InstallTitleOffer } from './InstallOffer';
 import { ease, f } from './ease';
-import { buildIntro, finalState, HANDOFF_AT, type IntroEls } from './intro';
+import { buildIntro, finalState, type IntroEls } from './intro';
 import { COLS, LEDGER_CH, ledgerRows } from './ledger';
 import { sfx, useMenuSettings } from './settings';
 import { useLang } from '../../i18n';
@@ -108,11 +108,25 @@ export function MainMenu(props: MainMenuProps) {
     const skip = () => {
       if (!tl) {
         dead = true;
+        release();
         setPhase('title');
         return;
       }
-      if (tl.time() < HANDOFF_AT) tl.seek(HANDOFF_AT);
-      tl.timeScale(1.7);
+      // Pular termina a abertura na hora (não depende de quadros: funciona até com a aba em segundo plano).
+      tl.progress(1);
+    };
+    // O clique que acompanha o toque de pular não pode cair num item do menu que ainda está entrando
+    // (abria "Créditos" no lugar de "Nova partida"). Engole os cliques até um instante depois do Título.
+    const shield = (ev: MouseEvent) => {
+      ev.preventDefault();
+      ev.stopPropagation();
+    };
+    window.addEventListener('click', shield, true);
+    let released = false;
+    const release = () => {
+      if (released) return;
+      released = true;
+      setTimeout(() => window.removeEventListener('click', shield, true), 350);
     };
     const onKey = (ev: KeyboardEvent) => {
       if (ev.key === 'Tab') return;
@@ -124,6 +138,7 @@ export function MainMenu(props: MainMenuProps) {
       if (dead) return;
       tl = buildIntro(els(), () => {
         intro.current = null;
+        release();
         setPhase('title');
       });
       intro.current = tl;
@@ -139,6 +154,7 @@ export function MainMenu(props: MainMenuProps) {
     window.addEventListener('resize', onResize);
     return () => {
       dead = true;
+      release();
       window.removeEventListener('pointerdown', skip);
       window.removeEventListener('keydown', onKey);
       window.removeEventListener('resize', onResize);
