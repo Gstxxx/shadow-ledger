@@ -7,6 +7,7 @@ import { PRESETS } from '../../data/rules';
 import { advance } from '../../sim';
 import { newGame, player } from '../../state';
 import type { GameState } from '../../types';
+import { newCampaign, startChapter } from '../../campaign';
 import {
   CONTRACT_PATIENCE_H,
   isLocked,
@@ -115,6 +116,17 @@ describe('Tutorial', () => {
     });
     expect(A.acceptContract(s, player(s), 'kx').ok).toBe(true);
     expect(updateTutorial(s)).toEqual(['contract']);
+  });
+
+  it('Capítulo da Campanha não roda o guia: o roteiro é o da Campanha', () => {
+    const s = startChapter(newCampaign({ difficulty: 1, hardcore: false, origin: 'smuggler' }));
+    const a = player(s);
+    expect(updateTutorial(s)).toEqual([]);
+    expect(tutorialOf(s)).toBeUndefined();
+    const item = s.countries[a.location].stock[0];
+    A.buy(s, a, item, 1);
+    expect(updateTutorial(s)).toEqual([]);
+    expect(tutorialOf(s)).toBeUndefined();
   });
 
   it('pular o guia encerra o Tutorial', () => {

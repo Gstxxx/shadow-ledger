@@ -37,6 +37,8 @@ O balão fica no canto inferior esquerdo da área do mapa, acima do Relatório, 
 | `contract` | um Contrato é aceito, ou depois de 7 dias de jogo (as ofertas são aleatórias) |
 | `free` | fim; libera os sistemas do Tutorial |
 
+Capítulos da Campanha não rodam o guia (`guideEnabled(s)` é falso quando `s.campaign` existe): o roteiro deles são as falas da Analista no Briefing e em jogo (`campaign.ch.N.inGame.*`). Enquanto uma dessas falas está na tela como Evento, o balão não comenta: uma voz por vez. As dicas de primeira vez continuam depois.
+
 "Pular guia" (`skipGuide`) também encerra o Tutorial. O estado vai no save junto com a partida.
 
 ## Preset Tutorial e sistemas travados

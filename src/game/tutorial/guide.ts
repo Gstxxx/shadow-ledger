@@ -70,6 +70,8 @@ export function startTutorial(s: GameState): TutorialState {
  * Devolve os passos concluídos agora, para a Analista comemorar.
  */
 export function updateTutorial(s: GameState): GuideStepId[] {
+  // Capítulos da Campanha têm o próprio roteiro (falas da Analista no Briefing e em jogo): sem guia.
+  if (!guideEnabled(s)) return [];
   const t = tutorialOf(s) ?? startTutorial(s);
   const finished: GuideStepId[] = [];
   let guard = 0;
@@ -82,6 +84,9 @@ export function updateTutorial(s: GameState): GuideStepId[] {
   if (t.step === 'free' || t.skipped) unlockSystems(s);
   return finished;
 }
+
+/** O objetivo guiado roda em partidas avulsas, não nos Capítulos da Campanha. */
+export const guideEnabled = (s: GameState) => !s.campaign;
 
 /** O jogador dispensou o guia: também encerra o Tutorial (libera os sistemas). */
 export function skipGuide(s: GameState) {

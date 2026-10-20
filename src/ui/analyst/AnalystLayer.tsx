@@ -5,6 +5,7 @@ import { PanelLeftOpen } from 'lucide-react';
 import { AnalystPortrait } from '../../art';
 import type { AnalystMood } from '../../art';
 import {
+  guideEnabled,
   guideProgress,
   isTutorialPreset,
   presentTopics,
@@ -35,6 +36,9 @@ const TOPIC_MOOD: Partial<Record<TopicId, AnalystMood>> = {
   tension: 'alert',
   rival: 'concerned',
 };
+
+/** O Evento já é uma fala da Analista (roteiro da Campanha): ela não comenta a própria fala. */
+const isAnalystLine = (e: GameEvent) => !!e.bodyMsg?.key.startsWith('campaign.') || !!e.titleMsg?.key.startsWith('campaign.');
 
 /** Comentário curto para um Evento: o mais específico que existir (tipo + tom, tipo, tom). */
 function eventKey(e: GameEvent): AnalystKey {
@@ -178,7 +182,7 @@ export function AnalystLayer({ onOpenDrawer }: AnalystLayerProps) {
     if (signature(s) !== before) mutate(() => {});
   }, [rev]); // eslint-disable-line react-hooks/exhaustive-deps
 
-  const tut = s ? tutorialOf(s) : undefined;
+  const tut = s && guideEnabled(s) ? tutorialOf(s) : undefined;
   const ev = s?.events.find((e) => (e.kind as string) !== 'engage');
   const topic = s && !s.over && !s.combat ? presentTopics(s).find((id) => !mem.seen.includes(id)) : undefined;
 
@@ -189,7 +193,9 @@ export function AnalystLayer({ onOpenDrawer }: AnalystLayerProps) {
 
   let line: Line | null = null;
   if (!mem.muted && s) {
-    if (ev)
+    // Uma voz por vez: com uma fala da Campanha na tela, o balão fica quieto.
+    if (ev && isAnalystLine(ev)) line = null;
+    else if (ev)
       line = {
         id: `ev-${ev.id}`,
         mood: TONE_MOOD[ev.tone] ?? 'neutral',
