@@ -138,14 +138,16 @@ export function IsoArena({
   zoomLabels: { in: string; out: string };
   /** camada por cima das figuras (efeitos), recebe a geometria */
   children?: (g: IsoGeom) => ReactNode;
-  /** Luta em andamento: mostra a arena inteira (os dois lados); o zoom volta no posicionamento. */
+  /** Luta em andamento: deitado mostra a arena inteira; com zoom (padrão em pé) a câmera segue os eventos. */
   fitAll?: boolean;
 }) {
-  // Em pé sobra altura: começa com zoom (casas 1,5×), rolando a partir do lado do jogador.
+  // Em pé começa com zoom, também na luta (a arena inteira em 440 fica a 0,5×, figuras de poucos px): no
+  // posicionamento a partir do lado do jogador, na luta seguindo os eventos. O − mostra a arena inteira. Deitado,
+  // a luta volta para a arena inteira.
   const portraitStart = () => typeof matchMedia !== 'undefined' && matchMedia('(orientation: portrait)').matches;
-  const [zoom, setZoom] = useState(() => !fitAll && portraitStart());
+  const [zoom, setZoom] = useState(portraitStart);
   useEffect(() => {
-    setZoom(fitAll ? false : portraitStart());
+    setZoom(portraitStart());
   }, [fitAll]);
   const wrap = useRef<HTMLDivElement>(null);
   const [box, setBox] = useState({ w: 0, h: 0 });
@@ -250,8 +252,19 @@ export function IsoArena({
         {c.units.map((r) => renderUnit(r, g))}
         {bg && <ArenaProps m={bg} g={g} />}
         {children?.(g)}
-        {/* objetos do cenário que ficam por cima das Unidades */}
-        {bg && <img className="iso-bg-front" src={sceneUrl(bg, bg.front)} width={g.width} height={g.height} alt="" draggable={false} />}
+        {/* Borda da frente do cenário (arame, sacos de areia): logo abaixo da fileira da frente (a de menor z ali),
+            para nunca cobrir os pés de ninguém; as fileiras de trás não chegam até a borda. */}
+        {bg && (
+          <img
+            className="iso-bg-front"
+            src={sceneUrl(bg, bg.front)}
+            width={g.width}
+            height={g.height}
+            alt=""
+            draggable={false}
+            style={{ zIndex: g.depth(0, 0) - 1 }}
+          />
+        )}
       </div>
     </div>
   );

@@ -21,6 +21,7 @@ import type { Msg } from './msg';
 function line(c: CombatState, m: Msg) {
   c.log.push(say(m));
   (c.logMsg ??= []).push(m);
+  (c.logTurn ??= []).push(c.turn);
 }
 
 export const ROWS = 3;

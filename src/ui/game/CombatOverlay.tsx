@@ -20,6 +20,7 @@ import { isMachine, posesOf, setsOf, unitSprite } from './arena/unitSprites';
 import type { Pose } from './arena/unitSprites';
 import { Sprite, backSet, findAnim, preloadSprites, useSpriteAtlas, variantSet } from '../../art';
 import type { IsoGeom } from './arena/IsoArena';
+import { CombatHistory } from './arena/CombatHistory';
 import { CombatResult, RedactedTitle, RollingNumber, combatSucceeded, useCombatFx } from '../combat-fx';
 import { GModal } from '../../art';
 
@@ -361,6 +362,7 @@ function LiveView() {
             <div key={`${c.turn}-${i}`}>{msgText(c.logMsg?.[c.log.length - Math.min(3, c.log.length) + i], l, lang)}</div>
           ))}
         </div>
+        {c.log.length > 0 && <CombatHistory c={c} />}
 
         {c.result && (
           <CombatResult

@@ -296,9 +296,19 @@ html .game.combat-open .analyst-layer {
   html .combat-card.wide > .cb-actions .tb-spacer {
     display: none;
   }
+  /* Desktop: o registro inteiro enche a coluna entre a dica/Reserva e os botões; o log curto sai. */
+  html .combat-card.wide > .cb-log {
+    display: none;
+  }
+  html .combat-card.wide > .cb-history {
+    display: block;
+    grid-row: 4;
+    align-self: stretch;
+    min-height: 0;
+  }
 }
 
-/* Fundo de combate (art-kit): por baixo do piso clicável; a camada front vai por cima das figuras. */
+/* Fundo de combate (art-kit): por baixo do piso clicável; a camada front fica logo abaixo da fileira da frente. */
 .iso-bg,
 .iso-bg-front {
   position: absolute;
@@ -307,9 +317,6 @@ html .game.combat-open .analyst-layer {
   image-rendering: pixelated;
   pointer-events: none;
   user-select: none;
-}
-.iso-bg-front {
-  z-index: 900;
 }
 .iso-board.has-bg .iso-cell {
   fill: transparent;
@@ -333,4 +340,57 @@ html .game.combat-open .analyst-layer {
   image-rendering: pixelated;
   pointer-events: none;
   user-select: none;
+}
+
+/* Registro da luta (desktop): mais novo em cima, Rodadas separadas, cor do lado de quem agiu. */
+.cb-history {
+  display: none;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  padding-right: 4px;
+  font-size: 12px;
+  line-height: 1.45;
+  color: var(--paper-3);
+}
+.cb-round + .cb-round {
+  margin-top: 10px;
+}
+.cb-round h3 {
+  position: sticky;
+  top: 0;
+  margin: 0 0 4px;
+  padding: 2px 0;
+  border-bottom: 1px solid var(--line-2);
+  background: #101418;
+  font: 700 10.5px/1.4 var(--mono);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--paper-2);
+}
+.cb-round ol {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.cb-hline {
+  padding: 2px 0 2px 8px;
+  border-left: 2px solid var(--line-2);
+}
+.cb-hline + .cb-hline {
+  margin-top: 2px;
+}
+.cb-hline.side-p {
+  border-left-color: var(--amber);
+}
+.cb-hline.side-e {
+  border-left-color: var(--red);
+}
+.cb-hline.kill {
+  color: var(--paper-2);
+}
+.cb-hline.side-p b {
+  color: #ffd08a;
+}
+.cb-hline.side-e b {
+  color: #ffb3b5;
 }

@@ -441,6 +441,8 @@ export interface CombatState {
   log: string[];
   /** Paralelo a `log` (mesmo índice), quando a linha é traduzível. */
   logMsg?: Msg[];
+  /** Paralelo a `log`: turno em que a linha saiu (0 = antes do primeiro turno). */
+  logTurn?: number[];
   fx: CombatFx[];
   result?: 'win' | 'lose' | 'draw';
   /** Agency units knocked out (become Feridas / Danificadas). */
