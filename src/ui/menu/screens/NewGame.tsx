@@ -8,6 +8,7 @@ import { FIRST_NAMES, LAST_NAMES, PLAYER_AGENCY_NAMES } from '../../../game/data
 import { DIFFICULTY_AI } from '../../../game/ai/profiles';
 import type { Continent, Difficulty, ObjectiveKind, OriginId, PresetDef } from '../../../game/types';
 import { Disclosure, Segmented, Stepper } from '../controls';
+import { isTutorialPreset } from '../../../game/tutorial';
 import { GModeSwitch } from '../../../art/game-ui-3';
 import { ease, f } from '../ease';
 import { sfx } from '../settings';
@@ -126,7 +127,8 @@ export function NewGame({ s, lang, presets, tutorial, reduced, onStart }: Props)
 
   // Tutorial primeiro; os demais por dificuldade sugerida e duração; Sandbox por último.
   const entries = useMemo<Entry[]>(() => {
-    const tut = tutorial ?? presets.find((p) => p.id === 'first-contract') ?? presets[0];
+    // O Tutorial (src/game/tutorial) é o recomendado para quem nunca jogou; sem ele, o Primeiro Contrato.
+    const tut = tutorial ?? presets.find(isTutorialPreset) ?? presets.find((p) => p.id === 'first-contract') ?? presets[0];
     const rest = presets.filter((p) => p !== tut).sort((a, b) => a.challenge - b.challenge || (a.days || 999) - (b.days || 999));
     return [
       ...(tut ? [{ key: tut.id, kind: 'tutorial' as Kind, preset: tut }] : []),
@@ -236,6 +238,8 @@ export function NewGame({ s, lang, presets, tutorial, reduced, onStart }: Props)
   };
 
   const sandboxRivals = rivals ?? DIFFICULTY_AI[difficulty].count[0];
+  // Presets que travam as rivais (o Tutorial) só as ligam no fim do guia.
+  const rivalsLocked = !!(entry.preset as { locked?: string[] }).locked?.includes('rivals');
   const rivalsShown = (d: Difficulty) => (entry.kind === 'sandbox' ? String(sandboxRivals) : rivalCount(d));
 
   const titleOf = (e: Entry) => (e.kind === 'sandbox' ? t.sandboxTitle : presetText(lang, e.preset).title);
@@ -420,7 +424,7 @@ export function NewGame({ s, lang, presets, tutorial, reduced, onStart }: Props)
                   tone: d === 1 ? 'ok' : d === 2 ? 'action' : 'danger',
                 }))}
               />
-              <p className="slm-diff-line">{t.rivalsLine(rivalCount(difficulty))}</p>
+              <p className="slm-diff-line">{rivalsLocked ? `${t.rivals}: ${t.afterTutorial}` : t.rivalsLine(rivalCount(difficulty))}</p>
             </fieldset>
 
             <Disclosure label={t.advanced} hint={t.advancedHint} defaultOpen={entry.kind === 'sandbox'} reduced={reduced}>
@@ -602,9 +606,13 @@ function Details({
   const rows: { icon: string; label: string; value: string }[] = [
     { icon: 'fleet', label: t.fleet, value: fleet.map(unitName).join(', ') || '—' },
     { icon: 'team', label: t.escort, value: escort.join(', ') || '—' },
-    { icon: 'station-safehouse', label: t.stations, value: p.startStations.map((x) => `${t.tiers[x.level]} · ${placeName(x.countryId)}`).join(', ') },
+    { icon: 'station-safehouse', label: t.stations, value: p.startStations.map((x) => `${t.tiers[x.level]} · ${placeName(x.countryId)}`).join(', ') || '—' },
     { icon: 'money', label: t.cash, value: t.money(Math.round(p.cash * CASH_MULT[difficulty])) },
-    { icon: 'rival', label: t.rivals, value: entry.kind === 'sandbox' ? rivals : t.rivalsBy(rivals, t.difficultyCards[difficulty - 1].name) },
+    {
+      icon: 'rival',
+      label: t.rivals,
+      value: entry.kind === 'sandbox' ? rivals : (p as { locked?: string[] }).locked?.includes('rivals') ? t.afterTutorial : t.rivalsBy(rivals, t.difficultyCards[difficulty - 1].name),
+    },
     { icon: 'director', label: t.homeBase, value: placeName(p.startCountry) },
   ];
 

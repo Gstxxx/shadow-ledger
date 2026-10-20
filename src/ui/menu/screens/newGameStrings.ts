@@ -17,6 +17,7 @@ function build(t: (key: Key, params?: Params) => string, money: (v: number) => s
     chooseThis: t('menu.new.chooseThis'),
     startHere: t('menu.new.startHere'),
     recommended: t('menu.new.recommended'),
+    afterTutorial: t('menu.new.afterTutorial'),
     seeAll: (n: number) => t('menu.new.seeAll', { n }),
     seeLess: t('menu.new.seeLess'),
     advanced: t('menu.advanced'),

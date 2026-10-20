@@ -240,6 +240,7 @@ export default {
   'menu.new.origin.disadvantage': 'Desvantagem',
   'menu.new.origin.code': 'Origem · {n}',
   'menu.new.recommended': 'Recomendado',
+  'menu.new.afterTutorial': 'Depois do Tutorial',
   'menu.new.seeAll': 'Ver todos ({n})',
   'menu.new.seeLess': 'Mostrar menos',
   'menu.advanced': 'Avançado',
