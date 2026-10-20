@@ -53,5 +53,7 @@ def export_back(ROWS, ONESHOT, set_id, default_fps=10):
 V.R = R_back
 V.export = export_back
 
+# Missile trails and smoke leaving the top of the canvas are clipped on purpose, exactly like the front views.
+
 if __name__ == '__main__':
     runpy.run_path(os.path.join(views.R, sys.argv[1] + '.py'), run_name='__main__')

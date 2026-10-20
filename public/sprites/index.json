@@ -1,6 +1,8 @@
 {
  "atlas": [
+  "aircraft-bomber-aa-back",
   "aircraft-bomber-aa",
+  "aircraft-fighters-back",
   "aircraft-fighters",
   "cargo-planes-a",
   "cargo-planes-b",
@@ -104,5 +106,5 @@
   "markers-stills",
   "stations"
  ],
- "bytes": 1876648
+ "bytes": 2017886
 }

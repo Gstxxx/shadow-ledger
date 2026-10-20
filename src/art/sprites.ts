@@ -66,7 +66,7 @@ export const STATION_SPRITE_IDS = ['cell', 'safehouse', 'office', 'compound', 'b
  * linhas pode mudar: procure sempre a animação pelo nome. Linhas que não existem de costas (legal phone,
  * pilot board/eject, influence whisper/convinced, director ex_agent/banker/colonel) ficam só na frente.
  */
-export const SPRITE_BACK_SETS = ['urban', 'military', 'legal', 'pilot', 'influence', 'police', 'criminal', 'director', 'women', 'vehicles-light', 'vehicles-armor', 'vehicles-heli'] as const;
+export const SPRITE_BACK_SETS = ['urban', 'military', 'legal', 'pilot', 'influence', 'police', 'criminal', 'director', 'women', 'vehicles-light', 'vehicles-armor', 'vehicles-heli', 'aircraft-fighters', 'aircraft-bomber-aa'] as const;
 
 /** Conjuntos com 6 variantes de cabeça (pele, cabelo, barba, óculos): `<set>-v0..v5` e `<set>-v0-back..v5-back`. */
 export const SPRITE_VARIANT_SETS = ['urban', 'military', 'criminal', 'police', 'women'] as const;

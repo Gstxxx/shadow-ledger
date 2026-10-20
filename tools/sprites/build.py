@@ -25,7 +25,7 @@ GENERATORS = [
 OPTIONAL: list[str] = []
 # 2ª fase (views/): vistas de costas (NE) e variantes de cabeça, lidas dos manifestos de frente já gravados
 VIEW_SETS = ['urban', 'military', 'legal', 'pilot', 'influence', 'police', 'criminal', 'director', 'women']
-VEH_BACK = ['veiculos_leves', 'blindados', 'helicopteros']
+VEH_BACK = ['veiculos_leves', 'blindados', 'helicopteros', 'aereos_cacas', 'aereos_bomb_aa']
 
 
 def main(only):

@@ -405,7 +405,7 @@ Personagens, veículos, aeronaves, efeitos, marcadores do mapa, carga e prédios
 
 **Costas e variantes** (`tools/sprites/views/`, 2ª fase do `build.py`). Os geradores gravam as poses de frente, giram o modelo 90° no eixo z e renderizam de novo. A luz, a sombra e os destroços saem do modelo já girado.
 
-- **`<set>-back`:** os 9 personagens e `vehicles-light/-armor/-heli` vistos de costas, virados para NE.
+- **`<set>-back`:** os 9 personagens, `vehicles-light/-armor/-heli`, `aircraft-fighters` e `aircraft-bomber-aa` vistos de costas, virados para NE. Como na frente, rastros de míssil e fumaça saem do quadro por cima.
   - **Inimigos no combate:** `<Sprite set={backSet(set)} mirror …/>` faz o inimigo olhar para NW, de frente para o jogador.
   - **Linhas que não existem de costas:** legal `phone`, pilot `board/eject`, influence `whisper/convinced` e as linhas combinadas do Diretor. Para elas, use a frente; `resolveBackAnim(set, anim)` escolhe o atlas certo.
 - **`<set>-v0..v5` e `<set>-v0-back..v5-back`:** 6 elencos por conjunto em `urban military criminal police women`. Cada um tem tom de pele, penteado, cor de cabelo, barba e óculos próprios, com os 6 tons de pele cobertos. `variantSet(set, uid)` escolhe uma variante estável por Unidade.

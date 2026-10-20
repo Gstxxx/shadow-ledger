@@ -1,0 +1,132 @@
+{
+ "kind": "atlas",
+ "id": "aircraft-fighters-back",
+ "image": "aircraft-fighters-back.png",
+ "width": 1630,
+ "height": 1080,
+ "frameWidth": 163,
+ "frameHeight": 120,
+ "anchor": {
+  "x": 68,
+  "y": 72
+ },
+ "animations": [
+  {
+   "name": "jet1_fly",
+   "row": 0,
+   "frames": 6,
+   "fps": 10,
+   "loop": true,
+   "box": [
+    7,
+    24,
+    97,
+    69
+   ]
+  },
+  {
+   "name": "jet1_missile",
+   "row": 1,
+   "frames": 8,
+   "fps": 10,
+   "loop": true,
+   "box": [
+    21,
+    24,
+    83,
+    69
+   ]
+  },
+  {
+   "name": "jet1_shot_down",
+   "row": 2,
+   "frames": 10,
+   "fps": 10,
+   "loop": false,
+   "box": [
+    21,
+    24,
+    83,
+    69
+   ]
+  },
+  {
+   "name": "jet2_fly",
+   "row": 3,
+   "frames": 6,
+   "fps": 10,
+   "loop": true,
+   "box": [
+    7,
+    21,
+    101,
+    75
+   ]
+  },
+  {
+   "name": "jet2_missile",
+   "row": 4,
+   "frames": 8,
+   "fps": 10,
+   "loop": true,
+   "box": [
+    15,
+    21,
+    93,
+    75
+   ]
+  },
+  {
+   "name": "jet2_shot_down",
+   "row": 5,
+   "frames": 10,
+   "fps": 10,
+   "loop": false,
+   "box": [
+    15,
+    21,
+    93,
+    75
+   ]
+  },
+  {
+   "name": "jet3_fly",
+   "row": 6,
+   "frames": 6,
+   "fps": 10,
+   "loop": true,
+   "box": [
+    3,
+    19,
+    109,
+    78
+   ]
+  },
+  {
+   "name": "jet3_missile",
+   "row": 7,
+   "frames": 8,
+   "fps": 10,
+   "loop": true,
+   "box": [
+    17,
+    19,
+    95,
+    78
+   ]
+  },
+  {
+   "name": "jet3_shot_down",
+   "row": 8,
+   "frames": 10,
+   "fps": 10,
+   "loop": false,
+   "box": [
+    17,
+    19,
+    95,
+    78
+   ]
+  }
+ ]
+}
