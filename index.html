@@ -18,7 +18,19 @@
       if ('serviceWorker' in navigator) {
         addEventListener('load', function () {
           if (document.querySelector('script[src="/@vite/client"]')) return;
-          navigator.serviceWorker.register('/sw.js', { scope: '/' }).catch(function () {});
+          // Depois de um deploy, o SW novo assume (skipWaiting + clients.claim). Se a página já era controlada por
+          // um SW antigo e a troca acontece logo no começo da visita, recarrega uma vez para que manifestos e
+          // sprites venham da versão nova. Mais tarde no jogo não recarrega (não perde a partida).
+          var had = !!navigator.serviceWorker.controller, t0 = Date.now(), done = false;
+          navigator.serviceWorker.addEventListener('controllerchange', function () {
+            if (!had || done || Date.now() - t0 > 15000) return;
+            done = true;
+            location.reload();
+          });
+          navigator.serviceWorker
+            .register('/sw.js', { scope: '/', updateViaCache: 'none' })
+            .then(function (r) { return r.update(); })
+            .catch(function () {});
         });
       }
     </script>

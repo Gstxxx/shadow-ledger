@@ -3,8 +3,10 @@
  *
  * - Página (navegação / index.html): rede primeiro, cache como reserva offline.
  * - /assets/* (nomes com hash do Vite, imutáveis): cache primeiro.
- * - /sprites/* (manifestos + atlas que mudam juntos, sem hash no nome): rede primeiro, cache só offline,
- *   para nunca juntar um manifesto antigo com um PNG novo depois de um deploy.
+ * - /sprites/* e qualquer .json (manifestos + atlas que mudam juntos, sem hash no nome): rede primeiro,
+ *   cache só offline, para nunca juntar um manifesto antigo com um PNG novo depois de um deploy.
+ * - install chama skipWaiting e activate chama clients.claim: o SW novo assume na mesma visita, e o index.html
+ *   recarrega uma vez no controllerchange do começo da visita.
  * - Demais arquivos do mesmo site (ícones, manifest, dados): cache e revalida em segundo plano.
  *
  * A "versão por build" vem do próprio index.html: a cada index novo baixado, os
@@ -127,7 +129,7 @@ self.addEventListener('fetch', (event) => {
   }
 
   // Sprites: rede primeiro (o servidor revalida por ETag, 304 é barato); cache só sem rede.
-  if (url.pathname.includes('/sprites/')) {
+  if (url.pathname.includes('/sprites/') || url.pathname.endsWith('.json')) {
     event.respondWith(
       (async () => {
         const cache = await caches.open(SPRITES);
