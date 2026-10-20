@@ -3,6 +3,7 @@ import * as A from '../../game/actions';
 import { cargoQty } from '../../game/cargo';
 import { POLITICS_COLOR, STATIONS } from '../../game/data/rules';
 import { fleetSpeed } from '../../game/market';
+import { StationInterior } from '../map-sprites';
 import { directorAt, formatDuration, player, postureIn, standing, stationIn } from '../../game/state';
 import type { OperationKind, StationLevel } from '../../game/types';
 import { def } from '../../game/units';
@@ -236,10 +237,14 @@ export function CountryOps({ countryId }: { countryId: string }) {
 export function CountryStation({ countryId }: { countryId: string }) {
   const s = useGame();
   const a = player(s);
-  if (!stationIn(a, countryId)) return <CountryVerdict countryId={countryId} focus="station" />;
+  const st = stationIn(a, countryId);
+  if (!st) return <CountryVerdict countryId={countryId} focus="station" />;
   // O Cofre vem primeiro: guardar e retirar Carga é o que mais se procura aqui.
   return (
     <div className="cty-overview">
+      <figure className={`msp-hero${st.interdicted ? ' is-seized' : ''}`} aria-label={stationName(st.level)}>
+        <StationInterior level={st.level} />
+      </figure>
       <VaultPanel countryId={countryId} />
       <StationSection countryId={countryId} />
     </div>

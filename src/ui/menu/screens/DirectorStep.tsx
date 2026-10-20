@@ -2,6 +2,7 @@ import { useLayoutEffect, useRef, type KeyboardEvent as ReactKeyboardEvent } fro
 import { gsap } from 'gsap';
 import { Check, ShieldCheck, TriangleAlert } from 'lucide-react';
 import { DirectorPortrait } from '../../../art/directors';
+import { DirectorSprite } from '../../map-sprites';
 import { GameIcon } from '../../../art/icons/GameIcon';
 import type { OriginId } from '../../../game/types';
 import { Disclosure } from '../controls';
@@ -70,8 +71,8 @@ export function DirectorStep({ o, value, onChange, onConfirm, reduced }: Props) 
                   }
                 }}
               >
-                <span className="slm-dir-face" aria-hidden="true">
-                  <DirectorPortrait origin={x.art} size={64} crop="head" blink={false} />
+                <span className="slm-dir-face slm-dir-face--sprite" aria-hidden="true">
+                  <DirectorSprite origin={x.id} scale={1} />
                 </span>
                 <span className="slm-dir-name">{x.name}</span>
                 <span className="slm-dir-pc slm-dir-pc--pro">

@@ -15,6 +15,7 @@ import { GMapMarker } from '../../art';
 import { bandsOf } from '../../game/combatJobs';
 import { useStage } from './stage/context';
 import { StationPin, StationPinDefs } from './map/StationPin';
+import { MapMarker, SPRITE_MIN_ZOOM, StationSprite } from '../map-sprites';
 import { localHour, reliefTexture } from './map/relief';
 
 const W = 1000;
@@ -369,7 +370,11 @@ export function WorldMap({ mode, onPickCountry }: { mode: MapMode; onPickCountry
             .map((c) => {
               const cc = s.countries[c.countryId];
               const [x, y] = project(cc.lon, cc.lat);
-              return <circle key={c.id} cx={x + 6 * inv} cy={y - 6 * inv} r={3 * inv} fill="var(--blue)" stroke="#0b0d10" strokeWidth={inv} />;
+              return k >= SPRITE_MIN_ZOOM ? (
+                <MapMarker key={c.id} kind="contract" x={x + 10 * inv} y={y - 4 * inv} inv={inv} px={20} />
+              ) : (
+                <circle key={c.id} cx={x + 6 * inv} cy={y - 6 * inv} r={3 * inv} fill="var(--blue)" stroke="#0b0d10" strokeWidth={inv} />
+              );
             })}
 
           {/* Agências Rivais: Estações e Diretor (este só onde a agência tem informação) */}
@@ -380,7 +385,11 @@ export function WorldMap({ mode, onPickCountry }: { mode: MapMode; onPickCountry
                 {r.stations.map((st) => {
                   const cc = s.countries[st.countryId];
                   const [x, y] = project(cc.lon, cc.lat);
-                  return <StationPin key={st.countryId} x={x + 14 * inv} y={y - 12 * inv} inv={inv} scale={0.95} level={st.level} color="var(--violet)" interdicted={!!st.interdicted} />;
+                  return k >= SPRITE_MIN_ZOOM ? (
+                    <MapMarker key={st.countryId} kind="rival_agency" x={x + 16 * inv} y={y - 6 * inv} inv={inv} px={20} />
+                  ) : (
+                    <StationPin key={st.countryId} x={x + 14 * inv} y={y - 12 * inv} inv={inv} scale={0.95} level={st.level} color="var(--violet)" interdicted={!!st.interdicted} />
+                  );
                 })}
                 {!r.flight && intel.has(r.location) && (() => {
                   const cc = s.countries[r.location];
@@ -395,11 +404,12 @@ export function WorldMap({ mode, onPickCountry }: { mode: MapMode; onPickCountry
             const cc = s.countries[st.countryId];
             const [x, y] = project(cc.lon, cc.lat);
             return (
-              <StationPin
+              <StationSprite
                 key={st.countryId}
                 x={x}
                 y={y - 9 * inv}
                 inv={inv}
+                k={k}
                 level={st.level}
                 color="var(--amber)"
                 interdicted={!!st.interdicted}
@@ -417,8 +427,8 @@ export function WorldMap({ mode, onPickCountry }: { mode: MapMode; onPickCountry
             const left = Math.max(0, th.strikesAt - s.time);
             return (
               <g key={th.id}>
-                <GMapMarker kind="threat" x={x} y={y} inv={inv} />
-                <text x={x} y={y - 14 * inv} fontSize={9 * inv} textAnchor="middle" className="map-label hostile" style={{ strokeWidth: 3 * inv }}>
+                <MapMarker kind="threat" x={x} y={y} inv={inv} px={24} />
+                <text x={x} y={y - 22 * inv} fontSize={9 * inv} textAnchor="middle" className="map-label hostile" style={{ strokeWidth: 3 * inv }}>
                   {t('game.map.hours', { n: Math.ceil(left) })}
                 </text>
               </g>
@@ -429,11 +439,10 @@ export function WorldMap({ mode, onPickCountry }: { mode: MapMode; onPickCountry
           {g && !g.defeated && g.seenAt && (() => {
             const cc = s.countries[g.seenAt.countryId];
             const [x, y] = project(cc.lon, cc.lat);
-            const d = 6 * inv;
             return (
               <g transform={`translate(${x} ${y})`} className="g-mapmark g-mapmark--threat">
-                <path d={`M0 ${-d}L${d} 0L0 ${d}L${-d} 0Z`} fill="var(--red)" stroke="#0b0d10" strokeWidth={inv} />
-                <text y={-10 * inv} fontSize={9 * inv} textAnchor="middle" className="map-label hostile" style={{ strokeWidth: 3 * inv }}>
+                <MapMarker kind="hostile_group" x={0} y={0} inv={inv} px={26} />
+                <text y={-16 * inv} fontSize={9 * inv} textAnchor="middle" className="map-label hostile" style={{ strokeWidth: 3 * inv }}>
                   {g.name}
                 </text>
               </g>
@@ -460,9 +469,8 @@ export function WorldMap({ mode, onPickCountry }: { mode: MapMode; onPickCountry
                     stage?.open({ kind: 'combat', tab: 'hunts' });
                   }}
                 >
-                  <circle r={d * 1.5} fill="transparent" />
-                  <path d={`M0 ${-d}L${d} 0L0 ${d}L${-d} 0Z`} fill="#0b0d10" stroke="var(--red)" strokeWidth={1.6 * inv} />
-                  <path d={`M${-d * 0.5} 0H${d * 0.5}M0 ${-d * 0.5}V${d * 0.5}`} stroke="var(--red)" strokeWidth={1.4 * inv} />
+                  <circle r={Math.max(d * 1.5, 22 * inv)} fill="transparent" />
+                  <MapMarker kind="hunt" x={0} y={0} inv={inv} px={26} />
                 </g>
               );
             })}
