@@ -55,7 +55,7 @@ describe('Capítulos', () => {
   it('a primeira fala do Analista sai no início; as outras no meio e perto do fim', () => {
     const s = startChapter(camp());
     expect(s.campaign?.beats).toEqual([0]);
-    expect(s.events.some((e) => (e.bodyMsg?.key as string) === 'campaign.ch.1.analyst.1')).toBe(true);
+    expect(s.events.some((e) => (e.bodyMsg?.key as string) === 'campaign.ch.1.inGame.1')).toBe(true);
     for (let d = 0; d < 50 && !s.over; d++) {
       s.events = [];
       s.pendingCombat = undefined;

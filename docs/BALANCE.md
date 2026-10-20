@@ -243,3 +243,6 @@ Em fração do caixa inicial do Preset (C):
   ~3–8 (~50% de chance com a Escolta inicial, sem reforço) e pagamento de ~0,2–0,5 M por Contrato no
   começo; a falha custa só Feridas/Danificadas e −5 de Reputação. Fica abaixo da faixa de força 13–20
   acima, que supunha +3 reforços: é a porta de entrada barata, e a força cresce 0,06 por dia.
+- Campanha, bônus de caixa entre Capítulos (`CAMPAIGN` em rules.ts): 20% do Lucro do Capítulo anterior,
+  teto de 0,25 do caixa base do próximo Capítulo, zero com prejuízo. O teto vira o bônus de fato para
+  quem lucra (Lucro de 2–30× C); 0,25 é a diferença Recruta→Operador, sem bola de neve.

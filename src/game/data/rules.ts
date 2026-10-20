@@ -227,7 +227,7 @@ export const CAMPAIGN = {
   /** Bônus de caixa: fração do Lucro do Capítulo anterior (zero se houve prejuízo). */
   cashBonusRate: 0.2,
   /** Teto do bônus, como fração do caixa base do próximo Capítulo. */
-  cashBonusCap: 0.5,
+  cashBonusCap: 0.25,
   /** Reputação volta esta fração do caminho até Neutro (0). */
   reputationKeep: 0.5,
   /** Caixa da Casa Moravia por força. */

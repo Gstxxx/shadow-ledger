@@ -62,7 +62,7 @@ function chapter(sp: Spec): ChapterDef {
     rival: sp.rival,
     hostage: sp.hostage,
     group: sp.group,
-    beats: BEAT_AT.map((at, i) => ({ at, key: k(sp.n, `analyst.${i + 1}`) })),
+    beats: BEAT_AT.map((at, i) => ({ at, key: k(sp.n, `inGame.${i + 1}`) })),
     dossier: sp.n,
   };
 }
