@@ -116,10 +116,10 @@ html .iso-token {
 }
 .iso-token .iso-bar {
   position: absolute;
-  left: 20%;
-  right: 20%;
+  left: 32%;
+  right: 32%;
   bottom: 0;
-  height: 4px;
+  height: 3px;
   background: rgba(0, 0, 0, 0.6);
 }
 .iso-token .iso-bar > span {
@@ -210,4 +210,25 @@ html .iso-token {
    também fica disponível para a camada da Analista ler. */
 html .game.combat-open .analyst-layer {
   display: none;
+}
+/* Sprites (art-kit): a origem do sprite ancorado são os pés, no meio da base da casa. */
+.iso-token .iso-anchor {
+  position: absolute;
+  left: 50%;
+  width: 0;
+  height: 0;
+}
+.iso-vfx {
+  position: absolute;
+  width: 0;
+  height: 0;
+  pointer-events: none;
+}
+.iso-token.pose-hurt .iso-anchor {
+  filter: brightness(1.6) saturate(0.4);
+}
+@media (prefers-reduced-motion: reduce) {
+  .iso-vfx {
+    display: none;
+  }
 }

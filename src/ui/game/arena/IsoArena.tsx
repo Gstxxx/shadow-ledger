@@ -67,6 +67,7 @@ export function IsoArena({
   onCell,
   renderUnit,
   zoomLabels,
+  children,
 }: {
   c: CombatState;
   boardRef: RefObject<HTMLDivElement>;
@@ -76,6 +77,8 @@ export function IsoArena({
   renderUnit: (r: CombatUnitRef, g: IsoGeom) => ReactNode;
   /** Rótulos do botão de zoom (em pé, onde a largura limita o tamanho das casas). */
   zoomLabels: { in: string; out: string };
+  /** camada por cima das figuras (efeitos), recebe a geometria */
+  children?: (g: IsoGeom) => ReactNode;
 }) {
   const [zoom, setZoom] = useState(false);
   const wrap = useRef<HTMLDivElement>(null);
@@ -135,6 +138,7 @@ export function IsoArena({
           ))}
         </svg>
         {c.units.map((r) => renderUnit(r, g))}
+        {children?.(g)}
       </div>
     </div>
   );

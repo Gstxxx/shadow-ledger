@@ -16,6 +16,9 @@ import { msgText } from './msgText';
 import { CoupCinematic } from '../cinematics';
 import { BigNumber, Details, Verdict } from './stage/Verdict';
 import { IsoArena, figureSize } from './arena/IsoArena';
+import { isMachine, posesOf, setsOf, unitSprite } from './arena/unitSprites';
+import type { Pose } from './arena/unitSprites';
+import { Sprite, preloadSprites } from '../../art';
 import type { IsoGeom } from './arena/IsoArena';
 import { CombatResult, RedactedTitle, RollingNumber, combatSucceeded, useCombatFx } from '../combat-fx';
 import { GModal } from '../../art';
@@ -192,6 +195,20 @@ function LiveView() {
   const fx = useCombatFx({ grid, combat: c, speed: fast ? 2 : 1, verdict: false });
   const manual = c.turn === 0 && c.reserve.length > 0;
 
+  // Sprites: carrega os conjuntos do Combate e, a cada turno, põe as poses (andar, atirar, levar dano) e os efeitos.
+  useEffect(() => {
+    preloadSprites(setsOf(c));
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [c.id]);
+  const [poses, setPoses] = useState<{ turn: number; map: Map<string, Pose> }>({ turn: 0, map: new Map() });
+  useEffect(() => {
+    if (!c.turn) return;
+    setPoses({ turn: c.turn, map: posesOf(c) });
+    const id = setTimeout(() => setPoses({ turn: c.turn, map: new Map() }), fast ? 450 : 850);
+    return () => clearTimeout(id);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [c.turn]);
+
   const step = () => {
     let fx: CombatState['fx'] = [];
     mutate((g) => {
@@ -283,9 +300,25 @@ function LiveView() {
             }
             cellLabel={(row, col) => t('game.combat.cell', { row: row + 1, col: col + 1 })}
             onCell={cellClick}
-            renderUnit={(r, g) => <IsoToken key={r.key} r={r} c={c} g={g} />}
+            renderUnit={(r, g) => <IsoToken key={r.key} r={r} c={c} g={g} pose={poses.map.get(r.key) ?? 'idle'} />}
             zoomLabels={{ in: t('game.map.zoomIn'), out: t('game.map.zoomOut') }}
-          />
+          >
+            {(g) =>
+              poses.map.size > 0 &&
+              c.fx
+                .filter((f) => f.kind === 'hit' || f.kind === 'down')
+                .map((f, i) => {
+                  const [x, y] = g.center(f.col, f.row);
+                  const target = c.units.find((u) => u.key === f.key);
+                  const anim = f.kind === 'down' ? 'smoke' : target && isMachine(target) ? 'explosion' : 'sparks';
+                  return (
+                    <span key={`${poses.turn}-${i}`} className="iso-vfx" style={{ left: x, top: y, zIndex: g.depth(f.col, f.row) + 1 }}>
+                      <Sprite set="vfx" anim={anim} playing anchored scale={Math.max(1, Math.floor(g.tw / 64))} />
+                    </span>
+                  );
+                })
+            }
+          </IsoArena>
         </div>
 
         {c.turn === 0 && !running && canAbortLive(s) && <p className="hint-sm">{t('game.combat.abortHint')}</p>}
@@ -413,19 +446,23 @@ function TurnLabel({ turn, max }: { turn: number; max: number }) {
   );
 }
 
-function IsoToken({ r, c, g }: { r: CombatUnitRef; c: CombatState; g: IsoGeom }) {
+function IsoToken({ r, c, g, pose }: { r: CombatUnitRef; c: CombatState; g: IsoGeom; pose: Pose }) {
   const { t } = useT();
   const u: Unit = r.unit;
   const fort = u.itemId === FORT_ID;
   const max = Math.max(1, maxStrOf(u, c.type) || strOf(u, c.type));
   const cur = strOf(u, c.type);
   const f = figureSize(u.itemId);
+  const sp = unitSprite(r);
   const [cx, cy] = g.center(r.col, r.row);
   const w = f.w * g.tw;
   const h = f.h * g.tw;
+  const feet = g.tw * 0.12;
+  // Escala inteira (pixel art): ~1 a cada 64 px de casa.
+  const scale = Math.max(1, Math.floor(g.tw / 64));
   return (
     <div
-      className={`token iso-token side-${r.side}`}
+      className={`token iso-token side-${r.side} pose-${pose}`}
       data-fx-key={r.key}
       data-fx-side={r.side}
       data-fx-col={r.col}
@@ -433,7 +470,7 @@ function IsoToken({ r, c, g }: { r: CombatUnitRef; c: CombatState; g: IsoGeom })
       style={
         {
           left: cx - w / 2,
-          top: cy - h + g.tw * 0.12 - f.lift * g.tw,
+          top: cy - h + feet - (sp ? 0 : f.lift * g.tw),
           width: w,
           height: h,
           zIndex: g.depth(r.col, r.row),
@@ -443,8 +480,16 @@ function IsoToken({ r, c, g }: { r: CombatUnitRef; c: CombatState; g: IsoGeom })
       title={`${u.name} · ${itemName(u.itemId)}`}
       aria-label={fort ? t('game.combat.fort') : u.name}
     >
-      <span className="iso-shadow" />
-      <span className="iso-fig">{fort ? <span className="fort">▦</span> : <Portrait unit={u} size={Math.round(g.tw * 0.5)} hostile={r.side === 'e'} />}</span>
+      {sp ? (
+        <span className="iso-anchor" style={{ top: h - feet }}>
+          <Sprite set={sp.set} anim={sp.anims[pose]} playing={pose !== 'idle' || sp.idleLoops} mirror={r.side === 'e'} scale={scale} anchored />
+        </span>
+      ) : (
+        <>
+          <span className="iso-shadow" />
+          <span className="iso-fig">{fort ? <span className="fort">▦</span> : <Portrait unit={u} size={Math.round(g.tw * 0.5)} hostile={r.side === 'e'} />}</span>
+        </>
+      )}
       <span className="iso-bar">
         <span style={{ width: `${Math.min(100, (cur / max) * 100)}%` }} />
       </span>
