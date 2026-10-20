@@ -10,6 +10,8 @@ import { useSettings } from '../../store/settings';
 import { MainMenu } from './MainMenu';
 import { translate, useLang } from '../../i18n';
 import { presetText } from './strings';
+import { useCampaignMenu } from './campaign/connect';
+import type { CampaignMenuProps } from './campaign/types';
 import type { Lang, MenuSettings, SaveSlot, StartConfig } from './types';
 
 /** Preferência que o store de configurações ainda não guarda (o idioma é de src/i18n). */
@@ -51,7 +53,8 @@ function summarize(lang: Lang): SaveSlot[] {
   }
 }
 
-export function ConnectedMainMenu({ skipIntro }: { skipIntro?: boolean }) {
+export function ConnectedMainMenu({ skipIntro, campaign }: { skipIntro?: boolean; campaign?: CampaignMenuProps }) {
+  const storeCampaign = useCampaignMenu();
   const st = useSettings();
   const start = useGameStore((s) => s.start);
   const continueSaved = useGameStore((s) => s.continueSaved);
@@ -133,6 +136,7 @@ export function ConnectedMainMenu({ skipIntro }: { skipIntro?: boolean }) {
   return (
     <MainMenu
       skipIntro={skipIntro}
+      campaign={campaign ?? storeCampaign}
       settings={settings}
       onSettingsChange={onSettingsChange}
       saves={saves}

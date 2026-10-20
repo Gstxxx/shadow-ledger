@@ -5,7 +5,7 @@
 import { gsap } from 'gsap';
 import { ease, f } from '../menu/ease';
 
-export type SceneKind = 'raid' | 'hunt' | 'crisis';
+export type SceneKind = 'raid' | 'hunt' | 'crisis' | 'finale';
 export type RaidOutcome = 'held' | 'lost' | 'interdicted';
 
 export interface SceneText {
@@ -142,10 +142,29 @@ function crisisLayers(r: () => number) {
   return { sky, city, trails };
 }
 
+// ── Final da Campanha: amanhecer sobre a cidade, janelas acendendo, a lanterna no alto ─────────────
+function finaleLayers(r: () => number) {
+  const sky = svg(`<defs><linearGradient id="fs" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#14202e"/><stop offset=".55" stop-color="#5a5a62"/><stop offset=".8" stop-color="#e0a35e"/><stop offset="1" stop-color="#f6cf8e"/></linearGradient></defs>
+    <rect width="${W}" height="${H}" fill="url(#fs)"/><circle cx="800" cy="640" r="150" fill="#ffe2a8" opacity=".55"/>`);
+  let b = '';
+  let wins = '';
+  let x = -10;
+  while (x < W) {
+    const w = 50 + r() * 120;
+    const h = 90 + r() * 240;
+    const top = HZ + 40 - h;
+    b += `<rect x="${x | 0}" y="${top | 0}" width="${w | 0}" height="${(h + 300) | 0}"/>`;
+    for (let k = 0; k < 3; k++) if (r() > 0.4) wins += `<rect class="cs-win cs-win--f" x="${(x + 8 + r() * (w - 20)) | 0}" y="${(top + 14 + r() * (h - 30)) | 0}" width="8" height="12"/>`;
+    x += w + 3;
+  }
+  const city = svg(`<g fill="#0c1016">${b}</g><g>${wins}</g>`);
+  return { sky, city };
+}
+
 // ── Construção comum ─────────────────────────────────────────────────
 export function buildScene(host: HTMLElement, o: SceneOptions): SceneHandle {
   const R = !!o.reduced;
-  const r = rng(o.kind === 'raid' ? 5 : o.kind === 'hunt' ? 9 : 13);
+  const r = rng(o.kind === 'raid' ? 5 : o.kind === 'hunt' ? 9 : o.kind === 'finale' ? 21 : 13);
   const root = el(`cc-root cs-root cs-root--${o.kind}${R ? ' is-reduced' : ''}`, host);
   root.setAttribute('role', 'img');
   root.setAttribute('aria-label', `${o.text.kicker}: ${o.text.title}. ${o.text.stamp}`);
@@ -164,7 +183,7 @@ export function buildScene(host: HTMLElement, o: SceneOptions): SceneHandle {
 
   const tl = gsap.timeline({ paused: true });
   const call = (n: Parameters<NonNullable<SceneOptions['sound']>>[0], at: number) => tl.call(() => o.sound?.(n), undefined, at);
-  const D = o.kind === 'crisis' ? 7.2 : o.kind === 'raid' ? 6.4 : 5.6;
+  const D = o.kind === 'crisis' || o.kind === 'finale' ? 7.2 : o.kind === 'raid' ? 6.4 : 5.6;
   const cutAt = R ? 1.6 : D;
 
   // Camadas por cena + coreografia própria (o que muda de uma para outra).
@@ -240,6 +259,21 @@ export function buildScene(host: HTMLElement, o: SceneOptions): SceneHandle {
       call('hit', 2.4);
     } else gsap.set(flag, { rotation: 86, svgOrigin: '705 540' });
     stampAt = D - 2.6;
+  } else if (o.kind === 'finale') {
+    const L = finaleLayers(r);
+    layer('sky', 0.05, L.sky);
+    const city = layer('city', 0.35, L.city);
+    const lamp = el('cs-lantern', layer('lamp', 0.5));
+    const wins = city.querySelectorAll('.cs-win--f');
+    if (!R) {
+      // janelas acendem aos poucos e a lanterna sobe e brilha
+      wins.forEach((w, i) => tl.fromTo(w, { opacity: 0 }, { opacity: 0.85, duration: f(4), ease: 'steps(1)', immediateRender: false }, 0.6 + (i % 23) * 0.12));
+      gsap.set(wins, { opacity: 0 });
+      tl.fromTo(lamp, { y: 120, scale: 0.6, opacity: 0 }, { y: 0, scale: 1, opacity: 1, duration: 2.4, ease: ease.softLand }, 0.8);
+      tl.fromTo(flash, { opacity: 0 }, { opacity: 0.35, duration: f(6), ease: ease.whip, immediateRender: false }, 4.3).to(flash, { opacity: 0, duration: f(30), ease: ease.cruise }, 4.3 + f(6));
+      call('arrive', 0.8);
+    } else gsap.set(wins, { opacity: 0.85 });
+    stampAt = D - 2.6;
   } else {
     const L = crisisLayers(r);
     layer('sky', 0.05, L.sky);
@@ -298,7 +332,7 @@ export function buildScene(host: HTMLElement, o: SceneOptions): SceneHandle {
   const tt = el('cc-title__text', title);
   tt.textContent = o.text.title;
   const bar = el('cc-title__bar', tt);
-  const tone = o.kind === 'raid' ? (o.outcome === 'held' ? 'good' : 'bad') : o.kind === 'hunt' ? 'good' : 'bad';
+  const tone = o.kind === 'raid' ? (o.outcome === 'held' ? 'good' : 'bad') : o.kind === 'hunt' || o.kind === 'finale' ? 'good' : 'bad';
   const stamp = el(`cs-stamp cs-stamp--${tone}`, hud);
   el('cs-stamp__text', stamp).textContent = o.text.stamp;
   let noteFace: { n(x?: number): number } | null = null;

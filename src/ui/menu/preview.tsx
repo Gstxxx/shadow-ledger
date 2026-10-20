@@ -1,10 +1,11 @@
 // Prévia isolada do menu: /src/ui/menu/preview.html no servidor Vite (não entra no build do jogo).
-// ?skip=1 pula a abertura; ?rm=1 força reduzir movimento.
+// ?skip=1 pula a abertura; ?rm=1 força reduzir movimento; ?campaign=new|demo|done liga a Campanha com dados de mentira.
 import { createRoot } from 'react-dom/client';
 import { gsap } from 'gsap';
 import { ConnectedMainMenu } from './ConnectedMainMenu';
 import { useSettings } from '../../store/settings';
 import { forceInstallMode, type InstallMode } from './install';
+import { useMockCampaign } from './campaign/mock';
 
 const q = new URLSearchParams(location.search);
 if (q.get('rm') === '1') useSettings.getState().setReducedMotion(true);
@@ -15,4 +16,9 @@ if (q.get('install')) forceInstallMode(q.get('install') as InstallMode);
 // Para inspeção com o painel oculto (rAF parado): window.__gsap.ticker.tick()
 (window as unknown as { __gsap: typeof gsap }).__gsap = gsap;
 
-createRoot(document.getElementById('root')!).render(<ConnectedMainMenu skipIntro={q.get('skip') === '1'} />);
+function Preview() {
+  const campaign = useMockCampaign(q.get('campaign'));
+  return <ConnectedMainMenu skipIntro={q.get('skip') === '1'} campaign={campaign} />;
+}
+
+createRoot(document.getElementById('root')!).render(<Preview />);

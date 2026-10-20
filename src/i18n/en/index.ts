@@ -11,6 +11,7 @@ import data from './data';
 import engine from './engine';
 import analyst from './analyst';
 import combatBoard from './combat-board';
+import campaign from './campaign';
 import type ptBR from '../pt-BR';
 
 const en: Record<keyof typeof ptBR, string> = {
@@ -25,5 +26,6 @@ const en: Record<keyof typeof ptBR, string> = {
   ...engine,
   ...analyst,
   ...combatBoard,
+  ...campaign,
 };
 export default en;

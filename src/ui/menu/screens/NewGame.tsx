@@ -521,7 +521,7 @@ export function NewGame({ s, lang, presets, tutorial, reduced, onStart }: Props)
   );
 }
 
-function NameField({
+export function NameField({
   label,
   value,
   onChange,

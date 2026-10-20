@@ -12,7 +12,8 @@ import { ease, f } from './ease';
 import { buildIntro, finalState, type IntroEls } from './intro';
 import { COLS, LEDGER_CH, ledgerRows } from './ledger';
 import { sfx, useMenuSettings } from './settings';
-import { useLang } from '../../i18n';
+import { translate, useLang } from '../../i18n';
+import { CampaignScreen } from './campaign/CampaignScreen';
 import { installSafeAreaDebug } from '../game/portrait/safeArea';
 import { useStrings } from './strings';
 import { Continue } from './screens/Continue';
@@ -247,7 +248,18 @@ export function MainMenu(props: MainMenuProps) {
     }
   }, []);
 
+  const cmp = props.campaign;
   const items: { id: Screen; label: string; meta?: string }[] = [
+    // Campanha acima de Nova partida (só quando o app liga a Campanha).
+    ...(cmp
+      ? [
+          {
+            id: 'campaign' as Screen,
+            label: translate(lang, 'campaign.menu'),
+            meta: cmp.view && !cmp.view.over ? translate(lang, 'campaign.chapterOf', { n: cmp.view.chapter }) : translate(lang, 'campaign.menuMeta'),
+          },
+        ]
+      : []),
     { id: 'new', label: s.menuNew, meta: s.menuNewMeta(presets.length) },
     { id: 'continue', label: s.menuContinue, meta: s.menuContinueMeta(saves.length) },
     { id: 'howto', label: s.menuHowTo },
@@ -261,6 +273,7 @@ export function MainMenu(props: MainMenuProps) {
     howto: s.menuHowTo,
     settings: s.settingsTitle,
     credits: s.creditsTitle,
+    campaign: translate(lang, 'campaign.title'),
   };
 
   return (
@@ -347,6 +360,7 @@ export function MainMenu(props: MainMenuProps) {
           onRequestClose={requestClose}
           onClosed={onClosed}
         >
+          {screen === 'campaign' && cmp && <CampaignScreen {...cmp} reduced={reduced} />}
           {screen === 'new' && <NewGame s={s} lang={lang} presets={presets} tutorial={tutorial} reduced={reduced} onStart={(cfg) => props.onStart?.(cfg)} />}
           {screen === 'continue' && (
             <Continue

@@ -1,3 +1,4 @@
+import type { CampaignMenuProps } from './campaign/types';
 import type { Difficulty, OriginId, PresetDef } from '../../game/types';
 
 export type { Lang } from '../../i18n';
@@ -56,8 +57,10 @@ export interface MainMenuProps {
   /** Sem `settings` o menu guarda as configurações em localStorage ('sl.settings'). */
   settings?: MenuSettings;
   onSettingsChange?(next: MenuSettings): void;
+  /** Campanha (docs/CAMPANHA.md): sem ela o item não aparece no menu. */
+  campaign?: CampaignMenuProps;
   /** Pula a abertura (ex.: ao voltar de uma partida). */
   skipIntro?: boolean;
 }
 
-export type Screen = 'new' | 'continue' | 'howto' | 'settings' | 'credits';
+export type Screen = 'campaign' | 'new' | 'continue' | 'howto' | 'settings' | 'credits';

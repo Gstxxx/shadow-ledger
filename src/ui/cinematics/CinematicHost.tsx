@@ -6,6 +6,7 @@ import { useGameStore } from '../../store/game';
 import { useLang, translate, type Key } from '../../i18n';
 import { countryName } from '../../i18n/lookup';
 import { SceneCinematic, type SceneRequest } from './SceneCinematic';
+import { CampaignResultHost } from '../menu/campaign/ResultHost';
 
 /** A mesma cena não toca duas vezes seguidas dentro desta janela. */
 const SAME_SCENE_GAP_MS = 120_000;
@@ -17,6 +18,7 @@ const DEBUG: Record<string, SceneRequest> = {
   'raid-interdicted': { kind: 'raid', country: '484', threat: '', outcome: 'interdicted' },
   hunt: { kind: 'hunt', country: '434', band: 'Brigada do Deserto', bounty: 1_200_000 },
   crisis: { kind: 'crisis' },
+  finale: { kind: 'finale' },
 };
 
 /**
@@ -89,7 +91,8 @@ export function CinematicHost() {
     };
   }, [cur]);
 
-  if (!cur) return null;
-  const req: SceneRequest = cur.kind === 'crisis' ? cur : { ...cur, country: countryName(cur.country, lang) };
+  // O resultado da Campanha (Debriefing/derrota) aparece depois de qualquer cena na fila.
+  if (!cur) return <CampaignResultHost />;
+  const req: SceneRequest = cur.kind === 'crisis' || cur.kind === 'finale' ? cur : { ...cur, country: countryName(cur.country, lang) };
   return <SceneCinematic key={queue.length + cur.kind} req={req} onDone={() => setQueue((q) => q.slice(1))} />;
 }

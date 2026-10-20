@@ -1,0 +1,328 @@
+/* Campanha no papel do dossiê do menu. Tinta e linhas do papel; acentos azul-carimbo (atual) e vermelho (bloqueio). */
+.slm-cmp {
+  --cp-ink: var(--sl-paper-ink);
+  --cp-muted: var(--sl-paper-ink-muted);
+  --cp-line: rgba(36, 28, 17, 0.2);
+  display: grid;
+  gap: 18px;
+  max-width: 760px;
+  padding-bottom: 20px;
+  color: var(--cp-ink);
+}
+.slm-cmp-intro {
+  margin: 0;
+  font-size: var(--sl-fs-md);
+  line-height: 1.5;
+}
+.slm-cmp-hardcore {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 0;
+  color: var(--sl-stamp-red);
+  font-weight: 700;
+}
+.slm-cmp-cta .g-btn {
+  width: 100%;
+  justify-content: center;
+}
+.slm-cmp-finished {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  margin: 0;
+  font-family: var(--sl-font-display);
+  font-weight: 700;
+  font-size: var(--sl-fs-lg);
+  text-transform: uppercase;
+  color: var(--sl-stamp-blue);
+}
+.slm-cmp-h {
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+  margin: 0 0 8px;
+  font-family: var(--sl-font-display);
+  font-weight: 700;
+  font-size: var(--sl-fs-lg);
+  text-transform: uppercase;
+  letter-spacing: 0.02em;
+}
+.slm-cmp-count {
+  font-family: var(--sl-font-mono);
+  font-size: var(--sl-fs-sm);
+  font-weight: 400;
+  text-transform: none;
+  color: var(--cp-muted);
+}
+
+/* Capítulos */
+.slm-cmp-chapters {
+  display: grid;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  border-top: 1px solid var(--cp-line);
+}
+.slm-cmp-ch {
+  display: grid;
+  grid-template-columns: 32px minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 12px;
+  min-height: 48px;
+  padding: 6px 4px;
+  border-bottom: 1px solid var(--cp-line);
+}
+.slm-cmp-ch-n {
+  display: grid;
+  place-items: center;
+  width: 28px;
+  height: 28px;
+  border: 1.5px solid currentColor;
+  border-radius: 50%;
+  font-family: var(--sl-font-mono);
+  font-weight: 700;
+  font-size: 13px;
+}
+.slm-cmp-ch.is-done .slm-cmp-ch-n {
+  background: var(--cp-ink);
+  border-color: var(--cp-ink);
+  color: var(--sl-paper);
+}
+.slm-cmp-ch.is-current {
+  background: rgba(31, 78, 140, 0.08);
+  box-shadow: inset 3px 0 0 var(--sl-stamp-blue);
+}
+.slm-cmp-ch.is-current .slm-cmp-ch-n {
+  border-color: var(--sl-stamp-blue);
+  color: var(--sl-stamp-blue);
+}
+.slm-cmp-ch.is-locked {
+  color: var(--cp-muted);
+}
+.slm-cmp-ch-main {
+  display: grid;
+  min-width: 0;
+}
+.slm-cmp-ch-title {
+  font-family: var(--sl-font-display);
+  font-weight: 700;
+  font-size: var(--sl-fs-md);
+  text-transform: uppercase;
+}
+.slm-cmp-ch-meta {
+  font-family: var(--sl-font-mono);
+  font-size: var(--sl-fs-sm);
+  color: var(--cp-muted);
+}
+.slm-cmp-ch-tag {
+  font-family: var(--sl-font-mono);
+  font-size: 12px;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--sl-stamp-blue);
+}
+.slm-cmp-ch.is-done .slm-cmp-ch-tag {
+  color: var(--cp-muted);
+}
+
+/* Dossiê */
+.slm-cmp-clues {
+  display: grid;
+  gap: 4px;
+}
+.slm-cmp-clue .g-details__pad {
+  background: none;
+  box-shadow: none;
+  color: var(--cp-ink);
+  font-size: inherit;
+  padding: 4px 0 10px;
+}
+.slm-cmp-clue-body {
+  margin: 0;
+  line-height: 1.55;
+}
+.slm-cmp-clue.is-locked {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-height: 44px;
+  padding: 0 4px;
+  border-top: 1.5px dashed var(--cp-line);
+  color: var(--cp-muted);
+  font-family: var(--sl-font-mono);
+}
+.slm-cmp-redact {
+  flex: 1;
+  height: 12px;
+  max-width: 260px;
+  background: var(--sl-redact, #0b0b0b);
+  opacity: 0.85;
+}
+.slm-cmp-abandon {
+  justify-self: start;
+  color: var(--sl-stamp-red) !important;
+}
+
+/* Configuração e rodapés */
+.slm-cmp-setup {
+  display: grid;
+  gap: 16px;
+}
+.slm-cmp-foot {
+  display: flex;
+  justify-content: space-between;
+  gap: 10px;
+  flex-wrap: wrap;
+  padding-top: 6px;
+}
+
+/* Briefing: folha de dossiê com carimbo */
+.slm-brief {
+  position: relative;
+  display: grid;
+  gap: 16px;
+}
+.slm-brief-head {
+  position: relative;
+  display: grid;
+  gap: 2px;
+  padding-bottom: 10px;
+  border-bottom: 2px solid var(--cp-ink);
+}
+.slm-brief-kicker {
+  font-family: var(--sl-font-mono);
+  font-size: var(--sl-fs-sm);
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--cp-muted);
+}
+.slm-brief-title {
+  margin: 0;
+  font-family: var(--sl-font-display);
+  font-weight: 800;
+  font-size: clamp(30px, 6vw, 46px);
+  line-height: 1;
+  text-transform: uppercase;
+}
+.slm-brief-stamp {
+  position: absolute;
+  right: 0;
+  top: 4px;
+  padding: 2px 10px;
+  border: 3px solid var(--sl-stamp-red);
+  color: var(--sl-stamp-red);
+  font-family: var(--sl-font-display);
+  font-weight: 800;
+  font-size: 18px;
+  text-transform: uppercase;
+  rotate: -6deg;
+  opacity: 0.85;
+}
+.slm-brief-hook {
+  margin: 0;
+  font-size: var(--sl-fs-md);
+  line-height: 1.5;
+}
+.slm-brief-analyst {
+  display: grid;
+  gap: 6px;
+  padding: 12px 14px;
+  border-left: 3px solid var(--sl-stamp-blue);
+  background: rgba(31, 78, 140, 0.07);
+}
+.slm-brief-analyst-who {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-family: var(--sl-font-mono);
+  font-size: var(--sl-fs-sm);
+  font-weight: 700;
+  text-transform: uppercase;
+  color: var(--sl-stamp-blue);
+}
+.slm-brief-line {
+  margin: 0;
+  font-style: italic;
+  line-height: 1.45;
+}
+.slm-brief-facts,
+.slm-brief-carry dl {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  gap: 10px 18px;
+  margin: 0;
+}
+.slm-brief-facts dt,
+.slm-brief-carry dt {
+  font-family: var(--sl-font-mono);
+  font-size: 12px;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--cp-muted);
+}
+.slm-brief-facts dd,
+.slm-brief-carry dd {
+  margin: 2px 0 0;
+  font-weight: 600;
+}
+.slm-brief-bonus {
+  display: block;
+  font-weight: 400;
+  font-size: var(--sl-fs-sm);
+  color: var(--sl-stamp-blue);
+}
+.slm-brief-carry {
+  display: grid;
+  gap: 10px;
+  padding-top: 10px;
+  border-top: 1px solid var(--cp-line);
+}
+.slm-brief-carry h4 {
+  margin: 0;
+  font-family: var(--sl-font-display);
+  font-size: var(--sl-fs-md);
+  text-transform: uppercase;
+}
+.slm-brief-vets {
+  display: grid;
+  gap: 8px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.slm-brief-vets li {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.slm-brief-vets svg.ii {
+  width: 72px;
+  height: 48px;
+  flex: none;
+}
+.slm-brief-vets span {
+  display: grid;
+}
+.slm-brief-vets small {
+  color: var(--cp-muted);
+}
+@media (max-width: 480px) {
+  .slm-brief-stamp {
+    display: none;
+  }
+  .slm-cmp-foot .g-btn--lg {
+    flex: 1;
+    justify-content: center;
+  }
+}
+/* No Briefing a ação fica sempre à vista: rodapé grudado no fim da área que rola. */
+.slm-brief .slm-cmp-foot {
+  position: sticky;
+  bottom: calc(clamp(12px, 3vh, 24px) * -1);
+  z-index: 2;
+  margin: 0 calc(clamp(12px, 3vw, 28px) * -1) calc(clamp(12px, 3vh, 24px) * -1);
+  padding: 10px clamp(12px, 3vw, 28px) max(10px, var(--slm-sb, 0px));
+  background: var(--sl-paper);
+  border-top: 1px solid var(--cp-line);
+}

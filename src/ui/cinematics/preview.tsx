@@ -1,6 +1,7 @@
 // Prévia da cena do Golpe. ?render=1 (pausada, para o render) · ?rm=1 (reduzir movimento) · ?country=818 (id numérico) · ?lang=en
 // Depois do corte mostra 1,3 s de um tabuleiro de Combate parado, para o vídeo terminar no "corte seco".
-// ?cine=raid-held|raid-lost|raid-interdicted|hunt|crisis mostra as outras cenas pelo CinematicHost (como no jogo).
+// ?cine=raid-held|raid-lost|raid-interdicted|hunt|crisis|finale mostra as outras cenas pelo CinematicHost (como no jogo);
+// ?cresult=win|lose|final mostra o resultado de capítulo da Campanha.
 import { createRoot } from 'react-dom/client';
 import { gsap } from 'gsap';
 import '../../index.css';
@@ -38,7 +39,7 @@ function Board() {
 }
 
 const root = document.getElementById('root')!;
-const CINE = q.get('cine');
+const CINE = q.get('cine') ?? (q.get('cresult') ? 'none' : null);
 createRoot(root).render(
   <>
     <Board />

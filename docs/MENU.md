@@ -161,3 +161,21 @@ Regra: o que a maioria precisa fica à vista; o resto abre no toque (`Disclosure
 - **Continuar**: cada save mostra só Jogar; Exportar e Apagar abrem no "⋯". Importar arquivo vai para "Avançado" (fica à vista quando não há saves).
 - **Configurações**: grupos Jogo (Idioma, Velocidade) e Som (Música, Efeitos); Reduzir movimento, Silenciar a Analista e Instalar o app em "Avançado".
 - **Como jogar**: o roteiro dos primeiros 10 minutos vira 5 passos curtos com ícone; o guia inteiro (com a navegação por seções) fica em "Tudo sobre o jogo".
+
+## Campanha (2026-10-20)
+
+"Campanha" entra acima de "Nova partida" quando a store expõe a API da Campanha (`src/ui/menu/campaign/connect.ts`). Sem a API, o item não aparece. Motor em `src/game/campaign`; desenho em docs/CAMPANHA.md.
+
+- **Tela da Campanha** (`campaign/CampaignScreen.tsx`):
+  - Introdução da história e um botão "Começar a Campanha" ou "Continuar capítulo N".
+  - Os 10 Capítulos, cada um concluído, atual ou bloqueado (só o número).
+  - O Dossiê: pistas liberadas em `GDetails`; as que faltam aparecem tarjadas.
+  - "Abandonar a Campanha", com confirmação.
+- **Configuração** (a primeira vez): nome do Diretor, Origem (o mesmo passo da Nova partida), Dificuldade e Modo Hardcore. A agência é sempre a Lanterna Associados.
+- **Briefing:** folha de dossiê com carimbo, gancho do capítulo e 3 falas da Analista (`campaign.ch.N.analyst.1–3`, as mesmas que o motor usa durante o capítulo). Mostra Objetivo, prazo, região e o que vem com você: Diretor, caixa com o bônus, Reputação e Veteranos. O rodapé fica grudado embaixo.
+- **Resultado** (`campaign/Result.tsx`, montado pelo `CinematicHost` na tela de jogo quando `campaignResult` existe):
+  - **Debriefing:** faixa de cena com carimbo e contadores de lucro e bônus, a pista nova e a escolha de até 3 Veteranos.
+  - **Derrota:** "Tentar de novo" e "Voltar ao menu"; no Modo Hardcore não há "Tentar de novo".
+  - **Capítulo 10:** toca a cena final ("A Lanterna continua acesa", tipo `finale` em `src/ui/cinematics/scenes.ts`) antes de fechar a Campanha.
+- **Deitado e baixo:** a faixa de cena do resultado vira coluna à esquerda.
+- **Prévias:** `/src/ui/menu/preview.html?campaign=new|demo|done` e `/src/ui/cinematics/preview.html?cresult=win|lose|final` ou `?cine=finale`.

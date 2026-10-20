@@ -132,3 +132,14 @@
     top: 52%;
   }
 }
+/* Final da Campanha: a lanterna da agência no alto da cidade. */
+.cs-lantern {
+  position: absolute;
+  left: 800px;
+  top: 300px;
+  width: 260px;
+  height: 260px;
+  margin: -130px 0 0 -130px;
+  border-radius: 50%;
+  background: radial-gradient(circle, #fff3d0 0 8%, rgba(255, 210, 130, 0.85) 14%, rgba(242, 169, 59, 0.35) 40%, rgba(242, 169, 59, 0) 70%);
+}

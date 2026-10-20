@@ -8,7 +8,8 @@ import './scenes.css';
 export type SceneRequest =
   | { kind: 'raid'; country: string; threat: string; outcome: RaidOutcome }
   | { kind: 'hunt'; country: string; band: string; bounty: number }
-  | { kind: 'crisis' };
+  | { kind: 'crisis' }
+  | { kind: 'finale' };
 
 export interface SceneCinematicProps {
   req: SceneRequest;
@@ -43,7 +44,15 @@ export function SceneCinematic({ req, onDone, reduced }: SceneCinematicProps) {
               note: t('cine.hunt.bounty'),
               skip: t('cine.skip'),
             }
-          : {
+          : req.kind === 'finale'
+            ? {
+                kicker: t('campaign.final.kicker'),
+                title: t('campaign.final.title'),
+                telex: [t('campaign.final.telex.1'), t('campaign.final.telex.2'), t('campaign.final.telex.3')],
+                stamp: t('campaign.final.stamp'),
+                skip: t('cine.skip'),
+              }
+            : {
               kicker: t('cine.crisis.kicker'),
               title: t('cine.crisis.title'),
               telex: [t('cine.crisis.telex.1'), t('cine.crisis.telex.2'), t('cine.crisis.telex.3')],
