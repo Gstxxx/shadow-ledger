@@ -72,9 +72,19 @@
 
 .analyst-pill-face {
   flex: none;
-  width: 28px;
-  height: 28px;
+  position: relative;
+  width: 34px;
+  height: 40px;
+  margin: -5px 0;
+  overflow: hidden;
   border-radius: 2px;
+  background: var(--ink-3);
+}
+/* Busto de 46×64: a janela de 34×40 mostra do cabelo ao queixo. */
+.analyst-pill-face > * {
+  position: absolute;
+  left: -6px;
+  top: -2px;
 }
 
 .analyst-pill-text {

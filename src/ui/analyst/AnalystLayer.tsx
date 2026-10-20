@@ -2,7 +2,7 @@
 // primeira vez), chip do objetivo guiado e anel de destaque no elemento certo. Só o balão captura cliques.
 import { useEffect, useLayoutEffect, useRef, useState } from 'react';
 import { ChevronUp, PanelLeftOpen } from 'lucide-react';
-import { AnalystPortrait } from '../../art';
+import { AnalystPortrait, Sprite } from '../../art';
 import type { AnalystMood } from '../../art';
 import {
   guideEnabled,
@@ -215,13 +215,6 @@ export function AnalystLayer({ onOpenDrawer }: AnalystLayerProps) {
     if (line && !line.id.startsWith('ev-')) setOpen(true);
   }, [line?.id]); // eslint-disable-line react-hooks/exhaustive-deps
 
-  const [speaking, setSpeaking] = useState(false);
-  useEffect(() => {
-    if (!line) return;
-    setSpeaking(true);
-    const id = window.setTimeout(() => setSpeaking(false), Math.min(2600, 600 + line.text.length * 25));
-    return () => window.clearTimeout(id);
-  }, [line?.id]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const step: GuideStepId | undefined = tut && !tut.skipped ? tut.step : undefined;
   const guiding = !!step && step !== 'free' && !s?.over;
@@ -294,14 +287,10 @@ export function AnalystLayer({ onOpenDrawer }: AnalystLayerProps) {
               style={{ maxHeight: `min(var(--analyst-cap), ${room}px)` }}
             >
               <button className="analyst-pill" onClick={() => setOpen(!open)} aria-expanded={open}>
-                <AnalystPortrait
-                  mood={line?.mood ?? 'neutral'}
-                  size={28}
-                  speaking={speaking && open}
-                  blink={false}
-                  className="analyst-pill-face"
-                  title={t('analyst.name')}
-                />
+                {/* Retrato em pixel art (art-kit), escala 1, recortado no rosto; respira com o cartão aberto. */}
+                <span className="analyst-pill-face" title={t('analyst.name')}>
+                  <Sprite set="portraits-story-64" anim="analyst_idle" playing={open} scale={1} alt={t('analyst.name')} />
+                </span>
                 <span className="analyst-pill-text">
                   {guiding && progress ? (
                     <>
