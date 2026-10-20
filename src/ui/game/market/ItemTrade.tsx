@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import type { ReactNode } from 'react';
 import { ArrowDown, ArrowUp, PlaneTakeoff } from 'lucide-react';
-import { GameIcon, GModeSwitch, GRange, GStepper } from '../../../art';
+import { GModeSwitch, GRange, GStepper } from '../../../art';
 import * as A from '../../../game/actions';
 import { maxCargo, quoteBuyFor, quoteSellFor, usedCargo } from '../../../game/market';
 import { directorAt, player } from '../../../game/state';
