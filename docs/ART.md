@@ -433,8 +433,13 @@ Personagens, veículos, aeronaves, efeitos, marcadores do mapa, carga e prédios
   - `<id>-anim.png`: 6 quadros de ambiente a 6 fps, em grade `columns × rows`;
   - `<id>-front.png`: objetos que vão **por cima** das Unidades;
   - `<id>.json`: manifesto (`kind: "arena"`).
-- **Grade:** todos são 396×342 a 1x e usam a mesma grade de 8 colunas × 3 linhas (jogador nas colunas 0–2, inimigo nas 5–7).
-  - Canto da célula (c, r) = `gridOrigin (124,160) + c·colStep (+28,+14) + r·rowStep (−28,+14)`; o centro fica no canto + (0, 14).
+- **Escala:** a mesma dos personagens, 10 voxels = 1 m (uma pessoa tem 18).
+  - A célula de combate tem 28 voxels (2,8 m).
+  - Medidas de referência: portas de 10×22, andares de 24, carro de ~4,7 m, caçamba de 2 m, bancos e mesas na altura do joelho e da cintura.
+  - O espaço entre as linhas (colunas 3–4) só tem cobertura até o peito.
+- **Grade:** todos são 768×570 a 1x e usam a mesma grade de 8 colunas × 3 linhas (jogador nas colunas 0–2, inimigo nas 5–7).
+  - Canto da célula (c, r) = `gridOrigin (234,222) + c·colStep (+56,+28) + r·rowStep (−56,+28)`; o centro fica no canto + (0, 28).
+  - Leia sempre os números do manifesto, não estes.
   - `arenaCellCenter(m, c, r)` dá o centro.
   - Com o `<Sprite anchored>` (pés na âncora do próprio atlas), posicione em `centro + (0, 1)`: o atlas usa a âncora (64,71) do rig, e a arena desenha o quadro em centro − (64,70).
 - **Cena do menu (`public/sprites/menu/menu-portrait` 216×384 e `menu-landscape` 384×216, `kind: "scene"`):**
@@ -443,7 +448,7 @@ Personagens, veículos, aeronaves, efeitos, marcadores do mapa, carga e prédios
   - Com movimento reduzido, use só o quadro 0 (`static`).
 - **Funções:** `loadArena`, `useArena`, `loadMenuScene`, `useMenuScene`, `sceneUrl(m, arquivo)` e `sceneFrameRect(m, i)`. `public/sprites/index.json` lista os caminhos em `arenas` e `scenes`.
 - **Revisão:** `?solo=sprites&set=arena:urbano&scale=2` e `&set=menu:landscape&scale=3`.
-- **Peso e tempo:** cerca de 1,2 MB; o build completo leva ~95 s.
+- **Peso e tempo:** cerca de 2,4 MB; o build completo leva ~140 s. `SPRITES_PREVIEW=1` grava em `preview.local/scenes/` uma prévia de cada arena com sprites reais (urban e military, de frente e de costas) em todas as células, para conferir a escala.
 
 Cada animação traz também `box: [x, y, w, h]`, a caixa opaca do 1º quadro, útil para recortes justos.
 

@@ -5,30 +5,30 @@
   "image": "militar-anim.png",
   "static": "militar.png",
   "front": "militar-front.png",
-  "frameWidth": 396,
-  "frameHeight": 342,
+  "frameWidth": 768,
+  "frameHeight": 570,
   "frames": 6,
   "fps": 6,
   "columns": 6,
   "rows": 1,
   "gridOrigin": {
-    "x": 124,
-    "y": 160
+    "x": 234,
+    "y": 222
   },
-  "cellW": 28,
-  "cellH": 14,
+  "cellW": 56,
+  "cellH": 28,
   "colStep": {
-    "x": 28,
-    "y": 14
+    "x": 56,
+    "y": 28
   },
   "rowStep": {
-    "x": -28,
-    "y": 14
+    "x": -56,
+    "y": 28
   },
   "grid": {
     "cols": 8,
     "rows": 3,
-    "cellVoxels": 14,
+    "cellVoxels": 28,
     "playerCols": [
       0,
       1,

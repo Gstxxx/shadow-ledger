@@ -24,12 +24,15 @@ os.makedirs(OUT, exist_ok=True)
 FONT = 'C:/Windows/Fonts/consolab.ttf'
 
 # ------------------------------------------------------------------ arena geometry (shared by all 4 arenas)
-CELL, COLS, ROWS = 14, 8, 3
-X0, Y0 = 8, 12                      # grid corner (0,0) in voxels; strip behind the grid holds wall props
-FM = 5                              # floor margin in front of the grid (then the dollhouse cut)
+# Scale: 10 voxels = 1 m, same as the character rig (a person is ~18 voxels tall). A combat cell is 28 voxels
+# (~2.8 m) so a person stands in it with room; doors ~22 tall, storeys ~24, cars ~45 long, waist ~9-10.
+M = 10                              # voxels per metre
+CELL, COLS, ROWS = 28, 8, 3
+X0, Y0 = 16, 26                     # grid corner (0,0) in voxels; strip behind the grid holds wall props
+FM = 10                             # floor margin in front of the grid (then the dollhouse cut)
 LX, LY = X0 + CELL * COLS + FM, Y0 + CELL * ROWS + FM     # floor extent: x in [0,LX), y in [0,LY)
-ZMAX, ZMIN = 64, -5
-SLAB = 3                            # visible floor-slab thickness at the open front edges
+ZMAX, ZMIN = 84, -6
+SLAB = 4                            # visible floor-slab thickness at the open front edges
 
 
 def make_bounds(x0, x1, y0, y1, z0, z1, pad=4):
@@ -321,6 +324,39 @@ def place_figure(canvas, sprite, b, col, row):
     X, Y = cell_center(col, row)
     sx, sy = scr(b, X, Y)
     canvas.alpha_composite(sprite, (int(round(sx - rig.CX)), int(round(sy - rig.CY))))
+
+
+# ------------------------------------------------------------------ scale check with the shipped character atlases
+def atlas_frame(set_id, anim='idle', frame=0, mirror=False):
+    """(RGBA frame, anchor) from public/sprites/<set_id>.{png,json}."""
+    m = json.load(open(os.path.join(OUT, set_id + '.json'), encoding='utf-8'))
+    a = next(x for x in m['animations'] if x['name'] == anim)
+    sheet = Image.open(os.path.join(OUT, m['image'])).convert('RGBA')
+    fw, fh = m['frameWidth'], m['frameHeight']
+    im = sheet.crop((frame * fw, a['row'] * fh, (frame + 1) * fw, (a['row'] + 1) * fh))
+    ax, ay = m['anchor']['x'], m['anchor']['y']
+    if mirror:
+        im = im.transpose(Image.FLIP_LEFT_RIGHT); ax = fw - 1 - ax
+    return im, (ax, ay)
+
+
+def scale_preview(bg_frame, front, b, BG, sets=('urban', 'military')):
+    """Every cell filled with real character sprites: player cols 0-2 front view, enemy cols 5-7 back view mirrored,
+    cols 3-4 alternate. Anchor (feet) at the cell centre + (0,1), exactly like the game does."""
+    W, H = b['W'], b['H']
+    c = Image.new('RGBA', (W, H), BG + (255,))
+    c.alpha_composite(bg_frame)
+    c.alpha_composite(grid_overlay((W, H), b))
+    cells = sorted(((col, row) for col in range(COLS) for row in range(ROWS)), key=lambda k: k[0] + k[1])
+    for col, row in cells:
+        s = sets[(col + row) % len(sets)]
+        enemy = col >= 5 or (col in (3, 4) and row % 2)
+        im, (ax, ay) = atlas_frame(s + '-back' if enemy else s, 'idle', 0, mirror=enemy)
+        X, Y = cell_center(col, row)
+        sx, sy = scr(b, X, Y)
+        c.alpha_composite(im, (int(round(sx - ax)), int(round(sy + 1 - ay))))
+    c.alpha_composite(front)
+    return c
 
 
 def render_fx(solid, fx, b, look, alpha=0.6, **kw):

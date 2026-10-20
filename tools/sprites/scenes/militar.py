@@ -1,6 +1,10 @@
-"""MILITAR: desert outpost by day. HESCO line on the back edge, concrete T-walls + burnt truck on the left edge,
-watchtower with flag, camo-net supply point, sandbags / jersey barrier / hedgehog as low cover in no-man's land.
-Ambient loop: flag wave, truck smoke, drifting dust."""
+"""MILITAR: desert outpost by day. HESCO line on the back edge, concrete T-walls on the left edge, burnt cargo truck in
+the back-left corner, watchtower + flag pole back right, camo-net supply point behind no-man's land, sandbags / jersey
+barrier / Czech hedgehogs as low cover in no-man's land. Ambient loop: flag wave, truck smoke, drifting dust.
+
+Scale 10 voxels = 1 m (common.M): HESCO cells 1.1 x 1.1 x 2.0 m, T-walls 3.5 m, sandbag walls ~1 m, watchtower 6.7 m,
+truck 6.6 x 2.4 x 2.5 m, drums 0.9 m, jerry cans 0.5 m, ammo boxes 0.5 m, hedgehogs 1.2 m, camo net ~2.2-2.8 m,
+flag pole 5.6 m. A person (18 tall) stands in a 28-voxel cell; cover in no-man's land stays <= 1.2 m."""
 import math, random
 from common import *
 
@@ -26,14 +30,21 @@ PAL.update({
 })
 FX |= {'smk1', 'smk2', 'smk3', 'dust'}
 
+TRUCK = (1, 1)                      # back-left corner, nose toward +x (x 1..66, y 1..24)
+TOWER = (168, 4)                    # watchtower legs x 168..189, y 4..23
+FLAG = (230, 18)                    # flag pole
+NX = X0 + 3 * CELL                  # no-man's land x 100..156
+
 
 def ground_top(x, y):
     k = hsh(x, y) % 17
     c = 'sd1' if k < 9 else ('sd2' if k < 14 else 'sd3')
-    if (x + 2 * y) % 11 == 0 and k % 3 == 0:
+    if (x + 2 * y) % 15 == 0 and k % 3 == 0:
         c = 'sdD'                                                         # wind ripples
-    if (y in (32, 33, 38, 39)) and 4 < x < LX - 2 and hsh(x, y, 1) % 5:
-        c = 'track'                                                       # tire tracks
+    # a pair of truck ruts (tyre 0.3 m, gauge 1.9 m) running the length of the arena, wobbling slightly
+    w = round(1.5 * math.sin(x / 23.0))
+    if (y - w) in (60, 61, 62, 79, 80, 81) and 4 < x < LX - 2 and hsh(x, y, 1) % 5:
+        c = 'track'
     return c
 
 
@@ -43,8 +54,8 @@ def slab_ground():
     return v
 
 
-def hesco(x0, y0, along='x', n=1, h=10, w=6):
-    """Row of n HESCO cells (w x w x h): fabric with wire-mesh grid, sand-filled top."""
+def hesco(x0, y0, along='x', n=1, h=20, w=11):
+    """Row of n HESCO cells, each w x w x h (1.1 x 1.1 x 2.0 m): fabric shell with wire-mesh grid, sand-filled top."""
     v = []
     for i in range(n):
         if along == 'x':
@@ -53,213 +64,330 @@ def hesco(x0, y0, along='x', n=1, h=10, w=6):
             ax0, ax1, ay0, ay1 = x0, x0 + w - 1, y0 + i * w, y0 + i * w + w - 1
         for x in range(ax0, ax1 + 1):
             for y in range(ay0, ay1 + 1):
-                for z in range(0, h):
-                    edge = x in (ax0, ax1) or y in (ay0, ay1)
-                    if not edge:
-                        continue
-                    u = (x - ax0) if y in (ay0, ay1) else (y - ay0)
-                    mesh = u % 3 == 0 or z % 3 == 0 or x in (ax0, ax1) and y in (ay0, ay1)
-                    c = 'hesM' if mesh else ('hes' if hsh(x, y, z) % 5 else 'hes2')
-                    v.append((x, y, z, c))
-                v.append((x, y, h - 1 if (x in (ax0, ax1) or y in (ay0, ay1)) else h - 2, 'hesT' if hsh(x, y) % 4 else 'sd2'))
+                edge = x in (ax0, ax1) or y in (ay0, ay1)
+                if edge:
+                    for z in range(0, h):
+                        u = (x - ax0) if y in (ay0, ay1) else (y - ay0)
+                        mesh = u % 3 == 0 or z % 3 == 0 or x in (ax0, ax1) and y in (ay0, ay1)
+                        c = 'hesM' if mesh else ('hes' if hsh(x, y, z) % 5 else 'hes2')
+                        v.append((x, y, z, c))
+                v.append((x, y, h - 1 if edge else h - 2, 'hesT' if hsh(x, y) % 4 else 'sd2'))
     return v
 
 
-def twall(y0, n=4, x0=0, h=16, seg=6):
-    """Concrete T-walls along y (left edge): tall panel on a wide foot, seams between panels."""
+def twall(y0, n=6, x0=-1, h=35, seg=12):
+    """Concrete T-walls along y (left edge): 1.2 m panels, 0.3 m thick, 3.5 m tall, on a 1.2 m inverted-T foot."""
     v = []
     for i in range(n):
         ya, yb = y0 + i * seg, y0 + i * seg + seg - 1
-        v += box(x0, x0 + 4, ya, yb, 0, 1, 'tw2') + box(x0 + 1, x0 + 2, ya, yb, 2, h, 'tw')
-        v += [(x0 + 2, yb, z, 'tw2') for z in range(2, h + 1)] + [(x0 + 1, y, h + 1, 'tw3') for y in range(ya, yb)]
-        v += [(x0 + 3, ya + 2, 1, 'tw3'), (x0 + 3, ya + 3, 1, 'tw3')]
+        v += box(x0, x0 + 11, ya, yb, 0, 2, 'tw2') + [(x0 + 11, y, 3, 'tw2') for y in range(ya, yb + 1)]
+        v += box(x0 + 3, x0 + 5, ya, yb, 3, h, 'tw')
+        v += [(x0 + 5, yb, z, 'tw2') for z in range(3, h + 1)] + [(x0 + 6, yb, z, 'tw2') for z in range(0, 4)]   # seams
+        v += [(x0 + 4, y, h + 1, 'tw3') for y in range(ya, yb)]                                             # rounded cap
+        v += [(x0 + 6, ya + 5, h - 3, 'tw2'), (x0 + 6, ya + 6, h - 3, 'tw2')]                                # lifting eye
+        v += [(x0 + 6, y, z, 'tw3') for y in range(ya + 1, yb - 1) for z in (14, 15) if hsh(y, i) % 3]       # stencil band
+        v += [(x0 + 9, ya + 3, 2, 'tw3'), (x0 + 9, ya + 4, 2, 'tw3'), (x0 + 9, ya + 8, 2, 'tw3')]
     return v
 
 
-def sandbags(pts, h=3):
-    """Stacked sandbag wall along a polyline of (x,y) points; staggered bags of 3 voxels."""
+def sandbags(pts, layers=5, blen=6):
+    """Stacked sandbag wall along a polyline of (x,y) points: bags ~0.6 m long x 0.2 m high, staggered per layer."""
     v = []
-    for layer in range(h):
+    for layer in range(layers):
+        off = (layer % 2) * (blen // 2)
         for i, (x, y) in enumerate(pts):
-            k = (i + layer) % 3
-            c = 'sb2' if k == 0 else ('sb1' if k == 1 else 'sb3')
-            for dz in (0, 1):
-                v.append((x, y, layer * 2 + dz, c if dz == 0 else ('sb3' if k else 'sb1')))
+            b = (i + off) // blen
+            seam = (i + off) % blen == 0
+            k = hsh(b, layer, x // 7, 3) % 3
+            c = ('sb1', 'sb2', 'sb3')[k]
+            v.append((x, y, layer * 2, 'sb2' if seam else c))
+            v.append((x, y, layer * 2 + 1, 'sb2' if seam else ('sb3' if k != 2 else 'sb1')))
     return v
 
 
-def thick(pts, d=(1, 0)):
-    return pts + [(x + d[0], y + d[1]) for x, y in pts]
+def thick(pts, d=(1, 0), n=2):
+    return [(x + d[0] * k, y + d[1] * k) for k in range(n) for x, y in pts]
 
 
-def watchtower(x0, y0):
+def watchtower(x0, y0, deck=42):
+    """Wooden guard tower: 2.2 x 2.0 m footprint, deck at 4.2 m, 1 m sandbag parapet, corrugated roof at 6.6 m."""
     v = []
-    for lx, ly in ((x0, y0), (x0 + 10, y0), (x0, y0 + 9), (x0 + 10, y0 + 9)):
-        v += box(lx, lx, ly, ly, 0, 25, 'twood')
-    for k in range(0, 25):                                                 # cross bracing
-        f = k / 24
-        v += [(x0 + round(f * 10), y0 + 9, k, 'twood2'), (x0 + 10 - round(f * 10), y0 + 9, k, 'twood2')]
-        v += [(x0 + 10, y0 + round(f * 9), k, 'twood2'), (x0 + 10, y0 + 9 - round(f * 9), k, 'twood2')]
-    v += box(x0 - 1, x0 + 11, y0 - 1, y0 + 10, 26, 26, 'twood2')
-    for x in range(x0 - 1, x0 + 12):
-        for y in range(y0 - 1, y0 + 11):
-            if x in (x0 - 1, x0 + 11) or y in (y0 - 1, y0 + 10):
-                for z in range(27, 31):
-                    v.append((x, y, z, ('sb1', 'sb2', 'sb3')[(x + y + z // 2) % 3]))
-    for lx, ly in ((x0 - 1, y0 - 1), (x0 + 11, y0 - 1), (x0 - 1, y0 + 10), (x0 + 11, y0 + 10)):
-        v += box(lx, lx, ly, ly, 31, 37, 'twood')
-    for x in range(x0 - 2, x0 + 13):                                       # corrugated roof
-        for y in range(y0 - 2, y0 + 12):
-            v.append((x, y, 38, 'roofM' if x % 2 else 'roofM2'))
-    for z in range(0, 26):                                                 # ladder on the +y side
-        if z % 2 == 0:
-            v += [(x0 + 4, y0 + 10, z, 'twood2'), (x0 + 5, y0 + 10, z, 'twood2'), (x0 + 6, y0 + 10, z, 'twood2')]
-        v += [(x0 + 3, y0 + 10, z, 'twood'), (x0 + 7, y0 + 10, z, 'twood')]
-    v += box(x0 + 3, x0 + 4, y0 + 1, y0 + 2, 31, 32, 'radio')
-    v += box(x0 + 11, x0 + 11, y0 + 10, y0 + 10, 39, 52, 'pole')          # flag pole
+    xa, xb, ya, yb = x0, x0 + 20, y0, y0 + 18
+    for lx, ly in ((xa, ya), (xb, ya), (xa, yb), (xb, yb)):
+        v += box(lx, lx + 1, ly, ly + 1, 0, deck - 1, 'twood')
+    tiers = ((0, 20), (21, deck - 1))
+    for z0, z1 in tiers:                                                   # X-bracing on all four faces
+        for k in range(z0, z1 + 1):
+            f = (k - z0) / (z1 - z0)
+            for yy in (ya, yb + 1):
+                v += [(xa + round(f * 20), yy, k, 'twood2'), (xb - round(f * 20), yy, k, 'twood2')]
+            for xx in (xa, xb + 1):
+                v += [(xx, ya + round(f * 18), k, 'twood2'), (xx, yb - round(f * 18), k, 'twood2')]
+        for xx in range(xa, xb + 2):                                       # girts
+            v += [(xx, ya, z1, 'twood'), (xx, yb + 1, z1, 'twood')]
+        for yy in range(ya, yb + 2):
+            v += [(xa, yy, z1, 'twood'), (xb + 1, yy, z1, 'twood')]
+    for x in range(xa - 2, xb + 4):                                        # deck planks
+        for y in range(ya - 2, yb + 4):
+            v.append((x, y, deck, 'twood2' if x % 3 else 'twood'))
+    px0, px1, py0, py1 = xa - 2, xb + 3, ya - 2, yb + 3
+    for x in range(px0, px1 + 1):                                          # sandbag parapet, 2 bags thick
+        for y in range(py0, py1 + 1):
+            ring = min(x - px0, px1 - x, y - py0, py1 - y)
+            if ring > 1:
+                continue
+            for z in range(deck + 1, deck + 11):
+                slit = z in (deck + 7, deck + 8) and ((x == px1 and 7 <= y - ya <= 12) or (y == py1 and 6 <= x - xa <= 14))
+                if slit:
+                    continue
+                u = (x + y) + ((z - deck) // 2) * 3
+                c = 'sb2' if u % 6 == 0 else ('sb1', 'sb3')[(z - deck) % 2]
+                v.append((x, y, z, c))
+    for lx, ly in ((px0, py0), (px1, py0), (px0, py1), (px1, py1)):       # roof posts
+        v += box(lx, lx, ly, ly, deck + 11, deck + 23, 'twood')
+    for x in range(px0 - 2, px1 + 3):                                      # corrugated roof with a front drip edge
+        for y in range(py0 - 2, py1 + 3):
+            v.append((x, y, deck + 24, 'roofM' if x % 2 else 'roofM2'))
+    v += [(x, py1 + 2, deck + 23, 'roofM2') for x in range(px0 - 2, px1 + 3)] + [(px1 + 2, y, deck + 23, 'roofM2') for y in range(py0 - 2, py1 + 3)]
+    for z in range(0, deck + 1):                                           # ladder up the +y face
+        v += [(xa + 7, yb + 3, z, 'twood'), (xa + 12, yb + 3, z, 'twood')]
+        if z % 3 == 0:
+            v += [(xa + k, yb + 3, z, 'twood2') for k in range(8, 12)]
+    v += box(xa + 3, xa + 6, ya + 2, ya + 4, deck + 1, deck + 4, 'radio') + [(xa + 4, ya + 3, z, 'hesM') for z in range(deck + 5, deck + 14)]
+    v += [(x, ya + 10, deck + 8, 'hh') for x in range(px1 - 1, px1 + 7)] + [(px1 - 1, ya + 10, deck + 9, 'hh')]   # MG barrel through the slit
     return v
 
 
-def flag(x0, y0, t):
+def flag_pole(x, y, h=56):
+    """5.6 m steel pole on a sandbag-ring footing, ball finial."""
+    v = [(x, y, z, 'pole') for z in range(0, h + 1)] + [(x, y, h + 1, 'hh2')]
+    ring = [(x + round(4 * math.cos(a / 8 * math.pi)), y + round(4 * math.sin(a / 8 * math.pi))) for a in range(16)]
+    v += sandbags(list(dict.fromkeys(ring)), 2, 3)
+    return v
+
+
+def flag(x0, y0, t, top=55):
+    """1.6 x 1.0 m flag, green with a yellow band, waving toward +x."""
     v = []
-    for i in range(10):
-        dz = round(math.sin(i * 0.7 - t * 2 * math.pi / NFRAMES) * 1.2 * (i / 9))
-        dy = round(math.cos(i * 0.7 - t * 2 * math.pi / NFRAMES) * 0.8 * (i / 9))
-        for k in range(6):
-            c = 'flagY' if k in (2, 3) else ('flagG' if dz >= 0 else 'flagG2')
-            v.append((x0 + 1 + i, y0 + dy, 51 - k + dz, c))
+    for i in range(16):
+        f = i / 15
+        dz = round(math.sin(i * 0.45 - t * 2 * math.pi / NFRAMES) * 2.2 * f)
+        dy = round(math.cos(i * 0.45 - t * 2 * math.pi / NFRAMES) * 1.6 * f)
+        for k in range(10):
+            c = 'flagY' if k in (4, 5) else ('flagG' if dz >= 0 else 'flagG2')
+            v.append((x0 + 1 + i, y0 + dy, top - k + dz, c))
     return v
 
 
 def camo_net(x0, x1, y0, y1, zt):
+    """Camo net on 3 poles along the front edge, draping back onto the HESCO top (~2.8 m front, ~2.2 m back)."""
     v = []
-    for x, y in ((x0, y1), (x1, y1), ((x0 + x1) // 2, y1)):
-        v += box(x, x, y, y, 0, zt - 2, 'pole')
-    for x in range(x0 - 1, x1 + 2):
+    for x in (x0, x1, (x0 + x1) // 2):
+        v += box(x, x, y1, y1, 0, zt - 1, 'pole')
+    for x in range(x0 - 2, x1 + 3):
         for y in range(y0, y1 + 2):
-            z = zt - abs(y - y1) // 3 + (1 if (x - x0) % 12 < 2 else 0) - (y < y0 + 2)
-            k = hsh(x, y, 5) % 11
+            sag = 1 if (x - x0) % 21 < 3 or (x1 - x) % 21 < 3 else 0
+            z = zt - (y1 - y) // 3 + sag - (1 if y > y1 else 0)
+            k = hsh(x, y, 5) % 13
             if k == 0:
                 continue                                                  # holes
             v.append((x, y, z, ('net1', 'net2', 'net3')[k % 3]))
-            if k in (3, 7):
-                v.append((x, y, z - 1, 'net3'))                           # dangling scrim
+            if k in (3, 7, 11) and y >= y1 - 1:
+                v += [(x, y, z - d, 'net3') for d in range(1, 2 + hsh(x, y) % 4)]   # dangling scrim at the front
+            elif k in (3, 7):
+                v.append((x, y, z - 1, 'net3'))
     return v
 
 
 def ammo_box(x, y, z=0, along='x'):
+    """Ammo crate 0.8 x 0.5 x 0.5 m with handles and a lid seam."""
     if along == 'x':
-        v = box(x, x + 4, y, y + 2, z, z + 2, 'ammo') + [(x + k, y + 2, z + 2, 'ammo2') for k in (1, 3)]
+        v = box(x, x + 7, y, y + 4, z, z + 4, 'ammo') + [(x + k, y + 4, z + 4, 'ammo2') for k in range(8)]
+        v += [(x + 2, y + 5, z + 3, 'ammo2'), (x + 5, y + 5, z + 3, 'ammo2'), (x + 8, y + 2, z + 3, 'ammo2')]
     else:
-        v = box(x, x + 2, y, y + 4, z, z + 2, 'ammo') + [(x + 2, y + k, z + 2, 'ammo2') for k in (1, 3)]
+        v = box(x, x + 4, y, y + 7, z, z + 4, 'ammo') + [(x + 4, y + k, z + 4, 'ammo2') for k in range(8)]
+        v += [(x + 5, y + 2, z + 3, 'ammo2'), (x + 5, y + 5, z + 3, 'ammo2'), (x + 2, y + 8, z + 3, 'ammo2')]
     return v
 
 
 def jerry(x, y):
-    return box(x, x + 1, y, y + 2, 0, 3, 'jerry') + [(x, y + 1, 4, 'jerry')]
+    """Jerry can 0.35 x 0.2 x 0.45 m + handle."""
+    return box(x, x + 3, y, y + 1, 0, 4, 'jerry') + [(x + 1, y, 5, 'radio'), (x + 2, y, 5, 'radio'), (x + 3, y, 5, 'jerry')] + \
+        [(x + k, y + 2, 2, 'ammo2') for k in range(4)]
 
 
-def burnt_truck(x0, y0):
-    """Wrecked cargo truck, nose toward +y. x0..x0+7, y0..y0+22."""
-    v = []
-    rnd = random.Random(4)
-    for y in range(y0, y0 + 23):
-        for x in range(x0, x0 + 8):
-            v.append((x, y, 2, 'brn'))                                     # chassis
-    for y in range(y0, y0 + 14):                                           # cargo bed (walls, partly gone)
-        for x in range(x0, x0 + 8):
-            for z in range(3, 9):
-                side = x in (x0, x0 + 7) or y in (y0, y0 + 13)
-                if side and hsh(x, y, z) % 7:
-                    v.append((x, y, z, 'brn2' if hsh(x, y, z) % 3 else 'brn3'))
-            if hsh(x, y) % 3 == 0:
-                v.append((x, y, 3, 'brn'))
-    for y in range(y0 + 15, y0 + 23):                                      # cab
-        for x in range(x0, x0 + 8):
-            for z in range(3, 12):
-                if z >= 8 and y > y0 + 20:
-                    continue
-                shell_ = x in (x0, x0 + 7) or y in (y0 + 15, y0 + 22) or z in (3, 11)
-                if shell_:
-                    win = 7 <= z <= 10 and (x in (x0, x0 + 7) and y0 + 17 <= y <= y0 + 19)
-                    if not win:
-                        v.append((x, y, z, 'brn' if (x + z) % 4 else 'brn3'))
-    v += box(x0 + 1, x0 + 6, y0 + 23, y0 + 23, 3, 6, 'brn2')              # grille
-    for ry in (y0 + 1, y0 + 6, y0 + 12):                                   # burnt canvas ribs
-        v += [(x0, ry, z, 'brn2') for z in range(9, 13)] + [(x0 + 7, ry, z, 'brn2') for z in range(9, 13)]
-        v += [(x, ry, 13, 'brn3' if x % 3 else 'brn2') for x in range(x0, x0 + 8)]
-    v += [(x0 + 7, y, z, 'brn3') for y in range(y0 + 2, y0 + 12) for z in (5, 6) if hsh(y, z) % 3 == 0]
-    for wy in (y0 + 3, y0 + 8, y0 + 19):                                   # bare rims
-        for x in (x0 - 1, x0 + 8):
-            for dy in (-1, 0, 1):
-                for z in (0, 1, 2):
-                    v.append((x, wy + dy, z, 'rim' if (dy == 0 or z == 1) else 'brn'))
+def crate(x, y, z=0, s=8):
+    v = box(x, x + s - 1, y, y + s - 1, z, z + s - 1, 'twood')
+    v += [(x + s - 1, y + k, z + k, 'twood2') for k in range(s)] + [(x + k, y + s - 1, z + s - 1 - k, 'twood2') for k in range(s)]
+    v += [(x + k, y + s - 1, zz, 'twood2') for k in range(s) for zz in (z, z + s - 1)]
+    v += [(x + s - 1, y + k, zz, 'twood2') for k in range(s) for zz in (z, z + s - 1)]
     return v
 
 
-def drum(x, y, c='drum'):
+def burnt_truck(x0, y0):
+    """Wrecked 6x6 cargo truck, nose toward +x: 66 long x 24 wide x 25 tall (6.6 x 2.4 x 2.5 m). Hollow shells:
+    holed cargo bed with charred canvas bows, cab with blown-out windows, bonnet + grille, bare rims (1.1 m wheels)."""
     v = []
-    for z in range(0, 7):
-        for dx in range(-1, 2):
-            for dy in range(-1, 2):
-                v.append((x + dx, y + dy, z, c + '2' if z in (1, 5) else c))
+    x1, y1 = x0 + 65, y0 + 23
+    ba, bb = y0 + 2, y1 - 2                                                # body width (wheels stick out to y0 / y1)
+    v += box(x0 + 2, x1 - 2, ba + 3, ba + 4, 8, 9, 'brn') + box(x0 + 2, x1 - 2, bb - 4, bb - 3, 8, 9, 'brn')   # frame rails
+    for cx in range(x0 + 4, x1 - 2, 9):
+        v += [(cx, y, 9, 'brn') for y in range(ba + 5, bb - 4)]
+    bx1 = x0 + 39                                                          # cargo bed x0..bx1
+    for x in range(x0, bx1 + 1):
+        for y in range(ba, bb + 1):
+            if hsh(x, y) % 4:
+                v.append((x, y, 11, 'brn' if hsh(x, y, 2) % 3 else 'brn3'))   # bed floor, burnt through in places
+            side = x in (x0, bx1) or y in (ba, bb)
+            if side:
+                for z in range(12, 19):
+                    h = hsh(x, y, z)
+                    if h % 7 and not (z > 15 and h % 3 == 0):
+                        v.append((x, y, z, 'brn2' if h % 3 else 'brn3'))
+    v += [(x, bb, 18, 'brn3') for x in range(x0, bx1 + 1, 2)]
+    for rx in (x0 + 2, x0 + 14, x0 + 26, x0 + 37):                         # charred canvas bows
+        for y in range(ba, bb + 1):
+            arch = 25 - round(((y - (ba + bb) / 2) / ((bb - ba) / 2)) ** 2 * 3)
+            v.append((rx, y, arch, 'brn3' if y % 3 else 'brn2'))
+        v += [(rx, ba, z, 'brn2') for z in range(19, 23)] + [(rx, bb, z, 'brn2') for z in range(19, 23)]
+    v += [(x, y, 24, 'brn2') for x in range(x0 + 14, x0 + 27) for y in range(ba + 3, ba + 7) if hsh(x, y, 9) % 3 == 0]   # canvas scrap
+    cx0, cx1 = x0 + 42, x0 + 53                                            # cab
+    for x in range(cx0, cx1 + 1):
+        for y in range(ba, bb + 1):
+            for z in range(10, 25):
+                shell_ = x in (cx0, cx1) or y in (ba, bb) or z in (10, 24)
+                if not shell_:
+                    continue
+                win_side = 16 <= z <= 21 and y in (ba, bb) and cx0 + 3 <= x <= cx1 - 2
+                win_front = 16 <= z <= 21 and x == cx1 and ba + 2 <= y <= bb - 2 and y != (ba + bb) // 2
+                if win_side or win_front:
+                    continue
+                if z == 24 and hsh(x, y) % 5 == 0:
+                    continue                                              # roof burnt through
+                v.append((x, y, z, 'brn' if (x + z) % 5 else 'brn3'))
+    v += [(cx0 + 2, y, z, 'brn2') for y in (ba, bb) for z in range(11, 22)]  # door seams
+    hx0 = cx1 + 1                                                          # bonnet
+    for x in range(hx0, x1 + 1):
+        for y in range(ba + 2, bb - 1):
+            for z in range(10, 19):
+                if y in (ba + 2, bb - 2) or z == 18 or x == x1:
+                    grille = x == x1 and 11 <= z <= 17 and y % 2 == 0 and ba + 3 < y < bb - 3
+                    v.append((x, y, z, 'rim' if grille else ('brn' if hsh(x, y, z) % 4 else 'brn3')))
+    v += box(x1 + 1, x1 + 2, ba, bb, 7, 9, 'brn2')                         # bumper
+    v += [(x1, y, z, 'brn3') for y in (ba + 3, bb - 3) for z in (14, 15)]  # dead headlights
+    for x in range(hx0 - 4, x1 + 1):                                       # front fenders
+        v += [(x, ba, 12, 'brn2'), (x, bb, 12, 'brn2'), (x, ba + 1, 12, 'brn2'), (x, bb - 1, 12, 'brn2')]
+    for wx in (x0 + 9, x0 + 22, x0 + 57):                                  # bare rims, tyres burnt away
+        for yy in (y0, y0 + 1, y1 - 1, y1):
+            outer = yy in (y0, y1)
+            for dx in range(-6, 7):
+                for dz in range(-6, 7):
+                    d = math.sqrt(dx * dx + dz * dz)
+                    z = 5 + dz
+                    if z < 0 or d > 5.6:
+                        continue
+                    if d > 4.4:
+                        if hsh(wx + dx, z, yy) % 3 == 0:
+                            v.append((wx + dx, yy, z, 'brn'))              # tyre remnants
+                    elif d > 3.2 or (outer and d < 1.5):
+                        v.append((wx + dx, yy, z, 'rim'))
+                    elif outer and abs(dx) == abs(dz) and d > 1.5:
+                        v.append((wx + dx, yy, z, 'brn2'))                 # spokes
+    return v
+
+
+def drum(x, y, c='drum', h=9):
+    """55-gallon drum: 0.6 m across, 0.9 m tall, rolling hoops."""
+    v = []
+    for z in range(0, h):
+        for dx in range(-3, 4):
+            for dy in range(-3, 4):
+                if dx * dx + dy * dy <= 10:
+                    v.append((x + dx, y + dy, z, c + '2' if z in (2, 6, h - 1) else c))
     return v
 
 
 def hedgehog(x, y):
-    """Czech hedgehog: three crossed steel beams."""
-    v = line3((x - 3, y - 3, 0), (x + 3, y + 3, 6), 'hh') + line3((x + 3, y - 3, 0), (x - 3, y + 3, 6), 'hh2')
-    v += line3((x - 3, y + 3, 0), (x + 3, y - 3, 6), 'hh') + line3((x, y - 4, 3), (x, y + 4, 3), 'hh2')
+    """Czech hedgehog: three steel angle beams crossing at mid-height, 1.2 m tall, ~1.4 m across."""
+    v = []
+    for (dx, dy), c in (((6, 0), 'hh'), ((-3, 5), 'hh2'), ((-3, -5), 'hh')):
+        for d in (0, 1):
+            v += line3((x - dx, y - dy, d), (x + dx, y + dy, 12 + d), c)
+    v += [(x, y, 6, 'hh2'), (x, y, 7, 'hh2')]
+    return v
+
+
+def jersey(x, y0, y1):
+    """Concrete jersey barrier along y: 0.8 m tall, 0.6 m base tapering to 0.2 m."""
+    v = box(x - 2, x + 3, y0, y1, 0, 2, 'tw2') + box(x - 1, x + 2, y0, y1, 3, 5, 'tw') + box(x, x + 1, y0, y1, 6, 8, 'tw')
+    v += [(x + 3, y, 2, 'tw3') for y in range(y0, y1 + 1)] + [(x + 2, y, 5, 'tw3') for y in range(y0, y1 + 1)]
+    v += [(x + 1, y, 9, 'tw3') for y in range(y0, y1 + 1, 6)]
+    v += [(x + 1, y, z, 'tw2') for y in range(y0 + 12, y1, 12) for z in range(6, 9)] + \
+        [(x + 3, y, z, 'tw2') for y in range(y0 + 12, y1, 12) for z in range(0, 3)]          # segment joints
     return v
 
 
 def scrub(x, y, s=0):
+    """Desert scrub, 0.5-0.8 m across, up to 0.4 m tall."""
     v = []
-    for k in range(9 + s * 3):
-        dx, dy = hsh(x, y, k) % 5 - 2, hsh(y, x, k) % 5 - 2
-        dz = (hsh(k, x, y) % 3) if abs(dx) + abs(dy) < 3 else 0
-        v.append((x + dx, y + dy, dz, ('scrub', 'scrub2', 'scrubD')[k % 3]))
+    r = 3 + s
+    for k in range(26 + s * 14):
+        dx, dy = hsh(x, y, k) % (2 * r + 1) - r, hsh(y, x, k) % (2 * r + 1) - r
+        if dx * dx + dy * dy > r * r:
+            continue
+        dz = (hsh(k, x, y) % (3 + s)) if abs(dx) + abs(dy) < r else 0
+        v += [(x + dx, y + dy, z, ('scrub', 'scrub2', 'scrubD')[(k + z) % 3]) for z in range(0, dz + 1)]
     return v
 
 
-def rocks(x, y):
-    return [(x, y, 0, 'rock'), (x + 1, y, 0, 'rock2'), (x, y + 1, 0, 'rock2')]
+def rocks(x, y, s=0):
+    v = [(x, y, 0, 'rock'), (x + 1, y, 0, 'rock'), (x, y + 1, 0, 'rock2'), (x + 1, y + 1, 0, 'rock2'), (x + 2, y, 0, 'rock2')]
+    if s:
+        v += [(x, y, 1, 'rock'), (x + 1, y, 1, 'rock2'), (x - 1, y + 1, 0, 'rock'), (x + 3, y + 2, 0, 'rock2'), (x + 4, y + 2, 0, 'rock')]
+    return v
 
 
 def env():
     v = slab_ground()
-    # back edge: HESCO line
-    v += hesco(-1, -1, 'x', 15, h=11, w=7)[:]
-    v = [p for p in v if not ((p[0] >= 98 or p[0] < 13) and p[1] <= 6 and p[2] >= 0 and p[3].startswith('hes'))]
-    v += hesco(-1, 6, 'y', 0)
-    # left edge: T-walls then the burnt truck
-    v += twall(26, 5, x0=-1, h=16, seg=6)
-    v += burnt_truck(0, 0)
-    v += drum(5, 26) + drum(5, 30) + drum(3, 28, 'drumR')
-    # watchtower (back right) + flag pole
-    v += watchtower(100, 0)
-    # supply point under camo net (back strip behind no-man's land)
-    v += camo_net(44, 82, 0, 9, 20)
-    v += ammo_box(48, 2) + ammo_box(48, 2, 3) + ammo_box(54, 3) + jerry(60, 2) + jerry(62, 2) + jerry(61, 6)
-    v += box(68, 75, 2, 7, 0, 3, 'twood2') + box(69, 74, 3, 6, 4, 4, 'twood') + box(70, 72, 4, 5, 5, 6, 'radio')
-    v += box(79, 79, 1, 1, 0, 44, 'pole') + [(79, 1, 45, 'hesM'), (80, 1, 43, 'hesM'), (78, 1, 43, 'hesM')]   # antenna mast
-    # no-man's land (cols 3-4, x 50..77) low cover
-    arc = [(57 + round(1.6 * math.cos(a / 10)), 14 + a) for a in range(0, 11)]
-    v += sandbags(thick(arc), 3)
-    v += box(63, 66, 28, 38, 0, 1, 'tw2') + box(64, 65, 28, 38, 2, 6, 'tw') + [(64, y, 7, 'tw3') for y in range(28, 39)]
-    v += [(66, y, 2, 'tw3') for y in range(28, 39, 5)]
-    v += sandbags(thick([(60, y) for y in range(43, 53)], (-1, 0)), 2) + sandbags([(61, 52), (62, 52), (63, 52)], 2)
-    v += hedgehog(72, 20) + hedgehog(54, 34)
+    # back edge: HESCO line (gaps behind the truck and the watchtower)
+    v += hesco(68, -1, 'x', 9) + hesco(195, -1, 'x', 5)
+    # left edge: T-walls, then drums at the front of the left strip
+    v += twall(26, 6, x0=-1)
+    v += drum(5, 101) + drum(11, 105, 'drumR') + drum(5, 108)
+    # back-left corner: burnt truck (smoke in anim_fx)
+    v += burnt_truck(*TRUCK)
+    v += [(x, y, 0, 'brn') for x in range(4, 66) for y in (0, 25) if hsh(x, y) % 3 == 0]          # scorch around it
+    # back right: watchtower, flag pole in front of the HESCO
+    v += watchtower(*TOWER)
+    v += flag_pole(*FLAG)
+    # supply point under the camo net (back strip behind no-man's land)
+    v += camo_net(74, 158, 4, 24, 28)
+    v += ammo_box(80, 12) + ammo_box(80, 12, 5) + ammo_box(89, 13) + ammo_box(81, 18, 0) + ammo_box(90, 18, 0, 'y')
+    v += jerry(99, 14) + jerry(104, 14) + jerry(101, 19)
+    v += box(116, 131, 13, 21, 7, 7, 'twood') + [(lx, ly, z, 'twood2') for lx in (117, 130) for ly in (14, 20) for z in range(0, 7)]
+    v += box(119, 123, 15, 18, 8, 11, 'radio') + [(120, 16, z, 'hesM') for z in range(12, 18)] + [(125, 16, 8, 'flagY'), (126, 16, 8, 'flagY'), (126, 17, 8, 'wireC')]
+    v += crate(136, 12) + crate(137, 13, 8, 6) + drum(150, 18)
+    v += [(162, 16, z, 'pole') for z in range(0, 63)] + box(160, 164, 16, 16, 58, 58, 'hesM') + [(162, 16, 63, 'hesM')]   # antenna mast
+    v += line3((162, 16, 58), (152, 25, 0), 'wire') + line3((162, 16, 58), (166, 25, 0), 'wire')
+    # no-man's land (cols 3-4, x 100..156): cover <= 1.2 m, kept off the cell centres
+    arc = [(NX + 22 + round(3 * math.sin(math.pi * a / 22)), Y0 + 4 + a) for a in range(0, 23)]
+    v += sandbags(thick(arc, (-1, 0), 4), 5)                               # sandbag arc, 1.0 m
+    v += jersey(NX + 32, Y0 + 30, Y0 + 54)                                 # jersey barrier, 0.8 m
+    lw = [(NX + 3, y) for y in range(Y0 + 58, Y0 + 79)] + [(x, Y0 + 78) for x in range(NX + 4, NX + 13)]
+    v += sandbags(thick(lw, (1, 0), 3), 4)                                 # low L-wall, 0.8 m
+    v += hedgehog(NX + 50, Y0 + 5) + hedgehog(NX + 7, Y0 + 30) + hedgehog(NX + 50, Y0 + 56)
+    v += ammo_box(NX + 30, Y0 + 75) + ammo_box(NX + 31, Y0 + 75, 5)
     # scrub + rocks scattered (flat enough to stand on)
-    for (x, y, s) in ((14, 4, 1), (36, 50, 0), (90, 30, 1), (114, 44, 0), (26, 24, 0), (84, 55, 1), (3, 26, 1), (122, 10, 0)):
+    for (x, y, s) in ((60, 100, 0), (176, 60, 1), (226, 92, 0), (48, 46, 0), (166, 108, 1), (244, 40, 1),
+                      (198, 74, 0), (84, 74, 1), (30, 30, 0), (210, 30, 1)):
         v += scrub(x, y, s)
-    for (x, y) in ((40, 20), (98, 48), (20, 40), (76, 44), (110, 20), (30, 8)):
-        v += rocks(x, y)
+    for (x, y, s) in ((80, 40, 1), (196, 96, 0), (40, 82, 1), (214, 42, 0), (92, 104, 0), (232, 64, 1), (20, 60, 0)):
+        v += rocks(x, y, s)
     return v
 
 
 def anim(t):
-    return flag(111, 10, t)
+    return flag(FLAG[0], FLAG[1], t)
 
 
 def anim_fx(t):
@@ -267,8 +395,8 @@ def anim_fx(t):
     # truck smoke: dark puffs rising from the cargo bed, drifting toward +x
     for k in range(6):
         ph = ((k + t / NFRAMES) % 6) / 6.0
-        r = 1.4 + ph * 3.4
-        cx, cy, cz = 4 + ph * 12, 6 + ph * 3, 9 + ph * 34
+        r = 2.5 + ph * 6.5
+        cx, cy, cz = TRUCK[0] + 20 + ph * 26, TRUCK[1] + 12 + ph * 6, 16 + ph * 52
         for dx in range(-int(r) - 1, int(r) + 2):
             for dy in range(-int(r) - 1, int(r) + 2):
                 for dz in range(-int(r) - 1, int(r) + 2):
@@ -276,11 +404,11 @@ def anim_fx(t):
                         v.append((round(cx + dx), round(cy + dy), round(cz + dz), 'smk1' if ph < .3 else ('smk2' if ph < .65 else 'smk3')))
     # dust motes drifting with the wind (+x), looping across the arena
     rnd = random.Random(9)
-    for k in range(40):
-        x0, y0, z0 = rnd.uniform(0, LX), rnd.uniform(4, LY - 2), rnd.uniform(1, 10)
-        ph = (rnd.random() + t / NFRAMES) % 1.0                      # each mote drifts 18 vox per loop, then respawns
-        x = (x0 + ph * 18) % LX
-        z = z0 + math.sin(t * 2 * math.pi / NFRAMES + k) * 1.5
+    for k in range(140):
+        x0, y0, z0 = rnd.uniform(0, LX), rnd.uniform(4, LY - 2), rnd.uniform(1, 20)
+        ph = (rnd.random() + t / NFRAMES) % 1.0                      # each mote drifts 36 vox per loop, then respawns
+        x = (x0 + ph * 36) % LX
+        z = z0 + math.sin(t * 2 * math.pi / NFRAMES + k) * 2.5
         v.append((round(x), round(y0), round(z), 'dust'))
         if k % 4 == 0:
             v.append((round(x) + 1, round(y0), round(z), 'dust'))
@@ -288,19 +416,20 @@ def anim_fx(t):
 
 
 def front():
-    """Concertina wire along the front-right edge (outside the grid) + a scrub at the front-left corner."""
+    """Concertina wire (0.9 m coil) along the front-right edge, outside the grid, + scrub and a jerry can front-left."""
     v = []
-    y = LY - 3
-    for x in range(64, LX - 1):
-        a = (x - 64) * 0.9
-        if x % 3:
-            v.append((x, y + round(1.6 * math.cos(a)), 2 + round(1.8 * math.sin(a)), 'wireC' if x % 2 else 'wireC2'))
-    for x in range(64, LX - 1, 14):
-        v += [(x, y, z, 'hh2') for z in range(0, 4)]
-    v += scrub(4, LY - 3, 2)
+    y, zc, r, x0, pitch = LY - 5, 5, 4, 118, 6.0
+    n = int((LX - 2 - x0) / pitch * 2 * math.pi / 0.12)
+    for i in range(n):                                                     # continuous helix, 0.6 m per turn
+        a = i * 0.12
+        x = x0 + a * pitch / (2 * math.pi)
+        v.append((round(x), y + round(r * math.cos(a)), zc + round(r * math.sin(a)), 'wireC' if math.sin(a) > 0 else 'wireC2'))
+    for x in range(120, LX - 1, 28):                                       # pickets
+        v += [(x, y, z, 'hh2') for z in range(0, 10)]
+    v += scrub(5, LY - 5, 2) + jerry(8, LY - 12)
     return v
 
 
 def look(t):
     amb = ((1.18, 1.10, 0.96), (0.95, 0.88, 0.80), (0.66, 0.64, 0.68))
-    return Look(amb, [], shadow=(0.55, 0.32, 14), shadow_k=0.66, ao_k=0.8, glow=0.6)
+    return Look(amb, [], shadow=(0.55, 0.32, 16), shadow_k=0.66, ao_k=0.8, glow=0.6)

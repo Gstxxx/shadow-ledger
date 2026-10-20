@@ -482,7 +482,8 @@ export interface SceneSheet {
 }
 
 /**
- * Fundo de combate (kind 'arena'): 396×342 a 1x, 6 quadros de ambiente, mais uma camada `front` de objetos
+ * Fundo de combate (kind 'arena'): 768×570 a 1x (escala 10 voxels = 1 m, a dos personagens; célula de 2,8 m),
+ * 6 quadros de ambiente, mais uma camada `front` de objetos
  * que vão POR CIMA das Unidades. Grade isométrica de 8 colunas × 3 linhas (jogador 0–2, inimigo 5–7):
  * canto da célula (c, r) = gridOrigin + c·colStep + r·rowStep; centro = canto + (colStep + rowStep) / 2.
  */

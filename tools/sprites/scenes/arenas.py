@@ -68,7 +68,7 @@ if __name__ == '__main__':
         if not PREVIEW:
             continue
         os.makedirs(PREV, exist_ok=True)
-        p = preview(M, frames, front)
+        p = scale_preview(frames[0], front, b, M.BG)
         p.resize((p.width * 2, p.height * 2), Image.NEAREST).save(os.path.join(PREV, f'{n}-preview.png'))
         tiles.append((n, p))
     if len(tiles) == 4:
