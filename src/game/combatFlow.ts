@@ -7,6 +7,7 @@ import { STATIONS, THREAT_BY_STATE } from './data/rules';
 import { originMods } from './data/origins';
 import { recordPriceEvent } from './history';
 import { resolveCombatJob, resolveHunt } from './combatJobs';
+import { spillStationOverflow } from './teams';
 import { checkObjective } from './objective';
 import { pick, randInt, randRange } from './rng';
 import {
@@ -247,12 +248,14 @@ function interdict(s: GameState, a: Agency, countryId: string) {
   );
 }
 
-export function liftInterdiction(a: Agency, countryId: string) {
+export function liftInterdiction(s: GameState, a: Agency, countryId: string) {
   const st = stationIn(a, countryId);
   if (!st?.interdicted) return;
   st.interdicted = undefined;
   st.units.push(...st.detained);
   st.detained = [];
+  // A Estação pode ter perdido Nível enquanto estava Interditada.
+  spillStationOverflow(s, a, countryId);
 }
 
 const stealByLevel = (level: number) => STEAL_TABLE[Math.min(STEAL_TABLE.length - 1, Math.max(0, level - 1))];
@@ -296,6 +299,7 @@ export function resolveCombat(s: GameState, c: CombatState) {
     });
     setForceUnits(a, first, [...forceUnits(a, first), ...joined]);
     note(s, a, M('msg.combat.convertedJoin', { n: joined.length }), 'good');
+    if (first.kind === 'station') spillStationOverflow(s, a, first.countryId);
   }
   if (ok) a.stats.combatsWon++;
   else a.stats.combatsLost++;
@@ -412,7 +416,7 @@ export function resolveCombat(s: GameState, c: CombatState) {
     case 'appeal': {
       const st = stationIn(a, r.countryId);
       if (ok) {
-        liftInterdiction(a, r.countryId);
+        liftInterdiction(s, a, r.countryId);
         notify(s, a, 'station', M('msg.combat.appealWonTitle'), M('msg.combat.appealWonBody', { country }), 'good', r.countryId);
       } else if (st?.interdicted) {
         st.interdicted.fine = Math.round(st.interdicted.fine * 1.25);

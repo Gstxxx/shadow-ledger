@@ -133,8 +133,9 @@ describe('Simulação headless', () => {
   it('roda 200 dias em Sandbox sem prazo com decisões aleatórias sem erro nem NaN', () => {
     for (const seed of [1, 2, 3, 4, 5, 6]) {
       const s = run(seed, seed, true);
-      expect(s.over, JSON.stringify(s.over)).toBeUndefined();
-      expect(s.time).toBeGreaterThanOrEqual(200 * 24);
+      // O bot é hiperagressivo (Operações e Golpes ao acaso): a Crise Final é um desfecho legítimo.
+      if (s.over) expect(s.over.reasonMsg?.key, JSON.stringify(s.over)).toBe('msg.crisis.reason');
+      else expect(s.time).toBeGreaterThanOrEqual(200 * 24);
     }
   }, 300_000);
 

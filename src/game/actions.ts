@@ -2,8 +2,8 @@
 // Each validates, mutates the state, and returns a short pt-BR reason when refused.
 import { addCargo, addLot, cargoQty, lotId, lotQty, removeCargo, takeLot } from './cargo';
 import { abortPending, beginCombat, liftInterdiction, negotiateCost } from './combatFlow';
+import { createTeam } from './teams';
 import { ITEMS, usesCargo } from './data/items';
-import { TEAM_NAMES } from './data/names';
 import {
   COMMERCIAL_FARE_PER_1000KM,
   COMMERCIAL_SPEED,
@@ -277,7 +277,7 @@ export function payFine(s: GameState, a: Agency, countryId: string): Result {
   if (!st?.interdicted) return no(M('msg.act.notSeized'));
   if (a.cash < st.interdicted.fine) return no(M('msg.act.noCash'));
   a.cash -= st.interdicted.fine;
-  liftInterdiction(a, countryId);
+  liftInterdiction(s, a, countryId);
   note(s, a, M('msg.act.finePaid', { country: ref.country(countryId) }), 'good', countryId);
   return ok();
 }
@@ -597,17 +597,6 @@ export function payArrears(s: GameState, a: Agency): Result {
 }
 
 // ── Equipes ─────────────────────────────────────────────────
-
-function createTeam(s: GameState, a: Agency, location: string, units: Unit[]): Team {
-  s.uidCounter += 1;
-  const used = new Set(a.teams.map((t) => t.name));
-  const teamName = (base: string | { listed: 'team'; index: number }) => say(M('msg.act.teamName', { base }));
-  const index = TEAM_NAMES.findIndex((_, i) => !used.has(teamName({ listed: 'team', index: i })));
-  const name = teamName(index >= 0 ? { listed: 'team', index } : `${s.uidCounter}`);
-  const team: Team = { id: `tm${s.uidCounter}`, name, units: [...units], location, spoils: [] };
-  a.teams.push(team);
-  return team;
-}
 
 /** Destacar Unidades da Escolta (Diretor presente) ou de uma Estação numa Equipe. */
 export function formTeam(s: GameState, a: Agency, from: 'escort' | { stationCountry: string }, uids: string[]): Result {

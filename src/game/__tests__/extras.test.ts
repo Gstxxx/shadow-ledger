@@ -68,3 +68,36 @@ describe('Abortar Combate', () => {
     finishCombat(s);
   });
 });
+
+describe('Capacidade da Estação', () => {
+  it('Unidades acima do limite (ex.: devolvidas por fim de Interdição) saem como Equipe', async () => {
+    const { liftInterdiction } = await import('../combatFlow');
+    const s = game();
+    const a = player(s);
+    a.stations.push({ countryId: '076', level: 1, units: [], founded: 0, vault: [], detained: [], interdicted: { fine: 1, since: 0 } });
+    const st = a.stations[a.stations.length - 1];
+    for (let i = 0; i < 4; i++) st.detained.push(makeUnit(s, 'bodyguard'));
+    st.detained.push(makeUnit(s, 'technical'));
+    liftInterdiction(s, a, '076');
+    expect(st.units.length).toBeLessThanOrEqual(2);
+    const team = a.teams.find((t) => t.location === '076');
+    expect(team?.units.length).toBe(3);
+  });
+});
+
+describe('Contratos de comércio', () => {
+  it('cabem na Frota do jogador', async () => {
+    const { advance } = await import('../sim');
+    const { maxCargo } = await import('../market');
+    const { ITEMS } = await import('../data/items');
+    const s = game(5);
+    for (let d = 0; d < 60; d++) {
+      s.events = [];
+      s.pendingCombat = undefined;
+      s.combat = undefined;
+      advance(s, 24);
+    }
+    const hold = Math.max(4, maxCargo(player(s)));
+    for (const k of s.contracts) expect(ITEMS[k.itemId].weight * k.qty).toBeLessThanOrEqual(hold + 1e-6);
+  });
+});
