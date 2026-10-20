@@ -10,6 +10,8 @@ export interface UnitSprite {
   anims: Record<Pose, string>;
   /** idle animado (helicóptero pairando, jato voando) ou parado no 1º quadro */
   idleLoops: boolean;
+  /** veículo do pacote XL (atlas próprio por veículo, `vehicles-xl-<id>` e `-back`) */
+  xl?: string;
 }
 
 const person = (set: string): UnitSprite => ({ set, anims: { idle: 'idle', walk: 'walk', shoot: 'shoot', hurt: 'hurt' }, idleLoops: true });
@@ -23,7 +25,16 @@ const ground = (set: string, id: string, idle = `${id}_move`): UnitSprite => ({
  * Classe da Unidade → conjunto de sprites (art-kit, public/sprites). O lado e o tipo de inimigo escolhem o
  * Pessoal: guarda-costas e agentes são "urban"; capangas, "criminal"; polícia e SWAT, "police"; tropa, "military".
  */
+const XL = new Set(['technical', 'patrolcar', 'apc', 'tank1', 'tank3', 'heli1', 'heli3']);
+
 export function unitSprite(r: CombatUnitRef): UnitSprite | null {
+  const sp = baseSprite(r);
+  const id = r.unit.itemId === 'ifv' ? 'apc' : r.unit.itemId;
+  // Veículos XL (art-kit, 24e91ee): mesmo nome de animação, um atlas por veículo.
+  return sp && XL.has(id) ? { ...sp, set: `vehicles-xl-${id}`, xl: id } : sp;
+}
+
+function baseSprite(r: CombatUnitRef): UnitSprite | null {
   const id = r.unit.itemId;
   if (id === FORT_ID) return null;
   switch (id) {

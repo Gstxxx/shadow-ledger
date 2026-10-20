@@ -201,6 +201,19 @@ function LiveView() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [c.id]);
   const [poses, setPoses] = useState<{ turn: number; map: Map<string, Pose> }>({ turn: 0, map: new Map() });
+  // Veículos XL abatidos ficam no campo como destroço (a combat-fx some com o token).
+  const lastUnits = useRef(c.units);
+  const [wrecks, setWrecks] = useState<CombatUnitRef[]>([]);
+  useEffect(() => {
+    setWrecks([]);
+  }, [c.id]);
+  useEffect(() => {
+    const before = lastUnits.current;
+    lastUnits.current = c.units;
+    const gone = c.fx.filter((f) => f.kind === 'down').map((f) => before.find((u) => u.key === f.key)).filter((u): u is CombatUnitRef => !!u && !!unitSprite(u)?.xl);
+    if (gone.length) setWrecks((w) => [...w, ...gone.filter((g) => !w.some((x) => x.key === g.key))]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [c.turn]);
   useEffect(() => {
     if (!c.turn) return;
     setPoses({ turn: c.turn, map: posesOf(c) });
@@ -305,8 +318,12 @@ function LiveView() {
             zoomLabels={{ in: t('game.map.zoomIn'), out: t('game.map.zoomOut') }}
             fitAll={c.turn > 0 || running}
           >
-            {(g) =>
-              poses.map.size > 0 &&
+            {(g) => (
+              <>
+                {wrecks.map((r) => (
+                  <Wreck key={`w-${r.key}`} r={r} g={g} />
+                ))}
+                {poses.map.size > 0 &&
               c.fx
                 .filter((f) => f.kind === 'hit' || f.kind === 'down')
                 .map((f, i) => {
@@ -318,8 +335,9 @@ function LiveView() {
                       <Sprite set="vfx" anim={anim} playing anchored scale={Math.max(1, Math.round(g.tw / 64))} />
                     </span>
                   );
-                })
-            }
+                })}
+              </>
+            )}
           </IsoArena>
         </div>
 
@@ -448,6 +466,40 @@ function TurnLabel({ turn, max }: { turn: number; max: number }) {
   );
 }
 
+function xlScale(tw: number, frameWidth: number) {
+  const s = (1.25 * tw) / Math.max(1, frameWidth);
+  if (s >= 1) return Math.floor(s);
+  if (s >= 0.5) return Math.floor(s * 2) / 2;
+  // Atlas muito largos (tanque): degraus de 0,25 para não passar de ~1,25 casa.
+  return Math.max(0.25, Math.floor(s * 4) / 4);
+}
+
+/** Destroço de veículo: toca `_destroyed` uma vez e depois fica em `_wreck` (laço) até o fim da luta. */
+function Wreck({ r, g }: { r: CombatUnitRef; g: IsoGeom }) {
+  const sp = unitSprite(r)!;
+  const [done, setDone] = useState(false);
+  const set = r.side === 'e' ? `${sp.set}-back` : sp.set;
+  const back = useSpriteAtlas(set);
+  const front = useSpriteAtlas(sp.set);
+  const atlas = back && back.id === set ? back : front;
+  const use = atlas?.id ?? sp.set;
+  const [cx, cy] = g.center(r.col, r.row);
+  if (!atlas) return null;
+  return (
+    <span className="iso-vfx iso-wreck" style={{ left: cx, top: cy + g.tw * 0.12, zIndex: g.depth(r.col, r.row) - 1 }}>
+      <Sprite
+        set={use}
+        anim={done ? `${sp.xl}_wreck` : `${sp.xl}_destroyed`}
+        playing
+        mirror={r.side === 'e'}
+        scale={xlScale(g.tw, atlas.frameWidth)}
+        anchored
+        onEnd={() => setDone(true)}
+      />
+    </span>
+  );
+}
+
 function IsoToken({ r, c, g, pose }: { r: CombatUnitRef; c: CombatState; g: IsoGeom; pose: Pose }) {
   const { t } = useT();
   const u: Unit = r.unit;
@@ -458,17 +510,21 @@ function IsoToken({ r, c, g, pose }: { r: CombatUnitRef; c: CombatState; g: IsoG
   const sp = unitSprite(r);
   // Variante estável por Unidade (cabeça, pele) nos conjuntos que têm variantes. O inimigo encara o jogador (NW):
   // vista de costas espelhada; se o conjunto não tem costas (ou falta a animação), fica a frente espelhada.
-  const base = sp ? variantSet(sp.set, u.uid) : '';
-  const backId = r.side === 'e' && sp ? backSet(base) : '';
+  const base = sp ? (sp.xl ? sp.set : variantSet(sp.set, u.uid)) : '';
+  const backId = r.side === 'e' && sp ? (sp.xl ? `${base}-back` : backSet(base)) : '';
   const hasBack = !!backId && backId !== base;
+  const front = useSpriteAtlas(base || 'vfx');
   const back = useSpriteAtlas(hasBack ? backId : base || 'vfx');
-  const spriteSet = sp && hasBack && back && back.id === backId && findAnim(back, sp.anims[pose]) ? backId : base;
+  const useBack = !!sp && hasBack && !!back && back.id === backId && !!findAnim(back, sp.anims[pose]);
+  const spriteSet = useBack ? backId : base;
+  const atlas = useBack ? back : front;
   const [cx, cy] = g.center(r.col, r.row);
   const w = f.w * g.tw;
   const h = f.h * g.tw;
   const feet = g.tw * 0.12;
-  // Escala inteira (pixel art): ~1 a cada 64 px de casa.
-  const scale = Math.max(1, Math.round(g.tw / 64));
+  // Escala: Pessoal em escala inteira (~1 a cada 64 px de casa). Veículo XL: cabe em ~1,25 casa de largura,
+  // inteiro a partir de 1, passos de 0,5 abaixo disso e de 0,25 abaixo de 0,5 (voxel aguenta escala fracionária).
+  const scale = sp?.xl && atlas && atlas.id === spriteSet ? xlScale(g.tw, atlas.frameWidth) : Math.max(1, Math.round(g.tw / 64));
   return (
     <div
       className={`token iso-token side-${r.side} pose-${pose}`}

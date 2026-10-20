@@ -12,7 +12,8 @@ describe('Arena: sprites e poses', () => {
     expect(unitSprite(ref('c', 'e', 'thug', 0, 7))?.set).toBe('criminal');
     expect(unitSprite(ref('d', 'p', 'soldier', 0, 0))?.set).toBe('military');
     expect(unitSprite(ref('e', 'p', 'tank3', 0, 0))?.anims.shoot).toBe('tank3_shoot');
-    expect(unitSprite(ref('f', 'p', 'heli3', 0, 0))?.set).toBe('vehicles-heli');
+    expect(unitSprite(ref('f', 'p', 'heli3', 0, 0))?.set).toBe('vehicles-xl-heli3');
+    expect(unitSprite(ref('g', 'e', 'ifv', 0, 7))?.xl).toBe('apc');
   });
 
   it('marca quem andou, quem levou dano e o atirador mais próximo na mesma linha', () => {
