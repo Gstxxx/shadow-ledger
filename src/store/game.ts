@@ -3,6 +3,8 @@ import type { Result } from '../game/actions';
 import type { Msg } from '../i18n/lookup';
 import { advance, isBlocked } from '../game/sim';
 import { loadSave } from '../game/save';
+import { chapterResult, commitChapter, failChapter, loadCampaign, newCampaign, startChapter } from '../game/campaign';
+import type { CampaignState, ChapterResult, NewCampaignOptions } from '../game/campaign';
 import { newGame, player } from '../game/state';
 import type { Agency, GameOptions, GameState } from '../game/types';
 import { audio } from '../audio/engine';
@@ -13,6 +15,8 @@ import type { Speed } from './settings';
 const SAVE_KEY = 'shadow-ledger.save.v3';
 /** Partida do Capítulo em andamento da Campanha: slot próprio, não toca o save da partida avulsa. */
 export const CAMPAIGN_GAME_KEY = 'shadow-ledger.campaign.game.v1';
+/** Estado da Campanha (src/game/campaign), versionado à parte. */
+export const CAMPAIGN_KEY = 'shadow-ledger.campaign.v1';
 /** Game hours per real second at 1×. */
 export const HOURS_PER_SECOND = 1;
 
@@ -35,6 +39,20 @@ interface GameStore {
   paused: boolean;
   selected: string | null;
   toasts: Toast[];
+  /** Campanha salva (slot próprio), ou null. */
+  campaign: CampaignState | null;
+  /** Resultado da partida de Campanha que terminou; a UI mostra Debriefing ou derrota por cima do jogo. */
+  campaignResult: ChapterResult | null;
+  /** Cria a Campanha (apaga a anterior). Não entra no jogo. */
+  campaignNew(o: NewCampaignOptions): void;
+  /** Entra no Capítulo atual: retoma a partida salva dele ou monta uma nova. */
+  campaignPlay(): void;
+  /** Fecha o Capítulo vencido com até 3 Veteranos e volta ao menu. */
+  campaignAdvance(veteranUids: string[]): void;
+  /** Capítulo perdido: nova tentativa do mesmo estado; no Hardcore encerra a Campanha e volta ao menu. */
+  campaignRetry(): void;
+  /** Apaga a Campanha e a partida do Capítulo. */
+  campaignAbandon(): void;
   go(screen: Screen): void;
   start(opts: GameOptions): void;
   /** Entra numa partida já montada (Capítulo da Campanha). */
@@ -89,6 +107,30 @@ function writeSave(s: GameState) {
   }
 }
 
+function readJson<T>(key: string, parse: (raw: string) => T | null): T | null {
+  try {
+    const raw = localStorage.getItem(key);
+    return raw ? parse(raw) : null;
+  } catch {
+    return null;
+  }
+}
+
+function writeKey(key: string, value: unknown) {
+  try {
+    if (value === null) localStorage.removeItem(key);
+    else localStorage.setItem(key, JSON.stringify(value));
+  } catch {
+    /* storage cheio ou bloqueado */
+  }
+}
+
+/** Partida salva do Capítulo atual da Campanha, se houver. */
+export function readChapterGame(c: CampaignState | null): GameState | null {
+  const g = readJson(CAMPAIGN_GAME_KEY, loadSave);
+  return g && c && c.status === 'active' && g.campaign?.chapter === c.chapter ? g : null;
+}
+
 export function deleteSave() {
   try {
     localStorage.removeItem(SAVE_KEY);
@@ -124,6 +166,8 @@ export const useGameStore = create<GameStore>()((set, get) => ({
   paused: false,
   selected: null,
   toasts: [],
+  campaign: readJson(CAMPAIGN_KEY, loadCampaign),
+  campaignResult: null,
 
   go: (screen) => set({ screen }),
 
@@ -137,7 +181,7 @@ export const useGameStore = create<GameStore>()((set, get) => ({
   load: (g, paused = false) => {
     lastSaveDay = Math.floor(g.time / 24);
     writeSave(g);
-    set({ game: g, screen: 'game', rev: get().rev + 1, speed: useSettings.getState().defaultSpeed, paused, selected: player(g).location });
+    set({ game: g, screen: 'game', rev: get().rev + 1, speed: useSettings.getState().defaultSpeed, paused, selected: player(g).location, campaignResult: null });
   },
 
   continueSaved: () => {
@@ -151,7 +195,7 @@ export const useGameStore = create<GameStore>()((set, get) => ({
   quit: () => {
     const g = get().game;
     if (g && !g.over) writeSave(g);
-    set({ screen: 'title', game: null });
+    set({ screen: 'title', game: null, campaignResult: null });
   },
 
   act: (fn, sfx) => {
@@ -167,6 +211,7 @@ export const useGameStore = create<GameStore>()((set, get) => ({
       get().toast(r.msg, 'bad', r.m);
     }
     set({ rev: get().rev + 1 });
+    syncCampaign();
     return r;
   },
 
@@ -176,6 +221,7 @@ export const useGameStore = create<GameStore>()((set, get) => ({
     fn(g);
     if (!g.combat && !g.pendingCombat) writeSave(g);
     set({ rev: get().rev + 1 });
+    syncCampaign();
   },
 
   tick: (seconds) => {
@@ -194,6 +240,7 @@ export const useGameStore = create<GameStore>()((set, get) => ({
       lastRender = now;
       set({ rev: get().rev + 1 });
     }
+    if (g.over) syncCampaign();
   },
 
   setSpeed: (v) => set({ speed: v, paused: false }),
@@ -205,6 +252,7 @@ export const useGameStore = create<GameStore>()((set, get) => ({
     while (done < maxHours && !isBlocked(g)) done += advance(g, Math.min(24, maxHours - done)) || maxHours;
     writeSave(g);
     set({ rev: get().rev + 1 });
+    syncCampaign();
     return done;
   },
   togglePause: () => set({ paused: !get().paused }),
@@ -224,11 +272,61 @@ export const useGameStore = create<GameStore>()((set, get) => ({
     setTimeout(() => set({ toasts: get().toasts.filter((t) => t.id !== id) }), 3800);
   },
 
+  campaignNew: (o) => {
+    const c = newCampaign(o);
+    writeKey(CAMPAIGN_GAME_KEY, null);
+    writeKey(CAMPAIGN_KEY, c);
+    set({ campaign: c, campaignResult: null });
+  },
+
+  campaignPlay: () => {
+    const c = get().campaign;
+    if (!c || c.status !== 'active') return;
+    const saved = readChapterGame(c);
+    get().load(saved ?? startChapter(c), !!saved);
+    syncCampaign();
+  },
+
+  campaignAdvance: (veteranUids) => {
+    const { campaign: c, game: g } = get();
+    if (!c || !g?.over?.won || g.campaign?.chapter !== c.chapter) return;
+    const next = commitChapter(c, g, veteranUids);
+    writeKey(CAMPAIGN_GAME_KEY, null);
+    writeKey(CAMPAIGN_KEY, next);
+    set({ campaign: next, campaignResult: null, game: null, screen: 'title' });
+  },
+
+  campaignRetry: () => {
+    const c = get().campaign;
+    if (!c || c.status !== 'active') return;
+    const next = failChapter(c);
+    writeKey(CAMPAIGN_GAME_KEY, null);
+    writeKey(CAMPAIGN_KEY, next);
+    set({ campaign: next, campaignResult: null });
+    if (next.status === 'active') get().load(startChapter(next));
+    else set({ game: null, screen: 'title' });
+  },
+
+  campaignAbandon: () => {
+    writeKey(CAMPAIGN_GAME_KEY, null);
+    writeKey(CAMPAIGN_KEY, null);
+    const g = get().game;
+    set({ campaign: null, campaignResult: null, ...(g?.campaign ? { game: null, screen: 'title' as Screen } : {}) });
+  },
+
   save: () => {
     const g = get().game;
     if (g) writeSave(g);
   },
 }));
+
+/** Preenche `campaignResult` quando a partida do Capítulo atual termina. */
+function syncCampaign() {
+  const { game: g, campaign: c, campaignResult } = useGameStore.getState();
+  if (campaignResult || !g?.over || !c || g.campaign?.chapter !== c.chapter) return;
+  writeSave(g);
+  useGameStore.setState({ campaignResult: chapterResult(c, g) });
+}
 
 /** Subscribe a component to every game mutation and get the live state. */
 export function useGame(): GameState {

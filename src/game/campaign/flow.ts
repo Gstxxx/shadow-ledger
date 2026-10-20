@@ -1,5 +1,6 @@
 // Fluxo da Campanha: monta a partida de cada Capítulo a partir do estado da Campanha, mede o resultado
 // e leva Diretor, Origem, Veteranos, Reputação e bônus de caixa para o próximo. Puro: não toca o storage.
+import { dictionaries } from '../../i18n';
 import type { Key } from '../../i18n';
 import { CAMPAIGN } from '../data/rules';
 import { M } from '../msg';
@@ -103,7 +104,9 @@ export function tickCampaign(s: GameState) {
   ch.beats.forEach((b, i) => {
     if (mark.beats.includes(i) || s.time < b.at * total) return;
     mark.beats.push(i);
-    notify(s, player(s), 'intel', M('campaign.brief.analyst' as Key), M(b.key as Key), 'info');
+    // Enquanto as falas em jogo (inGame) não existem no dicionário, usa as do Briefing (analyst).
+    const k = b.key in dictionaries['pt-BR'] ? b.key : b.key.replace('.inGame.', '.analyst.');
+    notify(s, player(s), 'intel', M('campaign.brief.analyst' as Key), M(k as Key), 'info');
   });
 }
 
