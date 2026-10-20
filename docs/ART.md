@@ -346,7 +346,9 @@ No jogo, os itens usam a foto (`ItemArt`) quando o id está em `ITEM_PHOTOS` e a
 - **Estados:** `hostile` dá moldura vermelha com brilho; `hurt` (Ferida/Danificada) dessatura e põe uma tarja vermelha; `out` esmaece.
 - **Uso no jogo:** dentro de `Portrait.tsx`, `<UnitPortrait itemId={unit.itemId} seed={unit.seed} name={unit.name} size={size} hostile={hostile} hurt={!!unit.injury} />` no lugar do DiceBear e do ícone do lucide.
 
-Revisão: `/src/art/gallery.html?solo=units&size=72|36&n=3`.
+- **Sprite (`look`):** `'auto'`, o padrão, mostra nas máquinas (veículos, helicópteros, aviões, antiaéreos e cargueiros) o quadro parado do sprite de voxel, recortado pela `box` do manifesto. No Pessoal, `'auto'` mantém o busto realista, porque o sprite de corpo inteiro fica pequeno a 36 px. `look="sprite"` força o busto do sprite (cabeça e tronco, escala inteira; a Guarda-costas e a Advogada com nome feminino usam o atlas `women`), e `look="illustration"` força a ilustração.
+
+Revisão: `/src/art/gallery.html?solo=units&size=72|36&n=3[&look=sprite|illustration]`.
 
 ## Sprites isométricos de voxel (`public/sprites/`, `sprites.ts`)
 
@@ -372,7 +374,7 @@ Personagens, veículos, aeronaves, efeitos, marcadores do mapa, carga e prédios
 |---|---|
 | `urban`, `military`, `police`, `criminal`, `pilot` | `idle walk run aim shoot/burst reload cover hurt death` e as específicas: `throw kneel cuff shield radio board eject` |
 | `legal`, `influence` | `idle walk run present_evidence objection argue phone persuade defeat_victory · bribe whisper convinced back_off defeat` |
-| `director` | `director_idle director_walk ex_agent banker colonel command shoot hurt death` |
+| `director` | `director_idle director_walk command shoot hurt death` e as 6 Origens em linhas separadas, com os ids de `origins.ts`: `exagent_idle/_walk banker_idle/_walk colonel_idle/_walk diplomat_idle/_walk smuggler_idle/_walk analyst_idle/_walk` (2 quadros parados + 6 de passada). As linhas antigas `ex_agent banker colonel` (parado+passada juntos) ficam por compatibilidade |
 | `women` | `guard_idle guard_walk guard_aim guard_shoot guard_death lawyer_idle present_evidence objection victory` |
 | `vehicles-light`, `vehicles-armor`, `vehicles-heli` | `<itemId>_move/_shoot/_destroyed`, helicópteros `_hover _fly _shoot _cannon _rockets _destroyed` (ids do Mercado: technical, patrolcar, apc, tank1, tank3, heli1, heli3) |
 | `aircraft-fighters`, `aircraft-bomber-aa`, `cargo-planes-a`, `cargo-planes-b` | `jet1..3_fly/_missile/_shot_down`, `bomber_fly/_bomb/_shot_down`, `sam1_move/_launch/_destroyed`, `sam3_raise/_launch/_destroyed`, `cargo0..3_takeoff/_fly/_land` |
@@ -400,5 +402,7 @@ Personagens, veículos, aeronaves, efeitos, marcadores do mapa, carga e prédios
 - **Movimento reduzido:** com `prefers-reduced-motion`, mostra o 1º quadro das animações em laço e o último das que não têm laço.
 - **Funções:** `loadSpriteAtlas(id)`, `loadSpriteStatic(grupo)`, `preloadSprites(ids)`, `useSpriteAtlas(id)`, `frameRect(atlas, anim, i)`, `frameAt(anim, ms)`, `animDuration(anim)`, `spriteUrl(image)`. Os manifestos ficam em cache por id.
 - **Para canvas:** use `frameRect` com `drawImage` e `ctx.imageSmoothingEnabled = false`.
+
+Cada animação traz também `box: [x, y, w, h]`, a caixa opaca do 1º quadro, útil para recortes justos.
 
 Revisão: `/src/art/gallery.html?solo=sprites[&set=urban][&scale=3][&mirror=1]`.

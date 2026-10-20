@@ -60,7 +60,7 @@ function Solo(): ReactNode {
         .flatMap((it) =>
           Array.from({ length: n }, (_, k) => (
             <div key={it.id + k} style={{ display: 'grid', gap: 3, justifyItems: 'center' }}>
-              <UnitPortrait itemId={it.id} seed={k * 7919 + 13} size={size} hostile={k === 2} hurt={k === 1 && size > 40} alt={it.name} />
+              <UnitPortrait itemId={it.id} seed={k * 7919 + 13} size={size} hostile={k === 2} hurt={k === 1 && size > 40} alt={it.name} look={(q.get('look') as 'auto' | 'sprite' | 'illustration') ?? 'auto'} />
               {k === 0 ? <span style={{ fontFamily: 'var(--sl-font-mono)', fontSize: 9, color: 'var(--sl-text-muted)' }}>{it.id}</span> : null}
             </div>
           )),

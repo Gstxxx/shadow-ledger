@@ -216,8 +216,13 @@
     0 0 0 2px var(--g-danger, #e5484d),
     0 0 8px rgba(229, 72, 77, 0.35);
 }
-.sl-unitp--hurt > svg {
+.sl-unitp--hurt > svg,
+.sl-unitp--hurt > .sl-unitp__sprite {
   filter: grayscale(0.85) brightness(0.8);
+}
+/* sprite de voxel: fundo de estúdio frio atrás do quadro parado */
+.sl-unitp--sprite {
+  background: radial-gradient(90% 90% at 50% 40%, #26303b, #0b0f13 80%);
 }
 .sl-unitp--hurt::before {
   content: '';

@@ -16,63 +16,117 @@
    "row": 0,
    "frames": 4,
    "fps": 4,
-   "loop": true
+   "loop": true,
+   "box": [
+    35,
+    27,
+    24,
+    51
+   ]
   },
   {
    "name": "walk",
    "row": 1,
    "frames": 6,
    "fps": 8,
-   "loop": true
+   "loop": true,
+   "box": [
+    33,
+    29,
+    26,
+    49
+   ]
   },
   {
    "name": "run",
    "row": 2,
    "frames": 6,
    "fps": 12,
-   "loop": true
+   "loop": true,
+   "box": [
+    29,
+    31,
+    34,
+    47
+   ]
   },
   {
    "name": "radio",
    "row": 3,
    "frames": 4,
    "fps": 8,
-   "loop": true
+   "loop": true,
+   "box": [
+    35,
+    27,
+    24,
+    51
+   ]
   },
   {
    "name": "board",
    "row": 4,
    "frames": 5,
    "fps": 8,
-   "loop": false
+   "loop": false,
+   "box": [
+    35,
+    20,
+    28,
+    59
+   ]
   },
   {
    "name": "eject",
    "row": 5,
    "frames": 6,
    "fps": 8,
-   "loop": false
+   "loop": false,
+   "box": [
+    33,
+    17,
+    28,
+    61
+   ]
   },
   {
    "name": "shoot",
    "row": 6,
    "frames": 4,
    "fps": 12,
-   "loop": true
+   "loop": true,
+   "box": [
+    35,
+    27,
+    30,
+    51
+   ]
   },
   {
    "name": "hurt",
    "row": 7,
    "frames": 3,
    "fps": 10,
-   "loop": true
+   "loop": true,
+   "box": [
+    33,
+    25,
+    26,
+    53
+   ]
   },
   {
    "name": "death",
    "row": 8,
    "frames": 6,
    "fps": 8,
-   "loop": false
+   "loop": false,
+   "box": [
+    33,
+    25,
+    25,
+    53
+   ]
   }
  ]
 }

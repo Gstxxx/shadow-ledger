@@ -16,63 +16,117 @@
    "row": 0,
    "frames": 4,
    "fps": 4,
-   "loop": true
+   "loop": true,
+   "box": [
+    7,
+    17,
+    23,
+    51
+   ]
   },
   {
    "name": "walk",
    "row": 1,
    "frames": 6,
    "fps": 8,
-   "loop": true
+   "loop": true,
+   "box": [
+    5,
+    19,
+    26,
+    49
+   ]
   },
   {
    "name": "run",
    "row": 2,
    "frames": 6,
    "fps": 12,
-   "loop": true
+   "loop": true,
+   "box": [
+    1,
+    21,
+    34,
+    47
+   ]
   },
   {
    "name": "persuade",
    "row": 3,
    "frames": 4,
    "fps": 8,
-   "loop": true
+   "loop": true,
+   "box": [
+    7,
+    17,
+    24,
+    51
+   ]
   },
   {
    "name": "bribe",
    "row": 4,
    "frames": 5,
    "fps": 8,
-   "loop": false
+   "loop": false,
+   "box": [
+    7,
+    17,
+    23,
+    51
+   ]
   },
   {
    "name": "whisper",
    "row": 5,
    "frames": 4,
    "fps": 8,
-   "loop": true
+   "loop": true,
+   "box": [
+    7,
+    17,
+    23,
+    51
+   ]
   },
   {
    "name": "convinced",
    "row": 6,
    "frames": 4,
    "fps": 8,
-   "loop": false
+   "loop": false,
+   "box": [
+    7,
+    17,
+    34,
+    51
+   ]
   },
   {
    "name": "back_off",
    "row": 7,
    "frames": 4,
    "fps": 8,
-   "loop": true
+   "loop": true,
+   "box": [
+    7,
+    16,
+    26,
+    52
+   ]
   },
   {
    "name": "defeat",
    "row": 8,
    "frames": 5,
    "fps": 8,
-   "loop": false
+   "loop": false,
+   "box": [
+    7,
+    17,
+    23,
+    51
+   ]
   }
  ]
 }

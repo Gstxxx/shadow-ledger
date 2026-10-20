@@ -16,63 +16,117 @@
    "row": 0,
    "frames": 8,
    "fps": 12,
-   "loop": true
+   "loop": true,
+   "box": [
+    31,
+    32,
+    26,
+    25
+   ]
   },
   {
    "name": "blood",
    "row": 1,
    "frames": 6,
    "fps": 10,
-   "loop": true
+   "loop": true,
+   "box": [
+    39,
+    21,
+    14,
+    12
+   ]
   },
   {
    "name": "smoke",
    "row": 2,
    "frames": 6,
    "fps": 10,
-   "loop": true
+   "loop": true,
+   "box": [
+    35,
+    37,
+    14,
+    12
+   ]
   },
   {
    "name": "sparks",
    "row": 3,
    "frames": 4,
    "fps": 14,
-   "loop": true
+   "loop": true,
+   "box": [
+    39,
+    31,
+    14,
+    10
+   ]
   },
   {
    "name": "fire",
    "row": 4,
    "frames": 6,
    "fps": 10,
-   "loop": true
+   "loop": true,
+   "box": [
+    29,
+    16,
+    30,
+    42
+   ]
   },
   {
    "name": "dust",
    "row": 5,
    "frames": 4,
    "fps": 10,
-   "loop": true
+   "loop": true,
+   "box": [
+    37,
+    43,
+    14,
+    10
+   ]
   },
   {
    "name": "flashbang",
    "row": 6,
    "frames": 4,
    "fps": 12,
-   "loop": true
+   "loop": true,
+   "box": [
+    41,
+    41,
+    6,
+    8
+   ]
   },
   {
    "name": "gas",
    "row": 7,
    "frames": 6,
    "fps": 10,
-   "loop": true
+   "loop": true,
+   "box": [
+    37,
+    41,
+    14,
+    10
+   ]
   },
   {
    "name": "tracer",
    "row": 8,
    "frames": 4,
    "fps": 14,
-   "loop": true
+   "loop": true,
+   "box": [
+    11,
+    10,
+    24,
+    21
+   ]
   }
  ]
 }

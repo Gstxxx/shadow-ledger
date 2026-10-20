@@ -3,7 +3,7 @@
  "id": "director",
  "image": "director.png",
  "width": 672,
- "height": 549,
+ "height": 1281,
  "frameWidth": 84,
  "frameHeight": 61,
  "anchor": {
@@ -16,63 +16,273 @@
    "row": 0,
    "frames": 4,
    "fps": 4,
-   "loop": true
+   "loop": true,
+   "box": [
+    35,
+    4,
+    23,
+    51
+   ]
   },
   {
    "name": "director_walk",
    "row": 1,
    "frames": 6,
    "fps": 8,
-   "loop": true
+   "loop": true,
+   "box": [
+    33,
+    6,
+    26,
+    49
+   ]
   },
   {
    "name": "ex_agent",
    "row": 2,
    "frames": 8,
    "fps": 8,
-   "loop": true
+   "loop": true,
+   "box": [
+    35,
+    4,
+    23,
+    51
+   ]
   },
   {
    "name": "banker",
    "row": 3,
    "frames": 8,
    "fps": 8,
-   "loop": true
+   "loop": true,
+   "box": [
+    35,
+    4,
+    23,
+    51
+   ]
   },
   {
    "name": "colonel",
    "row": 4,
    "frames": 8,
    "fps": 8,
-   "loop": true
+   "loop": true,
+   "box": [
+    32,
+    2,
+    28,
+    53
+   ]
   },
   {
    "name": "command",
    "row": 5,
    "frames": 4,
    "fps": 8,
-   "loop": false
+   "loop": false,
+   "box": [
+    35,
+    4,
+    23,
+    51
+   ]
   },
   {
    "name": "shoot",
    "row": 6,
    "frames": 4,
    "fps": 12,
-   "loop": true
+   "loop": true,
+   "box": [
+    35,
+    4,
+    30,
+    51
+   ]
   },
   {
    "name": "hurt",
    "row": 7,
    "frames": 3,
    "fps": 10,
-   "loop": true
+   "loop": true,
+   "box": [
+    33,
+    2,
+    26,
+    53
+   ]
   },
   {
    "name": "death",
    "row": 8,
    "frames": 6,
    "fps": 8,
-   "loop": false
+   "loop": false,
+   "box": [
+    31,
+    3,
+    27,
+    52
+   ]
+  },
+  {
+   "name": "exagent_idle",
+   "row": 9,
+   "frames": 2,
+   "fps": 4,
+   "loop": true,
+   "box": [
+    35,
+    4,
+    23,
+    51
+   ]
+  },
+  {
+   "name": "exagent_walk",
+   "row": 10,
+   "frames": 6,
+   "fps": 8,
+   "loop": true,
+   "box": [
+    33,
+    6,
+    26,
+    49
+   ]
+  },
+  {
+   "name": "banker_idle",
+   "row": 11,
+   "frames": 2,
+   "fps": 4,
+   "loop": true,
+   "box": [
+    35,
+    4,
+    23,
+    51
+   ]
+  },
+  {
+   "name": "banker_walk",
+   "row": 12,
+   "frames": 6,
+   "fps": 8,
+   "loop": true,
+   "box": [
+    33,
+    6,
+    26,
+    49
+   ]
+  },
+  {
+   "name": "colonel_idle",
+   "row": 13,
+   "frames": 2,
+   "fps": 4,
+   "loop": true,
+   "box": [
+    32,
+    2,
+    28,
+    53
+   ]
+  },
+  {
+   "name": "colonel_walk",
+   "row": 14,
+   "frames": 6,
+   "fps": 8,
+   "loop": true,
+   "box": [
+    32,
+    4,
+    28,
+    51
+   ]
+  },
+  {
+   "name": "diplomat_idle",
+   "row": 15,
+   "frames": 2,
+   "fps": 4,
+   "loop": true,
+   "box": [
+    35,
+    4,
+    23,
+    51
+   ]
+  },
+  {
+   "name": "diplomat_walk",
+   "row": 16,
+   "frames": 6,
+   "fps": 8,
+   "loop": true,
+   "box": [
+    33,
+    6,
+    26,
+    49
+   ]
+  },
+  {
+   "name": "smuggler_idle",
+   "row": 17,
+   "frames": 2,
+   "fps": 4,
+   "loop": true,
+   "box": [
+    31,
+    3,
+    27,
+    52
+   ]
+  },
+  {
+   "name": "smuggler_walk",
+   "row": 18,
+   "frames": 6,
+   "fps": 8,
+   "loop": true,
+   "box": [
+    31,
+    5,
+    28,
+    50
+   ]
+  },
+  {
+   "name": "analyst_idle",
+   "row": 19,
+   "frames": 2,
+   "fps": 4,
+   "loop": true,
+   "box": [
+    33,
+    4,
+    25,
+    51
+   ]
+  },
+  {
+   "name": "analyst_walk",
+   "row": 20,
+   "frames": 6,
+   "fps": 8,
+   "loop": true,
+   "box": [
+    33,
+    6,
+    26,
+    49
+   ]
   }
  ]
 }

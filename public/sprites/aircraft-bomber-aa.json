@@ -16,63 +16,117 @@
    "row": 0,
    "frames": 6,
    "fps": 10,
-   "loop": true
+   "loop": true,
+   "box": [
+    1,
+    27,
+    123,
+    103
+   ]
   },
   {
    "name": "bomber_bomb",
    "row": 1,
    "frames": 10,
    "fps": 10,
-   "loop": false
+   "loop": false,
+   "box": [
+    9,
+    27,
+    115,
+    103
+   ]
   },
   {
    "name": "bomber_shot_down",
    "row": 2,
    "frames": 10,
    "fps": 10,
-   "loop": false
+   "loop": false,
+   "box": [
+    9,
+    27,
+    115,
+    103
+   ]
   },
   {
    "name": "sam1_move",
    "row": 3,
    "frames": 6,
    "fps": 10,
-   "loop": true
+   "loop": true,
+   "box": [
+    21,
+    70,
+    96,
+    53
+   ]
   },
   {
    "name": "sam1_launch",
    "row": 4,
    "frames": 8,
    "fps": 10,
-   "loop": true
+   "loop": true,
+   "box": [
+    42,
+    71,
+    75,
+    52
+   ]
   },
   {
    "name": "sam1_destroyed",
    "row": 5,
    "frames": 10,
    "fps": 10,
-   "loop": false
+   "loop": false,
+   "box": [
+    42,
+    71,
+    75,
+    52
+   ]
   },
   {
    "name": "sam3_raise",
    "row": 6,
    "frames": 8,
    "fps": 10,
-   "loop": false
+   "loop": false,
+   "box": [
+    33,
+    64,
+    86,
+    60
+   ]
   },
   {
    "name": "sam3_launch",
    "row": 7,
    "frames": 10,
    "fps": 10,
-   "loop": false
+   "loop": false,
+   "box": [
+    30,
+    33,
+    89,
+    91
+   ]
   },
   {
    "name": "sam3_destroyed",
    "row": 8,
    "frames": 10,
    "fps": 10,
-   "loop": false
+   "loop": false,
+   "box": [
+    34,
+    64,
+    85,
+    60
+   ]
   }
  ]
 }

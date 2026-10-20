@@ -16,63 +16,117 @@
    "row": 0,
    "frames": 6,
    "fps": 10,
-   "loop": true
+   "loop": true,
+   "box": [
+    5,
+    6,
+    97,
+    80
+   ]
   },
   {
    "name": "jet1_missile",
    "row": 1,
    "frames": 8,
    "fps": 10,
-   "loop": true
+   "loop": true,
+   "box": [
+    19,
+    9,
+    83,
+    77
+   ]
   },
   {
    "name": "jet1_shot_down",
    "row": 2,
    "frames": 10,
    "fps": 10,
-   "loop": false
+   "loop": false,
+   "box": [
+    19,
+    9,
+    83,
+    77
+   ]
   },
   {
    "name": "jet2_fly",
    "row": 3,
    "frames": 6,
    "fps": 10,
-   "loop": true
+   "loop": true,
+   "box": [
+    5,
+    5,
+    101,
+    83
+   ]
   },
   {
    "name": "jet2_missile",
    "row": 4,
    "frames": 8,
    "fps": 10,
-   "loop": true
+   "loop": true,
+   "box": [
+    15,
+    5,
+    91,
+    83
+   ]
   },
   {
    "name": "jet2_shot_down",
    "row": 5,
    "frames": 10,
    "fps": 10,
-   "loop": false
+   "loop": false,
+   "box": [
+    15,
+    5,
+    91,
+    83
+   ]
   },
   {
    "name": "jet3_fly",
    "row": 6,
    "frames": 6,
    "fps": 10,
-   "loop": true
+   "loop": true,
+   "box": [
+    1,
+    4,
+    109,
+    86
+   ]
   },
   {
    "name": "jet3_missile",
    "row": 7,
    "frames": 8,
    "fps": 10,
-   "loop": true
+   "loop": true,
+   "box": [
+    13,
+    4,
+    97,
+    86
+   ]
   },
   {
    "name": "jet3_shot_down",
    "row": 8,
    "frames": 10,
    "fps": 10,
-   "loop": false
+   "loop": false,
+   "box": [
+    13,
+    4,
+    97,
+    86
+   ]
   }
  ]
 }

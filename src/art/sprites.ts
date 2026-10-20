@@ -14,6 +14,8 @@ export interface SpriteAnim {
   frames: number;
   fps: number;
   loop: boolean;
+  /** caixa opaca do 1º quadro dentro do quadro: [x, y, w, h] em px 1x */
+  box?: [number, number, number, number];
 }
 
 export interface SpriteAtlas {

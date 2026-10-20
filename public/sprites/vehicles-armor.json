@@ -16,42 +16,78 @@
    "row": 0,
    "frames": 8,
    "fps": 10,
-   "loop": true
+   "loop": true,
+   "box": [
+    7,
+    31,
+    123,
+    72
+   ]
   },
   {
    "name": "tank1_shoot",
    "row": 1,
    "frames": 8,
    "fps": 12,
-   "loop": true
+   "loop": true,
+   "box": [
+    32,
+    39,
+    113,
+    61
+   ]
   },
   {
    "name": "tank1_destroyed",
    "row": 2,
    "frames": 10,
    "fps": 10,
-   "loop": false
+   "loop": false,
+   "box": [
+    34,
+    40,
+    96,
+    63
+   ]
   },
   {
    "name": "tank3_move",
    "row": 3,
    "frames": 8,
    "fps": 10,
-   "loop": true
+   "loop": true,
+   "box": [
+    5,
+    30,
+    123,
+    72
+   ]
   },
   {
    "name": "tank3_shoot",
    "row": 4,
    "frames": 8,
    "fps": 12,
-   "loop": true
+   "loop": true,
+   "box": [
+    32,
+    36,
+    111,
+    63
+   ]
   },
   {
    "name": "tank3_destroyed",
    "row": 5,
    "frames": 10,
    "fps": 10,
-   "loop": false
+   "loop": false,
+   "box": [
+    34,
+    37,
+    94,
+    65
+   ]
   }
  ]
 }

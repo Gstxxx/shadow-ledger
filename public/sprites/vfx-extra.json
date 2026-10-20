@@ -16,63 +16,117 @@
    "row": 0,
    "frames": 6,
    "fps": 10,
-   "loop": false
+   "loop": false,
+   "box": [
+    21,
+    46,
+    26,
+    22
+   ]
   },
   {
    "name": "money_gain",
    "row": 1,
    "frames": 6,
    "fps": 10,
-   "loop": true
+   "loop": true,
+   "box": [
+    8,
+    38,
+    43,
+    38
+   ]
   },
   {
    "name": "money_loss",
    "row": 2,
    "frames": 6,
    "fps": 10,
-   "loop": true
+   "loop": true,
+   "box": [
+    7,
+    38,
+    44,
+    39
+   ]
   },
   {
    "name": "flare",
    "row": 3,
    "frames": 8,
    "fps": 10,
-   "loop": true
+   "loop": true,
+   "box": [
+    15,
+    23,
+    34,
+    52
+   ]
   },
   {
    "name": "rain",
    "row": 4,
    "frames": 6,
    "fps": 10,
-   "loop": true
+   "loop": true,
+   "box": [
+    3,
+    8,
+    58,
+    66
+   ]
   },
   {
    "name": "fog",
    "row": 5,
    "frames": 8,
    "fps": 10,
-   "loop": true
+   "loop": true,
+   "box": [
+    3,
+    47,
+    62,
+    27
+   ]
   },
   {
    "name": "level_up",
    "row": 6,
    "frames": 6,
    "fps": 10,
-   "loop": false
+   "loop": false,
+   "box": [
+    13,
+    43,
+    42,
+    36
+   ]
   },
   {
    "name": "alarm",
    "row": 7,
    "frames": 6,
    "fps": 10,
-   "loop": true
+   "loop": true,
+   "box": [
+    15,
+    46,
+    38,
+    26
+   ]
   },
   {
    "name": "interdicted",
    "row": 8,
    "frames": 6,
    "fps": 10,
-   "loop": false
+   "loop": false,
+   "box": [
+    17,
+    41,
+    38,
+    37
+   ]
   }
  ]
 }

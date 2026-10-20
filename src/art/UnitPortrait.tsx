@@ -2,6 +2,7 @@ import { memo, useId, type CSSProperties } from 'react';
 import { Backdrop, Defs, type Ink } from '../ui/item-illustrations/kit';
 import { FIGURES, Person, type Figure } from '../ui/item-illustrations/people';
 import { ItemIllustration } from '../ui/item-illustrations';
+import { findAnim, spriteUrl, useSpriteAtlas } from './sprites';
 import './art.css';
 
 // ══════════════════════════════════════════════════════════════════════
@@ -9,8 +10,47 @@ import './art.css';
 // de itens (src/ui/item-illustrations): Pessoal em busto (cabeça e ombros) da
 // figura da função, com variação estável por `seed` (cabelo, corpo, tom da
 // roupa); máquinas com a ilustração inteira do próprio item, levemente ampliada.
-// Sem imagens externas.
+// Sem imagens externas. Com `look="sprite"`, mostra o quadro parado do sprite
+// isométrico de voxel (public/sprites) da Unidade.
 // ══════════════════════════════════════════════════════════════════════
+
+/** Sprite de cada item: [atlas, animação, quadro, variante feminina?]. */
+const SPRITE_OF: Record<string, [string, string, number, [string, string]?]> = {
+  bodyguard: ['urban', 'idle', 0, ['women', 'guard_idle']],
+  thug: ['criminal', 'idle', 0],
+  police: ['police', 'idle', 0],
+  swat: ['police', 'idle', 0],
+  soldier: ['military', 'idle', 0],
+  commando: ['military', 'idle', 0],
+  agent: ['director', 'exagent_idle', 0],
+  lawyer1: ['legal', 'idle', 0, ['women', 'lawyer_idle']],
+  lawyer2: ['legal', 'idle', 0, ['women', 'lawyer_idle']],
+  lawyer3: ['legal', 'idle', 0, ['women', 'lawyer_idle']],
+  liaison1: ['influence', 'idle', 0],
+  liaison2: ['influence', 'idle', 0],
+  liaison3: ['influence', 'idle', 0],
+  technical: ['vehicles-light', 'technical_move', 0],
+  patrolcar: ['vehicles-light', 'patrolcar_idle', 0],
+  apc: ['vehicles-light', 'apc_move', 0],
+  ifv: ['vehicles-light', 'apc_move', 0],
+  tank1: ['vehicles-armor', 'tank1_move', 0],
+  tank3: ['vehicles-armor', 'tank3_move', 0],
+  heli1: ['vehicles-heli', 'heli1_hover', 0],
+  heli3: ['vehicles-heli', 'heli3_hover', 0],
+  jet1: ['aircraft-fighters', 'jet1_fly', 0],
+  jet2: ['aircraft-fighters', 'jet2_fly', 0],
+  jet3: ['aircraft-fighters', 'jet3_fly', 0],
+  bomber: ['aircraft-bomber-aa', 'bomber_fly', 0],
+  sam1: ['aircraft-bomber-aa', 'sam1_move', 0],
+  sam3: ['aircraft-bomber-aa', 'sam3_raise', 0],
+  cargo0: ['cargo-planes-a', 'cargo0_fly', 0],
+  cargo1: ['cargo-planes-a', 'cargo1_fly', 0],
+  cargo2: ['cargo-planes-b', 'cargo2_fly', 0],
+  cargo3: ['cargo-planes-b', 'cargo3_fly', 0],
+};
+
+/** Itens que têm sprite isométrico (para `look="sprite"`). */
+export const UNIT_SPRITE_IDS: ReadonlySet<string> = new Set(Object.keys(SPRITE_OF));
 
 type Head = Figure['head'];
 
@@ -125,16 +165,32 @@ export interface UnitPortraitProps {
   /** fora de ação (Detida etc.): esmaecido */
   out?: boolean;
   alt?: string;
+  /**
+   * 'illustration': busto realista / ilustração do item; 'sprite': quadro parado do sprite de voxel;
+   * 'auto' (padrão): sprite onde ele lê bem nesse tamanho (UNIT_SPRITE_DEFAULT), ilustração no resto.
+   */
+  look?: 'auto' | 'sprite' | 'illustration';
   className?: string;
   style?: CSSProperties;
 }
 
 /** Retrato de Unidade: Pessoal em busto realista; máquinas pela ilustração do item. */
-export const UnitPortrait = memo(function UnitPortrait({ itemId, seed, name, size = 36, hostile, hurt, out, alt = '', className, style }: UnitPortraitProps) {
+export const UnitPortrait = memo(function UnitPortrait({ itemId, seed, name, size = 36, hostile, hurt, out, alt = '', look = 'auto', className, style }: UnitPortraitProps) {
   const uid = useId().replace(/:/g, '');
   const fig = unitFigure(itemId, seed, name);
   // metade das Unidades olha para o outro lado (espelho em torno do centro do recorte, x = 244)
   const flip = rng(`flip:${itemId}:${seed}`)() < 0.5;
+  const sprite = SPRITE_OF[itemId] && (look === 'sprite' || (look === 'auto' && UNIT_SPRITE_DEFAULT.has(itemId)));
+  if (sprite) {
+    const [set, anim, frame, femAlt] = SPRITE_OF[itemId];
+    const pick: [string, string] = fig?.fem && femAlt ? femAlt : [set, anim];
+    const cls = ['sl-unitp', 'sl-unitp--sprite', hostile && 'sl-unitp--hostile', hurt && 'sl-unitp--hurt', out && 'sl-unitp--out', className].filter(Boolean).join(' ');
+    return (
+      <span className={cls} role={alt ? 'img' : undefined} aria-label={alt || undefined} aria-hidden={alt ? undefined : true} style={{ width: size, height: size, ...style }}>
+        <SpriteFrame set={pick[0]} anim={pick[1]} frame={frame} size={size} mirror={flip} bust={itemId in FIGURES} />
+      </span>
+    );
+  }
   const ink: Ink = { u: (n) => `url(#${uid}-${n})`, k: (n) => `${uid}-${n}`, lg: false };
   const cls = ['sl-unitp', hostile && 'sl-unitp--hostile', hurt && 'sl-unitp--hurt', out && 'sl-unitp--out', className].filter(Boolean).join(' ');
   return (
@@ -158,3 +214,50 @@ export const UnitPortrait = memo(function UnitPortrait({ itemId, seed, name, siz
     </span>
   );
 });
+
+/**
+ * Onde o sprite é o padrão de `look="auto"`: as máquinas (o veículo inteiro lê bem já a 36 px).
+ * No Pessoal o busto realista continua padrão; o sprite de corpo inteiro fica pequeno num retrato.
+ */
+export const UNIT_SPRITE_DEFAULT: ReadonlySet<string> = new Set(Object.keys(SPRITE_OF).filter((id) => !(id in FIGURES)));
+
+/** Um quadro do atlas recortado num quadrado: busto (pessoas) ou o quadro inteiro (máquinas). */
+function SpriteFrame({ set, anim, frame, size, mirror, bust }: { set: string; anim: string; frame: number; size: number; mirror: boolean; bust: boolean }) {
+  const atlas = useSpriteAtlas(set);
+  const a = atlas && findAnim(atlas, anim);
+  if (!atlas || !a) return null;
+  // região do quadro (px 1x) mostrada no quadrado: lado `side`, centro (cx, cy)
+  let side: number, cx: number, cy: number;
+  if (bust) {
+    // cabeça e tronco, ~30 px acima dos pés; escala inteira para o pixel ficar nítido
+    side = size / Math.max(1, Math.round(size / 30));
+    cx = atlas.anchor.x + 1;
+    cy = atlas.anchor.y - 29;
+  } else {
+    // máquina: a caixa opaca do 1º quadro (manifesto `box`) com 6% de folga
+    const [bx, by, bw, bh] = a.box ?? [0, 0, atlas.frameWidth, atlas.frameHeight];
+    side = Math.max(bw, bh) * 1.06;
+    cx = bx + bw / 2;
+    cy = by + bh / 2;
+  }
+  const k = size / side;
+  const fx = Math.min(frame, a.frames - 1) * atlas.frameWidth;
+  const fy = a.row * atlas.frameHeight;
+  return (
+    <span
+      aria-hidden
+      className="sl-unitp__sprite"
+      style={{
+        position: 'absolute',
+        inset: 0,
+        backgroundImage: `url(${spriteUrl(atlas.image)})`,
+        backgroundRepeat: 'no-repeat',
+        backgroundSize: `${atlas.width * k}px ${atlas.height * k}px`,
+        backgroundPosition: `${-(fx + cx - side / 2) * k}px ${-(fy + cy - side / 2) * k}px`,
+        // nítido quando amplia; suave quando reduz (veículo grande num retrato pequeno)
+        imageRendering: k >= 1 ? 'pixelated' : 'auto',
+        transform: mirror ? 'scaleX(-1)' : undefined,
+      }}
+    />
+  );
+}

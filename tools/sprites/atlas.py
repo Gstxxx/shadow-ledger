@@ -85,6 +85,8 @@ FPS = {'idle': 4, 'walk': 8, 'run': 12, 'shoot': 12, 'burst': 14, 'death': 8, 'h
 
 
 def key_of(label):
+    if label.isascii() and label.replace('_', '').isalnum() and label.islower():   # já é chave em inglês
+        return label
     if label in KEYS:
         return KEYS[label]
     raise KeyError(f'rótulo sem chave em inglês: {label!r} (adicione em tools/sprites/atlas.py KEYS)')
@@ -130,7 +132,10 @@ def write_set(set_id, rows, oneshot=(), anchor=(0, 0), shadow=None, default_fps=
     for r, (key, one, fr) in enumerate(rows):
         for i, f in enumerate(fr):
             sheet.paste(f.crop((x0, y0, x1, y1)), (i * fw, r * fh))
-        anims.append(dict(name=key, row=r, frames=len(fr), fps=_fps(key, default_fps), loop=not one))
+        # box = caixa opaca do 1º quadro dentro do quadro [x, y, w, h] (para recortes justos, ex. retratos)
+        b = fr[0].crop((x0, y0, x1, y1)).getbbox() or (0, 0, fw, fh)
+        anims.append(dict(name=key, row=r, frames=len(fr), fps=_fps(key, default_fps), loop=not one,
+                          box=[b[0], b[1], b[2] - b[0], b[3] - b[1]]))
     _save(sheet, os.path.join(PUB, set_id + '.png'))
     ax, ay = anchor[0] - x0, anchor[1] - y0
     man = dict(kind='atlas', id=set_id, image=set_id + '.png', width=sheet.width, height=sheet.height,

@@ -16,63 +16,117 @@
    "row": 0,
    "frames": 6,
    "fps": 10,
-   "loop": true
+   "loop": true,
+   "box": [
+    13,
+    31,
+    82,
+    60
+   ]
   },
   {
    "name": "technical_shoot",
    "row": 1,
    "frames": 4,
    "fps": 12,
-   "loop": true
+   "loop": true,
+   "box": [
+    25,
+    31,
+    70,
+    60
+   ]
   },
   {
    "name": "technical_destroyed",
    "row": 2,
    "frames": 10,
    "fps": 10,
-   "loop": false
+   "loop": false,
+   "box": [
+    25,
+    31,
+    70,
+    60
+   ]
   },
   {
    "name": "patrolcar_move",
    "row": 3,
    "frames": 6,
    "fps": 10,
-   "loop": true
+   "loop": true,
+   "box": [
+    13,
+    41,
+    82,
+    49
+   ]
   },
   {
    "name": "patrolcar_idle",
    "row": 4,
    "frames": 6,
    "fps": 4,
-   "loop": true
+   "loop": true,
+   "box": [
+    25,
+    41,
+    70,
+    49
+   ]
   },
   {
    "name": "patrolcar_destroyed",
    "row": 5,
    "frames": 10,
    "fps": 10,
-   "loop": false
+   "loop": false,
+   "box": [
+    25,
+    41,
+    70,
+    49
+   ]
   },
   {
    "name": "apc_move",
    "row": 6,
    "frames": 6,
    "fps": 10,
-   "loop": true
+   "loop": true,
+   "box": [
+    5,
+    24,
+    94,
+    69
+   ]
   },
   {
    "name": "apc_shoot",
    "row": 7,
    "frames": 6,
    "fps": 12,
-   "loop": true
+   "loop": true,
+   "box": [
+    26,
+    24,
+    75,
+    69
+   ]
   },
   {
    "name": "apc_destroyed",
    "row": 8,
    "frames": 10,
    "fps": 10,
-   "loop": false
+   "loop": false,
+   "box": [
+    26,
+    24,
+    73,
+    69
+   ]
   }
  ]
 }

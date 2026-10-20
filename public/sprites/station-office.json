@@ -16,21 +16,39 @@
    "row": 0,
    "frames": 1,
    "fps": 8,
-   "loop": true
+   "loop": true,
+   "box": [
+    1,
+    33,
+    118,
+    95
+   ]
   },
   {
    "name": "damaged",
    "row": 1,
    "frames": 8,
    "fps": 8,
-   "loop": true
+   "loop": true,
+   "box": [
+    1,
+    13,
+    118,
+    115
+   ]
   },
   {
    "name": "interdicted",
    "row": 2,
    "frames": 8,
    "fps": 8,
-   "loop": true
+   "loop": true,
+   "box": [
+    1,
+    33,
+    118,
+    95
+   ]
   }
  ]
 }

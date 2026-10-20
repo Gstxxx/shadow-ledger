@@ -16,63 +16,117 @@
    "row": 0,
    "frames": 4,
    "fps": 4,
-   "loop": true
+   "loop": true,
+   "box": [
+    35,
+    5,
+    36,
+    52
+   ]
   },
   {
    "name": "walk",
    "row": 1,
    "frames": 6,
    "fps": 8,
-   "loop": true
+   "loop": true,
+   "box": [
+    33,
+    7,
+    38,
+    50
+   ]
   },
   {
    "name": "run",
    "row": 2,
    "frames": 6,
    "fps": 12,
-   "loop": true
+   "loop": true,
+   "box": [
+    29,
+    9,
+    42,
+    48
+   ]
   },
   {
    "name": "aim",
    "row": 3,
    "frames": 3,
    "fps": 8,
-   "loop": false
+   "loop": false,
+   "box": [
+    35,
+    5,
+    36,
+    52
+   ]
   },
   {
    "name": "burst",
    "row": 4,
    "frames": 5,
    "fps": 14,
-   "loop": true
+   "loop": true,
+   "box": [
+    35,
+    5,
+    34,
+    52
+   ]
   },
   {
    "name": "reload",
    "row": 5,
    "frames": 6,
    "fps": 8,
-   "loop": true
+   "loop": true,
+   "box": [
+    35,
+    5,
+    34,
+    52
+   ]
   },
   {
    "name": "throw",
    "row": 6,
    "frames": 5,
    "fps": 8,
-   "loop": false
+   "loop": false,
+   "box": [
+    35,
+    5,
+    23,
+    52
+   ]
   },
   {
    "name": "kneel",
    "row": 7,
    "frames": 3,
    "fps": 8,
-   "loop": true
+   "loop": true,
+   "box": [
+    31,
+    11,
+    38,
+    46
+   ]
   },
   {
    "name": "death",
    "row": 8,
    "frames": 6,
    "fps": 8,
-   "loop": false
+   "loop": false,
+   "box": [
+    33,
+    4,
+    28,
+    53
+   ]
   }
  ]
 }

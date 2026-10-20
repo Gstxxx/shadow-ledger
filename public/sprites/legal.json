@@ -16,63 +16,117 @@
    "row": 0,
    "frames": 4,
    "fps": 4,
-   "loop": true
+   "loop": true,
+   "box": [
+    15,
+    9,
+    23,
+    51
+   ]
   },
   {
    "name": "walk",
    "row": 1,
    "frames": 6,
    "fps": 8,
-   "loop": true
+   "loop": true,
+   "box": [
+    13,
+    11,
+    26,
+    49
+   ]
   },
   {
    "name": "run",
    "row": 2,
    "frames": 6,
    "fps": 12,
-   "loop": true
+   "loop": true,
+   "box": [
+    9,
+    13,
+    34,
+    47
+   ]
   },
   {
    "name": "present_evidence",
    "row": 3,
    "frames": 4,
    "fps": 8,
-   "loop": false
+   "loop": false,
+   "box": [
+    15,
+    9,
+    30,
+    51
+   ]
   },
   {
    "name": "objection",
    "row": 4,
    "frames": 4,
    "fps": 8,
-   "loop": false
+   "loop": false,
+   "box": [
+    15,
+    9,
+    23,
+    51
+   ]
   },
   {
    "name": "argue",
    "row": 5,
    "frames": 4,
    "fps": 8,
-   "loop": true
+   "loop": true,
+   "box": [
+    15,
+    9,
+    26,
+    51
+   ]
   },
   {
    "name": "phone",
    "row": 6,
    "frames": 3,
    "fps": 8,
-   "loop": true
+   "loop": true,
+   "box": [
+    15,
+    9,
+    23,
+    51
+   ]
   },
   {
    "name": "persuade",
    "row": 7,
    "frames": 4,
    "fps": 8,
-   "loop": true
+   "loop": true,
+   "box": [
+    15,
+    9,
+    23,
+    51
+   ]
   },
   {
    "name": "defeat_victory",
    "row": 8,
    "frames": 8,
    "fps": 8,
-   "loop": false
+   "loop": false,
+   "box": [
+    15,
+    9,
+    23,
+    51
+   ]
   }
  ]
 }

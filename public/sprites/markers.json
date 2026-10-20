@@ -16,63 +16,117 @@
    "row": 0,
    "frames": 6,
    "fps": 6,
-   "loop": true
+   "loop": true,
+   "box": [
+    12,
+    24,
+    48,
+    39
+   ]
   },
   {
    "name": "threat",
    "row": 1,
    "frames": 6,
    "fps": 6,
-   "loop": true
+   "loop": true,
+   "box": [
+    11,
+    7,
+    50,
+    57
+   ]
   },
   {
    "name": "rival_agency",
    "row": 2,
    "frames": 6,
    "fps": 6,
-   "loop": true
+   "loop": true,
+   "box": [
+    16,
+    3,
+    40,
+    58
+   ]
   },
   {
    "name": "player_station",
    "row": 3,
    "frames": 6,
    "fps": 6,
-   "loop": true
+   "loop": true,
+   "box": [
+    13,
+    17,
+    46,
+    44
+   ]
   },
   {
    "name": "director",
    "row": 4,
    "frames": 6,
    "fps": 6,
-   "loop": true
+   "loop": true,
+   "box": [
+    20,
+    5,
+    32,
+    52
+   ]
   },
   {
    "name": "contract",
    "row": 5,
    "frames": 6,
    "fps": 6,
-   "loop": true
+   "loop": true,
+   "box": [
+    17,
+    17,
+    38,
+    43
+   ]
   },
   {
    "name": "hunt",
    "row": 6,
    "frames": 6,
    "fps": 6,
-   "loop": true
+   "loop": true,
+   "box": [
+    11,
+    11,
+    50,
+    50
+   ]
   },
   {
    "name": "vault",
    "row": 7,
    "frames": 6,
    "fps": 6,
-   "loop": true
+   "loop": true,
+   "box": [
+    19,
+    23,
+    35,
+    34
+   ]
   },
   {
    "name": "flight",
    "row": 8,
    "frames": 6,
    "fps": 6,
-   "loop": true
+   "loop": true,
+   "box": [
+    3,
+    9,
+    53,
+    47
+   ]
   }
  ]
 }
