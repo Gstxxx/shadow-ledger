@@ -1,0 +1,132 @@
+{
+ "kind": "atlas",
+ "id": "vehicles-heli-back",
+ "image": "vehicles-heli-back.png",
+ "width": 1800,
+ "height": 1215,
+ "frameWidth": 180,
+ "frameHeight": 135,
+ "anchor": {
+  "x": 76,
+  "y": 90
+ },
+ "animations": [
+  {
+   "name": "heli1_hover",
+   "row": 0,
+   "frames": 6,
+   "fps": 10,
+   "loop": true,
+   "box": [
+    24,
+    19,
+    93,
+    98
+   ]
+  },
+  {
+   "name": "heli1_fly",
+   "row": 1,
+   "frames": 6,
+   "fps": 10,
+   "loop": true,
+   "box": [
+    15,
+    17,
+    104,
+    100
+   ]
+  },
+  {
+   "name": "heli1_shoot",
+   "row": 2,
+   "frames": 4,
+   "fps": 12,
+   "loop": true,
+   "box": [
+    24,
+    19,
+    119,
+    98
+   ]
+  },
+  {
+   "name": "heli1_destroyed",
+   "row": 3,
+   "frames": 10,
+   "fps": 10,
+   "loop": false,
+   "box": [
+    24,
+    19,
+    93,
+    98
+   ]
+  },
+  {
+   "name": "heli3_hover",
+   "row": 4,
+   "frames": 6,
+   "fps": 10,
+   "loop": true,
+   "box": [
+    24,
+    22,
+    91,
+    95
+   ]
+  },
+  {
+   "name": "heli3_fly",
+   "row": 5,
+   "frames": 6,
+   "fps": 10,
+   "loop": true,
+   "box": [
+    15,
+    20,
+    102,
+    97
+   ]
+  },
+  {
+   "name": "heli3_cannon",
+   "row": 6,
+   "frames": 4,
+   "fps": 10,
+   "loop": true,
+   "box": [
+    24,
+    24,
+    121,
+    93
+   ]
+  },
+  {
+   "name": "heli3_rockets",
+   "row": 7,
+   "frames": 8,
+   "fps": 10,
+   "loop": true,
+   "box": [
+    24,
+    22,
+    108,
+    95
+   ]
+  },
+  {
+   "name": "heli3_destroyed",
+   "row": 8,
+   "frames": 10,
+   "fps": 10,
+   "loop": false,
+   "box": [
+    24,
+    22,
+    91,
+    95
+   ]
+  }
+ ]
+}

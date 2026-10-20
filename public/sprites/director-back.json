@@ -1,0 +1,249 @@
+{
+ "kind": "atlas",
+ "id": "director-back",
+ "image": "director-back.png",
+ "width": 504,
+ "height": 1476,
+ "frameWidth": 84,
+ "frameHeight": 82,
+ "anchor": {
+  "x": 46,
+  "y": 59
+ },
+ "animations": [
+  {
+   "name": "director_idle",
+   "row": 0,
+   "frames": 4,
+   "fps": 4,
+   "loop": true,
+   "box": [
+    35,
+    16,
+    23,
+    50
+   ]
+  },
+  {
+   "name": "director_walk",
+   "row": 1,
+   "frames": 6,
+   "fps": 8,
+   "loop": true,
+   "box": [
+    35,
+    18,
+    23,
+    48
+   ]
+  },
+  {
+   "name": "command",
+   "row": 2,
+   "frames": 4,
+   "fps": 8,
+   "loop": false,
+   "box": [
+    35,
+    16,
+    23,
+    50
+   ]
+  },
+  {
+   "name": "shoot",
+   "row": 3,
+   "frames": 4,
+   "fps": 12,
+   "loop": true,
+   "box": [
+    35,
+    16,
+    32,
+    50
+   ]
+  },
+  {
+   "name": "hurt",
+   "row": 4,
+   "frames": 3,
+   "fps": 10,
+   "loop": true,
+   "box": [
+    33,
+    18,
+    28,
+    48
+   ]
+  },
+  {
+   "name": "death",
+   "row": 5,
+   "frames": 6,
+   "fps": 8,
+   "loop": false,
+   "box": [
+    31,
+    18,
+    28,
+    48
+   ]
+  },
+  {
+   "name": "exagent_idle",
+   "row": 6,
+   "frames": 2,
+   "fps": 4,
+   "loop": true,
+   "box": [
+    35,
+    16,
+    27,
+    50
+   ]
+  },
+  {
+   "name": "exagent_walk",
+   "row": 7,
+   "frames": 6,
+   "fps": 8,
+   "loop": true,
+   "box": [
+    35,
+    18,
+    23,
+    48
+   ]
+  },
+  {
+   "name": "banker_idle",
+   "row": 8,
+   "frames": 2,
+   "fps": 4,
+   "loop": true,
+   "box": [
+    35,
+    15,
+    23,
+    51
+   ]
+  },
+  {
+   "name": "banker_walk",
+   "row": 9,
+   "frames": 6,
+   "fps": 8,
+   "loop": true,
+   "box": [
+    35,
+    17,
+    23,
+    49
+   ]
+  },
+  {
+   "name": "colonel_idle",
+   "row": 10,
+   "frames": 2,
+   "fps": 4,
+   "loop": true,
+   "box": [
+    35,
+    11,
+    25,
+    55
+   ]
+  },
+  {
+   "name": "colonel_walk",
+   "row": 11,
+   "frames": 6,
+   "fps": 8,
+   "loop": true,
+   "box": [
+    35,
+    13,
+    25,
+    53
+   ]
+  },
+  {
+   "name": "diplomat_idle",
+   "row": 12,
+   "frames": 2,
+   "fps": 4,
+   "loop": true,
+   "box": [
+    35,
+    16,
+    24,
+    50
+   ]
+  },
+  {
+   "name": "diplomat_walk",
+   "row": 13,
+   "frames": 6,
+   "fps": 8,
+   "loop": true,
+   "box": [
+    35,
+    18,
+    24,
+    48
+   ]
+  },
+  {
+   "name": "smuggler_idle",
+   "row": 14,
+   "frames": 2,
+   "fps": 4,
+   "loop": true,
+   "box": [
+    35,
+    14,
+    28,
+    52
+   ]
+  },
+  {
+   "name": "smuggler_walk",
+   "row": 15,
+   "frames": 6,
+   "fps": 8,
+   "loop": true,
+   "box": [
+    35,
+    16,
+    28,
+    50
+   ]
+  },
+  {
+   "name": "analyst_idle",
+   "row": 16,
+   "frames": 2,
+   "fps": 4,
+   "loop": true,
+   "box": [
+    35,
+    15,
+    26,
+    51
+   ]
+  },
+  {
+   "name": "analyst_walk",
+   "row": 17,
+   "frames": 6,
+   "fps": 8,
+   "loop": true,
+   "box": [
+    35,
+    17,
+    26,
+    49
+   ]
+  }
+ ]
+}

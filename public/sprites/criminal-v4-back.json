@@ -1,0 +1,132 @@
+{
+ "kind": "atlas",
+ "id": "criminal-v4-back",
+ "image": "criminal-v4-back.png",
+ "width": 516,
+ "height": 729,
+ "frameWidth": 86,
+ "frameHeight": 81,
+ "anchor": {
+  "x": 46,
+  "y": 58
+ },
+ "animations": [
+  {
+   "name": "idle",
+   "row": 0,
+   "frames": 4,
+   "fps": 4,
+   "loop": true,
+   "box": [
+    35,
+    14,
+    32,
+    51
+   ]
+  },
+  {
+   "name": "walk",
+   "row": 1,
+   "frames": 6,
+   "fps": 8,
+   "loop": true,
+   "box": [
+    35,
+    16,
+    32,
+    49
+   ]
+  },
+  {
+   "name": "run",
+   "row": 2,
+   "frames": 6,
+   "fps": 12,
+   "loop": true,
+   "box": [
+    33,
+    15,
+    32,
+    50
+   ]
+  },
+  {
+   "name": "aim",
+   "row": 3,
+   "frames": 3,
+   "fps": 8,
+   "loop": false,
+   "box": [
+    35,
+    14,
+    32,
+    51
+   ]
+  },
+  {
+   "name": "burst",
+   "row": 4,
+   "frames": 6,
+   "fps": 14,
+   "loop": true,
+   "box": [
+    35,
+    14,
+    36,
+    51
+   ]
+  },
+  {
+   "name": "reload",
+   "row": 5,
+   "frames": 5,
+   "fps": 8,
+   "loop": true,
+   "box": [
+    35,
+    14,
+    34,
+    51
+   ]
+  },
+  {
+   "name": "cover",
+   "row": 6,
+   "frames": 4,
+   "fps": 8,
+   "loop": true,
+   "box": [
+    35,
+    22,
+    34,
+    43
+   ]
+  },
+  {
+   "name": "hurt",
+   "row": 7,
+   "frames": 3,
+   "fps": 10,
+   "loop": true,
+   "box": [
+    33,
+    16,
+    32,
+    49
+   ]
+  },
+  {
+   "name": "death",
+   "row": 8,
+   "frames": 6,
+   "fps": 8,
+   "loop": false,
+   "box": [
+    31,
+    16,
+    32,
+    49
+   ]
+  }
+ ]
+}

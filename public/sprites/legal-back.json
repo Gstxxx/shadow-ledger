@@ -1,0 +1,119 @@
+{
+ "kind": "atlas",
+ "id": "legal-back",
+ "image": "legal-back.png",
+ "width": 416,
+ "height": 568,
+ "frameWidth": 52,
+ "frameHeight": 71,
+ "anchor": {
+  "x": 26,
+  "y": 58
+ },
+ "animations": [
+  {
+   "name": "idle",
+   "row": 0,
+   "frames": 4,
+   "fps": 4,
+   "loop": true,
+   "box": [
+    15,
+    15,
+    23,
+    50
+   ]
+  },
+  {
+   "name": "walk",
+   "row": 1,
+   "frames": 6,
+   "fps": 8,
+   "loop": true,
+   "box": [
+    13,
+    17,
+    26,
+    48
+   ]
+  },
+  {
+   "name": "run",
+   "row": 2,
+   "frames": 6,
+   "fps": 12,
+   "loop": true,
+   "box": [
+    9,
+    15,
+    34,
+    50
+   ]
+  },
+  {
+   "name": "present_evidence",
+   "row": 3,
+   "frames": 4,
+   "fps": 8,
+   "loop": false,
+   "box": [
+    15,
+    15,
+    30,
+    50
+   ]
+  },
+  {
+   "name": "objection",
+   "row": 4,
+   "frames": 4,
+   "fps": 8,
+   "loop": false,
+   "box": [
+    15,
+    15,
+    23,
+    50
+   ]
+  },
+  {
+   "name": "argue",
+   "row": 5,
+   "frames": 4,
+   "fps": 8,
+   "loop": true,
+   "box": [
+    15,
+    15,
+    26,
+    50
+   ]
+  },
+  {
+   "name": "persuade",
+   "row": 6,
+   "frames": 4,
+   "fps": 8,
+   "loop": true,
+   "box": [
+    15,
+    15,
+    23,
+    50
+   ]
+  },
+  {
+   "name": "defeat_victory",
+   "row": 7,
+   "frames": 8,
+   "fps": 8,
+   "loop": false,
+   "box": [
+    15,
+    15,
+    23,
+    50
+   ]
+  }
+ ]
+}

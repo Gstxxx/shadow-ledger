@@ -60,6 +60,45 @@ export type SpriteStaticId = 'stations' | 'interiors' | 'markers-stills' | 'carg
 /** Ids dos níveis de Estação, do 1 ao 5 (prédios e interiores). */
 export const STATION_SPRITE_IDS = ['cell', 'safehouse', 'office', 'compound', 'base'] as const;
 
+/**
+ * Conjuntos com vista de costas `<set>-back` (virados para NE; com `mirror`, para NW — o inimigo de frente
+ * para o jogador no combate). Cada atlas de costas tem frameWidth/frameHeight/anchor próprios e a ordem das
+ * linhas pode mudar: procure sempre a animação pelo nome. Linhas que não existem de costas (legal phone,
+ * pilot board/eject, influence whisper/convinced, director ex_agent/banker/colonel) ficam só na frente.
+ */
+export const SPRITE_BACK_SETS = ['urban', 'military', 'legal', 'pilot', 'influence', 'police', 'criminal', 'director', 'women', 'vehicles-light', 'vehicles-armor', 'vehicles-heli'] as const;
+
+/** Conjuntos com 6 variantes de cabeça (pele, cabelo, barba, óculos): `<set>-v0..v5` e `<set>-v0-back..v5-back`. */
+export const SPRITE_VARIANT_SETS = ['urban', 'military', 'criminal', 'police', 'women'] as const;
+export const SPRITE_VARIANTS = 6;
+
+/** Id do atlas de costas, ou o próprio conjunto quando ele não tem vista de costas. */
+export function backSet(set: string) {
+  return (SPRITE_BACK_SETS as readonly string[]).includes(set.replace(/-v\d$/, '')) ? `${set}-back` : set;
+}
+
+/** Atlas da animação: a de costas quando existe nela, senão a de frente (mesmo nome). */
+export async function resolveBackAnim(set: string, anim: string) {
+  const back = backSet(set);
+  if (back !== set) {
+    const m = await loadSpriteAtlas(back).catch(() => undefined);
+    if (m && findAnim(m, anim)) return back;
+  }
+  return set;
+}
+
+/**
+ * Variante estável de um conjunto por uma chave qualquer (uid da Unidade, seed…): `<set>-v<N>`.
+ * Conjuntos sem variantes devolvem o próprio id.
+ */
+export function variantSet(set: string, key: string | number) {
+  if (!(SPRITE_VARIANT_SETS as readonly string[]).includes(set)) return set;
+  let h = 2166136261;
+  const s = String(key);
+  for (let i = 0; i < s.length; i++) h = Math.imul(h ^ s.charCodeAt(i), 16777619);
+  return `${set}-v${(h >>> 0) % SPRITE_VARIANTS}`;
+}
+
 const BASE = `${import.meta.env.BASE_URL}sprites/`;
 
 /** URL pública de uma imagem citada num manifesto. */

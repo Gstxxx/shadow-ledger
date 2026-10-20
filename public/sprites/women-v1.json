@@ -1,0 +1,132 @@
+{
+ "kind": "atlas",
+ "id": "women-v1",
+ "image": "women-v1.png",
+ "width": 516,
+ "height": 657,
+ "frameWidth": 86,
+ "frameHeight": 73,
+ "anchor": {
+  "x": 46,
+  "y": 60
+ },
+ "animations": [
+  {
+   "name": "guard_idle",
+   "row": 0,
+   "frames": 4,
+   "fps": 4,
+   "loop": true,
+   "box": [
+    35,
+    14,
+    23,
+    53
+   ]
+  },
+  {
+   "name": "guard_walk",
+   "row": 1,
+   "frames": 6,
+   "fps": 8,
+   "loop": true,
+   "box": [
+    33,
+    16,
+    26,
+    51
+   ]
+  },
+  {
+   "name": "guard_aim",
+   "row": 2,
+   "frames": 4,
+   "fps": 8,
+   "loop": false,
+   "box": [
+    35,
+    14,
+    23,
+    53
+   ]
+  },
+  {
+   "name": "guard_shoot",
+   "row": 3,
+   "frames": 4,
+   "fps": 12,
+   "loop": true,
+   "box": [
+    35,
+    14,
+    30,
+    53
+   ]
+  },
+  {
+   "name": "guard_death",
+   "row": 4,
+   "frames": 6,
+   "fps": 8,
+   "loop": false,
+   "box": [
+    31,
+    13,
+    27,
+    54
+   ]
+  },
+  {
+   "name": "lawyer_idle",
+   "row": 5,
+   "frames": 4,
+   "fps": 4,
+   "loop": true,
+   "box": [
+    35,
+    14,
+    23,
+    53
+   ]
+  },
+  {
+   "name": "present_evidence",
+   "row": 6,
+   "frames": 4,
+   "fps": 8,
+   "loop": false,
+   "box": [
+    34,
+    17,
+    25,
+    50
+   ]
+  },
+  {
+   "name": "objection",
+   "row": 7,
+   "frames": 4,
+   "fps": 8,
+   "loop": false,
+   "box": [
+    35,
+    14,
+    23,
+    53
+   ]
+  },
+  {
+   "name": "victory",
+   "row": 8,
+   "frames": 4,
+   "fps": 8,
+   "loop": false,
+   "box": [
+    35,
+    14,
+    23,
+    53
+   ]
+  }
+ ]
+}

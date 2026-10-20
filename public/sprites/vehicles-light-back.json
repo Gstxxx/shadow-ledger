@@ -1,0 +1,132 @@
+{
+ "kind": "atlas",
+ "id": "vehicles-light-back",
+ "image": "vehicles-light-back.png",
+ "width": 1190,
+ "height": 945,
+ "frameWidth": 119,
+ "frameHeight": 105,
+ "anchor": {
+  "x": 60,
+  "y": 75
+ },
+ "animations": [
+  {
+   "name": "technical_move",
+   "row": 0,
+   "frames": 6,
+   "fps": 10,
+   "loop": true,
+   "box": [
+    17,
+    43,
+    80,
+    54
+   ]
+  },
+  {
+   "name": "technical_shoot",
+   "row": 1,
+   "frames": 4,
+   "fps": 12,
+   "loop": true,
+   "box": [
+    27,
+    34,
+    70,
+    55
+   ]
+  },
+  {
+   "name": "technical_destroyed",
+   "row": 2,
+   "frames": 10,
+   "fps": 10,
+   "loop": false,
+   "box": [
+    27,
+    43,
+    70,
+    46
+   ]
+  },
+  {
+   "name": "patrolcar_move",
+   "row": 3,
+   "frames": 6,
+   "fps": 10,
+   "loop": true,
+   "box": [
+    27,
+    45,
+    70,
+    51
+   ]
+  },
+  {
+   "name": "patrolcar_idle",
+   "row": 4,
+   "frames": 6,
+   "fps": 4,
+   "loop": true,
+   "box": [
+    27,
+    45,
+    70,
+    44
+   ]
+  },
+  {
+   "name": "patrolcar_destroyed",
+   "row": 5,
+   "frames": 10,
+   "fps": 10,
+   "loop": false,
+   "box": [
+    27,
+    45,
+    70,
+    44
+   ]
+  },
+  {
+   "name": "apc_move",
+   "row": 6,
+   "frames": 6,
+   "fps": 10,
+   "loop": true,
+   "box": [
+    11,
+    34,
+    90,
+    67
+   ]
+  },
+  {
+   "name": "apc_shoot",
+   "row": 7,
+   "frames": 6,
+   "fps": 12,
+   "loop": true,
+   "box": [
+    28,
+    25,
+    75,
+    67
+   ]
+  },
+  {
+   "name": "apc_destroyed",
+   "row": 8,
+   "frames": 10,
+   "fps": 10,
+   "loop": false,
+   "box": [
+    28,
+    34,
+    73,
+    58
+   ]
+  }
+ ]
+}

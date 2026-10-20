@@ -356,7 +356,7 @@ Personagens, veículos, aeronaves, efeitos, marcadores do mapa, carga e prédios
 
 - **Regenerar:** `python -I tools/sprites/build.py` na raiz (apaga e refaz `public/sprites/`). Para refazer só alguns conjuntos, passe os nomes dos geradores, ex. `python -I tools/sprites/build.py urban police`. Com `SPRITES_PREVIEW=1`, também grava folhas de conferência com a âncora marcada em `tools/sprites/preview.local/` (fica fora do git).
 - **Rig:** `tools/sprites/rig.py`. Com `lean > 0` o tronco inclina para a frente; com `fall < 0` o corpo cai para trás (pivô no calcanhar) e com `fall > 0`, para a frente. As corridas inclinam para a frente e as mortes caem para trás em todos os conjuntos.
-- **Tamanho:** 25 atlas e 4 grupos avulsos somam cerca de 760 KB, contando o PNG indexado (256 cores com alfa, sem pontilhado) e os JSON. É cerca de 4× menor que o RGBA e visualmente igual: erro médio de 0,3/255. Os maiores são `vehicles-heli` (82 KB), `aircraft-bomber-aa` (71 KB) e `cargo-planes-b` (64 KB); um personagem fica em cerca de 10 KB. O total exato está em `public/sprites/index.json` (`bytes`).
+- **Tamanho:** de frente, 25 atlas e 4 grupos avulsos somam cerca de 760 KB; com as costas e as variantes são 97 atlas, cerca de 1,8 MB, contando o PNG indexado (256 cores com alfa, sem pontilhado) e os JSON. É cerca de 4× menor que o RGBA e visualmente igual: erro médio de 0,3/255. Os maiores são `vehicles-heli` (82 KB), `aircraft-bomber-aa` (71 KB) e `cargo-planes-b` (64 KB); um personagem fica em cerca de 10 KB. O total exato está em `public/sprites/index.json` (`bytes`).
 
 **Atlas** (`<id>.png` + `<id>.json`, `kind: "atlas"`): cada animação é uma linha e os quadros vão da esquerda para a direita, todos do mesmo tamanho.
 
@@ -402,6 +402,16 @@ Personagens, veículos, aeronaves, efeitos, marcadores do mapa, carga e prédios
 - **Movimento reduzido:** com `prefers-reduced-motion`, mostra o 1º quadro das animações em laço e o último das que não têm laço.
 - **Funções:** `loadSpriteAtlas(id)`, `loadSpriteStatic(grupo)`, `preloadSprites(ids)`, `useSpriteAtlas(id)`, `frameRect(atlas, anim, i)`, `frameAt(anim, ms)`, `animDuration(anim)`, `spriteUrl(image)`. Os manifestos ficam em cache por id.
 - **Para canvas:** use `frameRect` com `drawImage` e `ctx.imageSmoothingEnabled = false`.
+
+**Costas e variantes** (`tools/sprites/views/`, 2ª fase do `build.py`). Os geradores gravam as poses de frente, giram o modelo 90° no eixo z e renderizam de novo. A luz, a sombra e os destroços saem do modelo já girado.
+
+- **`<set>-back`:** os 9 personagens e `vehicles-light/-armor/-heli` vistos de costas, virados para NE.
+  - **Inimigos no combate:** `<Sprite set={backSet(set)} mirror …/>` faz o inimigo olhar para NW, de frente para o jogador.
+  - **Linhas que não existem de costas:** legal `phone`, pilot `board/eject`, influence `whisper/convinced` e as linhas combinadas do Diretor. Para elas, use a frente; `resolveBackAnim(set, anim)` escolhe o atlas certo.
+- **`<set>-v0..v5` e `<set>-v0-back..v5-back`:** 6 elencos por conjunto em `urban military criminal police women`. Cada um tem tom de pele, penteado, cor de cabelo, barba e óculos próprios, com os 6 tons de pele cobertos. `variantSet(set, uid)` escolhe uma variante estável por Unidade.
+- **Tamanho e âncora:** os atlas de costas e de variantes têm `frameWidth/frameHeight/anchor` próprios, alguns px maiores que a frente. A ordem das linhas também pode mudar, então procure sempre a animação pelo nome.
+- **Peso:** os 144 arquivos somam cerca de 1,05 MB.
+- **Fora do pacote:** as características de cada variante e as folhas de conferência ficam em `tools/sprites/preview.local/views/`.
 
 Cada animação traz também `box: [x, y, w, h]`, a caixa opaca do 1º quadro, útil para recortes justos.
 

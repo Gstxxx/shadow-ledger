@@ -1,0 +1,132 @@
+{
+ "kind": "atlas",
+ "id": "urban-v2",
+ "image": "urban-v2.png",
+ "width": 492,
+ "height": 549,
+ "frameWidth": 82,
+ "frameHeight": 61,
+ "anchor": {
+  "x": 46,
+  "y": 48
+ },
+ "animations": [
+  {
+   "name": "idle",
+   "row": 0,
+   "frames": 4,
+   "fps": 4,
+   "loop": true,
+   "box": [
+    35,
+    6,
+    23,
+    49
+   ]
+  },
+  {
+   "name": "walk",
+   "row": 1,
+   "frames": 6,
+   "fps": 8,
+   "loop": true,
+   "box": [
+    33,
+    8,
+    26,
+    47
+   ]
+  },
+  {
+   "name": "run",
+   "row": 2,
+   "frames": 6,
+   "fps": 12,
+   "loop": true,
+   "box": [
+    29,
+    10,
+    34,
+    45
+   ]
+  },
+  {
+   "name": "aim",
+   "row": 3,
+   "frames": 4,
+   "fps": 8,
+   "loop": false,
+   "box": [
+    35,
+    6,
+    23,
+    49
+   ]
+  },
+  {
+   "name": "shoot",
+   "row": 4,
+   "frames": 4,
+   "fps": 12,
+   "loop": true,
+   "box": [
+    35,
+    6,
+    30,
+    49
+   ]
+  },
+  {
+   "name": "reload",
+   "row": 5,
+   "frames": 6,
+   "fps": 8,
+   "loop": true,
+   "box": [
+    35,
+    6,
+    23,
+    49
+   ]
+  },
+  {
+   "name": "cover",
+   "row": 6,
+   "frames": 3,
+   "fps": 8,
+   "loop": true,
+   "box": [
+    31,
+    14,
+    36,
+    44
+   ]
+  },
+  {
+   "name": "hurt",
+   "row": 7,
+   "frames": 3,
+   "fps": 10,
+   "loop": true,
+   "box": [
+    35,
+    4,
+    24,
+    51
+   ]
+  },
+  {
+   "name": "death",
+   "row": 8,
+   "frames": 6,
+   "fps": 8,
+   "loop": false,
+   "box": [
+    35,
+    4,
+    23,
+    51
+   ]
+  }
+ ]
+}

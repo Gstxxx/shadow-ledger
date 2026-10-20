@@ -1,0 +1,132 @@
+{
+ "kind": "atlas",
+ "id": "police-v3",
+ "image": "police-v3.png",
+ "width": 486,
+ "height": 621,
+ "frameWidth": 81,
+ "frameHeight": 69,
+ "anchor": {
+  "x": 47,
+  "y": 56
+ },
+ "animations": [
+  {
+   "name": "idle",
+   "row": 0,
+   "frames": 4,
+   "fps": 4,
+   "loop": true,
+   "box": [
+    36,
+    11,
+    25,
+    52
+   ]
+  },
+  {
+   "name": "walk",
+   "row": 1,
+   "frames": 6,
+   "fps": 8,
+   "loop": true,
+   "box": [
+    34,
+    13,
+    27,
+    50
+   ]
+  },
+  {
+   "name": "run",
+   "row": 2,
+   "frames": 6,
+   "fps": 12,
+   "loop": true,
+   "box": [
+    30,
+    15,
+    34,
+    48
+   ]
+  },
+  {
+   "name": "aim",
+   "row": 3,
+   "frames": 4,
+   "fps": 8,
+   "loop": false,
+   "box": [
+    36,
+    11,
+    23,
+    52
+   ]
+  },
+  {
+   "name": "shoot",
+   "row": 4,
+   "frames": 4,
+   "fps": 12,
+   "loop": true,
+   "box": [
+    36,
+    11,
+    30,
+    52
+   ]
+  },
+  {
+   "name": "cuff",
+   "row": 5,
+   "frames": 4,
+   "fps": 8,
+   "loop": false,
+   "box": [
+    36,
+    11,
+    25,
+    52
+   ]
+  },
+  {
+   "name": "shield",
+   "row": 6,
+   "frames": 4,
+   "fps": 8,
+   "loop": true,
+   "box": [
+    36,
+    11,
+    28,
+    52
+   ]
+  },
+  {
+   "name": "hurt",
+   "row": 7,
+   "frames": 3,
+   "fps": 10,
+   "loop": true,
+   "box": [
+    34,
+    9,
+    26,
+    54
+   ]
+  },
+  {
+   "name": "death",
+   "row": 8,
+   "frames": 6,
+   "fps": 8,
+   "loop": false,
+   "box": [
+    34,
+    8,
+    25,
+    55
+   ]
+  }
+ ]
+}
