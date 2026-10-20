@@ -231,7 +231,8 @@ export function AnalystLayer({ onOpenDrawer }: AnalystLayerProps) {
   const scrolled = useRef<string | null>(null);
   const ring = useRect(
     () => {
-      if (!targets.length) return null;
+      // Cenas curtas do CinematicHost (.cc-root) tomam a tela: sem anel por cima delas.
+      if (!targets.length || document.querySelector('.cc-root')) return null;
       // Alvo atrás de um modal (ex.: comprou e agora precisa voar pelo mapa): aponta o botão de fechar.
       return findTarget(targets, scrolled, `${step}|${line?.id ?? ''}`) ?? (line?.topic ? null : dialogCloser());
     },

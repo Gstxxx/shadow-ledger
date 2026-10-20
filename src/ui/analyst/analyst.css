@@ -27,13 +27,19 @@
   flex-direction: column;
   --analyst-cap: 45vh;
   max-height: var(--analyst-cap);
-  background: rgba(11, 13, 16, 0.94);
+  /* Opaco: rótulos do mapa não podem atravessar o texto. */
+  background: var(--ink-1);
   border: 1px solid rgba(242, 169, 59, 0.45);
   border-left: 2px solid var(--amber);
   border-radius: var(--r);
   box-shadow: 0 8px 24px rgba(0, 0, 0, 0.45);
   backdrop-filter: blur(4px);
   animation: analyst-in 0.24s var(--ease-land) both;
+}
+@keyframes analyst-in {
+  from {
+    transform: translateY(8px);
+  }
 }
 .analyst-card.mood-alert {
   border-left-color: var(--red);
@@ -209,12 +215,6 @@
   }
 }
 
-@keyframes analyst-in {
-  from {
-    opacity: 0;
-    transform: translateY(8px);
-  }
-}
 
 @media (prefers-reduced-motion: reduce) {
   .analyst-ring,
