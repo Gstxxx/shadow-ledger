@@ -1,5 +1,4 @@
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import type { CSSProperties } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { FastForward, Pause, Play, SkipForward, Swords } from 'lucide-react';
 import { canPlace, place, stepCombat, succeeded, TACTICS, unplace, autoDeploy } from '../../game/combat';
 import { cancelPending, negotiateCost } from '../../game/actions';
@@ -15,7 +14,8 @@ import { Portrait } from './Portrait';
 import { msgText } from './msgText';
 import { CoupCinematic } from '../cinematics';
 import { BigNumber, Details, Verdict } from './stage/Verdict';
-import { usePortrait } from './portrait/usePortrait';
+import { IsoArena, figureSize } from './arena/IsoArena';
+import type { IsoGeom } from './arena/IsoArena';
 import { CombatResult, RedactedTitle, RollingNumber, combatSucceeded, useCombatFx } from '../combat-fx';
 import { GModal } from '../../art';
 
@@ -186,10 +186,9 @@ function LiveView() {
   const [fast, setFast] = useState(false);
   const [sel, setSel] = useState<string | null>(null);
   const grid = useRef<HTMLDivElement>(null);
-  // Em pé (ADR 0005) a grade gira: o jogador embaixo, avançando para cima.
-  const vertical = usePortrait();
   // O carimbo pequeno sai: o resultado vira a tela cheia de Vitória/Derrota (<CombatResult>).
-  const fx = useCombatFx({ grid, combat: c, speed: fast ? 2 : 1, axis: vertical ? 'y' : 'x', verdict: false });
+  // Arena isométrica: o eixo de avanço é deduzido das posições dos tokens.
+  const fx = useCombatFx({ grid, combat: c, speed: fast ? 2 : 1, verdict: false });
   const manual = c.turn === 0 && c.reserve.length > 0;
 
   const step = () => {
@@ -256,11 +255,6 @@ function LiveView() {
     setRunning(false);
   };
 
-  const cells = useMemo(() => {
-    const out: { row: number; col: number }[] = [];
-    for (let row = 0; row < c.rows; row++) for (let col = 0; col < c.cols; col++) out.push({ row, col });
-    return out;
-  }, [c.rows, c.cols]);
 
   const ok = c.result ? succeeded(c) : null;
 
@@ -278,40 +272,18 @@ function LiveView() {
         </header>
 
         <div className="grid-wrap">
-          <div
-            ref={grid}
-            className={`grid g-board${vertical ? ' vertical' : ''}`}
-            style={
-              (vertical
-                ? {
-                    '--cols': c.rows,
-                    '--rows': c.cols,
-                    '--ratio': c.cols / c.rows,
-                    aspectRatio: `${c.rows} / ${c.cols}`,
-                    height: `var(--board-h, min(62vh, calc((100vw - 24px) * ${c.cols / c.rows})))`,
-                  }
-                : { '--cols': c.cols, '--rows': c.rows, aspectRatio: `${c.cols} / ${c.rows}` }) as unknown as CSSProperties
+          <IsoArena
+            c={c}
+            boardRef={grid}
+            cellClass={(row, col) =>
+              `${c.turn === 0 && !c.result && col < c.deployCols ? 'deploy' : ''}${!!sel && canPlace(c, row, col) ? ' target' : ''}${
+                col >= c.cols - c.deployCols ? ' enemy-zone' : ''
+              }`
             }
-          >
-            {cells.map(({ row, col }) => {
-              const deployable = c.turn === 0 && !c.result && col < c.deployCols;
-              const target = !!sel && canPlace(c, row, col);
-              return (
-                <button
-                  key={`${row}-${col}`}
-                  className={`cell g-board__cell${deployable ? ' deploy g-board__cell--deploy' : ''}${target ? ' target g-board__cell--target' : ''}${
-                    col >= c.cols - c.deployCols ? ' hostile-zone g-board__cell--enemy' : ''
-                  }`}
-                  style={vertical ? { gridRow: c.cols - col, gridColumn: row + 1 } : { gridRow: row + 1, gridColumn: col + 1 }}
-                  onClick={() => cellClick(row, col)}
-                  aria-label={t('game.combat.cell', { row: row + 1, col: col + 1 })}
-                />
-              );
-            })}
-            {c.units.map((u) => (
-              <Token key={u.key} r={u} c={c} vertical={vertical} />
-            ))}
-          </div>
+            cellLabel={(row, col) => t('game.combat.cell', { row: row + 1, col: col + 1 })}
+            onCell={cellClick}
+            renderUnit={(r, g) => <IsoToken key={r.key} r={r} c={c} g={g} />}
+          />
         </div>
 
         {c.turn === 0 && !running && canAbortLive(s) && <p className="hint-sm">{t('game.combat.abortHint')}</p>}
@@ -439,41 +411,32 @@ function TurnLabel({ turn, max }: { turn: number; max: number }) {
   );
 }
 
-function Token({ r, c, vertical }: { r: CombatUnitRef; c: CombatState; vertical: boolean }) {
+function IsoToken({ r, c, g }: { r: CombatUnitRef; c: CombatState; g: IsoGeom }) {
   const { t } = useT();
   const u: Unit = r.unit;
   const fort = u.itemId === FORT_ID;
   const max = Math.max(1, maxStrOf(u, c.type) || strOf(u, c.type));
   const cur = strOf(u, c.type);
+  const f = figureSize(u.itemId);
+  const [cx, cy] = g.center(r.col, r.row);
+  const w = f.w * g.tw;
+  const h = f.h * g.tw;
   return (
     <div
-      className={`token g-token side-${r.side}${r.side === 'e' ? ' g-token--enemy' : ''}`}
+      className={`token iso-token side-${r.side}`}
       data-fx-key={r.key}
       data-fx-side={r.side}
       data-fx-col={r.col}
       data-fx-row={r.row}
-      style={{
-        ...(vertical
-          ? {
-              left: `${(r.row / c.rows) * 100}%`,
-              top: `${((c.cols - 1 - r.col) / c.cols) * 100}%`,
-              width: `${100 / c.rows}%`,
-              height: `${100 / c.cols}%`,
-            }
-          : {
-              left: `${(r.col / c.cols) * 100}%`,
-              top: `${(r.row / c.rows) * 100}%`,
-              width: `${100 / c.cols}%`,
-              height: `${100 / c.rows}%`,
-            }),
-      }}
+      style={{ left: cx - w / 2, top: cy - h + g.tw * 0.12 - f.lift * g.tw, width: w, height: h, zIndex: g.depth(r.col, r.row) }}
       title={`${u.name} · ${itemName(u.itemId)}`}
+      aria-label={fort ? t('game.combat.fort') : u.name}
     >
-      <span className="g-token__card">{fort ? <span className="fort">▦</span> : <Portrait unit={u} size={40} hostile={r.side === 'e'} />}</span>
-      <span className="tk-bar">
+      <span className="iso-shadow" />
+      <span className="iso-fig">{fort ? <span className="fort">▦</span> : <Portrait unit={u} size={Math.round(w * 0.62)} hostile={r.side === 'e'} />}</span>
+      <span className="iso-bar">
         <span style={{ width: `${Math.min(100, (cur / max) * 100)}%` }} />
       </span>
-      <span className="tk-name">{fort ? t('game.combat.fort') : u.name.split(' ')[0]}</span>
     </div>
   );
 }
