@@ -34,6 +34,26 @@ const HEADS: Record<string, Head[]> = {
 /** Primeiros nomes femininos de src/game/data/names.ts (o corpo segue o nome quando ele é passado). */
 const FEM_NAMES = new Set(['Ana', 'Leila', 'Yuki', 'Sofia', 'Ingrid', 'Nadia', 'Isabela', 'Amara', 'Mei', 'Clara', 'Priya', 'Elena', 'Zara', 'Aisha', 'Lucía', 'Noor', 'Katya', 'Ines', 'Freya', 'Bianca', 'Yara', 'Camila', 'Astrid', 'Svetlana']);
 
+/** Cenários alternativos por função (muda o fundo e a cor da luz de contorno). */
+const SCENES: Record<string, Figure['scene'][]> = {
+  bodyguard: ['corridor', 'street', 'palace'],
+  thug: ['street', 'corridor'],
+  police: ['street', 'corridor'],
+  swat: ['corridor', 'street'],
+  soldier: ['field', 'corridor'],
+  commando: ['field', 'street'],
+  agent: ['street', 'palace', 'corridor'],
+  lawyer1: ['office', 'palace'],
+  lawyer2: ['office', 'palace'],
+  lawyer3: ['office', 'palace'],
+  liaison1: ['palace', 'office', 'street'],
+  liaison2: ['palace', 'office'],
+  liaison3: ['palace', 'street'],
+};
+/** Cores de tecido e gravata para sortear (mesma família sóbria das ilustrações). */
+const CLOTH = ['#22262b', '#1d2a3e', '#2c2f36', '#3a2f28', '#2a3328', '#1a1c20', '#3b3f46', '#402626'];
+const TIES = ['#0e1013', '#5a1c1c', '#24345a', '#3d2a14', '#1f4a3a', '#5a4a1c'];
+
 /** Roupas que só existem no corpo feminino da ilustração. */
 const FEM_ONLY = new Set<Figure['outfit']>(['gown', 'skirtsuit']);
 
@@ -70,14 +90,21 @@ export function unitFigure(itemId: string, seed: number | string, name?: string)
   const fem =
     byName ?? (FEM_ONLY.has(base.outfit) ? true : head === 'long' || head === 'bun' ? true : head === 'bald' || head === 'slick' ? false : r() < 0.3);
   const outfit = !fem && FEM_ONLY.has(base.outfit) ? 'suit' : base.outfit;
-  const f = 0.8 + r() * 0.45;
+  const scenes = SCENES[itemId] ?? [base.scene];
+  const scene = scenes[Math.floor(r() * scenes.length)];
+  // roupa civil troca de cor; farda e camuflado só variam o tom
+  const uniform = ['uniform', 'tactical', 'camo', 'commando'].includes(outfit);
+  const top = uniform ? tint(base.top, 0.8 + r() * 0.4) : tint(CLOTH[Math.floor(r() * CLOTH.length)], 0.85 + r() * 0.35);
+  const bottom = base.bottom ? (uniform ? tint(base.bottom, 0.85 + r() * 0.3) : tint(top, 0.8 + r() * 0.15)) : undefined;
   return {
     ...base,
+    scene,
     head,
     fem,
     outfit,
-    top: tint(base.top, f),
-    bottom: base.bottom ? tint(base.bottom, f * (0.92 + r() * 0.12)) : undefined,
+    top,
+    bottom,
+    tie: base.tie ? TIES[Math.floor(r() * TIES.length)] : undefined,
     earpiece: base.earpiece || (itemId === 'agent' && r() < 0.4),
   };
 }
@@ -106,6 +133,8 @@ export interface UnitPortraitProps {
 export const UnitPortrait = memo(function UnitPortrait({ itemId, seed, name, size = 36, hostile, hurt, out, alt = '', className, style }: UnitPortraitProps) {
   const uid = useId().replace(/:/g, '');
   const fig = unitFigure(itemId, seed, name);
+  // metade das Unidades olha para o outro lado (espelho em torno do centro do recorte, x = 244)
+  const flip = rng(`flip:${itemId}:${seed}`)() < 0.5;
   const ink: Ink = { u: (n) => `url(#${uid}-${n})`, k: (n) => `${uid}-${n}`, lg: false };
   const cls = ['sl-unitp', hostile && 'sl-unitp--hostile', hurt && 'sl-unitp--hurt', out && 'sl-unitp--out', className].filter(Boolean).join(' ');
   return (
@@ -114,7 +143,9 @@ export const UnitPortrait = memo(function UnitPortrait({ itemId, seed, name, siz
         <svg viewBox="202 6 84 84" width={size} height={size} preserveAspectRatio="xMidYMid slice">
           <Defs ink={ink} />
           <Backdrop ink={ink} kind="studio" />
-          <Person ink={ink} fig={fig} />
+          <g transform={flip ? 'translate(488 0) scale(-1 1)' : undefined}>
+            <Person ink={ink} fig={fig} />
+          </g>
           <radialGradient id={`${uid}-pv`} cx="0.5" cy="0.42" r="0.62">
             <stop offset="0.55" stopColor="#000" stopOpacity="0" />
             <stop offset="1" stopColor="#000" stopOpacity="0.55" />
