@@ -665,3 +665,51 @@ html .mkt-item.open > .mkt-row.g-card {
   white-space: nowrap;
   justify-self: start;
 }
+
+/* Em pé (440/360): a linha vira duas, sem cortar nada. Em cima, a miniatura e o nome inteiro (quebra em 2 linhas);
+   embaixo, o selo à esquerda e o preço à direita. Deitado continua em uma linha. */
+@media (orientation: portrait) and (max-width: 820px) {
+  html .stage-body .mkt-row.g-card {
+    grid-template-columns: 72px minmax(0, 1fr) auto;
+    grid-template-areas:
+      'ico name name'
+      'deal deal prices'
+      'own own own';
+    row-gap: 8px;
+    align-items: center;
+  }
+  html .stage-body .mkt-row.g-card > .ipic,
+  html .stage-body .mkt-row.g-card > .g-well {
+    grid-area: ico;
+  }
+  html .stage-body .mkt-row .mkt-name {
+    display: contents;
+  }
+  html .stage-body .mkt-row .mkt-name-t {
+    grid-area: name;
+    white-space: normal;
+    overflow: visible;
+    overflow-wrap: anywhere;
+  }
+  html .stage-body .mkt-row .mkt-deal {
+    grid-area: deal;
+    align-self: center;
+    white-space: normal;
+  }
+  html .stage-body .mkt-row .mkt-prices {
+    grid-area: prices;
+    justify-items: end;
+  }
+  html .stage-body .mkt-row .mkt-own {
+    grid-area: own;
+  }
+}
+/* Oportunidades: o poço do ícone do GCard (44 px) recebe a miniatura 72×48 sem transbordar. */
+html .opp .g-card > .g-well:has(.ipic) {
+  width: auto;
+  height: auto;
+  padding: 0;
+  background: none;
+  box-shadow: none;
+  align-self: start;
+}
