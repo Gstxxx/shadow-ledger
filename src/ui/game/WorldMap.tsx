@@ -15,7 +15,7 @@ import { GMapMarker } from '../../art';
 import { bandsOf } from '../../game/combatJobs';
 import { useStage } from './stage/context';
 import { StationPin, StationPinDefs } from './map/StationPin';
-import { MapMarker, SPRITE_MIN_ZOOM, StationSprite } from '../map-sprites';
+import { MapMarker, MapVfx, SPRITE_MIN_ZOOM, StationSprite } from '../map-sprites';
 import { localHour, reliefTexture } from './map/relief';
 
 const W = 1000;
@@ -474,6 +474,9 @@ export function WorldMap({ mode, onPickCountry }: { mode: MapMode; onPickCountry
                 </g>
               );
             })}
+
+          {/* Efeitos: pilar de Nível, clima e sinalizadores (pointer-events: none; desligados com reduzir movimento) */}
+          <MapVfx s={s} inv={inv} project={project} />
 
           {/* Equipes */}
           {a.teams.map((t) => {

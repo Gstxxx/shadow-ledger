@@ -36,3 +36,22 @@
   position: absolute;
   line-height: 0;
 }
+
+/* Efeitos do mapa (vfx-extra): a faixa de quadros desliza em degraus dentro do <svg> recortado. */
+.msp-vfx-layer,
+.msp-vfx {
+  pointer-events: none;
+}
+.msp-vfx-strip {
+  animation: msp-strip var(--msp-dur, 0.6s) steps(var(--msp-steps, 6)) var(--msp-iter, infinite) forwards;
+}
+@keyframes msp-strip {
+  to {
+    transform: translateX(var(--msp-shift));
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .msp-vfx-layer {
+    display: none;
+  }
+}
