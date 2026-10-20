@@ -117,7 +117,7 @@ export function GameScreen() {
   return (
     <StageCtx.Provider value={stage}>
     <DossierHost>
-    <div className={`game g-skin stage${portrait ? ' upright' : ''}${stage.current ? ' stage-open' : ''}`}>
+    <div className={`game g-skin stage${portrait ? ' upright' : ''}${stage.current ? ' stage-open' : ''}${s.combat || s.pendingCombat ? ' combat-open' : ''}`}>
       <TopBar onMenu={openMenu} />
       <DirectorBanner />
       <div className="game-body">

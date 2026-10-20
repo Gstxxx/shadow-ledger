@@ -12,7 +12,7 @@ import './arena.css';
  */
 
 /** Altura livre acima do fundo do piso para as figuras em pé, em larguras de casa. */
-const HEAD = 1.35;
+const HEAD = 0.75;
 /** Espessura da laje do piso, em larguras de casa. */
 const SLAB = 0.14;
 
@@ -66,6 +66,7 @@ export function IsoArena({
   cellLabel,
   onCell,
   renderUnit,
+  zoomLabels,
 }: {
   c: CombatState;
   boardRef: RefObject<HTMLDivElement>;
@@ -73,7 +74,10 @@ export function IsoArena({
   cellLabel: (row: number, col: number) => string;
   onCell: (row: number, col: number) => void;
   renderUnit: (r: CombatUnitRef, g: IsoGeom) => ReactNode;
+  /** Rótulos do botão de zoom (em pé, onde a largura limita o tamanho das casas). */
+  zoomLabels: { in: string; out: string };
 }) {
+  const [zoom, setZoom] = useState(false);
   const wrap = useRef<HTMLDivElement>(null);
   const [box, setBox] = useState({ w: 0, h: 0 });
   useLayoutEffect(() => {
@@ -86,7 +90,9 @@ export function IsoArena({
     return () => ro.disconnect();
   }, []);
 
-  const tw = fitTile(c.cols, c.rows, box.w, box.h);
+  const fit = fitTile(c.cols, c.rows, box.w, box.h);
+  // Zoom: casas ~1,8× maiores; a arena rola dentro da área (começa no lado do jogador).
+  const tw = zoom ? Math.round(fit * 1.8) : fit;
   const g = isoGeom(c.cols, c.rows, tw);
   const cells: { row: number; col: number }[] = [];
   for (let row = c.rows - 1; row >= 0; row--) for (let col = 0; col < c.cols; col++) cells.push({ row, col });
@@ -100,7 +106,10 @@ export function IsoArena({
   };
 
   return (
-    <div className="iso-wrap" ref={wrap}>
+    <div className={`iso-wrap${zoom ? ' zoomed' : ''}`} ref={wrap}>
+      <button className="btn icon iso-zoom" aria-pressed={zoom} aria-label={zoom ? zoomLabels.out : zoomLabels.in} onClick={() => setZoom(!zoom)}>
+        {zoom ? '−' : '+'}
+      </button>
       <div ref={boardRef} className="iso-board" style={{ width: g.width, height: g.height }}>
         <svg className="iso-floor" width={g.width} height={g.height} viewBox={`0 0 ${g.width} ${g.height}`}>
           {/* Laje: faces da frente (linha 0) e da direita (última coluna) */}

@@ -41,8 +41,8 @@ export function StageModals({ stage }: { stage: StageApi }) {
   // Prévia e Combate ocupam o centro: o modal do palco fecha quando um deles começa.
   const fight = !!(s.pendingCombat || s.combat);
   useEffect(() => {
-    if (fight) stage.close();
-  }, [fight]); // eslint-disable-line react-hooks/exhaustive-deps
+    if (fight && m) stage.close();
+  }, [fight, m]); // eslint-disable-line react-hooks/exhaustive-deps
   // Decolar devolve o palco ao mapa para o jogador ver a rota (o mapa enquadra o voo).
   const flightKey = a.flight ? `${a.flight.from}>${a.flight.to}@${a.flight.depart}` : null;
   useEffect(() => {

@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
+import type { CSSProperties } from 'react';
 import { FastForward, Pause, Play, SkipForward, Swords } from 'lucide-react';
 import { canPlace, place, stepCombat, succeeded, TACTICS, unplace, autoDeploy } from '../../game/combat';
 import { cancelPending, negotiateCost } from '../../game/actions';
@@ -283,6 +284,7 @@ function LiveView() {
             cellLabel={(row, col) => t('game.combat.cell', { row: row + 1, col: col + 1 })}
             onCell={cellClick}
             renderUnit={(r, g) => <IsoToken key={r.key} r={r} c={c} g={g} />}
+            zoomLabels={{ in: t('game.map.zoomIn'), out: t('game.map.zoomOut') }}
           />
         </div>
 
@@ -428,12 +430,21 @@ function IsoToken({ r, c, g }: { r: CombatUnitRef; c: CombatState; g: IsoGeom })
       data-fx-side={r.side}
       data-fx-col={r.col}
       data-fx-row={r.row}
-      style={{ left: cx - w / 2, top: cy - h + g.tw * 0.12 - f.lift * g.tw, width: w, height: h, zIndex: g.depth(r.col, r.row) }}
+      style={
+        {
+          left: cx - w / 2,
+          top: cy - h + g.tw * 0.12 - f.lift * g.tw,
+          width: w,
+          height: h,
+          zIndex: g.depth(r.col, r.row),
+          '--fig': `${Math.round((g.tw * 0.5 * 100) / w)}%`,
+        } as CSSProperties
+      }
       title={`${u.name} · ${itemName(u.itemId)}`}
       aria-label={fort ? t('game.combat.fort') : u.name}
     >
       <span className="iso-shadow" />
-      <span className="iso-fig">{fort ? <span className="fort">▦</span> : <Portrait unit={u} size={Math.round(w * 0.62)} hostile={r.side === 'e'} />}</span>
+      <span className="iso-fig">{fort ? <span className="fort">▦</span> : <Portrait unit={u} size={Math.round(g.tw * 0.5)} hostile={r.side === 'e'} />}</span>
       <span className="iso-bar">
         <span style={{ width: `${Math.min(100, (cur / max) * 100)}%` }} />
       </span>

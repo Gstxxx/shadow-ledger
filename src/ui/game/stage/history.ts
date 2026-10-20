@@ -62,8 +62,8 @@ export function useStageHistory(stack: Stack): StageApi {
     const onPop = () => {
       const s = ref.current;
       if (closing.current) {
+        // O palco já fechou na hora (close); o voltar só acerta o histórico.
         closing.current = false;
-        s.close();
         return;
       }
       if (pushed.current > 0) {
@@ -109,12 +109,14 @@ export function useStageHistory(stack: Stack): StageApi {
         else ref.current.back();
       },
       close: () => {
+        // Fecha já: esperar o popstate deixava o modal por cima do Combate quando o evento atrasava.
+        ref.current.close();
         if (pushed.current > 0) {
           closing.current = true;
           const n = pushed.current;
           pushed.current = 0;
           window.history.go(-n);
-        } else ref.current.close();
+        }
       },
     }),
     [stack.current, stack.canBack], // eslint-disable-line react-hooks/exhaustive-deps
