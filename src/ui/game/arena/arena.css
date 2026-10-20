@@ -228,7 +228,8 @@ html .game.combat-open .analyst-layer {
   filter: brightness(1.6) saturate(0.4);
 }
 @media (prefers-reduced-motion: reduce) {
-  .iso-vfx {
+  /* Só os efeitos de passagem; corpos e destroços continuam no chão. */
+  .iso-vfx:not(.iso-body):not(.iso-wreck) {
     display: none;
   }
 }
@@ -393,4 +394,48 @@ html .game.combat-open .analyst-layer {
 }
 .cb-hline.side-e b {
   color: #ffb3b5;
+}
+
+/* Batidas do Combate (arena/beats.ts): traçante, clarão na boca, corpos e o seletor de velocidade. */
+.beat-rail {
+  position: absolute;
+  z-index: 950;
+  height: 0;
+  transform-origin: 0 50%;
+  pointer-events: none;
+}
+.beat-bolt {
+  position: absolute;
+  left: 0;
+  top: calc(-2px * var(--beat-s, 1));
+  width: calc(24px * var(--beat-s, 1));
+  height: calc(4px * var(--beat-s, 1));
+  border-radius: 2px;
+  background: linear-gradient(90deg, transparent, var(--beat-c) 35%, #fff);
+  box-shadow: 0 0 8px 2px var(--beat-c);
+}
+.beat-muzzle {
+  position: absolute;
+  z-index: 951;
+  width: calc(20px * var(--beat-s, 1));
+  height: calc(20px * var(--beat-s, 1));
+  margin: calc(-10px * var(--beat-s, 1)) 0 0 calc(-10px * var(--beat-s, 1));
+  border-radius: 50%;
+  background: radial-gradient(circle, #fff 0 30%, var(--beat-c) 55%, transparent 72%);
+  pointer-events: none;
+}
+.iso-body {
+  pointer-events: none;
+}
+.cb-speed {
+  display: inline-flex;
+  gap: 4px;
+}
+.cb-speed .btn[aria-pressed='true'] {
+  border-color: var(--amber);
+  color: var(--amber);
+}
+.cb-log-kill {
+  color: var(--paper-2);
+  font-weight: 700;
 }

@@ -53,6 +53,7 @@ const fx = useCombatFx({ grid, combat: c, speed: fast ? 2 : 1 });
 - `reduced`: força reduzir movimento; sem valor, segue `prefers-reduced-motion`.
 - `intro`: anima a entrada das fichas ao montar (padrão `true`).
 - `axis`: `'x'` (deitada, o jogador avança →) ou `'y'` (em pé, o jogador avança ↑). Sem valor, a camada deduz o eixo das posições reais dos tokens.
+- `turn(st, c, fx, snaps)`: monta a timeline do turno no lugar da padrão; a tela de Combate usa o roteiro em batidas de `src/ui/game/arena/beats.ts`. `budget`: orçamento do turno a 1× em segundos; o padrão é 0,9, e `null` deixa o turno durar o que as batidas duram.
 - `verdictText(success, c)`: texto do carimbo. Sem ele, usa `combatfx.stamp.win|lose` do i18n; enquanto essas chaves não existirem, cai em `game.combat.result.*` em caixa alta.
 
 ### Grade deitada ou em pé (ADR 0005)

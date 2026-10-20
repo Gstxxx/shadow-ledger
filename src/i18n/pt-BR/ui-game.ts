@@ -236,6 +236,7 @@ export default {
   'game.combat.history': 'Registro da luta',
   'game.combat.round': 'Rodada {n}',
   'game.combat.roundPre': 'Antes do contato',
+  'game.combat.speed': 'Velocidade {n}×',
   'game.combat.turn': 'turno {turn}/{max}',
   'game.combat.cell': 'Linha {row}, coluna {col}',
   'game.combat.reserve': 'Reserva · toque numa Unidade e depois numa casa das três primeiras colunas',

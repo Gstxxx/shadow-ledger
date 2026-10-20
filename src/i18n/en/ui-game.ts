@@ -235,6 +235,7 @@ export default {
   'game.combat.history': 'Fight log',
   'game.combat.round': 'Round {n}',
   'game.combat.roundPre': 'Before contact',
+  'game.combat.speed': 'Speed {n}×',
   'game.combat.turn': 'turn {turn}/{max}',
   'game.combat.cell': 'Row {row}, column {col}',
   'game.combat.reserve': 'Reserve · tap a Unit, then a cell in the first three columns',

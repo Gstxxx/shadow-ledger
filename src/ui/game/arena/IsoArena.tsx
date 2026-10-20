@@ -206,11 +206,11 @@ export function IsoArena({
     // Zoom: casas 1,5× maiores; a arena rola dentro da área (começa no lado do jogador).
     g = isoGeom(c.cols, c.rows, zoom ? Math.round(fit * 1.5) : fit);
   }
-  // Com zoom: no posicionamento a arena começa no lado do jogador; durante a luta, a cada turno rola até o meio
-  // dos eventos (tiros, quedas, movimentos). Na vertical, centra a grade (ou os eventos).
+  // Com zoom, no posicionamento: a arena começa no lado do jogador, com a grade centrada na vertical.
   const focus = (() => {
-    if (!zoom) return null;
-    const pts: { col: number; row: number }[] = fitAll ? (c.fx.length ? c.fx : c.units) : [];
+    // Na luta a câmera é das batidas (arena/beats.ts), que deslizam até cada par atirador → alvo.
+    if (!zoom || fitAll) return null;
+    const pts: { col: number; row: number }[] = [];
     const mid = g.center((c.cols - 1) / 2, (c.rows - 1) / 2);
     if (!pts.length) return { x: null, y: mid[1] };
     const sum = pts.reduce((s, p) => { const [x, y] = g.center(p.col, p.row); return [s[0] + x, s[1] + y]; }, [0, 0]);

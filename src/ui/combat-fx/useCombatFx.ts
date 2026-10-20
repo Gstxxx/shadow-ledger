@@ -32,7 +32,16 @@ export interface CombatFxOptions {
   verdictText?: (success: boolean, c: CombatState) => string;
   /** Carimbo pequeno no fim (padrão: sim). Desligue quando a tela usa <CombatResult>. */
   verdict?: boolean;
+  /**
+   * Monta a timeline de um turno no lugar da padrão (a tela de Combate usa um roteiro em batidas, um tiro por
+   * vez). Recebe o palco, o Combate depois do turno, os eventos e o snapshot dos tokens antes do turno.
+   */
+  turn?: TurnBuilder;
+  /** Orçamento do turno a 1× (s); a timeline é acelerada para caber. `null` = sem limite (padrão: 0,9 s). */
+  budget?: number | null;
 }
+
+export type TurnBuilder = (st: Stage, c: CombatState, fx: CombatFx[], snaps: Map<string, Snap>) => gsap.core.Timeline;
 
 export interface CombatFxApi {
   /** Termina na hora a animação em curso (botão "pular"). */
@@ -41,7 +50,7 @@ export interface CombatFxApi {
   busy(): boolean;
 }
 
-interface Snap {
+export interface Snap {
   side: 'p' | 'e';
   className: string;
   html: string;
@@ -202,10 +211,11 @@ export function useCombatFx(opts: CombatFxOptions): CombatFxApi {
     const advanced = combat.turn === prevTurn + 1;
 
     if (advanced && combat.fx.length) {
-      const tl = buildTurn(st, combat, combat.fx, snaps.current);
+      const tl = (optsRef.current.turn ?? buildTurn)(st, combat, combat.fx, snaps.current);
       // Encaixa no orçamento pelo fim dos eventos; as caudas de saída podem passar um pouco.
       const core = (tl.data?.core as number) ?? tl.duration();
-      const fit = core > TURN_BUDGET ? core / TURN_BUDGET : 1;
+      const budget = optsRef.current.budget === undefined ? TURN_BUDGET : optsRef.current.budget;
+      const fit = budget != null && core > budget ? core / budget : 1;
       tl.data = { fit };
       tl.timeScale(fit * speedRef.current);
       run(tl);

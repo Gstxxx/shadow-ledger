@@ -1,6 +1,6 @@
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
 import type { CSSProperties } from 'react';
-import { FastForward, Pause, Play, SkipForward, Swords } from 'lucide-react';
+import { Pause, Play, SkipForward, Swords } from 'lucide-react';
 import { canPlace, place, stepCombat, succeeded, TACTICS, unplace, autoDeploy } from '../../game/combat';
 import { cancelPending, negotiateCost } from '../../game/actions';
 import { abortLive, canAbortLive, chooseTactic, finishCombat, forceUnits } from '../../game/combatFlow';
@@ -16,11 +16,13 @@ import { msgText } from './msgText';
 import { CoupCinematic } from '../cinematics';
 import { BigNumber, Details, Verdict } from './stage/Verdict';
 import { IsoArena, figureSize, preloadCombat } from './arena/IsoArena';
-import { isMachine, posesOf, setsOf, spriteIdsOf, unitSprite } from './arena/unitSprites';
+import { animIn, isMachine, poseAnim, setsOf, spriteIdsOf, unitSprite } from './arena/unitSprites';
 import type { Pose } from './arena/unitSprites';
 import { Sprite, backSet, findAnim, useSpriteAtlas, variantSet } from '../../art';
 import type { IsoGeom } from './arena/IsoArena';
 import { CombatHistory } from './arena/CombatHistory';
+import { beatBuilder } from './arena/beats';
+import type { BeatHost, VfxSize } from './arena/beats';
 import { CombatResult, RedactedTitle, RollingNumber, combatSucceeded, useCombatFx } from '../combat-fx';
 import { GModal } from '../../art';
 
@@ -204,42 +206,112 @@ function PendingView() {
 
 // ── Grade ───────────────────────────────────────────────────
 
+type Speed = 1 | 2 | 4;
+const SPEEDS: Speed[] = [1, 2, 4];
+const SPEED_KEY = 'sl.combatSpeed';
+const savedSpeed = (): Speed => {
+  try {
+    const v = Number(localStorage.getItem(SPEED_KEY));
+    return v === 2 || v === 4 ? v : 1;
+  } catch {
+    return 1;
+  }
+};
+/** Duração (ms a 1×) de uma volta de cada efeito do vfx; o efeito sai depois de uma volta. */
+const VFX_MS: Record<string, number> = { explosion: 700, sparks: 420, blood: 600, smoke: 600 };
+/** Efeitos na escala da figura: faísca do tamanho do soldado, explosão de veículo bem maior. */
+const VFX_SCALE: Record<VfxSize, number> = { s: 1, m: 1.6, l: 2.6 };
+
 function LiveView() {
   const s = useGame();
   const c = s.combat!;
   const mutate = useGameStore((st) => st.mutate);
   const { t, lang } = useT();
   const [running, setRunning] = useState(c.reserve.length === 0 && c.units.some((u) => u.side === 'p'));
-  const [fast, setFast] = useState(false);
+  const [speed, setSpeed] = useState<Speed>(savedSpeed);
+  const pickSpeed = (v: Speed) => {
+    setSpeed(v);
+    try {
+      localStorage.setItem(SPEED_KEY, String(v));
+    } catch {
+      /* sem armazenamento: vale só nesta luta */
+    }
+  };
   const [sel, setSel] = useState<string | null>(null);
   const grid = useRef<HTMLDivElement>(null);
-  // O carimbo pequeno sai: o resultado vira a tela cheia de Vitória/Derrota (<CombatResult>).
-  // Arena isométrica: o eixo de avanço é deduzido das posições dos tokens.
-  const fx = useCombatFx({ grid, combat: c, speed: fast ? 2 : 1, verdict: false });
-  const manual = c.turn === 0 && c.reserve.length > 0;
-
-  // Sprites (já carregados pelo LiveGate): a cada turno, põe as poses (andar, atirar, levar dano) e os efeitos.
-  const [poses, setPoses] = useState<{ turn: number; map: Map<string, Pose> }>({ turn: 0, map: new Map() });
-  // Veículos XL abatidos ficam no campo como destroço (a combat-fx some com o token).
-  const lastUnits = useRef(c.units);
+  // Roteiro em batidas (arena/beats.ts): um tiro por vez; a tela guarda poses, efeitos, corpos e o log do turno.
+  const [beatPose, setBeatPose] = useState<Map<string, Pose>>(new Map());
+  const [vfx, setVfx] = useState<{ id: number; col: number; row: number; anim: string; size: VfxSize }[]>([]);
+  // Abatidos ficam no campo: destroço (veículo XL) ou corpo (Pessoal), até o fim da luta.
   const [wrecks, setWrecks] = useState<CombatUnitRef[]>([]);
+  const [bodies, setBodies] = useState<CombatUnitRef[]>([]);
+  // Linhas do log visíveis: as do turno saem na batida delas (abate em destaque), o resto no fim do turno.
+  const [shown, setShown] = useState(c.log.length);
+  const before = useRef(c.units);
+  const logLen = useRef(c.log.length);
+  const vfxSeq = useRef(0);
+  const speedRef = useRef(speed);
+  speedRef.current = speed;
+  const host = useRef<BeatHost>({
+    wrap: () => grid.current?.parentElement ?? null,
+    before: () => before.current,
+    pose: (key, p) =>
+      setBeatPose((m) => {
+        const n = new Map(m);
+        if (p) n.set(key, p);
+        else n.delete(key);
+        return n;
+      }),
+    vfx: (v) => {
+      const id = ++vfxSeq.current;
+      setVfx((l) => [...l, { ...v, id }]);
+      setTimeout(() => setVfx((l) => l.filter((x) => x.id !== id)), (VFX_MS[v.anim] ?? 600) / speedRef.current);
+    },
+    fallen: (r) => {
+      const sp = unitSprite(r);
+      if (!sp) return;
+      if (sp.xl) setWrecks((w) => (w.some((x) => x.key === r.key) ? w : [...w, r]));
+      else if (!isMachine(r)) setBodies((b) => (b.some((x) => x.key === r.key) ? b : [...b, r]));
+    },
+    reveal: (all) => setShown((n) => (all ? logLen.current : Math.min(n + 1, logLen.current))),
+    machine: (r) => isMachine(r),
+  });
+  const turnBuilder = useMemo(() => beatBuilder(host.current), []);
+  const fx = useCombatFx({ grid, combat: c, speed, verdict: false, turn: turnBuilder, budget: null });
+  const manual = c.turn === 0 && c.reserve.length > 0;
+  // Depois do useCombatFx (que lê `before` ao montar o turno): guarda o estado deste turno para o próximo.
+  const lastTurn = useRef(c.turn);
+  useLayoutEffect(() => {
+    const prevLen = logLen.current;
+    logLen.current = c.log.length;
+    before.current = c.units;
+    const stepped = c.turn === lastTurn.current + 1;
+    lastTurn.current = c.turn;
+    // Um turno de cada vez: as linhas novas esperam as batidas; salto (pular) ou posicionamento mostram tudo.
+    setShown(stepped && c.fx.length ? prevLen : c.log.length);
+    if (!stepped) setBeatPose(new Map());
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [c.turn, c.log.length, c.units]);
   useEffect(() => {
     setWrecks([]);
+    setBodies([]);
   }, [c.id]);
+  // O resultado só aparece quando a última batida termina.
+  const [settled, setSettled] = useState(!!c.result);
   useEffect(() => {
-    const before = lastUnits.current;
-    lastUnits.current = c.units;
-    const gone = c.fx.filter((f) => f.kind === 'down').map((f) => before.find((u) => u.key === f.key)).filter((u): u is CombatUnitRef => !!u && !!unitSprite(u)?.xl);
-    if (gone.length) setWrecks((w) => [...w, ...gone.filter((g) => !w.some((x) => x.key === g.key))]);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [c.turn]);
-  useEffect(() => {
-    if (!c.turn) return;
-    setPoses({ turn: c.turn, map: posesOf(c) });
-    const id = setTimeout(() => setPoses({ turn: c.turn, map: new Map() }), fast ? 600 : 1400);
+    if (!c.result) {
+      setSettled(false);
+      return;
+    }
+    let id = 0;
+    const wait = () => {
+      if (fx.busy()) id = window.setTimeout(wait, 100);
+      else id = window.setTimeout(() => setSettled(true), 350);
+    };
+    wait();
     return () => clearTimeout(id);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [c.turn]);
+  }, [c.result]);
 
   const step = () => {
     let fx: CombatState['fx'] = [];
@@ -258,13 +330,18 @@ function LiveView() {
     }
   };
 
+  // O turno dura o que as batidas dele duram: o próximo começa quando a timeline acaba, depois de uma pausa curta.
   useEffect(() => {
     if (!running || c.result) return;
-    // ~2 s por turno: dá para ver atirar → acertar → ferir/cair. O avanço rápido e o pular continuam.
-    const id = setInterval(step, fast ? 900 : 2100);
-    return () => clearInterval(id);
+    let id = 0;
+    const next = () => {
+      if (fx.busy()) id = window.setTimeout(next, 80);
+      else id = window.setTimeout(step, 450 / speedRef.current);
+    };
+    id = window.setTimeout(next, c.turn === 0 ? 250 : 80);
+    return () => clearTimeout(id);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [running, fast, c.result]);
+  }, [running, c.turn, c.result]);
 
   const cellClick = (row: number, col: number) => {
     if (c.result) return;
@@ -333,25 +410,24 @@ function LiveView() {
             }
             cellLabel={(row, col) => t('game.combat.cell', { row: row + 1, col: col + 1 })}
             onCell={cellClick}
-            renderUnit={(r, g) => <IsoToken key={r.key} r={r} c={c} g={g} pose={poses.map.get(r.key) ?? 'idle'} />}
+            renderUnit={(r, g) => <IsoToken key={r.key} r={r} c={c} g={g} pose={beatPose.get(r.key) ?? 'idle'} />}
             zoomLabels={{ in: t('game.map.zoomIn'), out: t('game.map.zoomOut') }}
             fitAll={c.turn > 0 || running}
           >
             {(g) => (
               <>
+                {bodies.map((r) => (
+                  <Body key={`b-${r.key}`} r={r} g={g} />
+                ))}
                 {wrecks.map((r) => (
                   <Wreck key={`w-${r.key}`} r={r} g={g} />
                 ))}
-                {poses.map.size > 0 &&
-              c.fx
-                .filter((f) => f.kind === 'hit' || f.kind === 'down')
-                .map((f, i) => {
-                  const [x, y] = g.center(f.col, f.row);
-                  const target = c.units.find((u) => u.key === f.key);
-                  const anim = f.kind === 'down' ? 'smoke' : target && isMachine(target) ? 'explosion' : 'sparks';
+                {vfx.map((v) => {
+                  const [x, y] = g.center(v.col, v.row);
+                  const base = infantryScale(g.tw, g);
                   return (
-                    <span key={`${poses.turn}-${i}`} className="iso-vfx" style={{ left: x, top: y, zIndex: g.depth(f.col, f.row) + 1 }}>
-                      <Sprite set="vfx" anim={anim} playing anchored scale={infantryScale(g.tw, g)} />
+                    <span key={v.id} className={`iso-vfx iso-vfx--${v.size}`} style={{ left: x, top: y + g.tw * 0.12, zIndex: g.depth(v.col, v.row) + 1 }}>
+                      <Sprite set="vfx" anim={v.anim} playing anchored speed={speed} scale={base * VFX_SCALE[v.size]} />
                     </span>
                   );
                 })}
@@ -376,13 +452,23 @@ function LiveView() {
         )}
 
         <div className={`cb-log mono${c.turn === 0 && !running ? ' cb-log--deploy' : ''}`}>
-          {c.log.slice(-3).map((l, i) => (
-            <div key={`${c.turn}-${i}`}>{msgText(c.logMsg?.[c.log.length - Math.min(3, c.log.length) + i], l, lang)}</div>
-          ))}
+          {c.log
+            .slice(0, shown)
+            .slice(-3)
+            .map((l, i, arr) => {
+              const at = shown - arr.length + i;
+              const m = c.logMsg?.[at];
+              const kill = m?.key === 'msg.fight.downed' || m?.key === 'msg.fight.convinced';
+              return (
+                <div key={at} className={kill ? 'cb-log-kill' : undefined}>
+                  {msgText(m, l, lang)}
+                </div>
+              );
+            })}
         </div>
-        {c.log.length > 0 && <CombatHistory c={c} />}
+        {shown > 0 && <CombatHistory c={c} count={shown} />}
 
-        {c.result && (
+        {c.result && settled && (
           <CombatResult
             kind={combatSucceeded(c) ? 'win' : 'lose'}
             title={combatSucceeded(c) ? t('game.combat.result.win').toUpperCase() : t('combatfx.stamp.lose')}
@@ -436,9 +522,13 @@ function LiveView() {
                   <button className="btn icon" aria-label={t('game.combat.oneTurn')} onClick={step} disabled={running}>
                     <SkipForward size={16} />
                   </button>
-                  <button className="btn icon" aria-label={t('game.combat.fast')} aria-pressed={fast} onClick={() => setFast(!fast)}>
-                    <FastForward size={16} />
-                  </button>
+                  <span className="cb-speed" role="group" aria-label={t('game.combat.fast')}>
+                    {SPEEDS.map((v) => (
+                      <button key={v} className="btn icon num" aria-pressed={speed === v} aria-label={t('game.combat.speed', { n: v })} onClick={() => pickSpeed(v)}>
+                        {v}×
+                      </button>
+                    ))}
+                  </span>
                   <span className="tb-spacer" />
                   <button className="btn" onClick={skip}>
                     {t('game.combat.skip')}
@@ -504,6 +594,24 @@ function xlScale(tw: number, frameWidth: number, id?: string) {
   return Math.max(0.25, Math.floor(s * 8) / 8);
 }
 
+/** Corpo do Pessoal abatido: toca `death` uma vez e fica no último quadro, no chão da casa, até o fim da luta. */
+function Body({ r, g }: { r: CombatUnitRef; g: IsoGeom }) {
+  const sp = unitSprite(r)!;
+  const base = variantSet(sp.set, r.unit.uid);
+  const backId = r.side === 'e' ? backSet(base) : base;
+  const back = useSpriteAtlas(backId);
+  const front = useSpriteAtlas(base);
+  const useBack = backId !== base && !!back && back.id === backId && !!findAnim(back, 'death');
+  const atlas = useBack ? back : front;
+  const [cx, cy] = g.center(r.col, r.row);
+  if (!atlas) return null;
+  return (
+    <span className="iso-vfx iso-body" style={{ left: cx, top: cy + g.tw * 0.12, zIndex: g.depth(r.col, r.row) - 1 }}>
+      <Sprite set={useBack ? backId : base} anim={animIn(atlas, 'death')} playing mirror={r.side === 'e'} scale={infantryScale(g.tw, g)} anchored />
+    </span>
+  );
+}
+
 /** Destroço de veículo: toca `_destroyed` uma vez e depois fica em `_wreck` (laço) até o fim da luta. */
 function Wreck({ r, g }: { r: CombatUnitRef; g: IsoGeom }) {
   const sp = unitSprite(r)!;
@@ -545,9 +653,11 @@ function IsoToken({ r, c, g, pose }: { r: CombatUnitRef; c: CombatState; g: IsoG
   const hasBack = !!backId && backId !== base;
   const front = useSpriteAtlas(base || 'vfx');
   const back = useSpriteAtlas(hasBack ? backId : base || 'vfx');
-  const useBack = !!sp && hasBack && !!back && back.id === backId && !!findAnim(back, sp.anims[pose]);
+  const want = sp ? poseAnim(sp, pose) : '';
+  const useBack = !!sp && hasBack && !!back && back.id === backId && !!findAnim(back, animIn(back, want, sp.anims.idle));
   const spriteSet = useBack ? backId : base;
   const atlas = useBack ? back : front;
+  const anim = sp ? animIn(atlas, want, sp.anims.idle) : '';
   const [cx, cy] = g.center(r.col, r.row);
   const w = f.w * g.tw;
   const h = f.h * g.tw;
@@ -576,7 +686,7 @@ function IsoToken({ r, c, g, pose }: { r: CombatUnitRef; c: CombatState; g: IsoG
     >
       {sp ? (
         <span className="iso-anchor" style={{ top: h - feet }}>
-          <Sprite set={spriteSet} anim={sp.anims[pose]} playing={pose !== 'idle' || sp.idleLoops} mirror={r.side === 'e'} scale={scale} anchored />
+          <Sprite set={spriteSet} anim={anim} playing={pose !== 'idle' || sp.idleLoops} mirror={r.side === 'e'} scale={scale} anchored />
         </span>
       ) : (
         <>

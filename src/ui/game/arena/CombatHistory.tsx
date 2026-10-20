@@ -8,7 +8,7 @@ import { msgText } from '../msgText';
  * Registro da luta inteiro (só no desktop, na coluna da direita): o mais novo em cima, separado por Rodada, com a
  * cor do lado de quem agiu e em negrito quem caiu ou trocou de lado. Nos celulares fica o log curto de 3 linhas.
  */
-export function CombatHistory({ c }: { c: CombatState }) {
+export function CombatHistory({ c, count = c.log.length }: { c: CombatState; /** linhas já mostradas (as do turno saem batida a batida) */ count?: number }) {
   const { t, lang } = useT();
   // Lado pelo nome de quem age: guarda o primeiro lado visto (quem trocou de lado segue com a cor de origem).
   const sides = useRef(new Map<string, 'p' | 'e'>());
@@ -16,7 +16,7 @@ export function CombatHistory({ c }: { c: CombatState }) {
   for (const u of c.reserve) if (!sides.current.has(u.name)) sides.current.set(u.name, 'p');
 
   const groups: { turn: number; lines: ReactNode[] }[] = [];
-  for (let i = c.log.length - 1; i >= 0; i--) {
+  for (let i = Math.min(count, c.log.length) - 1; i >= 0; i--) {
     const turn = c.logTurn?.[i] ?? c.turn;
     let grp = groups[groups.length - 1];
     if (!grp || grp.turn !== turn) groups.push((grp = { turn, lines: [] }));

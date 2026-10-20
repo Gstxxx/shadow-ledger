@@ -3,19 +3,19 @@ import { def, FORT_ID } from '../../../game/units';
 import { backSet, variantSet } from '../../../art';
 
 /** Estado visual de uma figura na arena num turno. */
-export type Pose = 'idle' | 'walk' | 'shoot' | 'hurt';
+export type Pose = 'idle' | 'walk' | 'aim' | 'shoot' | 'hurt';
 
 export interface UnitSprite {
   set: string;
   /** chave da animação por pose; `null` = quadro fixo da pose idle */
-  anims: Record<Pose, string>;
+  anims: Record<Exclude<Pose, 'aim'>, string> & { aim?: string };
   /** idle animado (helicóptero pairando, jato voando) ou parado no 1º quadro */
   idleLoops: boolean;
   /** veículo do pacote XL (atlas próprio por veículo, `vehicles-xl-<id>` e `-back`) */
   xl?: string;
 }
 
-const person = (set: string): UnitSprite => ({ set, anims: { idle: 'idle', walk: 'walk', shoot: 'shoot', hurt: 'hurt' }, idleLoops: true });
+const person = (set: string): UnitSprite => ({ set, anims: { idle: 'idle', walk: 'walk', aim: 'aim', shoot: 'shoot', hurt: 'hurt' }, idleLoops: true });
 const ground = (set: string, id: string, idle = `${id}_move`): UnitSprite => ({
   set,
   anims: { idle, walk: `${id}_move`, shoot: `${id}_shoot`, hurt: `${id}_move` },
@@ -80,6 +80,27 @@ function baseSprite(r: CombatUnitRef): UnitSprite | null {
   if (cls === 'influence') return person('influence');
   if (cls === 'human') return person(r.side === 'e' ? 'criminal' : 'urban');
   return null;
+}
+
+/** Animação da pose (a mira cai para o idle quando o conjunto não tem uma). */
+export const poseAnim = (sp: UnitSprite, pose: Pose) => (pose === 'aim' ? (sp.anims.aim ?? sp.anims.idle) : sp.anims[pose]);
+
+/**
+ * Nome de animação que o atlas tem de verdade: os conjuntos variam (o militar atira com `burst`, o jurídico
+ * "atira" com `objection`, nem todos têm `hurt`). Cai para as alternativas e, por fim, para o idle.
+ */
+const ALT: Record<string, string[]> = {
+  shoot: ['burst', 'objection', 'argue', 'aim'],
+  aim: ['present_evidence', 'argue'],
+  hurt: ['kneel', 'cover', 'phone'],
+  death: ['defeat_victory'],
+};
+export function animIn(atlas: { animations: { name: string }[] } | undefined, want: string, idle = 'idle'): string {
+  if (!atlas) return want;
+  const has = (n: string) => atlas.animations.some((a) => a.name === n);
+  if (has(want)) return want;
+  for (const n of ALT[want] ?? []) if (has(n)) return n;
+  return has(idle) ? idle : want;
 }
 
 export const isMachine = (r: CombatUnitRef) => {
