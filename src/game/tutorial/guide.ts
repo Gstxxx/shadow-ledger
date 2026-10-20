@@ -10,9 +10,9 @@ export const GUIDE_STEPS: GuideStepId[] = ['buy', 'fly', 'sell', 'station', 'con
 
 /** Âncoras `data-tour` do spotlight, em ordem de preferência (a primeira visível ganha). */
 export const STEP_TARGETS: Record<GuideStepId, string[]> = {
-  buy: ['buy', 'market', 'drawer-left'],
+  buy: ['buy', 'market', 'market-dock', 'drawer-left'],
   fly: ['fly', 'map'],
-  sell: ['sell', 'market', 'drawer-left'],
+  sell: ['sell', 'market', 'market-dock', 'drawer-left'],
   station: ['open-station', 'drawer-left'],
   contract: ['tab-contracts', 'drawer-right'],
   free: [],

@@ -22,8 +22,19 @@ import { akey, hasAnalystKey, useAnalystT } from './strings';
 import type { AnalystKey } from './strings';
 import './analyst.css';
 
-const TONE_MOOD: Record<Tone, AnalystMood> = { bad: 'alert', warn: 'concerned', good: 'pleased', info: 'neutral', intel: 'neutral' };
-const TOPIC_MOOD: Partial<Record<TopicId, AnalystMood>> = { combat: 'concerned', threat: 'concerned', tension: 'alert', rival: 'concerned' };
+const TONE_MOOD: Record<Tone, AnalystMood> = {
+  bad: 'alert',
+  warn: 'concerned',
+  good: 'pleased',
+  info: 'neutral',
+  intel: 'neutral',
+};
+const TOPIC_MOOD: Partial<Record<TopicId, AnalystMood>> = {
+  combat: 'concerned',
+  threat: 'concerned',
+  tension: 'alert',
+  rival: 'concerned',
+};
 
 /** Comentário curto para um Evento: o mais específico que existir (tipo + tom, tipo, tom). */
 function eventKey(e: GameEvent): AnalystKey {
@@ -33,13 +44,45 @@ function eventKey(e: GameEvent): AnalystKey {
   return 'analyst.event.intel';
 }
 
-/** Primeiro elemento `[data-tour]` visível na tela, na ordem de preferência. */
-function findTarget(ids: string[]): DOMRect | null {
-  for (const id of ids) {
+/** Ancestral com rolagem mais próximo: o anel é recortado por ele. */
+function scroller(el: HTMLElement): HTMLElement | null {
+  for (let p = el.parentElement; p; p = p.parentElement) {
+    const o = getComputedStyle(p).overflowY;
+    if ((o === 'auto' || o === 'scroll') && p.scrollHeight > p.clientHeight) return p;
+  }
+  return null;
+}
+
+/** Parte do elemento que está à vista: dentro da tela, do contêiner com rolagem e não coberta por um modal. */
+function visibleRect(el: HTMLElement): DOMRect | null {
+  let r = el.getBoundingClientRect();
+  if (!r.width || !r.height || getComputedStyle(el).visibility === 'hidden') return null;
+  const box = scroller(el)?.getBoundingClientRect();
+  const left = Math.max(r.left, box?.left ?? 0, 0);
+  const top = Math.max(r.top, box?.top ?? 0, 0);
+  const right = Math.min(r.right, box?.right ?? innerWidth, innerWidth);
+  const bottom = Math.min(r.bottom, box?.bottom ?? innerHeight, innerHeight);
+  if (right - left < 8 || bottom - top < 8) return null;
+  r = new DOMRect(left, top, right - left, bottom - top);
+  // Coberto por outra camada (ex.: o Mercado aberto em modal por cima da barra de baixo)?
+  const hit = document.elementFromPoint(left + (right - left) / 2, top + (bottom - top) / 2);
+  if (hit && hit !== el && !el.contains(hit) && !hit.closest('.analyst-layer, .analyst-ring')) return null;
+  return r;
+}
+
+/**
+ * Primeiro alvo `[data-tour]` à vista, na ordem de preferência. O alvo principal que existe mas está fora da
+ * área visível (ex.: Comprar abaixo da dobra) é rolado para a vista uma vez por `key`.
+ */
+function findTarget(ids: string[], scrolled?: { current: string | null }, key = ''): DOMRect | null {
+  for (const [i, id] of ids.entries()) {
     for (const el of document.querySelectorAll<HTMLElement>(`[data-tour="${id}"]`)) {
-      const r = el.getBoundingClientRect();
-      const visible = r.width > 0 && r.height > 0 && r.right > 0 && r.bottom > 0 && r.left < innerWidth && r.top < innerHeight;
-      if (visible && getComputedStyle(el).visibility !== 'hidden') return r;
+      const r = visibleRect(el);
+      if (r) return r;
+      if (i === 0 && scrolled && scrolled.current !== key && el.getBoundingClientRect().width) {
+        scrolled.current = key;
+        el.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
+      }
     }
   }
   return null;
@@ -69,6 +112,19 @@ function useRect(read: () => DOMRect | null, deps: unknown[]): DOMRect | null {
   return rect;
 }
 
+/** Tela baixa (celular deitado, ~640×360): a altura é o recurso escasso. */
+function useCompact(): boolean {
+  const query = '(max-height: 520px)';
+  const [on, setOn] = useState(() => matchMedia(query).matches);
+  useEffect(() => {
+    const mq = matchMedia(query);
+    const onChange = () => setOn(mq.matches);
+    mq.addEventListener('change', onChange);
+    return () => mq.removeEventListener('change', onChange);
+  }, []);
+  return on;
+}
+
 interface Line {
   id: string;
   mood: AnalystMood;
@@ -89,7 +145,8 @@ export function AnalystLayer({ onOpenDrawer }: AnalystLayerProps) {
   const mem = useAnalystMemory();
   const t = useAnalystT();
   const [done, setDone] = useState<{ text: string; at: number } | null>(null);
-  const [hintOpen, setHintOpen] = useState(true);
+  // Dica do objetivo: aberta por padrão; recolhida em tela baixa até o jogador tocar no chip.
+  const [hintChoice, setHintOpen] = useState<boolean | null>(null);
   const pausedByMe = useRef<TopicId | null>(null);
 
   // Guia: avança pelo estado do jogo e guarda no save quando muda.
@@ -105,7 +162,7 @@ export function AnalystLayer({ onOpenDrawer }: AnalystLayerProps) {
           ? t(isTutorialPreset(s.options.preset) ? 'analyst.done.unlocked' : 'analyst.done.free')
           : t(akey(`analyst.done.${last}`));
       setDone({ text, at: Date.now() });
-      setHintOpen(true);
+      setHintOpen(null);
     }
     if (signature(s) !== before) mutate(() => {});
   }, [rev]); // eslint-disable-line react-hooks/exhaustive-deps
@@ -121,7 +178,12 @@ export function AnalystLayer({ onOpenDrawer }: AnalystLayerProps) {
 
   let line: Line | null = null;
   if (!mem.muted && s) {
-    if (ev) line = { id: `ev-${ev.id}`, mood: TONE_MOOD[ev.tone] ?? 'neutral', text: t(eventKey(ev)) };
+    if (ev)
+      line = {
+        id: `ev-${ev.id}`,
+        mood: TONE_MOOD[ev.tone] ?? 'neutral',
+        text: t(eventKey(ev)),
+      };
     else if (done) line = { id: `dn-${done.at}`, mood: 'pleased', text: done.text };
     else if (topic)
       line = {
@@ -156,8 +218,23 @@ export function AnalystLayer({ onOpenDrawer }: AnalystLayerProps) {
   const blocked = !!(s?.combat || s?.pendingCombat || ev);
   // Enquanto explica um tópico, destaca o elemento dele; senão, o alvo do passo do guia.
   const targets = line?.topic ? (TOPIC_TARGETS[line.topic] ?? []) : guiding && !blocked ? STEP_TARGETS[step!] : [];
-  const ring = useRect(() => (targets.length ? findTarget(targets) : null), [targets.join(), rev]);
+  const scrolled = useRef<string | null>(null);
+  const ring = useRect(
+    () => (targets.length ? findTarget(targets, scrolled, `${step}|${line?.id ?? ''}`) : null),
+    [targets.join(), rev],
+  );
   const map = useRect(() => document.querySelector('.map-area')?.getBoundingClientRect() ?? null, []);
+  // Topo mais alto das barras de baixo (Relatório, barra de ações): o balão fica acima delas.
+  const floor = useRect(() => {
+    let top = innerHeight;
+    for (const el of document.querySelectorAll<HTMLElement>('.log, [data-tour$="-dock"]')) {
+      const r = el.getBoundingClientRect();
+      if (r.width && r.height && r.top > innerHeight / 2) top = Math.min(top, r.top);
+    }
+    return new DOMRect(0, top, 0, 0);
+  }, []);
+  const compact = useCompact();
+  const hintOpen = hintChoice ?? !compact;
 
   if (!s) return null;
 
@@ -174,67 +251,90 @@ export function AnalystLayer({ onOpenDrawer }: AnalystLayerProps) {
   const progress = tut ? guideProgress(tut) : null;
   const corner = {
     left: (map?.left ?? 0) + 10,
-    bottom: Math.max(10, innerHeight - (map?.bottom ?? innerHeight) + 52),
+    bottom: Math.max(10, innerHeight - (floor?.top ?? innerHeight) + 8),
   };
 
   return (
-    <div className="analyst-layer" aria-live="polite">
+    <>
+      {/* O anel fica fora da camada: aparece também sobre os modais (Mercado, País), sem capturar cliques. */}
       {ring && (
         <div
           className="analyst-ring"
-          style={{ left: ring.left - 6, top: ring.top - 6, width: ring.width + 12, height: ring.height + 12 }}
+          style={{
+            left: ring.left - 6,
+            top: ring.top - 6,
+            width: ring.width + 12,
+            height: ring.height + 12,
+          }}
           aria-hidden
         />
       )}
-      <div className="analyst-dock" style={corner}>
-        {guiding && progress && (
-          <div className="analyst-objective">
-            <button className="analyst-objective-head" onClick={() => setHintOpen(!hintOpen)} aria-expanded={hintOpen}>
-              <span className="mono analyst-kicker">{t('analyst.objective', { n: progress.n, total: progress.total })}</span>
-              <span className="analyst-objective-title">{t(akey(`analyst.step.${step}.title`))}</span>
-            </button>
-            {hintOpen && (
-              <p className="analyst-objective-hint">
-                {t(akey(`analyst.step.${step}.hint`))}{' '}
-                {onOpenDrawer && (step === 'buy' || step === 'sell' || step === 'station') && !ring && (
-                  <button className="analyst-link" onClick={() => onOpenDrawer('left')} aria-label={t('analyst.openPanel')} title={t('analyst.openPanel')}>
-                    <PanelLeftOpen size={14} />
+      <div className="analyst-layer" aria-live="polite">
+        <div className="analyst-dock" style={corner}>
+          {guiding && progress && !(compact && line) && (
+            <div className="analyst-objective">
+              <button className="analyst-objective-head" onClick={() => setHintOpen(!hintOpen)} aria-expanded={hintOpen}>
+                <span className="mono analyst-kicker">
+                  {t('analyst.objective', {
+                    n: progress.n,
+                    total: progress.total,
+                  })}
+                </span>
+                <span className="analyst-objective-title">{t(akey(`analyst.step.${step}.title`))}</span>
+              </button>
+              {hintOpen && (
+                <p className="analyst-objective-hint">
+                  {t(akey(`analyst.step.${step}.hint`))}{' '}
+                  {onOpenDrawer && (step === 'buy' || step === 'sell' || step === 'station') && !ring && (
+                    <button
+                      className="analyst-link"
+                      onClick={() => onOpenDrawer('left')}
+                      aria-label={t('analyst.openPanel')}
+                      title={t('analyst.openPanel')}
+                    >
+                      <PanelLeftOpen size={14} />
+                    </button>
+                  )}
+                  <button className="analyst-link" onClick={() => mutate((g) => skipGuide(g))}>
+                    {t('analyst.skipGuide')}
                   </button>
-                )}
-                <button className="analyst-link" onClick={() => mutate((g) => skipGuide(g))}>
-                  {t('analyst.skipGuide')}
-                </button>
-              </p>
-            )}
-          </div>
-        )}
-        {line ? (
-          <div className={`analyst-balloon mood-${line.mood}`} key={line.id}>
-            <AnalystPortrait mood={line.mood} size={56} speaking={speaking} className="analyst-face" title={t('analyst.name')} />
-            <div className="analyst-body">
-              <span className="mono analyst-kicker">{line.title ?? t('analyst.name')}</span>
-              <p className="analyst-text">{line.text}</p>
-              <div className="analyst-actions">
-                {(line.topic || line.id.startsWith('dn-')) && (
-                  <button className="btn sm primary" onClick={ack}>
-                    {t('analyst.ok')}
+                </p>
+              )}
+            </div>
+          )}
+          {line ? (
+            <div className={`analyst-balloon mood-${line.mood}`} key={line.id}>
+              <AnalystPortrait mood={line.mood} size={56} speaking={speaking} className="analyst-face" title={t('analyst.name')} />
+              <div className="analyst-body">
+                <span className="mono analyst-kicker">{line.title ?? t('analyst.name')}</span>
+                <p className="analyst-text">{line.text}</p>
+                <div className="analyst-actions">
+                  {(line.topic || line.id.startsWith('dn-')) && (
+                    <button className="btn sm primary" onClick={ack}>
+                      {t('analyst.ok')}
+                    </button>
+                  )}
+                  <button className="analyst-link" onClick={() => analystMemory.setMuted(true)}>
+                    {t('analyst.mute')}
                   </button>
-                )}
-                <button className="analyst-link" onClick={() => analystMemory.setMuted(true)}>
-                  {t('analyst.mute')}
-                </button>
+                </div>
               </div>
             </div>
-          </div>
-        ) : (
-          mem.muted && (
-            <button className="analyst-mini" onClick={() => analystMemory.setMuted(false)} aria-label={t('analyst.unmute')} title={t('analyst.unmute')}>
-              <AnalystPortrait mood="neutral" size={36} blink={false} />
-            </button>
-          )
-        )}
+          ) : (
+            mem.muted && (
+              <button
+                className="analyst-mini"
+                onClick={() => analystMemory.setMuted(false)}
+                aria-label={t('analyst.unmute')}
+                title={t('analyst.unmute')}
+              >
+                <AnalystPortrait mood="neutral" size={36} blink={false} />
+              </button>
+            )
+          )}
+        </div>
       </div>
-    </div>
+    </>
   );
 }
 

@@ -38,13 +38,14 @@ export const TOPIC_ORDER: TopicId[] = [
 
 /** Âncoras `data-tour` que a Analista destaca enquanto explica cada tópico. */
 export const TOPIC_TARGETS: Partial<Record<TopicId, string[]>> = {
-  fleet: ['fleet'],
-  buy: ['market', 'buy'],
+  fleet: ['fleet', 'drawer-right'],
+  buy: ['market', 'buy', 'market-dock'],
   fly: ['speed'],
-  station: ['open-station'],
-  threat: ['tab-threats'],
-  contract: ['tab-contracts'],
-  team: ['tab-teams'],
+  station: ['open-station', 'drawer-left'],
+  threat: ['tab-threats', 'threats-dock'],
+  combat: ['combat-dock'],
+  contract: ['tab-contracts', 'drawer-right'],
+  team: ['tab-teams', 'drawer-right'],
   tension: ['tension'],
 };
 
