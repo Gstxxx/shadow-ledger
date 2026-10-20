@@ -106,12 +106,12 @@ export function StationInterior({ level, maxWidth = 320, maxHeight = 190, classN
   return <SpriteStill group="interiors" id={still.id} scale={n} alt={alt} className={`msp-interior${className ? ` ${className}` : ''}`} />;
 }
 
-/** Variante do Diretor por Origem (as que ainda não têm linha própria no atlas usam o idle comum). */
-const ORIGIN_ANIM: Partial<Record<Exclude<OriginId, 'none'>, string>> = { exagent: 'ex_agent', banker: 'banker', colonel: 'colonel' };
+/** Variante do Diretor por Origem: linha `<origem>_idle` do atlas (as 6 Origens, ids de origins.ts). */
+const originAnim = (origin?: OriginId) => (origin && origin !== 'none' ? `${origin}_idle` : 'director_idle');
 
 /** Diretor em pixel art (atlas "director"), animado; com reduzir movimento mostra o 1º quadro (Sprite da art-kit). */
 export function DirectorSprite({ origin, scale = 2, className, title = '' }: { origin?: OriginId; scale?: number; className?: string; title?: string }) {
-  const anim = (origin && origin !== 'none' && ORIGIN_ANIM[origin]) || 'director_idle';
+  const anim = originAnim(origin);
   // Reduzir movimento das Configurações também para a animação (o Sprite já respeita o do sistema).
   const still = useSettings((st) => st.reducedMotion);
   return <Sprite set="director" anim={anim} playing={!still} scale={scale} alt={title} className={`msp-dir${className ? ` ${className}` : ''}`} />;
