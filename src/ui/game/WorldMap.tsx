@@ -210,6 +210,58 @@ export function WorldMap({ mode, onPickCountry }: { mode: MapMode; onPickCountry
   }, []);
   const pointers = useRef(new Map<number, { x: number; y: number }>());
   const drag = useRef<{ moved: number; pinch?: number } | null>(null);
+  // Última vez que a pessoa mexeu no mapa (arrastar, pinça, roda): o seguir-o-avião respeita isso.
+  const userAt = useRef(0);
+
+  // Seguir o avião: durante um voo, se um painel (objetivo, Analista, barra de ações…) cobre o avião, a câmera
+  // desliza aos poucos até o ponto livre mais perto do centro. Nunca enquanto a pessoa arrasta, nem 4 s depois.
+  useEffect(() => {
+    if (!a.flight) return;
+    const timer = setInterval(() => {
+      const el = svg.current;
+      const g = useGameStore.getState().game;
+      const me = g?.agencies.find((x) => x.isPlayer);
+      if (!el || !g || !me?.flight || drag.current || Date.now() - userAt.current < 4000) return;
+      const r = el.getBoundingClientRect();
+      if (!r.width) return;
+      const [lon, lat] = flightPos(me.flight, g);
+      const [px, py] = project(lon, lat);
+      setView((v) => {
+        const toScreen = (ux: number, uy: number) => [r.left + ((ux - box.x) / box.w) * r.width, r.top + ((uy - box.y) / box.h) * r.height] as const;
+        const free = (sx: number, sy: number) => {
+          if (sx < r.left + 8 || sx > r.right - 8 || sy < r.top + 8 || sy > r.bottom - 8) return false;
+          const top = document.elementFromPoint(sx, sy);
+          return !!top && el.contains(top);
+        };
+        const [sx, sy] = toScreen(v.x + px * v.k, v.y + py * v.k);
+        if (free(sx, sy)) return v;
+        // Pontos candidatos numa grade 5×5 da área do mapa; fica o livre mais perto do centro.
+        let best: [number, number] | null = null;
+        let bestD = Infinity;
+        for (let i = 1; i <= 5; i++)
+          for (let j = 1; j <= 5; j++) {
+            const cx = r.left + (r.width * i) / 6;
+            const cy = r.top + (r.height * j) / 6;
+            if (!free(cx, cy)) continue;
+            const d = Math.hypot(cx - (r.left + r.width / 2), cy - (r.top + r.height / 2));
+            if (d < bestD) {
+              bestD = d;
+              best = [cx, cy];
+            }
+          }
+        if (!best) return v;
+        // Desloca 25% do caminho por passo (desliza em vez de pular).
+        const ux = box.x + ((best[0] - r.left) / r.width) * box.w;
+        const uy = box.y + ((best[1] - r.top) / r.height) * box.h;
+        const tx = ux - px * v.k;
+        const ty = uy - py * v.k;
+        // Com a rota na borda do mundo (as Américas ficam na borda esquerda), a câmera pode passar um pouco dela.
+        const next = clampLoose({ ...v, x: v.x + (tx - v.x) * 0.25, y: v.y + (ty - v.y) * 0.25 }, 0.4);
+        return Math.abs(next.x - v.x) + Math.abs(next.y - v.y) < 0.5 ? v : next;
+      });
+    }, 500);
+    return () => clearInterval(timer);
+  }, [flightKey]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const fills = useMemo(() => {
     const out: Record<string, string> = {};
@@ -245,6 +297,7 @@ export function WorldMap({ mode, onPickCountry }: { mode: MapMode; onPickCountry
   };
 
   const onWheel = (e: React.WheelEvent) => {
+    userAt.current = Date.now();
     const p = toSvg(e.clientX, e.clientY);
     zoomAt(p.x, p.y, e.deltaY < 0 ? 1.18 : 1 / 1.18);
   };
@@ -268,6 +321,7 @@ export function WorldMap({ mode, onPickCountry }: { mode: MapMode; onPickCountry
       const dist = Math.hypot(p1.x - p2.x, p1.y - p2.y);
       const mid = toSvg((p1.x + p2.x) / 2, (p1.y + p2.y) / 2);
       zoomAt(mid.x, mid.y, dist / drag.current.pinch);
+      userAt.current = Date.now();
       drag.current.pinch = dist;
       drag.current.moved += 10;
       return;
@@ -275,7 +329,10 @@ export function WorldMap({ mode, onPickCountry }: { mode: MapMode; onPickCountry
     const a0 = toSvg(prev.x, prev.y);
     const a1 = toSvg(cur.x, cur.y);
     drag.current.moved += Math.abs(cur.x - prev.x) + Math.abs(cur.y - prev.y);
-    if (drag.current.moved > 4) setView((v) => clampView({ ...v, x: v.x + (a1.x - a0.x), y: v.y + (a1.y - a0.y) }));
+    if (drag.current.moved > 4) {
+      userAt.current = Date.now();
+      setView((v) => clampView({ ...v, x: v.x + (a1.x - a0.x), y: v.y + (a1.y - a0.y) }));
+    }
   };
 
   const onPointerUp = (e: React.PointerEvent) => {
@@ -629,6 +686,16 @@ function focusView(lon: number, lat: number, want: number): View {
   // Centra com o zoom efetivo (no celular em pé o mínimo para cobrir a tela passa do pedido).
   const k = Math.max(minK(), want);
   return clampView({ k, x: box.x + box.w / 2 - px * k, y: box.y + box.h / 2 - py * k });
+}
+
+/** Como clampView, mas deixa passar da borda do mundo até `slack` × a largura/altura visível (seguir o avião). */
+function clampLoose(v: View, slack: number): View {
+  const k = Math.max(minK(), v.k);
+  const sx = box.w * slack;
+  const sy = box.h * slack;
+  const x = Math.min(box.x + sx, Math.max(box.x + box.w - W * k - sx, v.x));
+  const y = Math.min(box.y + sy, Math.max(box.y + box.h - H * k - sy, v.y));
+  return { k, x, y };
 }
 
 function clampView(v: View): View {
