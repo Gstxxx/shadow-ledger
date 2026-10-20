@@ -194,7 +194,7 @@ export function ItemTrade({ countryId, itemId, initialSide }: { countryId: strin
 
   return (
     <div className="trade2">
-      {/* Imagem herói: ilustração da menu-motion, senão o ícone, na moldura do ItemPic. */}
+      {/* Imagem herói: foto tratada (art-kit), senão a ilustração da menu-motion, senão o ícone, na moldura do ItemPic. */}
       <div className="trade2-hero">
         <ItemPic id={itemId} size="lg" accent={r.it.wmd ? 'signal' : 'warm'} />
       </div>

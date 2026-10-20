@@ -762,7 +762,8 @@ html:root {
   width: 100%;
   height: 100%;
 }
-.ipic > svg.ii {
+.ipic > svg.ii,
+.ipic > figure {
   display: block;
   width: 100% !important;
   height: 100% !important;
