@@ -130,5 +130,15 @@
  "index": [
   "vehicles-xl"
  ],
- "bytes": 3140616
+ "arenas": [
+  "arenas/aereo/aereo",
+  "arenas/juridico/juridico",
+  "arenas/militar/militar",
+  "arenas/urbano/urbano"
+ ],
+ "scenes": [
+  "menu/menu-landscape",
+  "menu/menu-portrait"
+ ],
+ "bytes": 4370666
 }

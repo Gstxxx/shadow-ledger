@@ -1,0 +1,15 @@
+{
+  "kind": "scene",
+  "id": "menu-portrait",
+  "name": "menu-portrait",
+  "image": "menu-portrait-anim.png",
+  "static": "menu-portrait.png",
+  "frameWidth": 216,
+  "frameHeight": 384,
+  "frames": 12,
+  "fps": 8,
+  "columns": 6,
+  "rows": 2,
+  "recommendedScale": 5,
+  "note": "Opaque. Integer-upscale with nearest-neighbour (x5 -> 1080x1920). Left ~40% darkened for menu text."
+}

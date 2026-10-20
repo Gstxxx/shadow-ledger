@@ -1,0 +1,44 @@
+{
+  "kind": "arena",
+  "id": "urbano",
+  "name": "urbano",
+  "image": "urbano-anim.png",
+  "static": "urbano.png",
+  "front": "urbano-front.png",
+  "frameWidth": 396,
+  "frameHeight": 342,
+  "frames": 6,
+  "fps": 6,
+  "columns": 6,
+  "rows": 1,
+  "gridOrigin": {
+    "x": 124,
+    "y": 160
+  },
+  "cellW": 28,
+  "cellH": 14,
+  "colStep": {
+    "x": 28,
+    "y": 14
+  },
+  "rowStep": {
+    "x": -28,
+    "y": 14
+  },
+  "grid": {
+    "cols": 8,
+    "rows": 3,
+    "cellVoxels": 14,
+    "playerCols": [
+      0,
+      1,
+      2
+    ],
+    "enemyCols": [
+      5,
+      6,
+      7
+    ]
+  },
+  "note": "Pixel-edge coords at 1x. Corner of cell (c,r) = gridOrigin + c*colStep + r*rowStep; cell centre = corner + 0.5*(colStep+rowStep). Character sprites (rig.py, 128x100) put world origin at pixel edge (64,70): draw them at centre - (64,70)."
+}

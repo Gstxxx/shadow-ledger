@@ -1,0 +1,15 @@
+{
+  "kind": "scene",
+  "id": "menu-landscape",
+  "name": "menu-landscape",
+  "image": "menu-landscape-anim.png",
+  "static": "menu-landscape.png",
+  "frameWidth": 384,
+  "frameHeight": 216,
+  "frames": 12,
+  "fps": 8,
+  "columns": 4,
+  "rows": 3,
+  "recommendedScale": 5,
+  "note": "Opaque. Integer-upscale with nearest-neighbour (x5 -> 1920x1080). Left ~40% darkened for menu text."
+}

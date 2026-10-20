@@ -2,7 +2,7 @@
 
 Uso (na raiz do repositório):  python -I tools/sprites/build.py [conjunto ...]
   SPRITES_PREVIEW=1  também grava folhas de conferência em tools/sprites/preview.local/
-Precisa só de Python 3.10+ e Pillow. Cada gerador roda em processo próprio porque vários trocam
+Precisa de Python 3.10+ e Pillow (e numpy para scenes/). Cada gerador roda em processo próprio porque vários trocam
 rig.upper / rig.C ao importar.
 """
 import glob, json, os, shutil, subprocess, sys, time
@@ -28,6 +28,8 @@ VIEW_SETS = ['urban', 'military', 'legal', 'pilot', 'influence', 'police', 'crim
 VEH_BACK = ['veiculos_leves', 'blindados', 'helicopteros', 'aereos_cacas', 'aereos_bomb_aa']
 # misc/: aviões do mapa, ícones de interface, veículos XL (frente + costas) e retratos da história (independentes)
 MISC = ['gen_map_planes', 'gen_ui_icons', 'gen_vehicles_xl', 'gen_portraits']
+# scenes/: fundos de combate (public/sprites/arenas/<nome>/) e cena do menu (public/sprites/menu/); precisam de numpy
+ARENAS = ['urbano', 'militar', 'juridico', 'aereo']
 
 
 def main(only):
@@ -40,7 +42,12 @@ def main(only):
     t0 = time.time()
     md = os.path.join(HERE, 'misc')
     misc = [m for m in MISC if not only or m in only]
-    failed = run([(g, [os.path.join(HERE, g + '.py')]) for g in gens] + [(f'misc:{m}', [os.path.join(md, m + '.py')]) for m in misc])
+    sd = os.path.join(HERE, 'scenes')
+    scenes = [(f'scenes:{a}', [os.path.join(sd, 'arenas.py'), a]) for a in ARENAS if not only or a in only or 'arenas' in only]
+    if not only or 'menu' in only:
+        scenes.append(('scenes:menu', [os.path.join(sd, 'menu.py')]))
+    failed = run([(g, [os.path.join(HERE, g + '.py')]) for g in gens] + [(f'misc:{m}', [os.path.join(md, m + '.py')]) for m in misc]
+                 + scenes)
     # 2ª fase: costas + variantes dos personagens e costas dos veículos (dependem dos manifestos de frente)
     vd = os.path.join(HERE, 'views')
     jobs = [(f'views:{s}', [os.path.join(vd, 'gen.py'), s]) for s in VIEW_SETS if not only or s in only]
@@ -66,17 +73,20 @@ def run(jobs):
 
 
 def index():
-    sets, groups, icons, indexes, total = [], [], [], [], 0
-    for path in sorted(glob.glob(os.path.join(atlas.PUB, '*.json'))):
-        name = os.path.basename(path)
-        if name == 'index.json':
+    sets, groups, icons, indexes, arenas, scenes, total = [], [], [], [], [], [], 0
+    for path in sorted(glob.glob(os.path.join(atlas.PUB, '**', '*.json'), recursive=True)):
+        rel = os.path.relpath(path, atlas.PUB).replace(os.sep, '/')[:-5]
+        if rel == 'index':
             continue
         m = json.load(open(path, encoding='utf-8'))
-        {'atlas': sets, 'static': groups, 'icons': icons, 'index': indexes}[m['kind']].append(m['id'])
+        # atlas/ícones/grupos: pelo id; arenas e cenas: pelo caminho do manifesto (sem .json)
+        {'atlas': sets, 'static': groups, 'icons': icons, 'index': indexes, 'arena': arenas, 'scene': scenes}[m['kind']].append(
+            rel if m['kind'] in ('arena', 'scene') else m['id'])
     for f in glob.glob(os.path.join(atlas.PUB, '**', '*'), recursive=True):
         if os.path.isfile(f) and not f.endswith('index.json'):
             total += os.path.getsize(f)
-    atlas._json(dict(atlas=sets, static=groups, icons=icons, index=indexes, bytes=total), os.path.join(atlas.PUB, 'index.json'))
+    atlas._json(dict(atlas=sets, static=groups, icons=icons, index=indexes, arenas=arenas, scenes=scenes, bytes=total),
+                os.path.join(atlas.PUB, 'index.json'))
     print(f'índice: {len(sets)} atlas, {len(groups)} grupos avulsos, {len(icons)} folhas de ícones, {total / 1024:.0f} KB')
 
 

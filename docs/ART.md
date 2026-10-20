@@ -426,6 +426,25 @@ Personagens, veículos, aeronaves, efeitos, marcadores do mapa, carga e prédios
 - **Retratos da história (`portraits-story-128` e `-64`):** bustos de `analyst arrieta moravia_boss moravia_enforcer`, com `<id>_idle` de 4 quadros a 4 fps. O campo opcional `durations` dá os ms de cada quadro.
 - **Tempo e peso:** cerca de 50 s no build completo (aviões e veículos XL são os mais lentos) e cerca de 1,1 MB.
 
+**Fundos de combate e cena do menu** (`tools/sprites/scenes/`, precisam de numpy; o `build.py` roda cada arena e o menu em processo próprio).
+
+- **Fundos de combate (`public/sprites/arenas/<id>/`, ids `urbano militar juridico aereo`):** o `aereo` é o do combate aéreo. Cada um traz:
+  - `<id>.png`: quadro 0, parado;
+  - `<id>-anim.png`: 6 quadros de ambiente a 6 fps, em grade `columns × rows`;
+  - `<id>-front.png`: objetos que vão **por cima** das Unidades;
+  - `<id>.json`: manifesto (`kind: "arena"`).
+- **Grade:** todos são 396×342 a 1x e usam a mesma grade de 8 colunas × 3 linhas (jogador nas colunas 0–2, inimigo nas 5–7).
+  - Canto da célula (c, r) = `gridOrigin (124,160) + c·colStep (+28,+14) + r·rowStep (−28,+14)`; o centro fica no canto + (0, 14).
+  - `arenaCellCenter(m, c, r)` dá o centro.
+  - Com o `<Sprite anchored>` (pés na âncora do próprio atlas), posicione em `centro + (0, 1)`: o atlas usa a âncora (64,71) do rig, e a arena desenha o quadro em centro − (64,70).
+- **Cena do menu (`public/sprites/menu/menu-portrait` 216×384 e `menu-landscape` 384×216, `kind: "scene"`):**
+  - Opaca, 12 quadros a 8 fps, para ampliar em escala inteira: `recommendedScale` 5 dá 1080×1920 e 1920×1080.
+  - Os ~40% da esquerda são escurecidos para o texto do menu.
+  - Com movimento reduzido, use só o quadro 0 (`static`).
+- **Funções:** `loadArena`, `useArena`, `loadMenuScene`, `useMenuScene`, `sceneUrl(m, arquivo)` e `sceneFrameRect(m, i)`. `public/sprites/index.json` lista os caminhos em `arenas` e `scenes`.
+- **Revisão:** `?solo=sprites&set=arena:urbano&scale=2` e `&set=menu:landscape&scale=3`.
+- **Peso e tempo:** cerca de 1,2 MB; o build completo leva ~95 s.
+
 Cada animação traz também `box: [x, y, w, h]`, a caixa opaca do 1º quadro, útil para recortes justos.
 
 Revisão: `/src/art/gallery.html?solo=sprites[&set=urban][&scale=3][&mirror=1]`.

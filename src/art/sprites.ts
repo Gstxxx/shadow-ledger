@@ -461,3 +461,114 @@ export const VEHICLES_XL = ['technical', 'patrolcar', 'apc', 'tank1', 'tank3', '
 
 /** Retratos da história (atlas `portraits-story-128` / `-64`): animação `<id>_idle` de 4 quadros. */
 export const STORY_PORTRAITS = ['analyst', 'arrieta', 'moravia_boss', 'moravia_enforcer'] as const;
+
+// ── Fundos de combate e cena do menu (tools/sprites/scenes) ─────────────────────────────
+
+/** Animação de cena em grade (opaca ou não): `columns` × `rows` quadros de frameWidth × frameHeight. */
+export interface SceneSheet {
+  /** caminho do manifesto sem .json, relativo a public/sprites (ex.: 'arenas/urbano/urbano') */
+  path: string;
+  name: string;
+  /** atlas animado (relativo à pasta do manifesto) */
+  image: string;
+  /** quadro 0 avulso (relativo à pasta do manifesto) */
+  static: string;
+  frameWidth: number;
+  frameHeight: number;
+  frames: number;
+  fps: number;
+  columns: number;
+  rows: number;
+}
+
+/**
+ * Fundo de combate (kind 'arena'): 396×342 a 1x, 6 quadros de ambiente, mais uma camada `front` de objetos
+ * que vão POR CIMA das Unidades. Grade isométrica de 8 colunas × 3 linhas (jogador 0–2, inimigo 5–7):
+ * canto da célula (c, r) = gridOrigin + c·colStep + r·rowStep; centro = canto + (colStep + rowStep) / 2.
+ */
+export interface ArenaManifest extends SceneSheet {
+  kind: 'arena';
+  id: ArenaId;
+  front: string;
+  gridOrigin: { x: number; y: number };
+  cellW: number;
+  cellH: number;
+  colStep: { x: number; y: number };
+  rowStep: { x: number; y: number };
+  grid: { cols: number; rows: number; cellVoxels: number; playerCols: number[]; enemyCols: number[] };
+}
+
+/** Cena do menu principal (kind 'scene'): opaca, 12 quadros, para ampliar em escala inteira (recommendedScale). */
+export interface MenuSceneManifest extends SceneSheet {
+  kind: 'scene';
+  id: 'menu-portrait' | 'menu-landscape';
+  recommendedScale: number;
+}
+
+/** Fundos de combate. `aereo` é o do combate aéreo. */
+export const ARENAS = ['urbano', 'militar', 'juridico', 'aereo'] as const;
+export type ArenaId = (typeof ARENAS)[number];
+
+async function loadScene<T extends SceneSheet>(path: string): Promise<T> {
+  const m = await load<Omit<T, 'path'>>(path);
+  return { ...m, path } as T;
+}
+
+/** Carrega (uma vez) o manifesto de um fundo de combate. */
+export function loadArena(id: ArenaId) {
+  return loadScene<ArenaManifest>(`arenas/${id}/${id}`);
+}
+
+/** Carrega (uma vez) a cena do menu no recorte em pé ou deitado. */
+export function loadMenuScene(orientation: 'portrait' | 'landscape') {
+  return loadScene<MenuSceneManifest>(`menu/menu-${orientation}`);
+}
+
+/** URL de um arquivo citado por um manifesto de cena (image, static, front). */
+export function sceneUrl(m: SceneSheet, file: string) {
+  return spriteUrl(m.path.replace(/[^/]*$/, '') + file);
+}
+
+/** Retângulo do quadro i no atlas da cena, em px 1x. */
+export function sceneFrameRect(m: SceneSheet, i: number) {
+  const f = ((Math.floor(i) % m.frames) + m.frames) % m.frames;
+  return { x: (f % m.columns) * m.frameWidth, y: Math.floor(f / m.columns) * m.frameHeight, w: m.frameWidth, h: m.frameHeight };
+}
+
+/** Centro da célula (col, row) da arena, em px 1x do fundo (é ali que ficam os pés da Unidade). */
+export function arenaCellCenter(m: ArenaManifest, col: number, row: number) {
+  return {
+    x: m.gridOrigin.x + col * m.colStep.x + row * m.rowStep.x + (m.colStep.x + m.rowStep.x) / 2,
+    y: m.gridOrigin.y + col * m.colStep.y + row * m.rowStep.y + (m.colStep.y + m.rowStep.y) / 2,
+  };
+}
+
+/** Manifesto de cena como estado React (undefined enquanto carrega). */
+export function useScene<T extends SceneSheet>(loader: () => Promise<T>, key: string) {
+  const [m, setM] = useState<T | undefined>(() => {
+    const hit = loaded.get(key);
+    return hit ? ({ ...(hit as object), path: key } as T) : undefined;
+  });
+  useEffect(() => {
+    let alive = true;
+    loader().then(
+      (v) => alive && setM(v),
+      () => undefined,
+    );
+    return () => {
+      alive = false;
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [key]);
+  return m;
+}
+
+/** Fundo de combate como estado React. */
+export function useArena(id: ArenaId) {
+  return useScene(() => loadArena(id), `arenas/${id}/${id}`);
+}
+
+/** Cena do menu como estado React. */
+export function useMenuScene(orientation: 'portrait' | 'landscape') {
+  return useScene(() => loadMenuScene(orientation), `menu/menu-${orientation}`);
+}
