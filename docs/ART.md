@@ -316,3 +316,22 @@ São as peças para as regras de `docs/UX-RULES.md`: veredito no topo, um númer
 Compatibilidade com a API local da ui-polish (`stage/Verdict.tsx`): `GVerdict` aceita `tone="bad"` (igual a `danger`), a frase como `children`, `action` (igual a `primary`) e `actionsPlacement="below"` (a ação fica embaixo da frase, à direita do ícone). `GBigNumber` aceita `note` (igual a `sub`). O rótulo de `GDetails` já vem como "Detalhes", e o cabeçalho tem 48px.
 
 O rodapé do `GModal` agora gruda embaixo (`position: sticky`) quando o modal rola, então a ação primária fica sempre à vista, inclusive deitado e com pouca altura.
+
+## Arte dos itens do Mercado (`ItemArt.tsx`)
+
+`<ItemArt id size alt tag illustration />` desenha a arte de qualquer item do catálogo em 4:3:
+1. **Foto tratada**, quando o id está em `src/art/itemPhotos.ts`: `public/items/<id>-96.webp` (listas, até 160px) ou `<id>-480.webp` (modal do item). São 20 equipamentos: viaturas, picape armada, blindado 6x6, tanques, antiaéreo, helicópteros, caças, bombardeiro, cargueiros, fuzis, metralhadora e míssil antitanque. Fontes e licenças estão em `docs/CREDITS.md` (todas em domínio público).
+2. **Prancha ilustrada** quando não há foto: Pessoal com retrato duotone (DiceBear) e ícone da função; Informação, Programas e Armas de Destruição em Massa com o ícone técnico sobre uma prancheta com grade (ADM com faixas de perigo vermelhas). O Lança-foguetes (`rpg`) e o Blindado de Combate (`ifv`) também ficam na prancha, porque não houve foto adequada sem rosto em close.
+3. **Só o `<GameIcon>`** em tamanhos de até 40px.
+
+O componente desenha a moldura por cima de qualquer imagem: cantos chanfrados, linhas de varredura e, a partir de 200px, os cantos âmbar e a etiqueta da categoria (`tag={false}` esconde; `tag="..."` troca o texto). Se o arquivo falhar ao carregar, ele cai na prancha.
+
+![itens 96](art/itens-96.webp)
+![itens 240](art/itens-240.webp)
+
+### Trocar pela versão gerada (Higgsfield ou outra)
+
+1. Gere a imagem do equipamento em paisagem, com o objeto centrado, sem texto nem marcas, e de preferência com pelo menos 960px de largura.
+2. Passe pelo mesmo tratamento das fotos: recorte 4:3, grade fria (luminância em três paradas, #070e12 → #466068 → #deecec, mantendo 28% da cor original), vinheta e grão. Exporte em WebP de 480×360 (≤ 60 KB) e 96×72. A ferramenta faz tudo isso sem dependências novas: `node src/art/tools/grade-items.mjs <pasta-com-<id>.jpg|png|webp> public/items [id1,id2]`. Ela usa o Chrome instalado (caminho padrão do Windows em `grade-items.mjs`), e o recorte por item (foco `fx`/`fy` e `zoom`) fica em `src/art/tools/item-crops.json`.
+3. Grave como `public/items/<id>-480.webp` e `public/items/<id>-96.webp`, **com o mesmo nome**. Se for um item que hoje usa prancha, acrescente o id em `src/art/itemPhotos.ts`.
+4. Atualize `docs/CREDITS.md`: troque a linha do item por "imagem gerada para o jogo" com a ferramenta e a data.
