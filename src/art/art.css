@@ -176,3 +176,60 @@
   }
   .sl-noise__roll { display: none; }
 }
+
+/* ── Retrato de Unidade ────────────────────────────────── */
+.sl-unitp {
+  position: relative;
+  display: inline-block;
+  flex: none;
+  overflow: hidden;
+  vertical-align: middle;
+  background: #0b0f13;
+  border-radius: 2px;
+  box-shadow:
+    0 0 0 1px #000,
+    0 0 0 2px rgba(214, 222, 232, 0.22),
+    0 2px 5px rgba(0, 0, 0, 0.55);
+}
+.sl-unitp > svg {
+  display: block;
+}
+/* máquina: ilustração 3:2 inteira, ampliada 22% (corta só a moldura) e centrada no quadrado */
+.sl-unitp > svg.sl-unitp__machine {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 122%;
+  height: auto;
+  transform: translate(-50%, -50%);
+}
+.sl-unitp::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background: repeating-linear-gradient(180deg, rgba(0, 0, 0, 0.14) 0 1px, transparent 1px 3px);
+}
+.sl-unitp--hostile {
+  box-shadow:
+    0 0 0 1px #000,
+    0 0 0 2px var(--g-danger, #e5484d),
+    0 0 8px rgba(229, 72, 77, 0.35);
+}
+.sl-unitp--hurt > svg {
+  filter: grayscale(0.85) brightness(0.8);
+}
+.sl-unitp--hurt::before {
+  content: '';
+  position: absolute;
+  z-index: 1;
+  left: -10%;
+  right: -10%;
+  top: 44%;
+  height: 14%;
+  background: rgba(200, 53, 44, 0.85);
+  transform: rotate(-24deg);
+}
+.sl-unitp--out {
+  opacity: 0.5;
+}

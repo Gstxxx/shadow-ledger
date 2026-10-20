@@ -7,7 +7,7 @@ import Gallery from './proto-gallery';
 import { GameScreenMock } from './proto-gamekit';
 import { StageDemo } from './proto-stage';
 import { SimpleDemo } from './proto-simple';
-import { ItemArt } from './ItemArt';
+import { UnitPortrait } from './UnitPortrait';
 import { ITEMS } from '../game/data/items';
 import { DIRECTOR_ORIGINS, DirectorPortrait, AnalystPortrait, GameIcon, ICONS, Logo, OperativePortrait, type AnalystMood } from './index';
 
@@ -45,9 +45,21 @@ function Solo(): ReactNode {
     const list = q.get('o') ? [q.get('o') as (typeof DIRECTOR_ORIGINS)[number]] : DIRECTOR_ORIGINS;
     return wrap(list.map((o) => <DirectorPortrait key={o} origin={o} mood={mood} size={size} blink={false} />));
   }
-  if (solo === 'items') {
-    const size = Number(q.get('size') ?? 240);
-    return wrap(Object.values(ITEMS).map((it) => <div key={it.id} style={{ display: 'grid', gap: 4 }}><ItemArt id={it.id} size={size} alt={it.name} /><span style={{ fontFamily: 'var(--sl-font-mono)', fontSize: 10, color: 'var(--sl-text-muted)' }}>{it.id}</span></div>));
+  if (solo === 'units') {
+    const size = Number(q.get('size') ?? 72);
+    const n = Number(q.get('n') ?? 3);
+    return wrap(
+      Object.values(ITEMS)
+        .filter((it) => !['arms', 'special'].includes(it.cls))
+        .flatMap((it) =>
+          Array.from({ length: n }, (_, k) => (
+            <div key={it.id + k} style={{ display: 'grid', gap: 3, justifyItems: 'center' }}>
+              <UnitPortrait itemId={it.id} seed={k * 7919 + 13} size={size} hostile={k === 2} hurt={k === 1 && size > 40} alt={it.name} />
+              {k === 0 ? <span style={{ fontFamily: 'var(--sl-font-mono)', fontSize: 9, color: 'var(--sl-text-muted)' }}>{it.id}</span> : null}
+            </div>
+          )),
+        ),
+    );
   }
   if (solo === 'simple') return <SimpleDemo screen={(q.get('s') as 'trade' | 'country' | 'kit') ?? 'trade'} />;
   if (solo === 'stage') return <StageDemo initial={(q.get('m') as 'country' | 'agency' | 'item' | 'none') ?? 'country'} />;
