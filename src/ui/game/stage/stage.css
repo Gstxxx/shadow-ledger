@@ -776,3 +776,26 @@ html .mkt-row.g-card:has(.ipic--sm) {
     grid-template-columns: 72px minmax(0, 1fr);
   }
 }
+/* Nada cortado na barra de ações em pé: o nome do país quebra em duas linhas, centralizado. */
+html .game.stage.upright .stage-dock .g-dock__label {
+  max-width: none;
+  overflow: visible;
+  text-overflow: clip;
+  white-space: normal;
+  text-align: center;
+  font-size: 11px;
+  line-height: 1.15;
+  overflow-wrap: anywhere;
+  hyphens: auto;
+}
+/* Legendas do HUD (Lucro no prazo, Meta de lucro) quebram linha em vez de reticências. */
+html .topbar .tb-cap,
+html .topbar .tb-cap > span {
+  white-space: normal;
+  overflow: visible;
+  text-overflow: clip;
+}
+html .topbar .tb-cap {
+  align-items: flex-start;
+  line-height: 1.25;
+}
