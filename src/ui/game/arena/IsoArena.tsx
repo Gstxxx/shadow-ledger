@@ -47,7 +47,7 @@ export function fitTile(cols: number, rows: number, w: number, h: number): numbe
   const n = cols + rows;
   const byW = (w * 2) / n;
   const byH = h > 0 ? h / (HEAD + n / 4 + SLAB) : Infinity;
-  return Math.max(24, Math.floor(Math.min(byW, byH, 160)));
+  return Math.max(24, Math.floor(Math.min(byW, byH, 230)));
 }
 
 /** Tamanho da figura por classe (veículos e aeronaves maiores), em larguras de casa. */

@@ -232,3 +232,68 @@ html .game.combat-open .analyst-layer {
     display: none;
   }
 }
+
+/* Desktop e tablet (≥ 900 px de largura e altura folgada): o Combate ocupa quase a tela toda, a arena preenche
+   a área à esquerda (com altura definida, para o encaixe não travar no mínimo) e Reserva, log e botões vão para
+   uma coluna lateral. Cortina e cartão opacos: nada do mapa vaza por cima do tabuleiro. */
+@media (min-width: 900px) and (min-height: 561px) {
+  html .combat-screen.live {
+    background: rgba(4, 5, 6, 0.96);
+    backdrop-filter: none;
+  }
+  html .combat-screen.live > .combat-card.wide {
+    width: min(1400px, 94vw);
+    height: min(900px, 90vh);
+    max-height: none;
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) 300px;
+    grid-template-rows: auto auto auto 1fr auto;
+    gap: 10px 20px;
+    overflow: hidden;
+    background: #101418;
+  }
+  html .combat-card.wide > * {
+    grid-column: 2;
+    min-width: 0;
+  }
+  html .combat-card.wide > .cb-head {
+    grid-column: 1 / -1;
+    grid-row: 1;
+  }
+  html .combat-card.wide > .grid-wrap {
+    grid-column: 1;
+    grid-row: 2 / -1;
+    height: 100%;
+    min-height: 0;
+    padding: 0;
+  }
+  html .combat-card.wide > p.hint-sm {
+    grid-row: 2;
+  }
+  html .combat-card.wide > .reserve {
+    grid-row: 3;
+  }
+  html .combat-card.wide > .cb-log {
+    grid-row: 4;
+    align-self: start;
+    max-height: 100%;
+    overflow-y: auto;
+  }
+  html .combat-card.wide > .cb-actions {
+    grid-row: 5;
+    position: static;
+    margin: 0;
+    padding: 0;
+    background: none;
+  }
+  html .combat-card.wide > .cb-actions .btn {
+    flex: 1 1 auto;
+    min-height: 44px;
+  }
+  html .combat-card.wide > .cb-actions .btn.primary {
+    flex: 1 0 100%;
+  }
+  html .combat-card.wide > .cb-actions .tb-spacer {
+    display: none;
+  }
+}

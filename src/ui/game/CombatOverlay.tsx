@@ -469,8 +469,7 @@ function TurnLabel({ turn, max }: { turn: number; max: number }) {
 function xlScale(tw: number, frameWidth: number) {
   const s = (1.25 * tw) / Math.max(1, frameWidth);
   if (s >= 1) return Math.floor(s);
-  if (s >= 0.5) return Math.floor(s * 2) / 2;
-  // Atlas muito largos (tanque): degraus de 0,25 para não passar de ~1,25 casa.
+  // Abaixo de 1: degraus de 0,25 (voxel aguenta), para o veículo não ficar pequeno ao lado do Pessoal.
   return Math.max(0.25, Math.floor(s * 4) / 4);
 }
 
@@ -523,7 +522,7 @@ function IsoToken({ r, c, g, pose }: { r: CombatUnitRef; c: CombatState; g: IsoG
   const h = f.h * g.tw;
   const feet = g.tw * 0.12;
   // Escala: Pessoal em escala inteira (~1 a cada 64 px de casa). Veículo XL: cabe em ~1,25 casa de largura,
-  // inteiro a partir de 1, passos de 0,5 abaixo disso e de 0,25 abaixo de 0,5 (voxel aguenta escala fracionária).
+  // inteiro a partir de 1 e em degraus de 0,25 abaixo disso (voxel aguenta escala fracionária).
   const scale = sp?.xl && atlas && atlas.id === spriteSet ? xlScale(g.tw, atlas.frameWidth) : Math.max(1, Math.round(g.tw / 64));
   return (
     <div
