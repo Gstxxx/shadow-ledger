@@ -1,7 +1,7 @@
 import { useEffect, useLayoutEffect, useRef, useState } from 'react';
 import type { KeyboardEvent, ReactNode, RefObject } from 'react';
 import type { CombatState, CombatType, CombatUnitRef } from '../../../game/types';
-import { sceneUrl, useArena } from '../../../art';
+import { loadArena, preloadSprites, sceneUrl, useArena } from '../../../art';
 import type { ArenaId, ArenaManifest } from '../../../art/sprites';
 import { def, FORT_ID } from '../../../game/units';
 import './arena.css';
@@ -99,6 +99,25 @@ function ArenaProps({ m, g }: { m: ArenaManifest; g: IsoGeom }) {
 
 /** Fundo do tipo de Combate. */
 export const ARENA_OF: Record<CombatType, ArenaId> = { urban: 'urbano', army: 'militar', legal: 'juridico', air: 'aereo' };
+
+const loadImage = (src: string) =>
+  new Promise<void>((ok) => {
+    const img = new Image();
+    img.onload = img.onerror = () => ok();
+    img.src = src;
+  });
+
+/**
+ * Tudo que o tabuleiro do Combate desenha no 1º quadro: manifesto e imagens da arena (fundo, objetos, front) e os
+ * atlas das figuras. Nunca rejeita (o que falhar cai no plano B de cada parte); com `ms`, desiste depois desse tempo.
+ */
+export function preloadCombat(type: CombatType, spriteIds: readonly string[], ms = 4000): Promise<void> {
+  const arena = loadArena(ARENA_OF[type])
+    .then((m) => Promise.all([m.static, m.front, ...(m.props ?? []).map((p) => p.image)].map((f) => loadImage(sceneUrl(m, f)))))
+    .catch(() => undefined);
+  const sprites = Promise.all(spriteIds.map((id) => preloadSprites([id]).catch(() => undefined)));
+  return Promise.race([Promise.all([arena, sprites]).then(() => undefined), new Promise<void>((ok) => setTimeout(ok, ms))]);
+}
 
 /** Largura de casa que cabe no espaço (largura e, se houver, altura). */
 export function fitTile(cols: number, rows: number, w: number, h: number): number {

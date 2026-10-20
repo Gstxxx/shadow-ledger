@@ -15,10 +15,10 @@ import { Portrait } from './Portrait';
 import { msgText } from './msgText';
 import { CoupCinematic } from '../cinematics';
 import { BigNumber, Details, Verdict } from './stage/Verdict';
-import { IsoArena, figureSize } from './arena/IsoArena';
-import { isMachine, posesOf, setsOf, unitSprite } from './arena/unitSprites';
+import { IsoArena, figureSize, preloadCombat } from './arena/IsoArena';
+import { isMachine, posesOf, setsOf, spriteIdsOf, unitSprite } from './arena/unitSprites';
 import type { Pose } from './arena/unitSprites';
-import { Sprite, backSet, findAnim, preloadSprites, useSpriteAtlas, variantSet } from '../../art';
+import { Sprite, backSet, findAnim, useSpriteAtlas, variantSet } from '../../art';
 import type { IsoGeom } from './arena/IsoArena';
 import { CombatHistory } from './arena/CombatHistory';
 import { CombatResult, RedactedTitle, RollingNumber, combatSucceeded, useCombatFx } from '../combat-fx';
@@ -46,7 +46,24 @@ export function CombatOverlay() {
       />
     );
   }
-  return <LiveView key={c.id} />;
+  return <LiveGate key={c.id} c={c} />;
+}
+
+/**
+ * Segura o tabuleiro até a arena e os atlas das figuras estarem carregados (no máximo 4 s): antes, o 1º quadro
+ * mostrava a grade de reserva, depois o fundo pulando de lugar, e inimigos de frente até a vista de costas chegar.
+ */
+function LiveGate({ c }: { c: CombatState }) {
+  const [ready, setReady] = useState(false);
+  useEffect(() => {
+    let alive = true;
+    preloadCombat(c.type, setsOf(c)).then(() => alive && setReady(true));
+    return () => {
+      alive = false;
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [c.id]);
+  return ready ? <LiveView /> : <div className="combat-screen live" aria-busy="true" />;
 }
 
 // ── Prévia e Tática ─────────────────────────────────────────
@@ -60,6 +77,11 @@ function PendingView() {
   const { t, fmt, lang } = useT();
   const setup = pend.setup;
   const ours = setup.sources.flatMap((src) => forceUnits(a, src)).filter((u) => canFight(u, setup.type));
+  // Enquanto o jogador escolhe a Tática, já carrega a arena e as figuras (as do Combate saem destas Unidades).
+  useEffect(() => {
+    void preloadCombat(setup.type, spriteIdsOf([...ours.map((unit) => ({ side: 'p' as const, unit })), ...setup.enemy.map((unit) => ({ side: 'e' as const, unit }))]), 0);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [setup]);
   const best = TACTICS.filter((t) => t !== 'negotiate').reduce((b, t) => (pend.preview[t] > pend.preview[b] ? t : b), 'assault' as Tactic);
   const [tactic, setTactic] = useState<Tactic>(best);
   const nego = negotiateCost(s, setup);
@@ -196,11 +218,7 @@ function LiveView() {
   const fx = useCombatFx({ grid, combat: c, speed: fast ? 2 : 1, verdict: false });
   const manual = c.turn === 0 && c.reserve.length > 0;
 
-  // Sprites: carrega os conjuntos do Combate e, a cada turno, põe as poses (andar, atirar, levar dano) e os efeitos.
-  useEffect(() => {
-    preloadSprites(setsOf(c));
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [c.id]);
+  // Sprites (já carregados pelo LiveGate): a cada turno, põe as poses (andar, atirar, levar dano) e os efeitos.
   const [poses, setPoses] = useState<{ turn: number; map: Map<string, Pose> }>({ turn: 0, map: new Map() });
   // Veículos XL abatidos ficam no campo como destroço (a combat-fx some com o token).
   const lastUnits = useRef(c.units);

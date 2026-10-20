@@ -1,8 +1,10 @@
 // Harness de demonstração para gravar vídeos (headless Chrome). Só liga pela URL:
 //   ?demo=combat[&type=urbano|militar|juridico]  → Combate real 9 × 9 que joga sozinho
+//   ?demo=combat&phase=pre                      → o mesmo, a partir da Prévia/Tática (fluxo de verdade até o 1º turno)
 //   ?demo=markers                                 → mapa com Ameaça, Grupo Hostil, Caçada, Contrato e Estação rival
 // Nunca toca no save real: com o demo ligado, gravações em chaves "shadow-ledger*" do localStorage são ignoradas.
 import { autoDeploy, createCombat, TACTICS } from '../../../game/combat';
+import { beginCombat } from '../../../game/combatFlow';
 import { PRESETS } from '../../../game/data/rules';
 import { newGame, player } from '../../../game/state';
 import type { CombatType, GameState, Unit } from '../../../game/types';
@@ -49,13 +51,26 @@ function seededGame(): GameState {
   return g;
 }
 
-function combatDemo(type: CombatType): GameState {
+function combatDemo(type: CombatType, pre = false): GameState {
   const g = seededGame();
   const a = player(g);
   const roster = ROSTER[type].p.length ? ROSTER[type] : ROSTER.urban;
   const mk = (ids: string[]): Unit[] => ids.map((id) => makeUnit(g, id));
   const mine = mk(roster.p);
   a.escort = mine;
+  if (pre) {
+    // Fluxo real: Prévia e Tática (pendingCombat), depois posicionamento/Reserva e Iniciar.
+    beginCombat(g, a, {
+      type,
+      reason: { kind: 'operation', op: 'bank', countryId: a.location, by: 'director' },
+      title: 'Demo',
+      enemy: mk(roster.e),
+      playerDefends: false,
+      sources: [{ kind: 'escort' }],
+      directorPresent: true,
+    });
+    return g;
+  }
   const c = createCombat(g, {
     agencyId: a.id,
     type,
@@ -97,7 +112,7 @@ export function startDemoFromUrl(): boolean {
   const mode = q.get('demo');
   if (mode !== 'combat' && mode !== 'markers') return false;
   guardSaves();
-  const g = mode === 'combat' ? combatDemo(TYPES[q.get('type') ?? 'urbano'] ?? 'urban') : markersDemo();
+  const g = mode === 'combat' ? combatDemo(TYPES[q.get('type') ?? 'urbano'] ?? 'urban', q.get('phase') === 'pre') : markersDemo();
   useGameStore.getState().load(g, true);
   return true;
 }

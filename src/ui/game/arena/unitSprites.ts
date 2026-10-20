@@ -1,5 +1,6 @@
 import type { CombatState, CombatUnitRef } from '../../../game/types';
 import { def, FORT_ID } from '../../../game/units';
+import { backSet, variantSet } from '../../../art';
 
 /** Estado visual de uma figura na arena num turno. */
 export type Pose = 'idle' | 'walk' | 'shoot' | 'hurt';
@@ -108,5 +109,21 @@ export function posesOf(c: CombatState): Map<string, Pose> {
   return m;
 }
 
-/** Conjuntos usados neste Combate (para pré-carregar). */
-export const setsOf = (c: CombatState) => [...new Set([...c.units, ...c.reserve.map((u) => ({ key: u.uid, side: 'p' as const, unit: u, row: 0, col: 0 }))].map((r) => unitSprite(r)?.set).filter(Boolean) as string[]), 'vfx'];
+/**
+ * Atlas exatos que as figuras vão pedir (o IsoToken escolhe a variante por uid e, no inimigo, a vista de costas),
+ * mais o vfx: pré-carregar o conjunto base não basta, a variante e o -back chegavam no meio da luta.
+ */
+export function spriteIdsOf(refs: readonly Pick<CombatUnitRef, 'side' | 'unit'>[]): string[] {
+  const ids = new Set<string>(['vfx']);
+  for (const r of refs) {
+    const sp = unitSprite({ ...r, key: r.unit.uid, row: 0, col: 0 });
+    if (!sp) continue;
+    const base = sp.xl ? sp.set : variantSet(sp.set, r.unit.uid);
+    ids.add(base);
+    if (r.side === 'e') ids.add(sp.xl ? `${base}-back` : backSet(base));
+  }
+  return [...ids];
+}
+
+/** Atlas usados neste Combate (para pré-carregar): em campo e na Reserva. */
+export const setsOf = (c: CombatState) => spriteIdsOf([...c.units, ...c.reserve.map((unit) => ({ side: 'p' as const, unit }))]);
