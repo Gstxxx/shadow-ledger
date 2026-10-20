@@ -18,7 +18,7 @@ import { BigNumber, Details, Verdict } from './stage/Verdict';
 import { IsoArena, figureSize } from './arena/IsoArena';
 import { isMachine, posesOf, setsOf, unitSprite } from './arena/unitSprites';
 import type { Pose } from './arena/unitSprites';
-import { Sprite, preloadSprites } from '../../art';
+import { Sprite, backSet, findAnim, preloadSprites, useSpriteAtlas, variantSet } from '../../art';
 import type { IsoGeom } from './arena/IsoArena';
 import { CombatResult, RedactedTitle, RollingNumber, combatSucceeded, useCombatFx } from '../combat-fx';
 import { GModal } from '../../art';
@@ -456,6 +456,13 @@ function IsoToken({ r, c, g, pose }: { r: CombatUnitRef; c: CombatState; g: IsoG
   const cur = strOf(u, c.type);
   const f = figureSize(u.itemId);
   const sp = unitSprite(r);
+  // Variante estável por Unidade (cabeça, pele) nos conjuntos que têm variantes. O inimigo encara o jogador (NW):
+  // vista de costas espelhada; se o conjunto não tem costas (ou falta a animação), fica a frente espelhada.
+  const base = sp ? variantSet(sp.set, u.uid) : '';
+  const backId = r.side === 'e' && sp ? backSet(base) : '';
+  const hasBack = !!backId && backId !== base;
+  const back = useSpriteAtlas(hasBack ? backId : base || 'vfx');
+  const spriteSet = sp && hasBack && back && back.id === backId && findAnim(back, sp.anims[pose]) ? backId : base;
   const [cx, cy] = g.center(r.col, r.row);
   const w = f.w * g.tw;
   const h = f.h * g.tw;
@@ -484,7 +491,7 @@ function IsoToken({ r, c, g, pose }: { r: CombatUnitRef; c: CombatState; g: IsoG
     >
       {sp ? (
         <span className="iso-anchor" style={{ top: h - feet }}>
-          <Sprite set={sp.set} anim={sp.anims[pose]} playing={pose !== 'idle' || sp.idleLoops} mirror={r.side === 'e'} scale={scale} anchored />
+          <Sprite set={spriteSet} anim={sp.anims[pose]} playing={pose !== 'idle' || sp.idleLoops} mirror={r.side === 'e'} scale={scale} anchored />
         </span>
       ) : (
         <>
