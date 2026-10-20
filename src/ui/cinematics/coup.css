@@ -251,6 +251,11 @@
   background: #000;
 }
 @media (orientation: portrait) {
+  /* Em pé, o aviso de pular vai para o canto de cima (abaixo da área segura), longe das linhas do telex. */
+  .cc-skip {
+    top: max(14px, var(--safe-t, env(safe-area-inset-top, 0px)));
+    bottom: auto;
+  }
   .cc-map {
     top: auto;
     bottom: calc(max(22px, var(--safe-b, env(safe-area-inset-bottom, 0px))) + 110px);
