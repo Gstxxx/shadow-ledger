@@ -91,8 +91,20 @@ Condição de vitória de uma partida: lucro em N dias, lucro rápido, eliminar 
 _Avoid_: missão, meta
 
 **Campanha**:
-Sequência futura de partidas com história, que carrega parte do progresso de uma para a próxima. Não existe no lançamento.
+Sequência de dez partidas com história (**Capítulos**), em que o jogador carrega o **Diretor**, até três **Veteranos** e parte da **Reputação** de uma para a próxima. Detalhes em docs/CAMPANHA.md.
 _Avoid_: história, modo história
+
+**Capítulo**:
+Uma partida da **Campanha**, com **Objetivo**, prazo, região e trecho da história próprios. Perder permite tentar de novo, exceto no **Modo Hardcore**.
+_Avoid_: fase, missão, nível
+
+**Veterano**:
+Unidade do **Pessoal** que o jogador leva de um **Capítulo** para o seguinte, com Traços e **Equipamento**. No máximo três por Capítulo.
+_Avoid_: herói, favorito
+
+**Dossiê**:
+Registro das pistas da história desbloqueadas na **Campanha**, que pode ser relido no menu.
+_Avoid_: diário, log
 
 **Tutorial**:
 **Preset** curto e roteirizado que apresenta os sistemas básicos um a um, com os sistemas avançados desligados.
