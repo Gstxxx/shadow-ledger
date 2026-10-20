@@ -260,7 +260,7 @@ node tools/balance/campaign-table.mjs            # tabela de vitória por Capít
 
 Vitória do Iniciante, sem bônus (Recruta / Operador / Diretor):
 
-| Cap. | Objetivo | Antes | Proposto (C1–C9 + P20) |
+| Cap. | Objetivo | Antes | Depois (C1–C9 + P20, verificado em `8adb6dc`) |
 |---|---|---|---|
 | 1 | lucro (60 d) | 100 / 100 / 88% | 100 / 100 / 50% |
 | 2 | lucro rápido | 100 / 100 / 50% | igual |
@@ -271,7 +271,10 @@ Vitória do Iniciante, sem bônus (Recruta / Operador / Diretor):
 | 7 | eliminar grupo | 38 / 0 / 0% | 63 / 25 / 13% |
 | 8 | resgate | 50 / 0 / 0% | 63 / 25 / 0% |
 | 9 | lucro (75 d) | 100 / 88 / 88% | 88 / 38 / 25% |
-| 10 | eliminar Casa Moravia | 38 / 38 / 25% | não remedido com P20 |
+| 10 | eliminar Casa Moravia | 38 / 38 / 25% | 38 / 50 / 25% |
+
+Aplicado pelo motor em `8adb6dc` (meta do Capítulo 5 mantida em 25 M); a verificação no motor real
+reproduz a variante. Diferenças de até ~12 pp entre células vizinhas são ruído de 8 sementes.
 
 Passivo: 0% em todos. O bônus de 25% soma de 0 a +25 pp e não inverte a rampa. A rampa fica em dente
 de serra (os Capítulos de lucro 5 e 9 respiram entre caças), mas sem penhascos: antes, as caças e
