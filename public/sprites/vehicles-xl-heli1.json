@@ -1,0 +1,82 @@
+{
+ "kind": "atlas",
+ "id": "vehicles-xl-heli1",
+ "image": "vehicles-xl-heli1.png",
+ "width": 2300,
+ "height": 1005,
+ "frameWidth": 230,
+ "frameHeight": 201,
+ "anchor": {
+  "x": 115,
+  "y": 142
+ },
+ "animations": [
+  {
+   "name": "heli1_hover",
+   "row": 0,
+   "frames": 6,
+   "fps": 10,
+   "loop": true,
+   "box": [
+    29,
+    20,
+    147,
+    151
+   ]
+  },
+  {
+   "name": "heli1_fly",
+   "row": 1,
+   "frames": 6,
+   "fps": 10,
+   "loop": true,
+   "box": [
+    29,
+    5,
+    177,
+    168
+   ]
+  },
+  {
+   "name": "heli1_shoot",
+   "row": 2,
+   "frames": 4,
+   "fps": 12,
+   "loop": true,
+   "box": [
+    6,
+    20,
+    170,
+    152
+   ]
+  },
+  {
+   "name": "heli1_destroyed",
+   "row": 3,
+   "frames": 10,
+   "fps": 10,
+   "loop": false,
+   "box": [
+    29,
+    20,
+    147,
+    151
+   ]
+  },
+  {
+   "name": "heli1_wreck",
+   "row": 4,
+   "frames": 8,
+   "fps": 8,
+   "loop": true,
+   "box": [
+    1,
+    23,
+    176,
+    147
+   ]
+  }
+ ],
+ "scale": 1.6,
+ "note": "after `*_destroyed` (once) switch to `*_wreck` (loop)"
+}

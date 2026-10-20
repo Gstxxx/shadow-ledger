@@ -358,3 +358,106 @@ export function SpriteStill({ group, id, state, scale = 2, anchored, mirror, alt
     } satisfies CSSProperties,
   });
 }
+
+// ── Folhas de ícones de interface (ui-icons-32 / ui-icons-64, kind: 'icons') ──────────────
+
+export interface SpriteIconEntry {
+  /** chave estável (pais, mercado, agencia, combate, ameacas, relatorio, cofre, estacao, frota, escolta…) */
+  id: string;
+  /** rótulo pt-BR de referência (a UI usa o i18n dela) */
+  label: string;
+  /** id do <GameIcon> equivalente, quando existe */
+  gameIcon: string | null;
+  x: number;
+  y: number;
+  w: number;
+  h: number;
+}
+
+export interface SpriteIconSheet {
+  kind: 'icons';
+  id: string;
+  image: string;
+  width: number;
+  height: number;
+  frameWidth: number;
+  frameHeight: number;
+  columns: number;
+  icons: SpriteIconEntry[];
+}
+
+/** Carrega (uma vez) a folha de ícones de 32 ou 64 px. */
+export function loadSpriteIcons(size: 32 | 64) {
+  return load<SpriteIconSheet>(`ui-icons-${size}`);
+}
+
+/** Folha de ícones como estado React (undefined enquanto carrega). */
+export function useSpriteIcons(size: 32 | 64) {
+  const id = `ui-icons-${size}`;
+  const [sheet, setSheet] = useState<SpriteIconSheet | undefined>(() => loaded.get(id) as SpriteIconSheet | undefined);
+  useEffect(() => {
+    let alive = true;
+    loadSpriteIcons(size).then(
+      (m) => alive && setSheet(m),
+      () => undefined,
+    );
+    return () => {
+      alive = false;
+    };
+  }, [size]);
+  return sheet;
+}
+
+export interface PixelIconProps {
+  /** id do ícone (SpriteIconEntry.id) ou, com `byGameIcon`, o id do GameIcon equivalente */
+  id: string;
+  byGameIcon?: boolean;
+  /** lado em px; ≤ 32 usa a folha de 32, acima a de 64. Prefira 32, 64 ou múltiplos */
+  size?: number;
+  alt?: string;
+  className?: string;
+  style?: CSSProperties;
+}
+
+/** Ícone de voxel da interface (abas, barra de ações). Nada é desenhado enquanto a folha carrega. */
+export function PixelIcon({ id, byGameIcon, size = 32, alt = '', className, style }: PixelIconProps) {
+  const sheet = useSpriteIcons(size <= 32 ? 32 : 64);
+  const it = sheet?.icons.find((i) => (byGameIcon ? i.gameIcon === id : i.id === id));
+  const k = it ? size / it.w : 1;
+  return createElement('span', {
+    className: ['sl-pixel-icon', className].filter(Boolean).join(' '),
+    role: alt ? 'img' : undefined,
+    'aria-label': alt || undefined,
+    'aria-hidden': alt ? undefined : true,
+    style: {
+      display: 'inline-block',
+      flex: 'none',
+      width: size,
+      height: size,
+      backgroundImage: sheet && it ? `url(${spriteUrl(sheet.image)})` : undefined,
+      backgroundRepeat: 'no-repeat',
+      backgroundSize: sheet ? `${sheet.width * k}px ${sheet.height * k}px` : undefined,
+      backgroundPosition: it ? `${-it.x * k}px ${-it.y * k}px` : undefined,
+      imageRendering: Number.isInteger(k) ? 'pixelated' : 'auto',
+      ...style,
+    } satisfies CSSProperties,
+  });
+}
+
+// ── Outros conjuntos de misc/ (atlas comuns, usam <Sprite>) ─────────────────────────────
+
+/** Aviões do mapa (atlas 'map-planes', 64×61): `<cargo0..3>_<fly|takeoff|land>_<rumo>` e `contrail_puff`. */
+export const MAP_PLANE_HEADINGS = ['N', 'NE', 'E', 'SE', 'S', 'SW', 'W', 'NW'] as const;
+export type MapPlaneHeading = (typeof MAP_PLANE_HEADINGS)[number];
+
+/** Rumo de tela (N = para cima) mais próximo de um vetor dx, dy em px de tela (y para baixo). */
+export function mapPlaneHeading(dx: number, dy: number): MapPlaneHeading {
+  const a = Math.atan2(dx, -dy); // 0 = N, horário
+  return MAP_PLANE_HEADINGS[(Math.round(a / (Math.PI / 4)) + 8) % 8];
+}
+
+/** Veículos XL (1,6×, mais contraste, com `*_wreck` em laço): atlas `vehicles-xl-<id>` e `vehicles-xl-<id>-back`. */
+export const VEHICLES_XL = ['technical', 'patrolcar', 'apc', 'tank1', 'tank3', 'heli1', 'heli3'] as const;
+
+/** Retratos da história (atlas `portraits-story-128` / `-64`): animação `<id>_idle` de 4 quadros. */
+export const STORY_PORTRAITS = ['analyst', 'arrieta', 'moravia_boss', 'moravia_enforcer'] as const;

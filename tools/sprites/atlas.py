@@ -64,6 +64,10 @@ KEYS = {
     'UTILITÁRIO · atirar (metralhadora de porta)': 'heli1_shoot', 'UTILITÁRIO · destruído': 'heli1_destroyed',
     'ATAQUE · pairar': 'heli3_hover', 'ATAQUE · voar': 'heli3_fly', 'ATAQUE · canhão 30mm': 'heli3_cannon',
     'ATAQUE · foguetes': 'heli3_rockets', 'ATAQUE · destruído': 'heli3_destroyed',
+    # veículos XL (tools/sprites/misc/gen_vehicles_xl.py): destroços em laço depois de *_destroyed
+    'PICAPE ARMADA · destroços': 'technical_wreck', 'VIATURA · destroços': 'patrolcar_wreck', 'BLINDADO 6x6 · destroços': 'apc_wreck',
+    'CARRO DE COMBATE CLÁSSICO · destroços': 'tank1_wreck', 'TANQUE 4ª GERAÇÃO · destroços': 'tank3_wreck',
+    'UTILITÁRIO · destroços': 'heli1_wreck', 'ATAQUE · destroços': 'heli3_wreck',
     # aeronaves
     'CAÇA LEVE · voar': 'jet1_fly', 'CAÇA LEVE · míssil': 'jet1_missile', 'CAÇA LEVE · abatido': 'jet1_shot_down',
     'CAÇA MULTIMISSÃO · voar': 'jet2_fly', 'CAÇA MULTIMISSÃO · míssil': 'jet2_missile', 'CAÇA MULTIMISSÃO · abatido': 'jet2_shot_down',
@@ -80,7 +84,7 @@ KEYS = {
 }
 
 # quadros por segundo por chave (o resto usa o padrão do conjunto)
-FPS = {'idle': 4, 'walk': 8, 'run': 12, 'shoot': 12, 'burst': 14, 'death': 8, 'hurt': 10,
+FPS = {'wreck': 8, 'idle': 4, 'walk': 8, 'run': 12, 'shoot': 12, 'burst': 14, 'death': 8, 'hurt': 10,
        'explosion': 12, 'sparks': 14, 'tracer': 14, 'flashbang': 12}
 
 

@@ -1,0 +1,1479 @@
+{
+ "kind": "atlas",
+ "id": "map-planes",
+ "image": "map-planes.png",
+ "width": 448,
+ "height": 5917,
+ "frameWidth": 64,
+ "frameHeight": 61,
+ "anchor": {
+  "x": 32,
+  "y": 46
+ },
+ "animations": [
+  {
+   "name": "cargo0_fly_N",
+   "row": 0,
+   "frames": 4,
+   "fps": 6,
+   "loop": true,
+   "box": [
+    5,
+    19,
+    54,
+    36
+   ],
+   "heading": "N",
+   "plane": "cargo0"
+  },
+  {
+   "name": "cargo0_takeoff_N",
+   "row": 1,
+   "frames": 7,
+   "fps": 8,
+   "loop": false,
+   "box": [
+    7,
+    30,
+    50,
+    25
+   ],
+   "heading": "N",
+   "plane": "cargo0"
+  },
+  {
+   "name": "cargo0_land_N",
+   "row": 2,
+   "frames": 7,
+   "fps": 8,
+   "loop": false,
+   "box": [
+    3,
+    20,
+    58,
+    37
+   ],
+   "heading": "N",
+   "plane": "cargo0"
+  },
+  {
+   "name": "cargo0_fly_NE",
+   "row": 3,
+   "frames": 4,
+   "fps": 6,
+   "loop": true,
+   "box": [
+    9,
+    13,
+    46,
+    42
+   ],
+   "heading": "NE",
+   "plane": "cargo0"
+  },
+  {
+   "name": "cargo0_takeoff_NE",
+   "row": 4,
+   "frames": 7,
+   "fps": 8,
+   "loop": false,
+   "box": [
+    11,
+    24,
+    42,
+    30
+   ],
+   "heading": "NE",
+   "plane": "cargo0"
+  },
+  {
+   "name": "cargo0_land_NE",
+   "row": 5,
+   "frames": 7,
+   "fps": 8,
+   "loop": false,
+   "box": [
+    9,
+    13,
+    46,
+    42
+   ],
+   "heading": "NE",
+   "plane": "cargo0"
+  },
+  {
+   "name": "cargo0_fly_E",
+   "row": 6,
+   "frames": 4,
+   "fps": 6,
+   "loop": true,
+   "box": [
+    5,
+    11,
+    43,
+    44
+   ],
+   "heading": "E",
+   "plane": "cargo0"
+  },
+  {
+   "name": "cargo0_takeoff_E",
+   "row": 7,
+   "frames": 7,
+   "fps": 8,
+   "loop": false,
+   "box": [
+    10,
+    22,
+    36,
+    34
+   ],
+   "heading": "E",
+   "plane": "cargo0"
+  },
+  {
+   "name": "cargo0_land_E",
+   "row": 8,
+   "frames": 7,
+   "fps": 8,
+   "loop": false,
+   "box": [
+    10,
+    10,
+    38,
+    45
+   ],
+   "heading": "E",
+   "plane": "cargo0"
+  },
+  {
+   "name": "cargo0_fly_SE",
+   "row": 9,
+   "frames": 4,
+   "fps": 6,
+   "loop": true,
+   "box": [
+    9,
+    7,
+    46,
+    47
+   ],
+   "heading": "SE",
+   "plane": "cargo0"
+  },
+  {
+   "name": "cargo0_takeoff_SE",
+   "row": 10,
+   "frames": 7,
+   "fps": 8,
+   "loop": false,
+   "box": [
+    11,
+    24,
+    42,
+    30
+   ],
+   "heading": "SE",
+   "plane": "cargo0"
+  },
+  {
+   "name": "cargo0_land_SE",
+   "row": 11,
+   "frames": 7,
+   "fps": 8,
+   "loop": false,
+   "box": [
+    9,
+    13,
+    46,
+    41
+   ],
+   "heading": "SE",
+   "plane": "cargo0"
+  },
+  {
+   "name": "cargo0_fly_S",
+   "row": 12,
+   "frames": 4,
+   "fps": 6,
+   "loop": true,
+   "box": [
+    5,
+    5,
+    54,
+    49
+   ],
+   "heading": "S",
+   "plane": "cargo0"
+  },
+  {
+   "name": "cargo0_takeoff_S",
+   "row": 13,
+   "frames": 7,
+   "fps": 8,
+   "loop": false,
+   "box": [
+    7,
+    23,
+    50,
+    30
+   ],
+   "heading": "S",
+   "plane": "cargo0"
+  },
+  {
+   "name": "cargo0_land_S",
+   "row": 14,
+   "frames": 7,
+   "fps": 8,
+   "loop": false,
+   "box": [
+    3,
+    13,
+    58,
+    41
+   ],
+   "heading": "S",
+   "plane": "cargo0"
+  },
+  {
+   "name": "cargo0_fly_SW",
+   "row": 15,
+   "frames": 4,
+   "fps": 6,
+   "loop": true,
+   "box": [
+    9,
+    7,
+    46,
+    47
+   ],
+   "heading": "SW",
+   "plane": "cargo0"
+  },
+  {
+   "name": "cargo0_takeoff_SW",
+   "row": 16,
+   "frames": 7,
+   "fps": 8,
+   "loop": false,
+   "box": [
+    11,
+    24,
+    42,
+    30
+   ],
+   "heading": "SW",
+   "plane": "cargo0"
+  },
+  {
+   "name": "cargo0_land_SW",
+   "row": 17,
+   "frames": 7,
+   "fps": 8,
+   "loop": false,
+   "box": [
+    9,
+    13,
+    46,
+    41
+   ],
+   "heading": "SW",
+   "plane": "cargo0"
+  },
+  {
+   "name": "cargo0_fly_W",
+   "row": 18,
+   "frames": 4,
+   "fps": 6,
+   "loop": true,
+   "box": [
+    16,
+    11,
+    43,
+    44
+   ],
+   "heading": "W",
+   "plane": "cargo0"
+  },
+  {
+   "name": "cargo0_takeoff_W",
+   "row": 19,
+   "frames": 7,
+   "fps": 8,
+   "loop": false,
+   "box": [
+    18,
+    22,
+    36,
+    34
+   ],
+   "heading": "W",
+   "plane": "cargo0"
+  },
+  {
+   "name": "cargo0_land_W",
+   "row": 20,
+   "frames": 7,
+   "fps": 8,
+   "loop": false,
+   "box": [
+    16,
+    10,
+    38,
+    45
+   ],
+   "heading": "W",
+   "plane": "cargo0"
+  },
+  {
+   "name": "cargo0_fly_NW",
+   "row": 21,
+   "frames": 4,
+   "fps": 6,
+   "loop": true,
+   "box": [
+    9,
+    13,
+    46,
+    42
+   ],
+   "heading": "NW",
+   "plane": "cargo0"
+  },
+  {
+   "name": "cargo0_takeoff_NW",
+   "row": 22,
+   "frames": 7,
+   "fps": 8,
+   "loop": false,
+   "box": [
+    11,
+    24,
+    42,
+    30
+   ],
+   "heading": "NW",
+   "plane": "cargo0"
+  },
+  {
+   "name": "cargo0_land_NW",
+   "row": 23,
+   "frames": 7,
+   "fps": 8,
+   "loop": false,
+   "box": [
+    9,
+    13,
+    46,
+    42
+   ],
+   "heading": "NW",
+   "plane": "cargo0"
+  },
+  {
+   "name": "cargo1_fly_N",
+   "row": 24,
+   "frames": 4,
+   "fps": 6,
+   "loop": true,
+   "box": [
+    5,
+    20,
+    54,
+    37
+   ],
+   "heading": "N",
+   "plane": "cargo1"
+  },
+  {
+   "name": "cargo1_takeoff_N",
+   "row": 25,
+   "frames": 7,
+   "fps": 8,
+   "loop": false,
+   "box": [
+    7,
+    30,
+    50,
+    25
+   ],
+   "heading": "N",
+   "plane": "cargo1"
+  },
+  {
+   "name": "cargo1_land_N",
+   "row": 26,
+   "frames": 7,
+   "fps": 8,
+   "loop": false,
+   "box": [
+    5,
+    21,
+    54,
+    36
+   ],
+   "heading": "N",
+   "plane": "cargo1"
+  },
+  {
+   "name": "cargo1_fly_NE",
+   "row": 27,
+   "frames": 4,
+   "fps": 6,
+   "loop": true,
+   "box": [
+    7,
+    14,
+    46,
+    41
+   ],
+   "heading": "NE",
+   "plane": "cargo1"
+  },
+  {
+   "name": "cargo1_takeoff_NE",
+   "row": 28,
+   "frames": 7,
+   "fps": 8,
+   "loop": false,
+   "box": [
+    9,
+    25,
+    42,
+    30
+   ],
+   "heading": "NE",
+   "plane": "cargo1"
+  },
+  {
+   "name": "cargo1_land_NE",
+   "row": 29,
+   "frames": 7,
+   "fps": 8,
+   "loop": false,
+   "box": [
+    7,
+    14,
+    46,
+    41
+   ],
+   "heading": "NE",
+   "plane": "cargo1"
+  },
+  {
+   "name": "cargo1_fly_E",
+   "row": 30,
+   "frames": 4,
+   "fps": 6,
+   "loop": true,
+   "box": [
+    5,
+    11,
+    45,
+    44
+   ],
+   "heading": "E",
+   "plane": "cargo1"
+  },
+  {
+   "name": "cargo1_takeoff_E",
+   "row": 31,
+   "frames": 7,
+   "fps": 8,
+   "loop": false,
+   "box": [
+    14,
+    22,
+    36,
+    34
+   ],
+   "heading": "E",
+   "plane": "cargo1"
+  },
+  {
+   "name": "cargo1_land_E",
+   "row": 32,
+   "frames": 7,
+   "fps": 8,
+   "loop": false,
+   "box": [
+    10,
+    11,
+    40,
+    44
+   ],
+   "heading": "E",
+   "plane": "cargo1"
+  },
+  {
+   "name": "cargo1_fly_SE",
+   "row": 33,
+   "frames": 4,
+   "fps": 6,
+   "loop": true,
+   "box": [
+    7,
+    7,
+    46,
+    47
+   ],
+   "heading": "SE",
+   "plane": "cargo1"
+  },
+  {
+   "name": "cargo1_takeoff_SE",
+   "row": 34,
+   "frames": 7,
+   "fps": 8,
+   "loop": false,
+   "box": [
+    9,
+    23,
+    42,
+    30
+   ],
+   "heading": "SE",
+   "plane": "cargo1"
+  },
+  {
+   "name": "cargo1_land_SE",
+   "row": 35,
+   "frames": 7,
+   "fps": 8,
+   "loop": false,
+   "box": [
+    7,
+    12,
+    46,
+    41
+   ],
+   "heading": "SE",
+   "plane": "cargo1"
+  },
+  {
+   "name": "cargo1_fly_S",
+   "row": 36,
+   "frames": 4,
+   "fps": 6,
+   "loop": true,
+   "box": [
+    5,
+    5,
+    54,
+    50
+   ],
+   "heading": "S",
+   "plane": "cargo1"
+  },
+  {
+   "name": "cargo1_takeoff_S",
+   "row": 37,
+   "frames": 7,
+   "fps": 8,
+   "loop": false,
+   "box": [
+    7,
+    26,
+    50,
+    29
+   ],
+   "heading": "S",
+   "plane": "cargo1"
+  },
+  {
+   "name": "cargo1_land_S",
+   "row": 38,
+   "frames": 7,
+   "fps": 8,
+   "loop": false,
+   "box": [
+    5,
+    12,
+    54,
+    43
+   ],
+   "heading": "S",
+   "plane": "cargo1"
+  },
+  {
+   "name": "cargo1_fly_SW",
+   "row": 39,
+   "frames": 4,
+   "fps": 6,
+   "loop": true,
+   "box": [
+    11,
+    7,
+    46,
+    47
+   ],
+   "heading": "SW",
+   "plane": "cargo1"
+  },
+  {
+   "name": "cargo1_takeoff_SW",
+   "row": 40,
+   "frames": 7,
+   "fps": 8,
+   "loop": false,
+   "box": [
+    13,
+    23,
+    42,
+    30
+   ],
+   "heading": "SW",
+   "plane": "cargo1"
+  },
+  {
+   "name": "cargo1_land_SW",
+   "row": 41,
+   "frames": 7,
+   "fps": 8,
+   "loop": false,
+   "box": [
+    11,
+    12,
+    46,
+    41
+   ],
+   "heading": "SW",
+   "plane": "cargo1"
+  },
+  {
+   "name": "cargo1_fly_W",
+   "row": 42,
+   "frames": 4,
+   "fps": 6,
+   "loop": true,
+   "box": [
+    14,
+    11,
+    45,
+    44
+   ],
+   "heading": "W",
+   "plane": "cargo1"
+  },
+  {
+   "name": "cargo1_takeoff_W",
+   "row": 43,
+   "frames": 7,
+   "fps": 8,
+   "loop": false,
+   "box": [
+    14,
+    22,
+    36,
+    34
+   ],
+   "heading": "W",
+   "plane": "cargo1"
+  },
+  {
+   "name": "cargo1_land_W",
+   "row": 44,
+   "frames": 7,
+   "fps": 8,
+   "loop": false,
+   "box": [
+    14,
+    11,
+    40,
+    44
+   ],
+   "heading": "W",
+   "plane": "cargo1"
+  },
+  {
+   "name": "cargo1_fly_NW",
+   "row": 45,
+   "frames": 4,
+   "fps": 6,
+   "loop": true,
+   "box": [
+    11,
+    14,
+    46,
+    41
+   ],
+   "heading": "NW",
+   "plane": "cargo1"
+  },
+  {
+   "name": "cargo1_takeoff_NW",
+   "row": 46,
+   "frames": 7,
+   "fps": 8,
+   "loop": false,
+   "box": [
+    13,
+    25,
+    42,
+    30
+   ],
+   "heading": "NW",
+   "plane": "cargo1"
+  },
+  {
+   "name": "cargo1_land_NW",
+   "row": 47,
+   "frames": 7,
+   "fps": 8,
+   "loop": false,
+   "box": [
+    11,
+    14,
+    46,
+    41
+   ],
+   "heading": "NW",
+   "plane": "cargo1"
+  },
+  {
+   "name": "cargo2_fly_N",
+   "row": 48,
+   "frames": 4,
+   "fps": 6,
+   "loop": true,
+   "box": [
+    5,
+    20,
+    54,
+    38
+   ],
+   "heading": "N",
+   "plane": "cargo2"
+  },
+  {
+   "name": "cargo2_takeoff_N",
+   "row": 49,
+   "frames": 7,
+   "fps": 8,
+   "loop": false,
+   "box": [
+    7,
+    32,
+    50,
+    24
+   ],
+   "heading": "N",
+   "plane": "cargo2"
+  },
+  {
+   "name": "cargo2_land_N",
+   "row": 50,
+   "frames": 7,
+   "fps": 8,
+   "loop": false,
+   "box": [
+    5,
+    19,
+    54,
+    39
+   ],
+   "heading": "N",
+   "plane": "cargo2"
+  },
+  {
+   "name": "cargo2_fly_NE",
+   "row": 51,
+   "frames": 4,
+   "fps": 6,
+   "loop": true,
+   "box": [
+    3,
+    18,
+    47,
+    40
+   ],
+   "heading": "NE",
+   "plane": "cargo2"
+  },
+  {
+   "name": "cargo2_takeoff_NE",
+   "row": 52,
+   "frames": 7,
+   "fps": 8,
+   "loop": false,
+   "box": [
+    7,
+    30,
+    42,
+    30
+   ],
+   "heading": "NE",
+   "plane": "cargo2"
+  },
+  {
+   "name": "cargo2_land_NE",
+   "row": 53,
+   "frames": 7,
+   "fps": 8,
+   "loop": false,
+   "box": [
+    3,
+    18,
+    47,
+    40
+   ],
+   "heading": "NE",
+   "plane": "cargo2"
+  },
+  {
+   "name": "cargo2_fly_E",
+   "row": 54,
+   "frames": 4,
+   "fps": 6,
+   "loop": true,
+   "box": [
+    1,
+    13,
+    53,
+    42
+   ],
+   "heading": "E",
+   "plane": "cargo2"
+  },
+  {
+   "name": "cargo2_takeoff_E",
+   "row": 55,
+   "frames": 7,
+   "fps": 8,
+   "loop": false,
+   "box": [
+    12,
+    26,
+    38,
+    34
+   ],
+   "heading": "E",
+   "plane": "cargo2"
+  },
+  {
+   "name": "cargo2_land_E",
+   "row": 56,
+   "frames": 7,
+   "fps": 8,
+   "loop": false,
+   "box": [
+    8,
+    13,
+    46,
+    43
+   ],
+   "heading": "E",
+   "plane": "cargo2"
+  },
+  {
+   "name": "cargo2_fly_SE",
+   "row": 57,
+   "frames": 4,
+   "fps": 6,
+   "loop": true,
+   "box": [
+    3,
+    6,
+    46,
+    49
+   ],
+   "heading": "SE",
+   "plane": "cargo2"
+  },
+  {
+   "name": "cargo2_takeoff_SE",
+   "row": 58,
+   "frames": 7,
+   "fps": 8,
+   "loop": false,
+   "box": [
+    7,
+    26,
+    42,
+    30
+   ],
+   "heading": "SE",
+   "plane": "cargo2"
+  },
+  {
+   "name": "cargo2_land_SE",
+   "row": 59,
+   "frames": 7,
+   "fps": 8,
+   "loop": false,
+   "box": [
+    3,
+    12,
+    46,
+    43
+   ],
+   "heading": "SE",
+   "plane": "cargo2"
+  },
+  {
+   "name": "cargo2_fly_S",
+   "row": 60,
+   "frames": 4,
+   "fps": 6,
+   "loop": true,
+   "box": [
+    5,
+    3,
+    54,
+    54
+   ],
+   "heading": "S",
+   "plane": "cargo2"
+  },
+  {
+   "name": "cargo2_takeoff_S",
+   "row": 61,
+   "frames": 7,
+   "fps": 8,
+   "loop": false,
+   "box": [
+    7,
+    26,
+    50,
+    29
+   ],
+   "heading": "S",
+   "plane": "cargo2"
+  },
+  {
+   "name": "cargo2_land_S",
+   "row": 62,
+   "frames": 7,
+   "fps": 8,
+   "loop": false,
+   "box": [
+    5,
+    12,
+    54,
+    45
+   ],
+   "heading": "S",
+   "plane": "cargo2"
+  },
+  {
+   "name": "cargo2_fly_SW",
+   "row": 63,
+   "frames": 4,
+   "fps": 6,
+   "loop": true,
+   "box": [
+    15,
+    6,
+    46,
+    49
+   ],
+   "heading": "SW",
+   "plane": "cargo2"
+  },
+  {
+   "name": "cargo2_takeoff_SW",
+   "row": 64,
+   "frames": 7,
+   "fps": 8,
+   "loop": false,
+   "box": [
+    15,
+    26,
+    42,
+    30
+   ],
+   "heading": "SW",
+   "plane": "cargo2"
+  },
+  {
+   "name": "cargo2_land_SW",
+   "row": 65,
+   "frames": 7,
+   "fps": 8,
+   "loop": false,
+   "box": [
+    15,
+    12,
+    46,
+    43
+   ],
+   "heading": "SW",
+   "plane": "cargo2"
+  },
+  {
+   "name": "cargo2_fly_W",
+   "row": 66,
+   "frames": 4,
+   "fps": 6,
+   "loop": true,
+   "box": [
+    10,
+    13,
+    53,
+    42
+   ],
+   "heading": "W",
+   "plane": "cargo2"
+  },
+  {
+   "name": "cargo2_takeoff_W",
+   "row": 67,
+   "frames": 7,
+   "fps": 8,
+   "loop": false,
+   "box": [
+    14,
+    26,
+    38,
+    34
+   ],
+   "heading": "W",
+   "plane": "cargo2"
+  },
+  {
+   "name": "cargo2_land_W",
+   "row": 68,
+   "frames": 7,
+   "fps": 8,
+   "loop": false,
+   "box": [
+    10,
+    13,
+    46,
+    43
+   ],
+   "heading": "W",
+   "plane": "cargo2"
+  },
+  {
+   "name": "cargo2_fly_NW",
+   "row": 69,
+   "frames": 4,
+   "fps": 6,
+   "loop": true,
+   "box": [
+    14,
+    18,
+    47,
+    40
+   ],
+   "heading": "NW",
+   "plane": "cargo2"
+  },
+  {
+   "name": "cargo2_takeoff_NW",
+   "row": 70,
+   "frames": 7,
+   "fps": 8,
+   "loop": false,
+   "box": [
+    15,
+    30,
+    42,
+    30
+   ],
+   "heading": "NW",
+   "plane": "cargo2"
+  },
+  {
+   "name": "cargo2_land_NW",
+   "row": 71,
+   "frames": 7,
+   "fps": 8,
+   "loop": false,
+   "box": [
+    14,
+    18,
+    47,
+    40
+   ],
+   "heading": "NW",
+   "plane": "cargo2"
+  },
+  {
+   "name": "cargo3_fly_N",
+   "row": 72,
+   "frames": 4,
+   "fps": 6,
+   "loop": true,
+   "box": [
+    3,
+    18,
+    58,
+    40
+   ],
+   "heading": "N",
+   "plane": "cargo3"
+  },
+  {
+   "name": "cargo3_takeoff_N",
+   "row": 73,
+   "frames": 7,
+   "fps": 8,
+   "loop": false,
+   "box": [
+    5,
+    30,
+    54,
+    27
+   ],
+   "heading": "N",
+   "plane": "cargo3"
+  },
+  {
+   "name": "cargo3_land_N",
+   "row": 74,
+   "frames": 7,
+   "fps": 8,
+   "loop": false,
+   "box": [
+    3,
+    18,
+    58,
+    41
+   ],
+   "heading": "N",
+   "plane": "cargo3"
+  },
+  {
+   "name": "cargo3_fly_NE",
+   "row": 75,
+   "frames": 4,
+   "fps": 6,
+   "loop": true,
+   "box": [
+    5,
+    17,
+    45,
+    41
+   ],
+   "heading": "NE",
+   "plane": "cargo3"
+  },
+  {
+   "name": "cargo3_takeoff_NE",
+   "row": 76,
+   "frames": 7,
+   "fps": 8,
+   "loop": false,
+   "box": [
+    5,
+    27,
+    46,
+    32
+   ],
+   "heading": "NE",
+   "plane": "cargo3"
+  },
+  {
+   "name": "cargo3_land_NE",
+   "row": 77,
+   "frames": 7,
+   "fps": 8,
+   "loop": false,
+   "box": [
+    3,
+    18,
+    47,
+    40
+   ],
+   "heading": "NE",
+   "plane": "cargo3"
+  },
+  {
+   "name": "cargo3_fly_E",
+   "row": 78,
+   "frames": 4,
+   "fps": 6,
+   "loop": true,
+   "box": [
+    1,
+    12,
+    53,
+    45
+   ],
+   "heading": "E",
+   "plane": "cargo3"
+  },
+  {
+   "name": "cargo3_takeoff_E",
+   "row": 79,
+   "frames": 7,
+   "fps": 8,
+   "loop": false,
+   "box": [
+    10,
+    23,
+    44,
+    36
+   ],
+   "heading": "E",
+   "plane": "cargo3"
+  },
+  {
+   "name": "cargo3_land_E",
+   "row": 80,
+   "frames": 7,
+   "fps": 8,
+   "loop": false,
+   "box": [
+    6,
+    12,
+    48,
+    45
+   ],
+   "heading": "E",
+   "plane": "cargo3"
+  },
+  {
+   "name": "cargo3_fly_SE",
+   "row": 81,
+   "frames": 4,
+   "fps": 6,
+   "loop": true,
+   "box": [
+    5,
+    6,
+    46,
+    49
+   ],
+   "heading": "SE",
+   "plane": "cargo3"
+  },
+  {
+   "name": "cargo3_takeoff_SE",
+   "row": 82,
+   "frames": 7,
+   "fps": 8,
+   "loop": false,
+   "box": [
+    5,
+    23,
+    46,
+    32
+   ],
+   "heading": "SE",
+   "plane": "cargo3"
+  },
+  {
+   "name": "cargo3_land_SE",
+   "row": 83,
+   "frames": 7,
+   "fps": 8,
+   "loop": false,
+   "box": [
+    3,
+    11,
+    47,
+    44
+   ],
+   "heading": "SE",
+   "plane": "cargo3"
+  },
+  {
+   "name": "cargo3_fly_S",
+   "row": 84,
+   "frames": 4,
+   "fps": 6,
+   "loop": true,
+   "box": [
+    3,
+    3,
+    58,
+    54
+   ],
+   "heading": "S",
+   "plane": "cargo3"
+  },
+  {
+   "name": "cargo3_takeoff_S",
+   "row": 85,
+   "frames": 7,
+   "fps": 8,
+   "loop": false,
+   "box": [
+    5,
+    22,
+    54,
+    35
+   ],
+   "heading": "S",
+   "plane": "cargo3"
+  },
+  {
+   "name": "cargo3_land_S",
+   "row": 86,
+   "frames": 7,
+   "fps": 8,
+   "loop": false,
+   "box": [
+    3,
+    11,
+    58,
+    46
+   ],
+   "heading": "S",
+   "plane": "cargo3"
+  },
+  {
+   "name": "cargo3_fly_SW",
+   "row": 87,
+   "frames": 4,
+   "fps": 6,
+   "loop": true,
+   "box": [
+    13,
+    6,
+    48,
+    49
+   ],
+   "heading": "SW",
+   "plane": "cargo3"
+  },
+  {
+   "name": "cargo3_takeoff_SW",
+   "row": 88,
+   "frames": 7,
+   "fps": 8,
+   "loop": false,
+   "box": [
+    13,
+    23,
+    46,
+    32
+   ],
+   "heading": "SW",
+   "plane": "cargo3"
+  },
+  {
+   "name": "cargo3_land_SW",
+   "row": 89,
+   "frames": 7,
+   "fps": 8,
+   "loop": false,
+   "box": [
+    14,
+    11,
+    47,
+    44
+   ],
+   "heading": "SW",
+   "plane": "cargo3"
+  },
+  {
+   "name": "cargo3_fly_W",
+   "row": 90,
+   "frames": 4,
+   "fps": 6,
+   "loop": true,
+   "box": [
+    10,
+    12,
+    53,
+    45
+   ],
+   "heading": "W",
+   "plane": "cargo3"
+  },
+  {
+   "name": "cargo3_takeoff_W",
+   "row": 91,
+   "frames": 7,
+   "fps": 8,
+   "loop": false,
+   "box": [
+    10,
+    23,
+    44,
+    36
+   ],
+   "heading": "W",
+   "plane": "cargo3"
+  },
+  {
+   "name": "cargo3_land_W",
+   "row": 92,
+   "frames": 7,
+   "fps": 8,
+   "loop": false,
+   "box": [
+    10,
+    12,
+    48,
+    45
+   ],
+   "heading": "W",
+   "plane": "cargo3"
+  },
+  {
+   "name": "cargo3_fly_NW",
+   "row": 93,
+   "frames": 4,
+   "fps": 6,
+   "loop": true,
+   "box": [
+    14,
+    17,
+    45,
+    41
+   ],
+   "heading": "NW",
+   "plane": "cargo3"
+  },
+  {
+   "name": "cargo3_takeoff_NW",
+   "row": 94,
+   "frames": 7,
+   "fps": 8,
+   "loop": false,
+   "box": [
+    13,
+    27,
+    46,
+    32
+   ],
+   "heading": "NW",
+   "plane": "cargo3"
+  },
+  {
+   "name": "cargo3_land_NW",
+   "row": 95,
+   "frames": 7,
+   "fps": 8,
+   "loop": false,
+   "box": [
+    14,
+    18,
+    47,
+    40
+   ],
+   "heading": "NW",
+   "plane": "cargo3"
+  },
+  {
+   "name": "contrail_puff",
+   "row": 96,
+   "frames": 6,
+   "fps": 8,
+   "loop": false,
+   "box": [
+    27,
+    26,
+    10,
+    10
+   ]
+  }
+ ],
+ "headings": [
+  "N",
+  "NE",
+  "E",
+  "SE",
+  "S",
+  "SW",
+  "W",
+  "NW"
+ ],
+ "note": "rows <plane>_<fly|takeoff|land>_<heading>; heading = screen direction (N = up). anchor = ground point under the plane; contrail_puff is drawn at cruise height."
+}

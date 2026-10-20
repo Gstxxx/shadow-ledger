@@ -26,6 +26,8 @@ OPTIONAL: list[str] = []
 # 2ª fase (views/): vistas de costas (NE) e variantes de cabeça, lidas dos manifestos de frente já gravados
 VIEW_SETS = ['urban', 'military', 'legal', 'pilot', 'influence', 'police', 'criminal', 'director', 'women']
 VEH_BACK = ['veiculos_leves', 'blindados', 'helicopteros', 'aereos_cacas', 'aereos_bomb_aa']
+# misc/: aviões do mapa, ícones de interface, veículos XL (frente + costas) e retratos da história (independentes)
+MISC = ['gen_map_planes', 'gen_ui_icons', 'gen_vehicles_xl', 'gen_portraits']
 
 
 def main(only):
@@ -36,7 +38,9 @@ def main(only):
         shutil.rmtree(atlas.PUB, ignore_errors=True)
     os.makedirs(atlas.PUB, exist_ok=True)
     t0 = time.time()
-    failed = run([(g, [os.path.join(HERE, g + '.py')]) for g in gens])
+    md = os.path.join(HERE, 'misc')
+    misc = [m for m in MISC if not only or m in only]
+    failed = run([(g, [os.path.join(HERE, g + '.py')]) for g in gens] + [(f'misc:{m}', [os.path.join(md, m + '.py')]) for m in misc])
     # 2ª fase: costas + variantes dos personagens e costas dos veículos (dependem dos manifestos de frente)
     vd = os.path.join(HERE, 'views')
     jobs = [(f'views:{s}', [os.path.join(vd, 'gen.py'), s]) for s in VIEW_SETS if not only or s in only]
@@ -62,18 +66,18 @@ def run(jobs):
 
 
 def index():
-    sets, groups, total = [], [], 0
+    sets, groups, icons, indexes, total = [], [], [], [], 0
     for path in sorted(glob.glob(os.path.join(atlas.PUB, '*.json'))):
         name = os.path.basename(path)
         if name == 'index.json':
             continue
         m = json.load(open(path, encoding='utf-8'))
-        (sets if m['kind'] == 'atlas' else groups).append(m['id'])
+        {'atlas': sets, 'static': groups, 'icons': icons, 'index': indexes}[m['kind']].append(m['id'])
     for f in glob.glob(os.path.join(atlas.PUB, '**', '*'), recursive=True):
         if os.path.isfile(f) and not f.endswith('index.json'):
             total += os.path.getsize(f)
-    atlas._json(dict(atlas=sets, static=groups, bytes=total), os.path.join(atlas.PUB, 'index.json'))
-    print(f'índice: {len(sets)} atlas, {len(groups)} grupos avulsos, {total / 1024:.0f} KB')
+    atlas._json(dict(atlas=sets, static=groups, icons=icons, index=indexes, bytes=total), os.path.join(atlas.PUB, 'index.json'))
+    print(f'índice: {len(sets)} atlas, {len(groups)} grupos avulsos, {len(icons)} folhas de ícones, {total / 1024:.0f} KB')
 
 
 if __name__ == '__main__':

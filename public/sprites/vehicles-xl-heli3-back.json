@@ -1,0 +1,95 @@
+{
+ "kind": "atlas",
+ "id": "vehicles-xl-heli3-back",
+ "image": "vehicles-xl-heli3-back.png",
+ "width": 2730,
+ "height": 1128,
+ "frameWidth": 273,
+ "frameHeight": 188,
+ "anchor": {
+  "x": 107,
+  "y": 129
+ },
+ "animations": [
+  {
+   "name": "heli3_hover",
+   "row": 0,
+   "frames": 6,
+   "fps": 10,
+   "loop": true,
+   "box": [
+    25,
+    21,
+    145,
+    152
+   ]
+  },
+  {
+   "name": "heli3_fly",
+   "row": 1,
+   "frames": 6,
+   "fps": 10,
+   "loop": true,
+   "box": [
+    10,
+    18,
+    162,
+    154
+   ]
+  },
+  {
+   "name": "heli3_cannon",
+   "row": 2,
+   "frames": 4,
+   "fps": 12,
+   "loop": true,
+   "box": [
+    25,
+    24,
+    197,
+    148
+   ]
+  },
+  {
+   "name": "heli3_rockets",
+   "row": 3,
+   "frames": 8,
+   "fps": 10,
+   "loop": true,
+   "box": [
+    25,
+    21,
+    170,
+    152
+   ]
+  },
+  {
+   "name": "heli3_destroyed",
+   "row": 4,
+   "frames": 10,
+   "fps": 10,
+   "loop": false,
+   "box": [
+    25,
+    21,
+    145,
+    152
+   ]
+  },
+  {
+   "name": "heli3_wreck",
+   "row": 5,
+   "frames": 8,
+   "fps": 8,
+   "loop": true,
+   "box": [
+    37,
+    28,
+    124,
+    159
+   ]
+  }
+ ],
+ "scale": 1.6,
+ "note": "after `*_destroyed` (once) switch to `*_wreck` (loop); back view (NE): mirror for NW"
+}

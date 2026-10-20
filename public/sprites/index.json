@@ -27,6 +27,7 @@
   "influence",
   "legal-back",
   "legal",
+  "map-planes",
   "markers",
   "military-back",
   "military-v0-back",
@@ -58,6 +59,8 @@
   "police-v5-back",
   "police-v5",
   "police",
+  "portraits-story-128",
+  "portraits-story-64",
   "station-base",
   "station-cell",
   "station-compound",
@@ -83,6 +86,20 @@
   "vehicles-heli",
   "vehicles-light-back",
   "vehicles-light",
+  "vehicles-xl-apc-back",
+  "vehicles-xl-apc",
+  "vehicles-xl-heli1-back",
+  "vehicles-xl-heli1",
+  "vehicles-xl-heli3-back",
+  "vehicles-xl-heli3",
+  "vehicles-xl-patrolcar-back",
+  "vehicles-xl-patrolcar",
+  "vehicles-xl-tank1-back",
+  "vehicles-xl-tank1",
+  "vehicles-xl-tank3-back",
+  "vehicles-xl-tank3",
+  "vehicles-xl-technical-back",
+  "vehicles-xl-technical",
   "vfx-extra",
   "vfx",
   "women-back",
@@ -106,5 +123,12 @@
   "markers-stills",
   "stations"
  ],
- "bytes": 2017886
+ "icons": [
+  "ui-icons-32",
+  "ui-icons-64"
+ ],
+ "index": [
+  "vehicles-xl"
+ ],
+ "bytes": 3140616
 }

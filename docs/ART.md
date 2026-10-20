@@ -413,6 +413,19 @@ Personagens, veículos, aeronaves, efeitos, marcadores do mapa, carga e prédios
 - **Peso:** os 144 arquivos somam cerca de 1,05 MB.
 - **Fora do pacote:** as características de cada variante e as folhas de conferência ficam em `tools/sprites/preview.local/views/`.
 
+**Pacote misc** (`tools/sprites/misc/`, rodado pelo `build.py` em paralelo com a frente). Os quatro geradores importam os construtores de `tools/sprites` sem modificá-los:
+
+- **Aviões do mapa (`map-planes`, quadro 64×61, âncora no chão):** linhas `<cargo0..3>_<fly|takeoff|land>_<rumo>`, onde o rumo é a direção na tela (`N NE E SE S SW W NW`, N para cima), mais `contrail_puff`. `mapPlaneHeading(dx, dy)` escolhe o rumo a partir do vetor de tela.
+- **Ícones de interface (`ui-icons-64` e `ui-icons-32`, `kind: "icons"`):** grade de 6 colunas.
+  - Cada item tem `{ id, label, gameIcon, x, y, w, h }`, e `gameIcon` liga o ícone ao `<GameIcon>` equivalente.
+  - Uso: `<PixelIcon id="mercado" size={32}/>`, ou `<PixelIcon id="crate" byGameIcon/>` para buscar pelo GameIcon.
+  - Ids: `pais mercado agencia combate ameacas relatorio cofre estacao frota escolta equipes contratos arsenal cacadas campanha configuracoes dinheiro`.
+- **Veículos XL (`vehicles-xl-<id>` e `vehicles-xl-<id>-back`):** `technical patrolcar apc tank1 tank3 heli1 heli3` em escala 1,6×, com mais contraste.
+  - Mesmas linhas da frente, mais `*_wreck` (destroços em laço): depois de `*_destroyed` (uma vez), troque para `*_wreck`.
+  - Cada atlas tem quadro e âncora próprios. O índice está em `vehicles-xl.json` (`kind: "index"`).
+- **Retratos da história (`portraits-story-128` e `-64`):** bustos de `analyst arrieta moravia_boss moravia_enforcer`, com `<id>_idle` de 4 quadros a 4 fps. O campo opcional `durations` dá os ms de cada quadro.
+- **Tempo e peso:** cerca de 50 s no build completo (aviões e veículos XL são os mais lentos) e cerca de 1,1 MB.
+
 Cada animação traz também `box: [x, y, w, h]`, a caixa opaca do 1º quadro, útil para recortes justos.
 
 Revisão: `/src/art/gallery.html?solo=sprites[&set=urban][&scale=3][&mirror=1]`.

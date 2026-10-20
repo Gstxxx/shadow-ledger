@@ -1,8 +1,9 @@
 import { useEffect, useState } from 'react';
-import { Sprite, SpriteStill, SPRITE_SETS, STATION_SPRITE_IDS, loadSpriteAtlas, type SpriteAtlas } from './sprites';
+import { PixelIcon, Sprite, SpriteStill, SPRITE_SETS, STATION_SPRITE_IDS, loadSpriteAtlas, useSpriteIcons, type SpriteAtlas } from './sprites';
 
-// Revisão dos sprites isométricos: ?solo=sprites[&set=urban][&scale=3][&mirror=1]
+// Revisão dos sprites isométricos: ?solo=sprites[&set=urban|icons][&scale=3][&mirror=1]
 export function SpritesDemo({ only, scale = 2 }: { only?: string; scale?: number }) {
+  if (only === 'icons') return <IconsRow />;
   const sets = only ? [only] : [...SPRITE_SETS];
   const [mirror, setMirror] = useState(() => new URLSearchParams(location.search).has('mirror'));
   return (
@@ -56,5 +57,23 @@ function SetRow({ id, scale, mirror }: { id: string; scale: number; mirror: bool
         ))}
       </div>
     </section>
+  );
+}
+
+function IconsRow() {
+  const sheet = useSpriteIcons(64);
+  return (
+    <div style={{ background: '#0b0e12', color: '#d6dee8', minHeight: '100vh', padding: 16, font: '12px/1.4 var(--g-font-mono, monospace)' }}>
+      {[64, 32].map((size) => (
+        <div key={size} style={{ display: 'flex', flexWrap: 'wrap', gap: 10, marginBottom: 16 }}>
+          {sheet?.icons.map((i) => (
+            <figure key={i.id} style={{ margin: 0, display: 'grid', justifyItems: 'center', gap: 2, background: '#1a1f27', padding: 4 }}>
+              <PixelIcon id={i.id} size={size} alt={i.label} />
+              <figcaption>{i.id}</figcaption>
+            </figure>
+          ))}
+        </div>
+      ))}
+    </div>
   );
 }

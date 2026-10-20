@@ -1,0 +1,96 @@
+{
+ "kind": "atlas",
+ "id": "portraits-story-64",
+ "image": "portraits-story-64.png",
+ "width": 184,
+ "height": 256,
+ "frameWidth": 46,
+ "frameHeight": 64,
+ "anchor": {
+  "x": 23,
+  "y": 64
+ },
+ "animations": [
+  {
+   "name": "analyst_idle",
+   "row": 0,
+   "frames": 4,
+   "fps": 4,
+   "loop": true,
+   "box": [
+    4,
+    14,
+    39,
+    50
+   ],
+   "label": "Analista",
+   "durations": [
+    900,
+    600,
+    700,
+    140
+   ]
+  },
+  {
+   "name": "arrieta_idle",
+   "row": 1,
+   "frames": 4,
+   "fps": 4,
+   "loop": true,
+   "box": [
+    3,
+    16,
+    41,
+    48
+   ],
+   "label": "Tomás Arrieta",
+   "durations": [
+    900,
+    600,
+    700,
+    140
+   ]
+  },
+  {
+   "name": "moravia_boss_idle",
+   "row": 2,
+   "frames": 4,
+   "fps": 4,
+   "loop": true,
+   "box": [
+    3,
+    16,
+    41,
+    48
+   ],
+   "label": "Casa Moravia — chefe",
+   "durations": [
+    900,
+    600,
+    700,
+    140
+   ]
+  },
+  {
+   "name": "moravia_enforcer_idle",
+   "row": 3,
+   "frames": 4,
+   "fps": 4,
+   "loop": true,
+   "box": [
+    0,
+    16,
+    46,
+    48
+   ],
+   "label": "Casa Moravia — executor",
+   "durations": [
+    900,
+    600,
+    700,
+    140
+   ]
+  }
+ ],
+ "note": "bust portraits, face 3/4 to the right; idle = breathe in, hold, out + blink. `durations` (ms per frame) is optional, fps=4 also works."
+}

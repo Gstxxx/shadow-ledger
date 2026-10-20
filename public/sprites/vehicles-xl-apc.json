@@ -1,0 +1,69 @@
+{
+ "kind": "atlas",
+ "id": "vehicles-xl-apc",
+ "image": "vehicles-xl-apc.png",
+ "width": 1750,
+ "height": 664,
+ "frameWidth": 175,
+ "frameHeight": 166,
+ "anchor": {
+  "x": 96,
+  "y": 118
+ },
+ "animations": [
+  {
+   "name": "apc_move",
+   "row": 0,
+   "frames": 6,
+   "fps": 10,
+   "loop": true,
+   "box": [
+    9,
+    38,
+    144,
+    109
+   ]
+  },
+  {
+   "name": "apc_shoot",
+   "row": 1,
+   "frames": 6,
+   "fps": 12,
+   "loop": true,
+   "box": [
+    44,
+    38,
+    115,
+    109
+   ]
+  },
+  {
+   "name": "apc_destroyed",
+   "row": 2,
+   "frames": 10,
+   "fps": 10,
+   "loop": false,
+   "box": [
+    44,
+    38,
+    109,
+    109
+   ]
+  },
+  {
+   "name": "apc_wreck",
+   "row": 3,
+   "frames": 8,
+   "fps": 8,
+   "loop": true,
+   "box": [
+    14,
+    16,
+    136,
+    131
+   ]
+  }
+ ],
+ "scale": 1.6,
+ "note": "after `*_destroyed` (once) switch to `*_wreck` (loop)"
+}

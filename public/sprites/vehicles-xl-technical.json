@@ -1,0 +1,69 @@
+{
+ "kind": "atlas",
+ "id": "vehicles-xl-technical",
+ "image": "vehicles-xl-technical.png",
+ "width": 1620,
+ "height": 540,
+ "frameWidth": 162,
+ "frameHeight": 135,
+ "anchor": {
+  "x": 91,
+  "y": 108
+ },
+ "animations": [
+  {
+   "name": "technical_move",
+   "row": 0,
+   "frames": 6,
+   "fps": 10,
+   "loop": true,
+   "box": [
+    16,
+    40,
+    124,
+    94
+   ]
+  },
+  {
+   "name": "technical_shoot",
+   "row": 1,
+   "frames": 4,
+   "fps": 12,
+   "loop": true,
+   "box": [
+    40,
+    40,
+    100,
+    94
+   ]
+  },
+  {
+   "name": "technical_destroyed",
+   "row": 2,
+   "frames": 10,
+   "fps": 10,
+   "loop": false,
+   "box": [
+    40,
+    40,
+    100,
+    94
+   ]
+  },
+  {
+   "name": "technical_wreck",
+   "row": 3,
+   "frames": 8,
+   "fps": 8,
+   "loop": true,
+   "box": [
+    9,
+    13,
+    128,
+    121
+   ]
+  }
+ ],
+ "scale": 1.6,
+ "note": "after `*_destroyed` (once) switch to `*_wreck` (loop)"
+}

@@ -1,0 +1,79 @@
+{
+ "kind": "index",
+ "id": "vehicles-xl",
+ "sets": {
+  "technical": {
+   "atlas": "vehicles-xl-technical.json",
+   "back": "vehicles-xl-technical-back.json",
+   "animations": [
+    "technical_move",
+    "technical_shoot",
+    "technical_destroyed",
+    "technical_wreck"
+   ]
+  },
+  "patrolcar": {
+   "atlas": "vehicles-xl-patrolcar.json",
+   "back": "vehicles-xl-patrolcar-back.json",
+   "animations": [
+    "patrolcar_move",
+    "patrolcar_idle",
+    "patrolcar_destroyed",
+    "patrolcar_wreck"
+   ]
+  },
+  "apc": {
+   "atlas": "vehicles-xl-apc.json",
+   "back": "vehicles-xl-apc-back.json",
+   "animations": [
+    "apc_move",
+    "apc_shoot",
+    "apc_destroyed",
+    "apc_wreck"
+   ]
+  },
+  "tank1": {
+   "atlas": "vehicles-xl-tank1.json",
+   "back": "vehicles-xl-tank1-back.json",
+   "animations": [
+    "tank1_move",
+    "tank1_shoot",
+    "tank1_destroyed",
+    "tank1_wreck"
+   ]
+  },
+  "tank3": {
+   "atlas": "vehicles-xl-tank3.json",
+   "back": "vehicles-xl-tank3-back.json",
+   "animations": [
+    "tank3_move",
+    "tank3_shoot",
+    "tank3_destroyed",
+    "tank3_wreck"
+   ]
+  },
+  "heli1": {
+   "atlas": "vehicles-xl-heli1.json",
+   "back": "vehicles-xl-heli1-back.json",
+   "animations": [
+    "heli1_hover",
+    "heli1_fly",
+    "heli1_shoot",
+    "heli1_destroyed",
+    "heli1_wreck"
+   ]
+  },
+  "heli3": {
+   "atlas": "vehicles-xl-heli3.json",
+   "back": "vehicles-xl-heli3-back.json",
+   "animations": [
+    "heli3_hover",
+    "heli3_fly",
+    "heli3_cannon",
+    "heli3_rockets",
+    "heli3_destroyed",
+    "heli3_wreck"
+   ]
+  }
+ }
+}

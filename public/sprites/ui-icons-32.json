@@ -1,0 +1,307 @@
+{
+ "kind": "icons",
+ "id": "ui-icons-32",
+ "image": "ui-icons-32.png",
+ "width": 192,
+ "height": 96,
+ "frameWidth": 32,
+ "frameHeight": 32,
+ "anchor": {
+  "x": 16,
+  "y": 16
+ },
+ "columns": 6,
+ "icons": [
+  {
+   "id": "pais",
+   "label": "País",
+   "gameIcon": null,
+   "x": 0,
+   "y": 0,
+   "w": 32,
+   "h": 32
+  },
+  {
+   "id": "mercado",
+   "label": "Mercado",
+   "gameIcon": "crate",
+   "x": 32,
+   "y": 0,
+   "w": 32,
+   "h": 32
+  },
+  {
+   "id": "agencia",
+   "label": "Agência",
+   "gameIcon": "rival",
+   "x": 64,
+   "y": 0,
+   "w": 32,
+   "h": 32
+  },
+  {
+   "id": "combate",
+   "label": "Combate",
+   "gameIcon": "tactic-assault",
+   "x": 96,
+   "y": 0,
+   "w": 32,
+   "h": 32
+  },
+  {
+   "id": "ameacas",
+   "label": "Ameaças",
+   "gameIcon": "threat",
+   "x": 128,
+   "y": 0,
+   "w": 32,
+   "h": 32
+  },
+  {
+   "id": "relatorio",
+   "label": "Relatório",
+   "gameIcon": "intel",
+   "x": 160,
+   "y": 0,
+   "w": 32,
+   "h": 32
+  },
+  {
+   "id": "cofre",
+   "label": "Cofre",
+   "gameIcon": "vault",
+   "x": 0,
+   "y": 32,
+   "w": 32,
+   "h": 32
+  },
+  {
+   "id": "estacao",
+   "label": "Estação",
+   "gameIcon": "station-office",
+   "x": 32,
+   "y": 32,
+   "w": 32,
+   "h": 32
+  },
+  {
+   "id": "frota",
+   "label": "Frota",
+   "gameIcon": "fleet",
+   "x": 64,
+   "y": 32,
+   "w": 32,
+   "h": 32
+  },
+  {
+   "id": "escolta",
+   "label": "Escolta",
+   "gameIcon": null,
+   "x": 96,
+   "y": 32,
+   "w": 32,
+   "h": 32
+  },
+  {
+   "id": "equipes",
+   "label": "Equipes",
+   "gameIcon": "team",
+   "x": 128,
+   "y": 32,
+   "w": 32,
+   "h": 32
+  },
+  {
+   "id": "contratos",
+   "label": "Contratos",
+   "gameIcon": "contract",
+   "x": 160,
+   "y": 32,
+   "w": 32,
+   "h": 32
+  },
+  {
+   "id": "arsenal",
+   "label": "Arsenal",
+   "gameIcon": "rifles",
+   "x": 0,
+   "y": 64,
+   "w": 32,
+   "h": 32
+  },
+  {
+   "id": "cacadas",
+   "label": "Caçadas",
+   "gameIcon": "neutralization",
+   "x": 32,
+   "y": 64,
+   "w": 32,
+   "h": 32
+  },
+  {
+   "id": "campanha",
+   "label": "Campanha",
+   "gameIcon": "special-op",
+   "x": 64,
+   "y": 64,
+   "w": 32,
+   "h": 32
+  },
+  {
+   "id": "configuracoes",
+   "label": "Configurações",
+   "gameIcon": null,
+   "x": 96,
+   "y": 64,
+   "w": 32,
+   "h": 32
+  },
+  {
+   "id": "dinheiro",
+   "label": "Dinheiro",
+   "gameIcon": "money",
+   "x": 128,
+   "y": 64,
+   "w": 32,
+   "h": 32
+  }
+ ],
+ "animations": [
+  {
+   "name": "pais",
+   "row": 0,
+   "col": 0,
+   "frames": 1,
+   "fps": 1,
+   "loop": false
+  },
+  {
+   "name": "mercado",
+   "row": 0,
+   "col": 1,
+   "frames": 1,
+   "fps": 1,
+   "loop": false
+  },
+  {
+   "name": "agencia",
+   "row": 0,
+   "col": 2,
+   "frames": 1,
+   "fps": 1,
+   "loop": false
+  },
+  {
+   "name": "combate",
+   "row": 0,
+   "col": 3,
+   "frames": 1,
+   "fps": 1,
+   "loop": false
+  },
+  {
+   "name": "ameacas",
+   "row": 0,
+   "col": 4,
+   "frames": 1,
+   "fps": 1,
+   "loop": false
+  },
+  {
+   "name": "relatorio",
+   "row": 0,
+   "col": 5,
+   "frames": 1,
+   "fps": 1,
+   "loop": false
+  },
+  {
+   "name": "cofre",
+   "row": 1,
+   "col": 0,
+   "frames": 1,
+   "fps": 1,
+   "loop": false
+  },
+  {
+   "name": "estacao",
+   "row": 1,
+   "col": 1,
+   "frames": 1,
+   "fps": 1,
+   "loop": false
+  },
+  {
+   "name": "frota",
+   "row": 1,
+   "col": 2,
+   "frames": 1,
+   "fps": 1,
+   "loop": false
+  },
+  {
+   "name": "escolta",
+   "row": 1,
+   "col": 3,
+   "frames": 1,
+   "fps": 1,
+   "loop": false
+  },
+  {
+   "name": "equipes",
+   "row": 1,
+   "col": 4,
+   "frames": 1,
+   "fps": 1,
+   "loop": false
+  },
+  {
+   "name": "contratos",
+   "row": 1,
+   "col": 5,
+   "frames": 1,
+   "fps": 1,
+   "loop": false
+  },
+  {
+   "name": "arsenal",
+   "row": 2,
+   "col": 0,
+   "frames": 1,
+   "fps": 1,
+   "loop": false
+  },
+  {
+   "name": "cacadas",
+   "row": 2,
+   "col": 1,
+   "frames": 1,
+   "fps": 1,
+   "loop": false
+  },
+  {
+   "name": "campanha",
+   "row": 2,
+   "col": 2,
+   "frames": 1,
+   "fps": 1,
+   "loop": false
+  },
+  {
+   "name": "configuracoes",
+   "row": 2,
+   "col": 3,
+   "frames": 1,
+   "fps": 1,
+   "loop": false
+  },
+  {
+   "name": "dinheiro",
+   "row": 2,
+   "col": 4,
+   "frames": 1,
+   "fps": 1,
+   "loop": false
+  }
+ ]
+}
