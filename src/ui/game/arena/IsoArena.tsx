@@ -163,15 +163,48 @@ export function IsoArena({
   let g: IsoGeom;
   if (bg) {
     // Fundo na maior escala que cabe, em meios passos (1, 1,5, 2…): o voxel aguenta e assim ele enche a área
-    // (com a escala inteira, 1366×768 caía para 1×). O zoom sobe um nível e rola.
+    // (com a escala inteira, 1366×768 caía para 1×). Deitado, o zoom sobe um nível e rola.
     const fitS = Math.min(box.w / bg.frameWidth, (box.h || Infinity) / bg.frameHeight);
-    const S = Math.max(0.5, Math.floor(fitS * 2) / 2);
-    g = bgGeom(bg, c.rows, zoom ? S + 1 : S);
+    let S: number;
+    if (portraitStart()) {
+      // Em pé: quartos de passo (em 440 de largura o meio passo caía para 0,5×, miúdo). Sem zoom, a arena
+      // inteira; com zoom (o padrão), larga ~1,6× a tela, rolando a partir do lado do jogador (e na vertical,
+      // quando a área é baixa, centrada na grade).
+      const fit = Math.max(0.25, Math.floor(fitS * 4) / 4);
+      const vw = typeof window !== 'undefined' ? window.innerWidth : box.w;
+      const pan = Math.round(((1.6 * vw) / bg.frameWidth) * 4) / 4;
+      S = zoom ? (pan > fit ? pan : fit + 0.5) : fit;
+    } else {
+      const half = Math.max(0.5, Math.floor(fitS * 2) / 2);
+      S = zoom ? half + 1 : half;
+    }
+    g = bgGeom(bg, c.rows, S);
   } else {
     const fit = fitTile(c.cols, c.rows, box.w, box.h);
     // Zoom: casas 1,5× maiores; a arena rola dentro da área (começa no lado do jogador).
     g = isoGeom(c.cols, c.rows, zoom ? Math.round(fit * 1.5) : fit);
   }
+  // Com zoom: no posicionamento a arena começa no lado do jogador; durante a luta, a cada turno rola até o meio
+  // dos eventos (tiros, quedas, movimentos). Na vertical, centra a grade (ou os eventos).
+  const focus = (() => {
+    if (!zoom) return null;
+    const pts: { col: number; row: number }[] = fitAll ? (c.fx.length ? c.fx : c.units) : [];
+    const mid = g.center((c.cols - 1) / 2, (c.rows - 1) / 2);
+    if (!pts.length) return { x: null, y: mid[1] };
+    const sum = pts.reduce((s, p) => { const [x, y] = g.center(p.col, p.row); return [s[0] + x, s[1] + y]; }, [0, 0]);
+    return { x: sum[0] / pts.length, y: sum[1] / pts.length };
+  })();
+  useEffect(() => {
+    const el = wrap.current;
+    if (!el || !focus) return;
+    const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
+    el.scrollTo({
+      left: focus.x == null ? 0 : focus.x - el.clientWidth / 2,
+      top: focus.y - el.clientHeight / 2,
+      behavior: reduce || focus.x == null ? 'auto' : 'smooth',
+    });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [c.turn, zoom, fitAll, g.width]);
   const tw = g.tw;
   const cells: { row: number; col: number }[] = [];
   for (let row = c.rows - 1; row >= 0; row--) for (let col = 0; col < c.cols; col++) cells.push({ row, col });
