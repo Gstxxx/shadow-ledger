@@ -25,14 +25,16 @@ Tom: thriller sério, sem violência explícita. A Neutralização continua abst
 |---|---|---|---|---|---|
 | 1 | Herança | Américas | Lucro | 60 dias | Você assume a Lanterna: um cargueiro velho, dívidas e uma Célula no México. Pague as contas e prove que a agência vive. Libera a escolha de Origem. |
 | 2 | Livro-caixa | Mediterrâneo | Lucro rápido | 45 dias | O livro-caixa de Arrieta aponta pagamentos para Malta e Chipre. Siga o dinheiro, montando rotas de comércio. |
-| 3 | A Contadora | Europa | Resgate | 40 dias | A contadora de Arrieta está Detida em um país hostil. Tire-a de lá; ela entrega a primeira pista sobre a sabotagem. |
-| 4 | Areia | Sahel | Destruir | 50 dias | Mercenários pagos por um intermediário atacam suas rotas. Cace o Grupo Hostil e capture o pagador. |
+| 3 | A Contadora | Europa | Resgate | 55 dias | A contadora de Arrieta está Detida em um país hostil. Tire-a de lá; ela entrega a primeira pista sobre a sabotagem. |
+| 4 | Areia | Sahel | Destruir | 65 dias | Mercenários pagos por um intermediário atacam suas rotas. Cace o Grupo Hostil e capture o pagador. |
 | 5 | Linha Vermelha | Leste Europeu | Lucro | 60 dias | Com a Tensão Global subindo, a Lanterna precisa de caixa para o que vem. Primeiro capítulo com Agência Rival ativa (fraca). |
-| 6 | Dossiê Moravia | Europa Ocidental | Lucro rápido | 45 dias | O intermediário fala: o dinheiro veio da Casa Moravia. A Moravia passa a disputar seus mercados. |
-| 7 | Contra-ataque | Oriente Médio | Destruir | 55 dias | Derrube a rede de Estações da Moravia na região antes que ela isole a Lanterna. |
-| 8 | Andes | América do Sul | Resgate | 40 dias | A Moravia sequestra um aliado seu. Resgate-o; ele revela onde Arrieta está escondido. |
+| 6 | Dossiê Moravia | Europa Ocidental | Lucro rápido | 55 dias | O intermediário fala: o dinheiro veio da Casa Moravia. A Moravia passa a disputar seus mercados. |
+| 7 | Contra-ataque | Oriente Médio | Destruir | 75 dias | Derrube a rede de Estações da Moravia na região antes que ela isole a Lanterna. |
+| 8 | Andes | América do Sul | Resgate | 60 dias | A Moravia sequestra um aliado seu. Resgate-o; ele revela onde Arrieta está escondido. |
 | 9 | Pacífico Frio | Ásia-Pacífico | Lucro | 75 dias | Arrieta está vivo e precisa de uma saída. Financie a operação final sem chamar a atenção dos Estados. |
 | 10 | Confronto | Mundo | Destruir | 90 dias | Destrua a Casa Moravia antes que a Tensão Global chegue à Crise Final. Final com cena curta própria. |
+
+Prazos, metas e força dos grupos calibrados por simulação (docs/BALANCE.md, P20).
 
 ## Apresentação
 - **Menu:** "Campanha" entra no menu principal acima de "Nova partida". Mostra os 10 capítulos (bloqueados até serem alcançados), o Dossiê e "Continuar capítulo".
