@@ -254,12 +254,8 @@ def env():
     # back strip (behind the grid): dumpster, bags, pallet + crate, vent posts
     v += dumpster(196, 4) + bags(222, 6) + bags(172, 12) + pallet(4, 4) + crate(6, 5, 1, 8) + barrel(26, 14, 9)
     v += box(VENT[0] - 1, VENT[0] - 1, VENT[2] - 1, VENT[2] - 1, 0, 5, 'metal') + box(VENT[1] + 1, VENT[1] + 1, VENT[2] - 1, VENT[2] - 1, 0, 5, 'metal')
-    # no-man's land (cols 3-4, x 100..156): waist-high cover, nothing taller than a crouching person
-    cx0 = X0 + 3 * CELL
-    v += crate(cx0 + 8, Y0 + 8, 0, 8) + crate(cx0 + 16, Y0 + 8, 0, 8) + crate(cx0 + 12, Y0 + 16, 0, 8) + crate(cx0 + 12, Y0 + 9, 8, 6)
-    v += jersey(cx0 + 34, Y0 + 30, Y0 + 52)
-    v += bags(cx0 + 4, Y0 + 66) + tires(cx0 + 46, Y0 + 72) + barrel(cx0 + 26, Y0 + 74, 9) + cone(cx0 + 20, Y0 + 56)
-    v += box(cx0 + 6, cx0 + 10, Y0 + 40, Y0 + 42, 0, 0, 'conc2') + [(cx0 + 9, Y0 + 44, 0, 'conc2'), (cx0 + 11, Y0 + 43, 0, 'conc2')]
+    # combat grid (all 8 columns): no props, only flat floor detail -- units stand and walk anywhere on it
+    v += box(X0 + 3 * CELL + 6, X0 + 3 * CELL + 10, Y0 + 40, Y0 + 42, 0, 0, 'conc2')   # flat debris
     return v
 
 

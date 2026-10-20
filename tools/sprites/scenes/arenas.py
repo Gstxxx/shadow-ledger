@@ -6,8 +6,8 @@ Writes public/sprites/arenas/<name>/{<name>.png, <name>-anim.png, <name>-front.p
 Props: every free-standing object on the floor (a connected voxel group that does not touch the walls) that could
 overlap a unit standing behind it is cut out of the background and exported as its own sprite, with a depth key in
 the same units as the grid (a unit on cell (c, r) has depth c + r). The game draws props and units sorted by depth,
-so a unit behind a crate is hidden by it. Deploy cells (cols 0-2 and 5-7) must hold no props, only flat floor detail:
-the build fails if one does."""
+so a unit behind a crate is hidden by it. The whole grid (all 8 columns) must hold no props, only flat floor detail
+(decals, stains, markings, puddles, low scrub): the build fails if one does. Props live outside the grid."""
 import importlib, json, os, sys, time
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 from common import *
@@ -65,7 +65,7 @@ def split_props(name, env):
             continue
         xs = [v[0] for v in g]; ys = [v[1] for v in g]
         foot = {((x - X0) // CELL, (y - Y0) // CELL) for x, y, z, c in g if z <= 1}
-        deploy = sorted(f for f in foot if 0 <= f[1] < ROWS and (0 <= f[0] <= 2 or 5 <= f[0] <= 7))
+        deploy = sorted(f for f in foot if 0 <= f[0] < COLS and 0 <= f[1] < ROWS)
         if deploy:
             bad.append((min(xs), max(xs), min(ys), max(ys), deploy))
             continue
@@ -87,8 +87,8 @@ def split_props(name, env):
             taken.update((x, y, z) for x, y, z, c in g)
     if bad:
         for x0_, x1_, y0_, y1_, cs in bad:
-            print(f'  {name}: prop in deploy cells {cs}: x {x0_}..{x1_}, y {y0_}..{y1_}')
-        raise SystemExit(f'{name}: {len(bad)} prop group(s) inside deploy cells (cols 0-2 / 5-7): move them out')
+            print(f'  {name}: prop on grid cells {cs}: x {x0_}..{x1_}, y {y0_}..{y1_}')
+        raise SystemExit(f'{name}: {len(bad)} prop group(s) on the combat grid: only flat floor detail is allowed there')
     base = [v for v in env if (v[0], v[1], v[2]) not in taken]
     props.sort(key=lambda p: p['depth'])
     return base, props

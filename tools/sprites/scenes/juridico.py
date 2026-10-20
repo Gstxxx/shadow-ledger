@@ -372,11 +372,7 @@ def env():
     v += box(3, 7, 66, 84, 4, 4, 'wd3') + box(2, 2, 66, 84, 4, 9, 'wd1') + [(2, y, 10, 'wdT') for y in range(66, 85)]
     v += box(3, 7, 66, 66, 0, 3, 'wd2') + box(3, 7, 84, 84, 0, 3, 'wd2')
     v += file_boxes(4, 100, 1, 3) + file_boxes(4, 106, 1, 2)
-    # no-man's land cover (cols 3-4, x 100..156): pews, overturned table, boxes, papers -- all <= 10 (1 m)
-    v += pew(108, 30, 52) + pew(140, 58, 80) + pew(110, 86, 106)
-    v += counsel_table_over(128, 34, 52)
-    v += file_boxes(122, 62, 1, 3) + file_boxes(126, 68, 2, 1) + paper_stack(118, 74, 0, 5, 5) + file_boxes(146, 30, 1, 2)
-    v += paper_stack(134, 94, 0, 6, 6) + paper_stack(104, 60, 0, 3, 7)
+    # combat grid (all 8 columns): no props, only flat floor detail -- units stand and walk anywhere on it
     rnd = random.Random(5)
     v += [(rnd.randint(102, 154), rnd.randint(28, 108), 0, rnd.choice(('paper', 'paper2'))) for _ in range(26)]   # strewn pages
     return v

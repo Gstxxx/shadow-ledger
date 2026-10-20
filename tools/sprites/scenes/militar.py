@@ -369,14 +369,7 @@ def env():
     v += crate(136, 12) + crate(137, 13, 8, 6) + drum(150, 18)
     v += [(162, 16, z, 'pole') for z in range(0, 63)] + box(160, 164, 16, 16, 58, 58, 'hesM') + [(162, 16, 63, 'hesM')]   # antenna mast
     v += line3((162, 16, 58), (152, 25, 0), 'wire') + line3((162, 16, 58), (166, 25, 0), 'wire')
-    # no-man's land (cols 3-4, x 100..156): cover <= 1.2 m, kept off the cell centres
-    arc = [(NX + 22 + round(3 * math.sin(math.pi * a / 22)), Y0 + 4 + a) for a in range(0, 23)]
-    v += sandbags(thick(arc, (-1, 0), 4), 5)                               # sandbag arc, 1.0 m
-    v += jersey(NX + 32, Y0 + 30, Y0 + 54)                                 # jersey barrier, 0.8 m
-    lw = [(NX + 3, y) for y in range(Y0 + 58, Y0 + 79)] + [(x, Y0 + 78) for x in range(NX + 4, NX + 13)]
-    v += sandbags(thick(lw, (1, 0), 3), 4)                                 # low L-wall, 0.8 m
-    v += hedgehog(NX + 50, Y0 + 5) + hedgehog(NX + 7, Y0 + 30) + hedgehog(NX + 50, Y0 + 56)
-    v += ammo_box(NX + 30, Y0 + 75) + ammo_box(NX + 31, Y0 + 75, 5)
+    # combat grid (all 8 columns): no props, only flat floor detail -- units stand and walk anywhere on it
     # scrub + rocks scattered (flat enough to stand on)
     for (x, y, s) in ((60, 100, 0), (176, 60, 1), (226, 92, 0), (48, 46, 0), (166, 108, 1), (244, 40, 1),
                       (198, 74, 0), (84, 74, 1), (30, 30, 0), (210, 30, 1)):
