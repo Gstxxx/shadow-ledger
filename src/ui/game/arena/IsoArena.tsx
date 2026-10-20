@@ -1,4 +1,4 @@
-import { useLayoutEffect, useRef, useState } from 'react';
+import { useEffect, useLayoutEffect, useRef, useState } from 'react';
 import type { KeyboardEvent, ReactNode, RefObject } from 'react';
 import type { CombatState, CombatUnitRef } from '../../../game/types';
 import { def, FORT_ID } from '../../../game/units';
@@ -68,6 +68,7 @@ export function IsoArena({
   renderUnit,
   zoomLabels,
   children,
+  fitAll,
 }: {
   c: CombatState;
   boardRef: RefObject<HTMLDivElement>;
@@ -79,9 +80,15 @@ export function IsoArena({
   zoomLabels: { in: string; out: string };
   /** camada por cima das figuras (efeitos), recebe a geometria */
   children?: (g: IsoGeom) => ReactNode;
+  /** Luta em andamento: mostra a arena inteira (os dois lados); o zoom volta no posicionamento. */
+  fitAll?: boolean;
 }) {
   // Em pé sobra altura: começa com zoom (casas 1,5×), rolando a partir do lado do jogador.
-  const [zoom, setZoom] = useState(() => typeof matchMedia !== 'undefined' && matchMedia('(orientation: portrait)').matches);
+  const portraitStart = () => typeof matchMedia !== 'undefined' && matchMedia('(orientation: portrait)').matches;
+  const [zoom, setZoom] = useState(() => !fitAll && portraitStart());
+  useEffect(() => {
+    setZoom(fitAll ? false : portraitStart());
+  }, [fitAll]);
   const wrap = useRef<HTMLDivElement>(null);
   const [box, setBox] = useState({ w: 0, h: 0 });
   useLayoutEffect(() => {

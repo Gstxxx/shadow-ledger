@@ -98,7 +98,7 @@ export function ArrestIcon({ scale = 1 }: { scale?: number }) {
 }
 
 /** Alarme: toca por até 1,5 s quando `ring` muda (nova Ameaça) e depois fica no 1º quadro. */
-export function AlarmIcon({ ring, scale = 1 }: { ring: number; scale?: number }) {
+export function AlarmIcon({ ring, scale = 1, small }: { ring: number; scale?: number; small?: boolean }) {
   const [on, setOn] = useState(false);
   const first = useRef(true);
   useEffect(() => {
@@ -112,7 +112,7 @@ export function AlarmIcon({ ring, scale = 1 }: { ring: number; scale?: number })
     return () => clearTimeout(t);
   }, [ring]);
   return (
-    <span className="fx-icon" aria-hidden>
+    <span className={`fx-icon${small ? ' fx-icon--sm' : ''}`} aria-hidden>
       <Sprite set={SET} anim="alarm" playing={on} frame={2} scale={scale} />
     </span>
   );

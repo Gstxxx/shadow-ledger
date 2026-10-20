@@ -204,7 +204,7 @@ function LiveView() {
   useEffect(() => {
     if (!c.turn) return;
     setPoses({ turn: c.turn, map: posesOf(c) });
-    const id = setTimeout(() => setPoses({ turn: c.turn, map: new Map() }), fast ? 450 : 850);
+    const id = setTimeout(() => setPoses({ turn: c.turn, map: new Map() }), fast ? 600 : 1400);
     return () => clearTimeout(id);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [c.turn]);
@@ -228,7 +228,8 @@ function LiveView() {
 
   useEffect(() => {
     if (!running || c.result) return;
-    const id = setInterval(step, fast ? 450 : 900);
+    // ~2 s por turno: dá para ver atirar → acertar → ferir/cair. O avanço rápido e o pular continuam.
+    const id = setInterval(step, fast ? 900 : 2100);
     return () => clearInterval(id);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [running, fast, c.result]);
@@ -302,6 +303,7 @@ function LiveView() {
             onCell={cellClick}
             renderUnit={(r, g) => <IsoToken key={r.key} r={r} c={c} g={g} pose={poses.map.get(r.key) ?? 'idle'} />}
             zoomLabels={{ in: t('game.map.zoomIn'), out: t('game.map.zoomOut') }}
+            fitAll={c.turn > 0 || running}
           >
             {(g) =>
               poses.map.size > 0 &&

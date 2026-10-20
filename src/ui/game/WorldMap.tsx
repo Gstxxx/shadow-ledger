@@ -423,7 +423,11 @@ export function WorldMap({ mode, onPickCountry }: { mode: MapMode; onPickCountry
           {/* Ameaças anunciadas */}
           {a.threats.map((th) => {
             const cc = s.countries[th.countryId];
-            const [x, y] = project(cc.lon, cc.lat);
+            const [x0, y0] = project(cc.lon, cc.lat);
+            // Vários marcadores no mesmo país: a Estação fica no centro, a Ameaça à esquerda, o Grupo Hostil à direita.
+            const crowded = a.stations.some((st) => st.countryId === th.countryId);
+            const x = x0 - (crowded ? 20 * inv : 0);
+            const y = y0 + (crowded ? 4 * inv : 0);
             const left = Math.max(0, th.strikesAt - s.time);
             return (
               <g key={th.id}>
@@ -438,11 +442,15 @@ export function WorldMap({ mode, onPickCountry }: { mode: MapMode; onPickCountry
           {/* Grupo hostil (último avistamento) */}
           {g && !g.defeated && g.seenAt && (() => {
             const cc = s.countries[g.seenAt.countryId];
-            const [x, y] = project(cc.lon, cc.lat);
+            const [x0, y0] = project(cc.lon, cc.lat);
+            const gid = g.seenAt.countryId;
+            const crowded = a.stations.some((st) => st.countryId === gid) || a.threats.some((th) => th.countryId === gid);
+            const x = x0 + (crowded ? 20 * inv : 0);
+            const y = y0 + (crowded ? 8 * inv : 0);
             return (
               <g transform={`translate(${x} ${y})`} className="g-mapmark g-mapmark--threat">
                 <MapMarker kind="hostile_group" x={0} y={0} inv={inv} px={26} />
-                <text y={-16 * inv} fontSize={9 * inv} textAnchor="middle" className="map-label hostile" style={{ strokeWidth: 3 * inv }}>
+                <text y={(crowded ? 24 : -16) * inv} fontSize={9 * inv} textAnchor="middle" className="map-label hostile" style={{ strokeWidth: 3 * inv }}>
                   {g.name}
                 </text>
               </g>

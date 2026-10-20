@@ -82,6 +82,14 @@
   top: 50%;
   transform: translate(-50%, -50%) scale(0.6);
 }
+/* No botão da barra de ações: do tamanho do ícone (24 px), nunca por cima do rótulo. */
+.fx-icon--sm {
+  width: 24px;
+  height: 24px;
+}
+.fx-icon--sm .sl-sprite {
+  transform: translate(-50%, -50%) scale(0.36);
+}
 @media (prefers-reduced-motion: reduce) {
   .fx-cash-pop,
   .fx-tape {
