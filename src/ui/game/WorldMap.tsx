@@ -229,7 +229,8 @@ export function WorldMap({ mode, onPickCountry }: { mode: MapMode; onPickCountry
       setView((v) => {
         const toScreen = (ux: number, uy: number) => [r.left + ((ux - box.x) / box.w) * r.width, r.top + ((uy - box.y) / box.h) * r.height] as const;
         const free = (sx: number, sy: number) => {
-          if (sx < r.left + 8 || sx > r.right - 8 || sy < r.top + 8 || sy > r.bottom - 8) return false;
+          // Fora do mapa (com 8 px de margem) não conta como livre.
+          if (Math.min(sx - r.left, r.right - sx, sy - r.top, r.bottom - sy) < 8) return false;
           const top = document.elementFromPoint(sx, sy);
           return !!top && el.contains(top);
         };
