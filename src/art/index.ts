@@ -29,5 +29,7 @@ export type { ItemArtProps, ItemArtCategory } from './ItemArt';
 export { ITEM_PHOTOS } from './itemPhotos';
 export { UnitPortrait, unitFigure } from './UnitPortrait';
 export type { UnitPortraitProps } from './UnitPortrait';
+export { Sprite, SpriteStill, SPRITE_SETS, STATION_SPRITE_IDS, loadSpriteAtlas, loadSpriteStatic, preloadSprites, spriteAtlasSync, useSpriteAtlas, findAnim, frameRect, frameAt, animDuration, spriteUrl } from './sprites';
+export type { SpriteAtlas, SpriteAnim, SpriteStaticGroup, SpriteStaticItem, SpriteSetId, SpriteStaticId, SpriteProps, SpriteStillProps } from './sprites';
 export { CornerBrackets, DossierFrame, Stamp, Redacted, RedactionBar, Divider, ClassificationBar, Tape } from './frame';
 export type { CornerBracketsProps, DossierFrameProps, StampProps, StampPreset, RedactedProps, RedactionBarProps, DividerProps, ClassificationBarProps, TapeProps } from './frame';

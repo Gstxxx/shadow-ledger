@@ -1,0 +1,56 @@
+{
+ "kind": "static",
+ "id": "interiors",
+ "items": [
+  {
+   "id": "cell",
+   "image": "interiors/cell.png",
+   "width": 60,
+   "height": 52,
+   "anchor": {
+    "x": 28,
+    "y": 21
+   }
+  },
+  {
+   "id": "safehouse",
+   "image": "interiors/safehouse.png",
+   "width": 76,
+   "height": 62,
+   "anchor": {
+    "x": 36,
+    "y": 23
+   }
+  },
+  {
+   "id": "office",
+   "image": "interiors/office.png",
+   "width": 92,
+   "height": 70,
+   "anchor": {
+    "x": 44,
+    "y": 23
+   }
+  },
+  {
+   "id": "compound",
+   "image": "interiors/compound.png",
+   "width": 100,
+   "height": 76,
+   "anchor": {
+    "x": 48,
+    "y": 25
+   }
+  },
+  {
+   "id": "base",
+   "image": "interiors/base.png",
+   "width": 124,
+   "height": 90,
+   "anchor": {
+    "x": 60,
+    "y": 27
+   }
+  }
+ ]
+}

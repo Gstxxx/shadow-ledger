@@ -1,0 +1,78 @@
+{
+ "kind": "atlas",
+ "id": "aircraft-bomber-aa",
+ "image": "aircraft-bomber-aa.png",
+ "width": 1850,
+ "height": 1521,
+ "frameWidth": 185,
+ "frameHeight": 169,
+ "anchor": {
+  "x": 76,
+  "y": 105
+ },
+ "animations": [
+  {
+   "name": "bomber_fly",
+   "row": 0,
+   "frames": 6,
+   "fps": 10,
+   "loop": true
+  },
+  {
+   "name": "bomber_bomb",
+   "row": 1,
+   "frames": 10,
+   "fps": 10,
+   "loop": false
+  },
+  {
+   "name": "bomber_shot_down",
+   "row": 2,
+   "frames": 10,
+   "fps": 10,
+   "loop": false
+  },
+  {
+   "name": "sam1_move",
+   "row": 3,
+   "frames": 6,
+   "fps": 10,
+   "loop": true
+  },
+  {
+   "name": "sam1_launch",
+   "row": 4,
+   "frames": 8,
+   "fps": 10,
+   "loop": true
+  },
+  {
+   "name": "sam1_destroyed",
+   "row": 5,
+   "frames": 10,
+   "fps": 10,
+   "loop": false
+  },
+  {
+   "name": "sam3_raise",
+   "row": 6,
+   "frames": 8,
+   "fps": 10,
+   "loop": false
+  },
+  {
+   "name": "sam3_launch",
+   "row": 7,
+   "frames": 10,
+   "fps": 10,
+   "loop": false
+  },
+  {
+   "name": "sam3_destroyed",
+   "row": 8,
+   "frames": 10,
+   "fps": 10,
+   "loop": false
+  }
+ ]
+}

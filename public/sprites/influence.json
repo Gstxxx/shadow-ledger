@@ -1,0 +1,78 @@
+{
+ "kind": "atlas",
+ "id": "influence",
+ "image": "influence.png",
+ "width": 312,
+ "height": 639,
+ "frameWidth": 52,
+ "frameHeight": 71,
+ "anchor": {
+  "x": 18,
+  "y": 61
+ },
+ "animations": [
+  {
+   "name": "idle",
+   "row": 0,
+   "frames": 4,
+   "fps": 4,
+   "loop": true
+  },
+  {
+   "name": "walk",
+   "row": 1,
+   "frames": 6,
+   "fps": 8,
+   "loop": true
+  },
+  {
+   "name": "run",
+   "row": 2,
+   "frames": 6,
+   "fps": 12,
+   "loop": true
+  },
+  {
+   "name": "persuade",
+   "row": 3,
+   "frames": 4,
+   "fps": 8,
+   "loop": true
+  },
+  {
+   "name": "bribe",
+   "row": 4,
+   "frames": 5,
+   "fps": 8,
+   "loop": false
+  },
+  {
+   "name": "whisper",
+   "row": 5,
+   "frames": 4,
+   "fps": 8,
+   "loop": true
+  },
+  {
+   "name": "convinced",
+   "row": 6,
+   "frames": 4,
+   "fps": 8,
+   "loop": false
+  },
+  {
+   "name": "back_off",
+   "row": 7,
+   "frames": 4,
+   "fps": 8,
+   "loop": true
+  },
+  {
+   "name": "defeat",
+   "row": 8,
+   "frames": 5,
+   "fps": 8,
+   "loop": false
+  }
+ ]
+}

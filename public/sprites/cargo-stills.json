@@ -1,0 +1,96 @@
+{
+ "kind": "static",
+ "id": "cargo-stills",
+ "items": [
+  {
+   "id": "weapons_crate",
+   "image": "cargo/weapons_crate.png",
+   "width": 36,
+   "height": 30,
+   "anchor": {
+    "x": 18,
+    "y": 21
+   }
+  },
+  {
+   "id": "ammo_crate",
+   "image": "cargo/ammo_crate.png",
+   "width": 30,
+   "height": 33,
+   "anchor": {
+    "x": 12,
+    "y": 19
+   }
+  },
+  {
+   "id": "documents",
+   "image": "cargo/documents.png",
+   "width": 36,
+   "height": 25,
+   "anchor": {
+    "x": 21,
+    "y": 17
+   }
+  },
+  {
+   "id": "special_material",
+   "image": "cargo/special_material.png",
+   "width": 33,
+   "height": 44,
+   "anchor": {
+    "x": 16,
+    "y": 35
+   }
+  },
+  {
+   "id": "technology",
+   "image": "cargo/technology.png",
+   "width": 31,
+   "height": 41,
+   "anchor": {
+    "x": 12,
+    "y": 31
+   }
+  },
+  {
+   "id": "cash_case",
+   "image": "cargo/cash_case.png",
+   "width": 36,
+   "height": 42,
+   "anchor": {
+    "x": 20,
+    "y": 30
+   }
+  },
+  {
+   "id": "gold_bars",
+   "image": "cargo/gold_bars.png",
+   "width": 40,
+   "height": 35,
+   "anchor": {
+    "x": 23,
+    "y": 24
+   }
+  },
+  {
+   "id": "cargo_pallet",
+   "image": "cargo/cargo_pallet.png",
+   "width": 38,
+   "height": 35,
+   "anchor": {
+    "x": 18,
+    "y": 25
+   }
+  },
+  {
+   "id": "container",
+   "image": "cargo/container.png",
+   "width": 46,
+   "height": 39,
+   "anchor": {
+    "x": 22,
+    "y": 27
+   }
+  }
+ ]
+}

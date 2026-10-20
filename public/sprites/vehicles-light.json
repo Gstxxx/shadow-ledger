@@ -1,0 +1,78 @@
+{
+ "kind": "atlas",
+ "id": "vehicles-light",
+ "image": "vehicles-light.png",
+ "width": 1170,
+ "height": 945,
+ "frameWidth": 117,
+ "frameHeight": 105,
+ "anchor": {
+  "x": 60,
+  "y": 75
+ },
+ "animations": [
+  {
+   "name": "technical_move",
+   "row": 0,
+   "frames": 6,
+   "fps": 10,
+   "loop": true
+  },
+  {
+   "name": "technical_shoot",
+   "row": 1,
+   "frames": 4,
+   "fps": 12,
+   "loop": true
+  },
+  {
+   "name": "technical_destroyed",
+   "row": 2,
+   "frames": 10,
+   "fps": 10,
+   "loop": false
+  },
+  {
+   "name": "patrolcar_move",
+   "row": 3,
+   "frames": 6,
+   "fps": 10,
+   "loop": true
+  },
+  {
+   "name": "patrolcar_idle",
+   "row": 4,
+   "frames": 6,
+   "fps": 4,
+   "loop": true
+  },
+  {
+   "name": "patrolcar_destroyed",
+   "row": 5,
+   "frames": 10,
+   "fps": 10,
+   "loop": false
+  },
+  {
+   "name": "apc_move",
+   "row": 6,
+   "frames": 6,
+   "fps": 10,
+   "loop": true
+  },
+  {
+   "name": "apc_shoot",
+   "row": 7,
+   "frames": 6,
+   "fps": 12,
+   "loop": true
+  },
+  {
+   "name": "apc_destroyed",
+   "row": 8,
+   "frames": 10,
+   "fps": 10,
+   "loop": false
+  }
+ ]
+}

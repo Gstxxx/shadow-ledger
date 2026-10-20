@@ -7,6 +7,7 @@ import Gallery from './proto-gallery';
 import { GameScreenMock } from './proto-gamekit';
 import { StageDemo } from './proto-stage';
 import { SimpleDemo } from './proto-simple';
+import { SpritesDemo } from './proto-sprites';
 import { UnitPortrait } from './UnitPortrait';
 import { ItemArt } from './ItemArt';
 import { ITEMS } from '../game/data/items';
@@ -66,6 +67,7 @@ function Solo(): ReactNode {
         ),
     );
   }
+  if (solo === 'sprites') return <SpritesDemo only={q.get('set') ?? undefined} scale={Number(q.get('scale') ?? 2)} />;
   if (solo === 'simple') return <SimpleDemo screen={(q.get('s') as 'trade' | 'country' | 'kit') ?? 'trade'} />;
   if (solo === 'stage') return <StageDemo initial={(q.get('m') as 'country' | 'agency' | 'item' | 'none') ?? 'country'} />;
   if (solo === 'game') return <div style={{ background: 'var(--g-bg)', minHeight: '100vh' }}><GameScreenMock width={Number(q.get('w') ?? 1440)} /></div>;

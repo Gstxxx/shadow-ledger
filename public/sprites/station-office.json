@@ -1,0 +1,36 @@
+{
+ "kind": "atlas",
+ "id": "station-office",
+ "image": "station-office.png",
+ "width": 960,
+ "height": 387,
+ "frameWidth": 120,
+ "frameHeight": 129,
+ "anchor": {
+  "x": 60,
+  "y": 84
+ },
+ "animations": [
+  {
+   "name": "normal",
+   "row": 0,
+   "frames": 1,
+   "fps": 8,
+   "loop": true
+  },
+  {
+   "name": "damaged",
+   "row": 1,
+   "frames": 8,
+   "fps": 8,
+   "loop": true
+  },
+  {
+   "name": "interdicted",
+   "row": 2,
+   "frames": 8,
+   "fps": 8,
+   "loop": true
+  }
+ ]
+}

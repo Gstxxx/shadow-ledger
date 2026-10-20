@@ -1,0 +1,36 @@
+{
+ "kind": "atlas",
+ "id": "station-safehouse",
+ "image": "station-safehouse.png",
+ "width": 832,
+ "height": 309,
+ "frameWidth": 104,
+ "frameHeight": 103,
+ "anchor": {
+  "x": 52,
+  "y": 66
+ },
+ "animations": [
+  {
+   "name": "normal",
+   "row": 0,
+   "frames": 1,
+   "fps": 8,
+   "loop": true
+  },
+  {
+   "name": "damaged",
+   "row": 1,
+   "frames": 8,
+   "fps": 8,
+   "loop": true
+  },
+  {
+   "name": "interdicted",
+   "row": 2,
+   "frames": 8,
+   "fps": 8,
+   "loop": true
+  }
+ ]
+}

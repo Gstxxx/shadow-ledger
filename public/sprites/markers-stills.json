@@ -1,0 +1,96 @@
+{
+ "kind": "static",
+ "id": "markers-stills",
+ "items": [
+  {
+   "id": "hostile_group",
+   "image": "markers/hostile_group.png",
+   "width": 50,
+   "height": 41,
+   "anchor": {
+    "x": 25,
+    "y": 25
+   }
+  },
+  {
+   "id": "threat",
+   "image": "markers/threat.png",
+   "width": 52,
+   "height": 59,
+   "anchor": {
+    "x": 26,
+    "y": 42
+   }
+  },
+  {
+   "id": "rival_agency",
+   "image": "markers/rival_agency.png",
+   "width": 42,
+   "height": 60,
+   "anchor": {
+    "x": 21,
+    "y": 46
+   }
+  },
+  {
+   "id": "player_station",
+   "image": "markers/player_station.png",
+   "width": 48,
+   "height": 46,
+   "anchor": {
+    "x": 24,
+    "y": 32
+   }
+  },
+  {
+   "id": "director",
+   "image": "markers/director.png",
+   "width": 34,
+   "height": 54,
+   "anchor": {
+    "x": 17,
+    "y": 44
+   }
+  },
+  {
+   "id": "contract",
+   "image": "markers/contract.png",
+   "width": 40,
+   "height": 45,
+   "anchor": {
+    "x": 20,
+    "y": 32
+   }
+  },
+  {
+   "id": "hunt",
+   "image": "markers/hunt.png",
+   "width": 52,
+   "height": 52,
+   "anchor": {
+    "x": 26,
+    "y": 38
+   }
+  },
+  {
+   "id": "vault",
+   "image": "markers/vault.png",
+   "width": 37,
+   "height": 36,
+   "anchor": {
+    "x": 18,
+    "y": 26
+   }
+  },
+  {
+   "id": "flight",
+   "image": "markers/flight.png",
+   "width": 55,
+   "height": 49,
+   "anchor": {
+    "x": 34,
+    "y": 40
+   }
+  }
+ ]
+}

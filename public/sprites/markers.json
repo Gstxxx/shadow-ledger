@@ -1,0 +1,78 @@
+{
+ "kind": "atlas",
+ "id": "markers",
+ "image": "markers.png",
+ "width": 396,
+ "height": 585,
+ "frameWidth": 66,
+ "frameHeight": 65,
+ "anchor": {
+  "x": 36,
+  "y": 48
+ },
+ "animations": [
+  {
+   "name": "hostile_group",
+   "row": 0,
+   "frames": 6,
+   "fps": 6,
+   "loop": true
+  },
+  {
+   "name": "threat",
+   "row": 1,
+   "frames": 6,
+   "fps": 6,
+   "loop": true
+  },
+  {
+   "name": "rival_agency",
+   "row": 2,
+   "frames": 6,
+   "fps": 6,
+   "loop": true
+  },
+  {
+   "name": "player_station",
+   "row": 3,
+   "frames": 6,
+   "fps": 6,
+   "loop": true
+  },
+  {
+   "name": "director",
+   "row": 4,
+   "frames": 6,
+   "fps": 6,
+   "loop": true
+  },
+  {
+   "name": "contract",
+   "row": 5,
+   "frames": 6,
+   "fps": 6,
+   "loop": true
+  },
+  {
+   "name": "hunt",
+   "row": 6,
+   "frames": 6,
+   "fps": 6,
+   "loop": true
+  },
+  {
+   "name": "vault",
+   "row": 7,
+   "frames": 6,
+   "fps": 6,
+   "loop": true
+  },
+  {
+   "name": "flight",
+   "row": 8,
+   "frames": 6,
+   "fps": 6,
+   "loop": true
+  }
+ ]
+}

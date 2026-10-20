@@ -1,0 +1,57 @@
+{
+ "kind": "atlas",
+ "id": "cargo-planes-b",
+ "image": "cargo-planes-b.png",
+ "width": 1560,
+ "height": 912,
+ "frameWidth": 156,
+ "frameHeight": 152,
+ "anchor": {
+  "x": 93,
+  "y": 119
+ },
+ "animations": [
+  {
+   "name": "cargo2_takeoff",
+   "row": 0,
+   "frames": 10,
+   "fps": 10,
+   "loop": false
+  },
+  {
+   "name": "cargo2_fly",
+   "row": 1,
+   "frames": 6,
+   "fps": 10,
+   "loop": true
+  },
+  {
+   "name": "cargo2_land",
+   "row": 2,
+   "frames": 10,
+   "fps": 10,
+   "loop": false
+  },
+  {
+   "name": "cargo3_takeoff",
+   "row": 3,
+   "frames": 10,
+   "fps": 10,
+   "loop": false
+  },
+  {
+   "name": "cargo3_fly",
+   "row": 4,
+   "frames": 6,
+   "fps": 10,
+   "loop": true
+  },
+  {
+   "name": "cargo3_land",
+   "row": 5,
+   "frames": 10,
+   "fps": 10,
+   "loop": false
+  }
+ ]
+}

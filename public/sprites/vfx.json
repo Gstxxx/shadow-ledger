@@ -1,0 +1,78 @@
+{
+ "kind": "atlas",
+ "id": "vfx",
+ "image": "vfx.png",
+ "width": 640,
+ "height": 684,
+ "frameWidth": 80,
+ "frameHeight": 76,
+ "anchor": {
+  "x": 44,
+  "y": 49
+ },
+ "animations": [
+  {
+   "name": "explosion",
+   "row": 0,
+   "frames": 8,
+   "fps": 12,
+   "loop": true
+  },
+  {
+   "name": "blood",
+   "row": 1,
+   "frames": 6,
+   "fps": 10,
+   "loop": true
+  },
+  {
+   "name": "smoke",
+   "row": 2,
+   "frames": 6,
+   "fps": 10,
+   "loop": true
+  },
+  {
+   "name": "sparks",
+   "row": 3,
+   "frames": 4,
+   "fps": 14,
+   "loop": true
+  },
+  {
+   "name": "fire",
+   "row": 4,
+   "frames": 6,
+   "fps": 10,
+   "loop": true
+  },
+  {
+   "name": "dust",
+   "row": 5,
+   "frames": 4,
+   "fps": 10,
+   "loop": true
+  },
+  {
+   "name": "flashbang",
+   "row": 6,
+   "frames": 4,
+   "fps": 12,
+   "loop": true
+  },
+  {
+   "name": "gas",
+   "row": 7,
+   "frames": 6,
+   "fps": 10,
+   "loop": true
+  },
+  {
+   "name": "tracer",
+   "row": 8,
+   "frames": 4,
+   "fps": 14,
+   "loop": true
+  }
+ ]
+}

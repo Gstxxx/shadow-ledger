@@ -1,0 +1,78 @@
+{
+ "kind": "atlas",
+ "id": "vfx-extra",
+ "image": "vfx-extra.png",
+ "width": 672,
+ "height": 765,
+ "frameWidth": 84,
+ "frameHeight": 85,
+ "anchor": {
+  "x": 34,
+  "y": 67
+ },
+ "animations": [
+  {
+   "name": "arrest",
+   "row": 0,
+   "frames": 6,
+   "fps": 10,
+   "loop": false
+  },
+  {
+   "name": "money_gain",
+   "row": 1,
+   "frames": 6,
+   "fps": 10,
+   "loop": true
+  },
+  {
+   "name": "money_loss",
+   "row": 2,
+   "frames": 6,
+   "fps": 10,
+   "loop": true
+  },
+  {
+   "name": "flare",
+   "row": 3,
+   "frames": 8,
+   "fps": 10,
+   "loop": true
+  },
+  {
+   "name": "rain",
+   "row": 4,
+   "frames": 6,
+   "fps": 10,
+   "loop": true
+  },
+  {
+   "name": "fog",
+   "row": 5,
+   "frames": 8,
+   "fps": 10,
+   "loop": true
+  },
+  {
+   "name": "level_up",
+   "row": 6,
+   "frames": 6,
+   "fps": 10,
+   "loop": false
+  },
+  {
+   "name": "alarm",
+   "row": 7,
+   "frames": 6,
+   "fps": 10,
+   "loop": true
+  },
+  {
+   "name": "interdicted",
+   "row": 8,
+   "frames": 6,
+   "fps": 10,
+   "loop": false
+  }
+ ]
+}

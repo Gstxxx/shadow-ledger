@@ -1,0 +1,78 @@
+{
+ "kind": "atlas",
+ "id": "cargo",
+ "image": "cargo.png",
+ "width": 188,
+ "height": 477,
+ "frameWidth": 47,
+ "frameHeight": 53,
+ "anchor": {
+  "x": 23,
+  "y": 39
+ },
+ "animations": [
+  {
+   "name": "weapons_crate",
+   "row": 0,
+   "frames": 4,
+   "fps": 6,
+   "loop": true
+  },
+  {
+   "name": "ammo_crate",
+   "row": 1,
+   "frames": 4,
+   "fps": 6,
+   "loop": true
+  },
+  {
+   "name": "documents",
+   "row": 2,
+   "frames": 4,
+   "fps": 6,
+   "loop": true
+  },
+  {
+   "name": "special_material",
+   "row": 3,
+   "frames": 4,
+   "fps": 6,
+   "loop": true
+  },
+  {
+   "name": "technology",
+   "row": 4,
+   "frames": 4,
+   "fps": 6,
+   "loop": true
+  },
+  {
+   "name": "cash_case",
+   "row": 5,
+   "frames": 4,
+   "fps": 6,
+   "loop": true
+  },
+  {
+   "name": "gold_bars",
+   "row": 6,
+   "frames": 4,
+   "fps": 6,
+   "loop": true
+  },
+  {
+   "name": "cargo_pallet",
+   "row": 7,
+   "frames": 4,
+   "fps": 6,
+   "loop": true
+  },
+  {
+   "name": "container",
+   "row": 8,
+   "frames": 4,
+   "fps": 6,
+   "loop": true
+  }
+ ]
+}

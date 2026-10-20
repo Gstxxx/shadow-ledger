@@ -1,0 +1,57 @@
+{
+ "kind": "atlas",
+ "id": "vehicles-armor",
+ "image": "vehicles-armor.png",
+ "width": 1580,
+ "height": 708,
+ "frameWidth": 158,
+ "frameHeight": 118,
+ "anchor": {
+  "x": 78,
+  "y": 76
+ },
+ "animations": [
+  {
+   "name": "tank1_move",
+   "row": 0,
+   "frames": 8,
+   "fps": 10,
+   "loop": true
+  },
+  {
+   "name": "tank1_shoot",
+   "row": 1,
+   "frames": 8,
+   "fps": 12,
+   "loop": true
+  },
+  {
+   "name": "tank1_destroyed",
+   "row": 2,
+   "frames": 10,
+   "fps": 10,
+   "loop": false
+  },
+  {
+   "name": "tank3_move",
+   "row": 3,
+   "frames": 8,
+   "fps": 10,
+   "loop": true
+  },
+  {
+   "name": "tank3_shoot",
+   "row": 4,
+   "frames": 8,
+   "fps": 12,
+   "loop": true
+  },
+  {
+   "name": "tank3_destroyed",
+   "row": 5,
+   "frames": 10,
+   "fps": 10,
+   "loop": false
+  }
+ ]
+}

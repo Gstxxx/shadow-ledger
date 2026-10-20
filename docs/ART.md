@@ -347,3 +347,58 @@ No jogo, os itens usam a foto (`ItemArt`) quando o id está em `ITEM_PHOTOS` e a
 - **Uso no jogo:** dentro de `Portrait.tsx`, `<UnitPortrait itemId={unit.itemId} seed={unit.seed} name={unit.name} size={size} hostile={hostile} hurt={!!unit.injury} />` no lugar do DiceBear e do ícone do lucide.
 
 Revisão: `/src/art/gallery.html?solo=units&size=72|36&n=3`.
+
+## Sprites isométricos de voxel (`public/sprites/`, `sprites.ts`)
+
+Personagens, veículos, aeronaves, efeitos, marcadores do mapa, carga e prédios das Estações em voxel 2:1, virados para SE. Tudo é gerado por código (Python + Pillow) em `tools/sprites/`, que não vai para o pacote. **Licença:** obra própria, gerada por código, sem imagens de terceiros.
+
+- **Regenerar:** `python -I tools/sprites/build.py` na raiz (apaga e refaz `public/sprites/`). Para refazer só alguns conjuntos, passe os nomes dos geradores, ex. `python -I tools/sprites/build.py urban police`. Com `SPRITES_PREVIEW=1`, também grava folhas de conferência com a âncora marcada em `tools/sprites/preview.local/` (fica fora do git).
+- **Rig:** `tools/sprites/rig.py`. Com `lean > 0` o tronco inclina para a frente; com `fall < 0` o corpo cai para trás (pivô no calcanhar) e com `fall > 0`, para a frente. As corridas inclinam para a frente e as mortes caem para trás em todos os conjuntos.
+- **Tamanho:** 25 atlas e 4 grupos avulsos somam cerca de 760 KB, contando o PNG indexado (256 cores com alfa, sem pontilhado) e os JSON. É cerca de 4× menor que o RGBA e visualmente igual: erro médio de 0,3/255. Os maiores são `vehicles-heli` (82 KB), `aircraft-bomber-aa` (71 KB) e `cargo-planes-b` (64 KB); um personagem fica em cerca de 10 KB. O total exato está em `public/sprites/index.json` (`bytes`).
+
+**Atlas** (`<id>.png` + `<id>.json`, `kind: "atlas"`): cada animação é uma linha e os quadros vão da esquerda para a direita, todos do mesmo tamanho.
+
+```json
+{ "kind": "atlas", "id": "urban", "image": "urban.png", "width": 492, "height": 549,
+  "frameWidth": 82, "frameHeight": 61, "anchor": { "x": 46, "y": 48 },
+  "animations": [ { "name": "idle", "row": 0, "frames": 4, "fps": 4, "loop": true }, … ] }
+```
+
+- **`anchor`:** ponto do chão dentro do quadro, em px 1x. Nos personagens são os pés; nos veículos e aeronaves, a origem no solo, onde fica a sombra.
+- **Sombra:** a de chão já vem assada no quadro.
+- **Animações sem laço** (`loop: false`, ex. `death`, `aim`, `*_destroyed`, `*_shot_down`): param no último quadro.
+
+| Conjunto | Animações |
+|---|---|
+| `urban`, `military`, `police`, `criminal`, `pilot` | `idle walk run aim shoot/burst reload cover hurt death` e as específicas: `throw kneel cuff shield radio board eject` |
+| `legal`, `influence` | `idle walk run present_evidence objection argue phone persuade defeat_victory · bribe whisper convinced back_off defeat` |
+| `director` | `director_idle director_walk ex_agent banker colonel command shoot hurt death` |
+| `women` | `guard_idle guard_walk guard_aim guard_shoot guard_death lawyer_idle present_evidence objection victory` |
+| `vehicles-light`, `vehicles-armor`, `vehicles-heli` | `<itemId>_move/_shoot/_destroyed`, helicópteros `_hover _fly _shoot _cannon _rockets _destroyed` (ids do Mercado: technical, patrolcar, apc, tank1, tank3, heli1, heli3) |
+| `aircraft-fighters`, `aircraft-bomber-aa`, `cargo-planes-a`, `cargo-planes-b` | `jet1..3_fly/_missile/_shot_down`, `bomber_fly/_bomb/_shot_down`, `sam1_move/_launch/_destroyed`, `sam3_raise/_launch/_destroyed`, `cargo0..3_takeoff/_fly/_land` |
+| `vfx`, `vfx-extra` | `explosion blood smoke sparks fire dust flashbang gas tracer · arrest money_gain money_loss flare rain fog level_up alarm interdicted` |
+| `markers`, `cargo` | `hostile_group threat rival_agency player_station director contract hunt vault flight · weapons_crate ammo_crate documents special_material technology cash_case gold_bars cargo_pallet container` |
+| `station-<nível>` | `normal` (1 quadro), `damaged` e `interdicted` (8 quadros: fogo, fumaça, sirenes) |
+
+**Avulsos** (`<grupo>.json`, `kind: "static"`, itens `{ id, state?, image, width, height, anchor }`):
+
+- `stations`: 5 níveis × `normal | damaged | interdicted`, com ids `cell safehouse office compound base` (`STATION_SPRITE_IDS`). Os três estados de um nível têm o mesmo tamanho e a mesma âncora.
+- `interiors`: os 5 interiores.
+- `markers-stills` e `cargo-stills`: o 1º quadro de cada marcador ou item, recortado.
+
+**Uso** (`src/art/sprites.ts`, exportado pelo index):
+
+```tsx
+<Sprite set="urban" anim="run" playing mirror scale={2} />          // anima no fps do manifesto
+<Sprite set="police" anim="death" playing onEnd={() => remove()} /> // sem laço: para no último quadro
+<Sprite set="markers" anim="threat" frame={0} anchored />           // pés na origem do pai (position: relative)
+<SpriteStill group="stations" id="office" state="damaged" scale={1} />
+```
+
+- **Desenho:** `background-position` com `image-rendering: pixelated`. Use escalas inteiras.
+- **`mirror`:** espelha para SW; com `anchored`, o espelho é em torno dos pés.
+- **Movimento reduzido:** com `prefers-reduced-motion`, mostra o 1º quadro das animações em laço e o último das que não têm laço.
+- **Funções:** `loadSpriteAtlas(id)`, `loadSpriteStatic(grupo)`, `preloadSprites(ids)`, `useSpriteAtlas(id)`, `frameRect(atlas, anim, i)`, `frameAt(anim, ms)`, `animDuration(anim)`, `spriteUrl(image)`. Os manifestos ficam em cache por id.
+- **Para canvas:** use `frameRect` com `drawImage` e `ctx.imageSmoothingEnabled = false`.
+
+Revisão: `/src/art/gallery.html?solo=sprites[&set=urban][&scale=3][&mirror=1]`.

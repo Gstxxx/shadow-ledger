@@ -1,0 +1,171 @@
+{
+ "kind": "static",
+ "id": "stations",
+ "items": [
+  {
+   "id": "cell",
+   "state": "normal",
+   "image": "stations/cell-normal.png",
+   "width": 80,
+   "height": 88,
+   "anchor": {
+    "x": 38,
+    "y": 55
+   }
+  },
+  {
+   "id": "cell",
+   "state": "damaged",
+   "image": "stations/cell-damaged.png",
+   "width": 80,
+   "height": 88,
+   "anchor": {
+    "x": 38,
+    "y": 55
+   }
+  },
+  {
+   "id": "cell",
+   "state": "interdicted",
+   "image": "stations/cell-interdicted.png",
+   "width": 80,
+   "height": 88,
+   "anchor": {
+    "x": 38,
+    "y": 55
+   }
+  },
+  {
+   "id": "safehouse",
+   "state": "normal",
+   "image": "stations/safehouse-normal.png",
+   "width": 112,
+   "height": 111,
+   "anchor": {
+    "x": 54,
+    "y": 68
+   }
+  },
+  {
+   "id": "safehouse",
+   "state": "damaged",
+   "image": "stations/safehouse-damaged.png",
+   "width": 112,
+   "height": 111,
+   "anchor": {
+    "x": 54,
+    "y": 68
+   }
+  },
+  {
+   "id": "safehouse",
+   "state": "interdicted",
+   "image": "stations/safehouse-interdicted.png",
+   "width": 112,
+   "height": 111,
+   "anchor": {
+    "x": 54,
+    "y": 68
+   }
+  },
+  {
+   "id": "office",
+   "state": "normal",
+   "image": "stations/office-normal.png",
+   "width": 128,
+   "height": 137,
+   "anchor": {
+    "x": 62,
+    "y": 86
+   }
+  },
+  {
+   "id": "office",
+   "state": "damaged",
+   "image": "stations/office-damaged.png",
+   "width": 128,
+   "height": 137,
+   "anchor": {
+    "x": 62,
+    "y": 86
+   }
+  },
+  {
+   "id": "office",
+   "state": "interdicted",
+   "image": "stations/office-interdicted.png",
+   "width": 128,
+   "height": 137,
+   "anchor": {
+    "x": 62,
+    "y": 86
+   }
+  },
+  {
+   "id": "compound",
+   "state": "normal",
+   "image": "stations/compound-normal.png",
+   "width": 176,
+   "height": 124,
+   "anchor": {
+    "x": 86,
+    "y": 61
+   }
+  },
+  {
+   "id": "compound",
+   "state": "damaged",
+   "image": "stations/compound-damaged.png",
+   "width": 176,
+   "height": 124,
+   "anchor": {
+    "x": 86,
+    "y": 61
+   }
+  },
+  {
+   "id": "compound",
+   "state": "interdicted",
+   "image": "stations/compound-interdicted.png",
+   "width": 176,
+   "height": 124,
+   "anchor": {
+    "x": 86,
+    "y": 61
+   }
+  },
+  {
+   "id": "base",
+   "state": "normal",
+   "image": "stations/base-normal.png",
+   "width": 248,
+   "height": 163,
+   "anchor": {
+    "x": 122,
+    "y": 80
+   }
+  },
+  {
+   "id": "base",
+   "state": "damaged",
+   "image": "stations/base-damaged.png",
+   "width": 248,
+   "height": 163,
+   "anchor": {
+    "x": 122,
+    "y": 80
+   }
+  },
+  {
+   "id": "base",
+   "state": "interdicted",
+   "image": "stations/base-interdicted.png",
+   "width": 248,
+   "height": 163,
+   "anchor": {
+    "x": 122,
+    "y": 80
+   }
+  }
+ ]
+}

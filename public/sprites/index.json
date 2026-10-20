@@ -1,0 +1,36 @@
+{
+ "atlas": [
+  "aircraft-bomber-aa",
+  "aircraft-fighters",
+  "cargo-planes-a",
+  "cargo-planes-b",
+  "cargo",
+  "criminal",
+  "director",
+  "influence",
+  "legal",
+  "markers",
+  "military",
+  "pilot",
+  "police",
+  "station-base",
+  "station-cell",
+  "station-compound",
+  "station-office",
+  "station-safehouse",
+  "urban",
+  "vehicles-armor",
+  "vehicles-heli",
+  "vehicles-light",
+  "vfx-extra",
+  "vfx",
+  "women"
+ ],
+ "static": [
+  "cargo-stills",
+  "interiors",
+  "markers-stills",
+  "stations"
+ ],
+ "bytes": 774701
+}

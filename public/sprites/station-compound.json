@@ -1,0 +1,36 @@
+{
+ "kind": "atlas",
+ "id": "station-compound",
+ "image": "station-compound.png",
+ "width": 1344,
+ "height": 348,
+ "frameWidth": 168,
+ "frameHeight": 116,
+ "anchor": {
+  "x": 84,
+  "y": 59
+ },
+ "animations": [
+  {
+   "name": "normal",
+   "row": 0,
+   "frames": 1,
+   "fps": 8,
+   "loop": true
+  },
+  {
+   "name": "damaged",
+   "row": 1,
+   "frames": 8,
+   "fps": 8,
+   "loop": true
+  },
+  {
+   "name": "interdicted",
+   "row": 2,
+   "frames": 8,
+   "fps": 8,
+   "loop": true
+  }
+ ]
+}
